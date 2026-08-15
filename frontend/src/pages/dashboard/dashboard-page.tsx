@@ -51,7 +51,7 @@ export default function DashboardPage() {
       <Frame>
         <Link
           to="/sign-in?redirect=%2Fdashboard"
-          className="press inline-flex rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
+          className="press inline-flex rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
           {t('nav.signIn')}
         </Link>
@@ -62,7 +62,7 @@ export default function DashboardPage() {
   return (
     <Frame>
       <section className="mt-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="text-base font-semibold tracking-tight">
           {t('dashboard.mySubmissions')}
         </h2>
         {submissions === null ? (
@@ -70,7 +70,7 @@ export default function DashboardPage() {
         ) : submissions.length === 0 ? (
           <p className="mt-4 text-sm text-muted-foreground">{t('dashboard.noSubmissions')}</p>
         ) : (
-          <ul className="mt-4 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+          <ul className="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
             {submissions.map((submission) => (
               <li key={submission.id} className="flex items-center gap-3 px-5 py-3.5 text-sm">
                 <span className="flex-1 truncate font-medium">

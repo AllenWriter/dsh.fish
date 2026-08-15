@@ -44,7 +44,7 @@ export default function SignInPage() {
       <button
         type="button"
         onClick={() => void authClient.signIn.social({ provider: 'github', callbackURL: redirect })}
-        className="press mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-foreground text-sm font-medium text-background"
+        className="press mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-foreground text-sm font-medium text-background"
       >
         <Github className="size-4" aria-hidden />
         {t('auth.withGithub')}
@@ -88,7 +88,7 @@ export default function SignInPage() {
         <button
           type="submit"
           disabled={busy}
-          className="press h-11 w-full rounded-full bg-primary text-sm font-medium text-primary-foreground disabled:opacity-50"
+          className="press h-11 w-full rounded-lg bg-primary text-sm font-medium text-primary-foreground disabled:opacity-50"
         >
           {mode === 'sign-in' ? t('auth.signInTitle') : t('auth.signUp')}
         </button>

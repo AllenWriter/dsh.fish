@@ -124,14 +124,14 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
 
       <div className="grid gap-10 pt-8 lg:grid-cols-[1fr_22rem]">
         <section>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="text-base font-semibold tracking-tight">
             {t('artifact.readme')}
           </h2>
           {artifact.readmeMarkdown ? (
             // Rendered as source rather than HTML on purpose: the readme is
             // third-party text pulled from a crawl, and turning it into markup
             // would make the catalog an injection vector for every indexed repo.
-            <pre className="mt-4 overflow-x-auto whitespace-pre-wrap break-words rounded-2xl border border-border bg-card p-5 font-mono text-[13px] leading-relaxed">
+            <pre className="mt-4 overflow-x-auto whitespace-pre-wrap rounded-xl border border-border bg-card p-5 font-mono text-[13px] leading-relaxed">
               {artifact.readmeMarkdown}
             </pre>
           ) : (
@@ -146,7 +146,7 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
             href={artifact.sourceUrl}
             target="_blank"
             rel="noreferrer noopener"
-            className="press flex items-center justify-between rounded-2xl border border-border bg-card px-5 py-4 text-sm font-medium hover:border-border-strong"
+            className="press flex items-center justify-between rounded-xl border border-border bg-card px-5 py-4 text-sm font-medium hover:border-border-strong"
           >
             {t('artifact.source')}
             <ExternalLink className="size-4 text-muted-foreground" aria-hidden />

@@ -124,7 +124,7 @@ function Section({ title, body, code }: { title: string; body: string; code: str
     <section className="mt-2">
       <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
       <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{body}</p>
-      <pre className="mt-4 overflow-x-auto rounded-2xl border border-border bg-card p-5 font-mono text-[13px] leading-relaxed">
+      <pre className="mt-4 overflow-x-auto rounded-xl border border-border bg-card p-5 font-mono text-[13px] leading-relaxed">
         {code}
       </pre>
     </section>

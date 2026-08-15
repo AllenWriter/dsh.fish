@@ -49,13 +49,13 @@ export default function BrowsePage({ loaderData }: Route.ComponentProps) {
             defaultValue={query}
             aria-label={t('nav.search')}
             placeholder={t('home.searchPlaceholder')}
-            className="h-10 min-w-0 flex-1 rounded-full border border-border bg-card px-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-border-strong"
+            className="h-10 min-w-0 flex-1 rounded-lg border border-border bg-card px-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-border-strong"
           />
           <select
             name="sort"
             defaultValue={params.get('sort') ?? ''}
             aria-label={t('browse.sort')}
-            className="h-10 rounded-full border border-border bg-card px-3 text-sm outline-none"
+            className="h-10 rounded-lg border border-border bg-card px-3 text-sm outline-none"
           >
             <option value="">{t('browse.sort.relevance')}</option>
             <option value="popular">{t('browse.sort.popular')}</option>
@@ -71,9 +71,9 @@ export default function BrowsePage({ loaderData }: Route.ComponentProps) {
           ))}
           <button
             type="submit"
-            className="press h-10 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground"
+            className="press h-10 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground"
           >
-            {t('nav.search')}
+            {t('home.searchAction')}
           </button>
         </Form>
       </header>
@@ -119,7 +119,7 @@ function Pagination({
       {hasPrevious ? (
         <Link
           to={build(Math.max(0, offset - limit))}
-          className="press rounded-full border border-border px-4 py-2 hover:border-border-strong"
+          className="press inline-flex h-10 items-center rounded-lg border border-border px-4 hover:border-border-strong"
         >
           &larr;
         </Link>
@@ -132,7 +132,7 @@ function Pagination({
       {hasNext ? (
         <Link
           to={build(offset + limit)}
-          className="press rounded-full border border-border px-4 py-2 hover:border-border-strong"
+          className="press inline-flex h-10 items-center rounded-lg border border-border px-4 hover:border-border-strong"
         >
           &rarr;
         </Link>

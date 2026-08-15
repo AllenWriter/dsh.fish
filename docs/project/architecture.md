@@ -130,6 +130,31 @@ maps codes to HTTP statuses and emits the one envelope described in
 [`backend/api-conventions.md`](../backend/api-conventions.md). Unexpected
 failures never leak their message — it may carry a binding name or a token.
 
+### Theming is server-rendered from a cookie
+
+The theme class on `<html>` is written by the root loader from a `theme` cookie,
+not by an inline script reading `localStorage`. React owns the document element
+during hydration and reconciles away any class a script set before it, which
+both reverts the theme and raises a hydration mismatch — a cookie is the only
+theme store the server can read, so client and server agree from the first byte.
+With no cookie, no class is emitted and the stylesheet follows
+`prefers-color-scheme`; an explicit choice writes `light` or `dark`, and `light`
+is what lets a user override a dark OS setting.
+
+Related: the raw colour properties (`--bg`, `--fg`, …) deliberately do not share
+names with the `@theme inline` keys that consume them. `inline` substitutes the
+resolved value straight into each utility, so a theme key defined as
+`var(--color-background)` bakes the light value into `bg-background` and no dark
+override can reach it.
+
+### One accent, and kinds are named not coloured
+
+Artifact kinds are distinguished by their label, not by a hue. Six per-kind
+colours competed with the accent and encoded nothing a reader could learn; the
+chip already says "MCP server" in words, which is unambiguous, translatable and
+readable without colour vision. Colour is reserved for the primary action and
+the verified badge.
+
 ### No hardcoded copy
 
 `frontend/src/shared/config/messages.ts` holds every user-facing string. The

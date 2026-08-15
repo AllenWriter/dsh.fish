@@ -54,14 +54,16 @@ export const messages = {
 
   'home.heroTitle': 'Everything is a plugin.',
   'home.heroSubtitle':
-    'Search the harness ecosystem and install any of it with one command — or let your agent do it.',
-  'home.searchPlaceholder': 'Search bundles, skills, MCP servers…',
+    'Bundles, skills, MCP servers and presets for DeepSeek Harness. Copy one command, or let your agent install it for you.',
+  'home.searchPlaceholder': 'postgres, code review, browser…',
+  'home.searchAction': 'Search',
   'home.browseAll': 'Browse everything',
   'home.installHub': 'Install the hub plugin',
   'home.trending': 'Trending',
   'home.recentlyUpdated': 'Recently updated',
   'home.byKind': 'By type',
   'home.statsArtifacts': 'artifacts indexed',
+  'home.seeRecent': 'See what changed',
 
   'browse.title': 'Browse',
   'browse.filters': 'Filters',

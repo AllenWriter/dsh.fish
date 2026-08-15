@@ -1,9 +1,12 @@
 import { Link, NavLink, useNavigate } from 'react-router'
-import { useMemo, useState } from 'react'
-import { Fish, Github, Menu, Moon, Search, Sun, X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { Fish, Menu, Moon, Search, Sun, X } from 'lucide-react'
+import { EASE_OUT } from '@/shared/lib/ease'
 import { CommandPalette } from '@/shared/ui/motion/command-palette'
 import { useSession, signOut } from '@/shared/api/auth-client'
 import { t } from '@/shared/config/messages'
+import { writeThemeCookie } from '@/shared/lib/theme'
 import { cn } from '@/shared/lib/utils'
 
 const NAV = [
@@ -66,7 +69,7 @@ export function SiteHeader() {
         <button
           type="button"
           onClick={() => setPaletteOpen(true)}
-          className="press ml-auto hidden h-9 items-center gap-2 rounded-full border border-border bg-card px-3 text-sm text-muted-foreground hover:border-border-strong sm:flex"
+          className="press ml-auto hidden h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm text-muted-foreground hover:border-border-strong sm:flex"
         >
           <Search className="size-4" aria-hidden />
           {t('nav.search')}
@@ -81,7 +84,7 @@ export function SiteHeader() {
           <div className="hidden items-center gap-2 sm:flex">
             <Link
               to="/dashboard"
-              className="press rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-border-strong"
+              className="press rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:border-border-strong"
             >
               {t('nav.dashboard')}
             </Link>
@@ -112,8 +115,17 @@ export function SiteHeader() {
         </button>
       </div>
 
+      {/* Grows out of the bar it belongs to rather than appearing beside it. */}
+      <AnimatePresence initial={false}>
       {mobileOpen ? (
-        <nav className="border-t border-border bg-background px-6 py-3 md:hidden">
+        <motion.nav
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.2, ease: EASE_OUT }}
+          className="overflow-hidden border-t border-border bg-background px-6 md:hidden"
+        >
+          <div className="py-3">
           {[...NAV, { to: '/dashboard', key: 'nav.dashboard' } as const].map((entry) => (
             <NavLink
               key={entry.to}
@@ -129,8 +141,10 @@ export function SiteHeader() {
               {t('nav.signIn')}
             </Link>
           )}
-        </nav>
+          </div>
+        </motion.nav>
       ) : null}
+      </AnimatePresence>
 
       <CommandPalette items={commands} open={paletteOpen} onOpenChange={setPaletteOpen} />
     </header>
@@ -142,9 +156,19 @@ export function SiteHeader() {
  * in `root.tsx` consults before first paint, so the two never disagree.
  */
 function ThemeToggle({ className }: { className?: string }) {
-  const [dark, setDark] = useState(
-    () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
-  )
+  const reduce = useReducedMotion()
+  // Initialised from what is actually painted, which covers all three cases:
+  // an explicit class from the server, or the system preference when there is
+  // no cookie yet.
+  const [dark, setDark] = useState(false)
+  useEffect(() => {
+    const root = document.documentElement
+    setDark(
+      root.classList.contains('dark') ||
+        (!root.classList.contains('light') &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches),
+    )
+  }, [])
 
   return (
     <button
@@ -153,16 +177,32 @@ function ThemeToggle({ className }: { className?: string }) {
       onClick={() => {
         const next = !dark
         setDark(next)
-        document.documentElement.classList.toggle('dark', next)
-        try {
-          localStorage.setItem('theme', next ? 'dark' : 'light')
-        } catch {
-          // A blocked storage API only costs persistence, never the toggle.
-        }
+        // Both classes are managed so an explicit light choice can override a
+        // dark OS setting, which a lone `.dark` toggle cannot express.
+        const root = document.documentElement
+        root.classList.toggle('dark', next)
+        root.classList.toggle('light', !next)
+        writeThemeCookie(next ? 'dark' : 'light')
       }}
-      className={cn('press rounded-lg border border-border p-1.5 hover:border-border-strong', className)}
+      className={cn(
+        'press grid size-9 place-items-center rounded-lg border border-border hover:border-border-strong',
+        className,
+      )}
     >
-      {dark ? <Sun className="size-4" aria-hidden /> : <Moon className="size-4" aria-hidden />}
+      {/* Same crossfade as the copy control, so every icon that swaps state in
+          this product moves the same way. */}
+      <AnimatePresence initial={false} mode="wait">
+        <motion.span
+          key={dark ? 'sun' : 'moon'}
+          initial={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
+          animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+          exit={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
+          transition={reduce ? { duration: 0.12 } : { type: 'spring', duration: 0.3, bounce: 0 }}
+          className="grid place-items-center"
+        >
+          {dark ? <Sun className="size-4" aria-hidden /> : <Moon className="size-4" aria-hidden />}
+        </motion.span>
+      </AnimatePresence>
     </button>
   )
 }

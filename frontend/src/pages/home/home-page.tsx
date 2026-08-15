@@ -1,12 +1,10 @@
 import { Form, Link } from 'react-router'
-import { ArrowRight, Search, Sparkles } from 'lucide-react'
+import { ArrowRight, Search } from 'lucide-react'
 import type { Route } from './+types/home-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { CatalogGrid } from '@/widgets/catalog-grid/catalog-grid'
-import { KIND_STYLE } from '@/entities/artifact/model/types'
 import { t } from '@/shared/config/messages'
 import { compactNumber } from '@/shared/lib/format'
-import { cn } from '@/shared/lib/utils'
 
 export function meta(): Route.MetaDescriptors {
   return [
@@ -26,11 +24,16 @@ export async function loader({ context }: Route.LoaderArgs) {
   const { container } = context.get(hubContext)
   const { searchArtifacts, listCatalogFacets } = container.useCases
 
-  const [trending, recent, facets] = await Promise.all([
+  const [trending, recentPool, facets] = await Promise.all([
     searchArtifacts.execute({ sort: 'popular', limit: 6 }),
-    searchArtifacts.execute({ sort: 'recent', limit: 3 }),
+    // Over-fetch, then subtract what the first rail already shows. Two rails
+    // listing the same artifacts is the same page twice.
+    searchArtifacts.execute({ sort: 'recent', limit: 12 }),
     listCatalogFacets.execute(),
   ])
+
+  const shown = new Set(trending.items.map((item) => item.id))
+  const recent = recentPool.items.filter((item) => !shown.has(item.id)).slice(0, 3)
 
   return { trending, recent, facets }
 }
@@ -48,16 +51,11 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           aria-hidden
           className="pointer-events-none absolute left-1/2 top-0 size-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl"
         />
-        <div className="relative mx-auto max-w-4xl px-6 py-20 text-center sm:py-28">
-          <p className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-            <Sparkles className="size-3.5 text-primary" aria-hidden />
-            {compactNumber(total)} {t('home.statsArtifacts')}
-          </p>
-
-          <h1 className="mt-6 text-balance text-4xl font-semibold tracking-tight sm:text-6xl">
+        <div className="relative mx-auto max-w-4xl px-6 py-16 text-center sm:py-24">
+          <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-6xl">
             {t('home.heroTitle')}
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-balance text-lg leading-relaxed text-muted-foreground">
+          <p className="mx-auto mt-4 max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground">
             {t('home.heroSubtitle')}
           </p>
 
@@ -72,18 +70,22 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                 name="q"
                 aria-label={t('nav.search')}
                 placeholder={t('home.searchPlaceholder')}
-                className="h-12 w-full rounded-full border border-border bg-card pl-11 pr-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-border-strong"
+                className="h-12 w-full rounded-lg border border-border bg-card pl-11 pr-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-border-strong"
               />
             </div>
             <button
               type="submit"
-              className="press h-12 rounded-full bg-primary px-6 text-sm font-medium text-primary-foreground"
+              className="press h-12 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground"
             >
-              {t('nav.search')}
+              {t('home.searchAction')}
             </button>
           </Form>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+          <p className="mt-7 text-sm text-muted-foreground">
+            {compactNumber(total)} {t('home.statsArtifacts')}
+          </p>
+
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             {facets.kinds.map((facet) => (
               <Link
                 key={facet.kind}
@@ -91,10 +93,6 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                 title={t(facet.descriptionKey)}
                 className="press inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-border-strong hover:text-foreground"
               >
-                <span
-                  aria-hidden
-                  className={cn('size-1.5 rounded-full', KIND_STYLE[facet.kind].dot)}
-                />
                 {t(facet.labelKey)}
                 <span className="tabular-nums opacity-60">{facet.count}</span>
               </Link>
@@ -104,13 +102,13 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
       </section>
 
       <div className="mx-auto max-w-6xl space-y-14 px-6 py-16">
-        <Rail title={t('home.trending')} to="/browse?sort=popular">
+        <Rail title={t('home.trending')} to="/browse?sort=popular" linkKey="home.browseAll">
           <CatalogGrid artifacts={trending.items} />
         </Rail>
 
-        {recent.items.length > 0 ? (
-          <Rail title={t('home.recentlyUpdated')} to="/browse?sort=recent">
-            <CatalogGrid artifacts={recent.items} />
+        {recent.length > 0 ? (
+          <Rail title={t('home.recentlyUpdated')} to="/browse?sort=recent" linkKey="home.seeRecent">
+            <CatalogGrid artifacts={recent} />
           </Rail>
         ) : null}
       </div>
@@ -121,10 +119,12 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
 function Rail({
   title,
   to,
+  linkKey,
   children,
 }: {
   title: string
   to: string
+  linkKey: string
   children: React.ReactNode
 }) {
   return (
@@ -135,7 +135,7 @@ function Rail({
           to={to}
           className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          {t('home.browseAll')}
+          {t(linkKey)}
           <ArrowRight className="size-3.5" aria-hidden />
         </Link>
       </div>

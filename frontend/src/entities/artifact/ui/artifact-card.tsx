@@ -30,7 +30,7 @@ export function ArtifactCard({ artifact, index = 0 }: { artifact: Artifact; inde
         // Staggered by position, capped so a full page never feels slow.
         delay: reduce ? 0 : Math.min(index, 8) * 0.03,
       }}
-      className="group relative flex h-full flex-col rounded-2xl border border-border bg-card p-5 transition-colors hover:border-border-strong"
+      className="group relative flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-colors hover:border-border-strong"
     >
       <div className="flex items-start justify-between gap-3">
         <KindChip kind={artifact.kind} />
@@ -54,7 +54,7 @@ export function ArtifactCard({ artifact, index = 0 }: { artifact: Artifact; inde
         </Link>
       </h3>
 
-      <p className="mt-1.5 line-clamp-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+      <p className="mt-1.5 line-clamp-2 flex-1 text-pretty text-sm leading-relaxed text-muted-foreground">
         {artifact.summary}
       </p>
 

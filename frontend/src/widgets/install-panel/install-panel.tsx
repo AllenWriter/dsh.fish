@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { AlertTriangle, Check, Copy, KeyRound, Terminal } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
+import { AlertTriangle, Check, Copy } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/motion/tabs'
 import type { ArtifactDetail, InstallPlanDto } from '@/entities/artifact/model/types'
 import { t } from '@/shared/config/messages'
@@ -26,11 +27,8 @@ export function InstallPanel({
     plan.steps.filter((step) => step.type === 'require-credential') ?? []
 
   return (
-    <section className="rounded-2xl border border-border bg-card p-5">
-      <h2 className="flex items-center gap-2 text-sm font-semibold">
-        <Terminal className="size-4 text-primary" aria-hidden />
-        {t('install.title')}
-      </h2>
+    <section className="rounded-xl border border-border bg-card p-5">
+      <h2 className="text-base font-semibold tracking-tight">{t('install.title')}</h2>
 
       <Tabs defaultValue="cli" variant="segment" className="mt-4">
         <TabsList>
@@ -65,7 +63,7 @@ export function InstallPanel({
           {plan.warningKeys.map((key) => (
             <li
               key={key}
-              className="flex gap-2 rounded-xl border border-amber-500/25 bg-amber-500/5 p-3 text-xs leading-relaxed text-amber-800 dark:text-amber-300"
+              className="flex gap-2 border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground"
             >
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
               <span>{t(key)}</span>
@@ -75,11 +73,8 @@ export function InstallPanel({
       ) : null}
 
       {credentials.length > 0 ? (
-        <div className="mt-5 rounded-xl border border-border p-4">
-          <h3 className="flex items-center gap-2 text-xs font-semibold">
-            <KeyRound className="size-3.5" aria-hidden />
-            {t('install.credentials')}
-          </h3>
+        <div className="mt-5 border-t border-border pt-4">
+          <h3 className="text-xs font-medium text-foreground">{t('install.credentials')}</h3>
           <ul className="mt-2 flex flex-wrap gap-1.5">
             {credentials.map((step) =>
               step.type === 'require-credential' ? (
@@ -116,11 +111,11 @@ function CopyBlock({ text, muted = false }: { text: string; muted?: boolean }) {
   return (
     <div
       className={cn(
-        'group relative rounded-xl border border-border bg-muted/60 px-3 py-2.5 pr-11 font-mono text-[13px] leading-relaxed',
+        'group relative rounded-md border border-border bg-muted/60 px-3 py-2.5 pr-11 font-mono text-[13px] leading-relaxed',
         (muted || isComment) && 'text-muted-foreground',
       )}
     >
-      <pre className="overflow-x-auto whitespace-pre-wrap break-words">{text}</pre>
+      <pre className="overflow-x-auto whitespace-pre [scrollbar-width:thin]">{text}</pre>
       {isComment ? null : (
         <button
           type="button"
@@ -131,13 +126,25 @@ function CopyBlock({ text, muted = false }: { text: string; muted?: boolean }) {
               setTimeout(() => setCopied(false), 1600)
             })
           }}
-          className="press absolute right-2 top-2 rounded-lg border border-border bg-card p-1.5 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+          className="press hit-area absolute right-2 top-2 grid size-7 place-items-center rounded-md border border-border bg-card opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
         >
-          {copied ? (
-            <Check className="size-3.5 text-emerald-500" aria-hidden />
-          ) : (
-            <Copy className="size-3.5" aria-hidden />
-          )}
+          {/* initial={false} so the icon does not animate in on first paint. */}
+          <AnimatePresence initial={false} mode="wait">
+            <motion.span
+              key={copied ? 'copied' : 'idle'}
+              initial={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
+              transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
+              className="grid place-items-center"
+            >
+              {copied ? (
+                <Check className="size-3.5 text-primary" aria-hidden />
+              ) : (
+                <Copy className="size-3.5" aria-hidden />
+              )}
+            </motion.span>
+          </AnimatePresence>
         </button>
       )}
     </div>

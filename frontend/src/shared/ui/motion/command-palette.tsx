@@ -223,7 +223,7 @@ export function CommandPalette({
           }
           onKeyDown={onKeyDown}
           className={cn(
-            'w-full max-w-xl overflow-hidden rounded-2xl border border-border bg-card shadow-2xl will-change-transform',
+            'w-full max-w-xl overflow-hidden rounded-xl border border-border bg-card shadow-lg will-change-transform',
             open ? 'pointer-events-auto' : 'pointer-events-none',
           )}
         >
@@ -260,7 +260,7 @@ export function CommandPalette({
                 <div key={group} className="mb-1 last:mb-0">
                   <div
                     aria-hidden
-                    className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+                    className="px-2 py-1.5 text-xs font-medium text-muted-foreground"
                   >
                     {group}
                   </div>

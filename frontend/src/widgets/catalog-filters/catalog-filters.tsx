@@ -1,5 +1,4 @@
 import { Form, useSearchParams } from 'react-router'
-import { KIND_STYLE } from '@/entities/artifact/model/types'
 import type { FacetsDto } from '@/entities/artifact/model/types'
 import { t } from '@/shared/config/messages'
 import { cn } from '@/shared/lib/utils'
@@ -19,9 +18,7 @@ export function CatalogFilters({ facets }: { facets: FacetsDto }) {
   return (
     <aside className="space-y-7">
       <section>
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {t('browse.kind')}
-        </h2>
+        <h2 className="text-sm font-medium text-foreground">{t('browse.kind')}</h2>
         <ul className="mt-3 space-y-1">
           {facets.kinds.map((facet) => {
             const active = activeKinds.has(facet.kind)
@@ -32,16 +29,12 @@ export function CatalogFilters({ facets }: { facets: FacetsDto }) {
                   aria-pressed={active}
                   title={t(facet.descriptionKey)}
                   className={cn(
-                    'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors',
+                    'flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors',
                     active
                       ? 'bg-muted font-medium text-foreground'
                       : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                   )}
                 >
-                  <span
-                    aria-hidden
-                    className={cn('size-2 shrink-0 rounded-full', KIND_STYLE[facet.kind].dot)}
-                  />
                   <span className="flex-1 truncate">{t(facet.labelKey)}</span>
                   <span className="text-xs tabular-nums text-muted-foreground">{facet.count}</span>
                 </a>
@@ -52,9 +45,7 @@ export function CatalogFilters({ facets }: { facets: FacetsDto }) {
       </section>
 
       <section>
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {t('browse.category')}
-        </h2>
+        <h2 className="text-sm font-medium text-foreground">{t('browse.category')}</h2>
         <ul className="mt-3 flex flex-wrap gap-1.5">
           {facets.categories.map((category) => {
             const active = activeCategories.has(category.id)

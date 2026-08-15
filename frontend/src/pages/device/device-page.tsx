@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { ShieldCheck, Terminal } from 'lucide-react'
+import { EASE_OUT } from '@/shared/lib/ease'
 import type { Route } from './+types/device-page'
 import { OTPInput, type OTPStatus } from '@/shared/ui/motion/otp-input'
 import { authClient, useSession } from '@/shared/api/auth-client'
@@ -55,7 +57,7 @@ export default function DevicePage() {
         <p className="text-muted-foreground">{t('device.signInFirst')}</p>
         <Link
           to={`/sign-in?redirect=${encodeURIComponent(`/device?user_code=${code}`)}`}
-          className="press mt-5 inline-flex rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
+          className="press mt-5 inline-flex rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
           {t('nav.signIn')}
         </Link>
@@ -65,7 +67,7 @@ export default function DevicePage() {
 
   if (phase === 'approved') {
     return (
-      <Shell icon={<ShieldCheck className="size-6 text-emerald-500" aria-hidden />}>
+      <Shell icon={<ShieldCheck className="size-6 text-primary" aria-hidden />}>
         <p className="text-lg font-medium">{t('device.approved')}</p>
       </Shell>
     )
@@ -122,8 +124,10 @@ export default function DevicePage() {
         />
       </div>
 
-      {phase === 'confirming' ? (
-        <>
+      {/* The consent step is the one moment that matters here: it appears once,
+          after the user has typed a code, and asks them to grant access. A hard
+          cut reads as a page glitch; a short rise reads as an answer. */}
+      <PhaseReveal show={phase === 'confirming'}>
           <p className="mx-auto mt-8 max-w-sm text-sm leading-relaxed text-muted-foreground">
             {t('device.grantExplain')}
           </p>
@@ -132,7 +136,7 @@ export default function DevicePage() {
               type="button"
               disabled={busy}
               onClick={() => void decide(false)}
-              className="press rounded-full border border-border px-5 py-2.5 text-sm font-medium hover:border-border-strong disabled:opacity-50"
+              className="press rounded-lg border border-border px-5 py-2.5 text-sm font-medium hover:border-border-strong disabled:opacity-50"
             >
               {t('device.deny')}
             </button>
@@ -140,14 +144,37 @@ export default function DevicePage() {
               type="button"
               disabled={busy}
               onClick={() => void decide(true)}
-              className="press rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              className="press rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
             >
               {t('device.approve')}
             </button>
           </div>
-        </>
-      ) : null}
+      </PhaseReveal>
     </Shell>
+  )
+}
+
+/**
+ * Enter-only reveal for the consent step.
+ *
+ * Rare and high-consequence, so it earns motion the rest of this site does not.
+ * Reduced motion keeps the fade and drops the travel — gentler, not absent.
+ */
+function PhaseReveal({ show, children }: { show: boolean; children: React.ReactNode }) {
+  const reduce = useReducedMotion()
+  return (
+    <AnimatePresence initial={false}>
+      {show ? (
+        <motion.div
+          initial={{ opacity: 0, y: reduce ? 0 : 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.22, ease: EASE_OUT }}
+        >
+          {children}
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   )
 }
 
@@ -155,7 +182,7 @@ function Shell({ children, icon }: { children: React.ReactNode; icon?: React.Rea
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col items-center justify-center px-6 text-center">
       {icon ? (
-        <div className="mb-4 grid size-12 place-items-center rounded-2xl border border-border bg-card">
+        <div className="mb-4 grid size-12 place-items-center rounded-xl border border-border bg-card">
           {icon}
         </div>
       ) : null}

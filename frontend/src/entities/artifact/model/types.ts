@@ -24,35 +24,18 @@ export type {
 export type Artifact = ArtifactSummaryDto
 export type ArtifactDetail = ArtifactDetailDto
 
-/** Per-kind presentation. Labels stay as message keys; only colour lives here. */
-export const KIND_STYLE: Readonly<
-  Record<ArtifactKind, { readonly chip: string; readonly dot: string }>
-> = {
-  bundle: {
-    chip: 'bg-primary/10 text-primary border-primary/20',
-    dot: 'bg-primary',
-  },
-  profile: {
-    chip: 'bg-violet-500/10 text-violet-600 border-violet-500/20 dark:text-violet-400',
-    dot: 'bg-violet-500',
-  },
-  skill: {
-    chip: 'bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-400',
-    dot: 'bg-amber-500',
-  },
-  'mcp-server': {
-    chip: 'bg-sky-500/10 text-sky-700 border-sky-500/20 dark:text-sky-400',
-    dot: 'bg-sky-500',
-  },
-  'agent-preset': {
-    chip: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-400',
-    dot: 'bg-emerald-500',
-  },
-  'hook-bridge': {
-    chip: 'bg-rose-500/10 text-rose-700 border-rose-500/20 dark:text-rose-400',
-    dot: 'bg-rose-500',
-  },
-}
+/**
+ * Per-kind presentation.
+ *
+ * Deliberately colourless. An earlier version gave each kind its own hue —
+ * violet skills, amber MCP servers — which produced a six-colour rainbow that
+ * competed with the one accent and encoded nothing a reader could learn. The
+ * chip already says "MCP server" in words, which is unambiguous, translatable
+ * and readable without colour vision. The accent is reserved for the two things
+ * that genuinely need to stand out: a verified badge and the primary action.
+ */
+export const KIND_CHIP =
+  'inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground'
 
 const KIND_MESSAGE_KEY: Readonly<Record<ArtifactKind, string>> = {
   bundle: 'artifactKind.bundle.label',

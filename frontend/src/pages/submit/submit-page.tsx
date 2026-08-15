@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { EASE_OUT } from '@/shared/lib/ease'
 import type { Route } from './+types/submit-page'
 import { ARTIFACT_KINDS } from '@dsh-fish/backend/domain/artifact/artifact-kind.js'
 import { kindLabelKey } from '@/entities/artifact/model/types'
@@ -23,6 +25,7 @@ export default function SubmitPage() {
   const { data: session, isPending } = useSession()
   const [outcome, setOutcome] = useState<Outcome | null>(null)
   const [busy, setBusy] = useState(false)
+  const reduce = useReducedMotion()
 
   if (isPending) return <Frame>{t('common.loading')}</Frame>
 
@@ -32,7 +35,7 @@ export default function SubmitPage() {
         <p className="text-muted-foreground">{t('submit.signInRequired')}</p>
         <Link
           to="/sign-in?redirect=%2Fsubmit"
-          className="press mt-5 inline-flex rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
+          className="press mt-5 inline-flex rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
           {t('nav.signIn')}
         </Link>
@@ -121,17 +124,25 @@ export default function SubmitPage() {
         <button
           type="submit"
           disabled={busy}
-          className="press h-11 w-full rounded-full bg-primary text-sm font-medium text-primary-foreground disabled:opacity-50"
+          className="press h-11 w-full rounded-lg bg-primary text-sm font-medium text-primary-foreground disabled:opacity-50"
         >
           {t('submit.action')}
         </button>
       </form>
 
+      <AnimatePresence initial={false}>
       {outcome ? (
-        <div role="status" className="mt-6 rounded-xl border border-border bg-card p-4 text-sm">
+        <motion.div
+          role="status"
+          initial={{ opacity: 0, y: reduce ? 0 : 6, scale: reduce ? 1 : 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.22, ease: EASE_OUT }}
+          className="mt-6 rounded-xl border border-border bg-card p-4 text-sm"
+        >
           {outcome.kind === 'approved' ? (
             <>
-              <p className="font-medium text-emerald-600 dark:text-emerald-400">
+              <p className="font-medium text-primary">
                 {t('submit.approved')}
               </p>
               <Link to={`/a/${outcome.artifactId}`} className="mt-1 inline-block text-primary underline">
@@ -143,8 +154,9 @@ export default function SubmitPage() {
           ) : (
             <p className="text-destructive">{outcome.message}</p>
           )}
-        </div>
+        </motion.div>
       ) : null}
+      </AnimatePresence>
     </Frame>
   )
 }
