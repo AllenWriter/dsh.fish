@@ -1,0 +1,36 @@
+{
+  "name": "@dsh-fish/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "DDD backend for the dsh.fish plugin hub: catalog domain, use cases, D1 persistence and the Hono API.",
+  "exports": {
+    ".": "./src/interfaces/http/app.ts",
+    "./domain/*": "./src/domain/*",
+    "./application/*": "./src/application/*",
+    "./infrastructure/*": "./src/infrastructure/*",
+    "./auth": "./src/infrastructure/auth/auth.ts",
+    "./schema": "./src/infrastructure/persistence/schema.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@better-auth/core": "^1.6.29",
+    "@better-auth/drizzle-adapter": "^1.6.29",
+    "better-auth": "^1.6.29",
+    "better-auth-cloudflare": "^0.3.1",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.13.2",
+    "yaml": "^2.7.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260811.1",
+    "drizzle-kit": "^0.31.1",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.10"
+  }
+}

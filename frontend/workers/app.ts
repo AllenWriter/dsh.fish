@@ -1,0 +1,59 @@
+import { createRequestHandler, RouterContextProvider } from 'react-router'
+import { createApiApp } from '@dsh-fish/backend'
+import { createContainer } from '@dsh-fish/backend/infrastructure/container.js'
+import type { HubEnv } from '@dsh-fish/backend/infrastructure/config/env.js'
+import { hubContext } from '@/shared/api/hub-context'
+
+/**
+ * The Worker entry. One deployment serves both halves of the product.
+ *
+ * The API and the UI share an origin deliberately: Better Auth's session cookie
+ * then needs no cross-subdomain configuration, the browser makes no preflight
+ * request before a search, and a plugin page is server-rendered by code that
+ * can call the use cases directly instead of round-tripping through HTTP.
+ */
+const api = createApiApp()
+
+const requestHandler = createRequestHandler(
+  () => import('virtual:react-router/server-build'),
+  import.meta.env.MODE,
+)
+
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url)
+
+    if (url.pathname.startsWith('/api/')) {
+      return api.fetch(request, env, ctx)
+    }
+
+    // Loaders resolve use cases in-process. A server-rendered page therefore
+    // costs one D1 round trip, not an HTTP hop back into the same Worker.
+    const routerContext = new RouterContextProvider()
+    routerContext.set(hubContext, {
+      container: createContainer(env, request.cf),
+      env,
+      ctx,
+    })
+
+    return requestHandler(request, routerContext)
+  },
+
+  /**
+   * Cron trigger. Refreshes the catalog from the GitHub `dsh-plugin` topic and
+   * from npm, so the registry stays current without anyone submitting anything.
+   */
+  async scheduled(_controller, env, ctx) {
+    const container = createContainer(env)
+    ctx.waitUntil(
+      container.useCases.ingestCatalog
+        .execute({ limitPerSource: 100 })
+        .then((report) => {
+          console.log('catalog_ingest', report)
+        })
+        .catch((error: unknown) => {
+          console.error('catalog_ingest_failed', String(error))
+        }),
+    )
+  },
+} satisfies ExportedHandler<HubEnv>

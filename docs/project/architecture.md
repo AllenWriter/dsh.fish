@@ -1,73 +1,144 @@
 # Architecture
 
-> High-level system architecture. Update this file when the project grows or when major modules are added.
+> System architecture for **dsh.fish**, the plugin hub for DeepSeek Harness.
 
-## Overview
+## What this system is
 
-This project follows a clean separation between:
+dsh.fish is a discovery, distribution and installation service for every kind of
+artifact the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
+can load. The harness has no registry of its own — its README asks authors to
+tag repositories with the `dsh-plugin` topic and leaves discovery there. This
+project is that missing registry, plus the install path on both ends: a website
+a human browses, and a harness plugin an agent drives.
 
-- **Frontend** — structured with [Feature-Sliced Design (FSD)](../frontend/README.md).
-- **Backend** — structured with [Domain-Driven Design (DDD)](../backend/README.md) layered architecture.
+## Technology stack
 
-The two sides communicate through well-defined contracts. The backend exposes the domain through adapters in the `interfaces` layer; the frontend consumes those contracts in the `features` and `entities` layers.
+| Concern | Choice |
+|---|---|
+| Runtime | Cloudflare Workers (`nodejs_compat`) |
+| Frontend | React 19 + React Router 8 (SSR), Tailwind CSS 4, beui components |
+| Backend | Hono, layered DDD |
+| Database | Cloudflare D1 (SQLite) via Drizzle ORM |
+| Cache / secondary storage | Cloudflare KV |
+| Auth | Better Auth (`better-auth-cloudflare`), GitHub OAuth + email/password + OAuth device grant |
+| Scheduled work | Workers Cron Triggers |
 
-## Context diagram
+## Deployment topology
+
+One Worker serves both halves of the product.
 
 ```text
-+-----------+        HTTP / events        +-----------------------------+
-|  Frontend |  <------------------------->  |  Backend interfaces layer   |
-|   (FSD)   |                             |  (controllers / adapters)   |
-+-----------+                             +-----------------------------+
-                                                      |
-                                                      v
-+-----------+                             +-----------------------------+
-|   User    |                             |  Application layer          |
-|           |                             |  (use cases / services)     |
-+-----------+                             +-----------------------------+
-                                                      |
-                                                      v
-                                          +-----------------------------+
-                                          |  Domain layer               |
-                                          |  (entities / value objects) |
-                                          +-----------------------------+
-                                                      ^
-                                                      |
-                                          +-----------------------------+
-                                          |  Infrastructure layer       |
-                                          |  (DB / external services)   |
-                                          +-----------------------------+
+                    ┌──────────────────────────────────────────┐
+   browser ────────▶│  Worker (dsh.fish)                       │
+   harness ────────▶│                                          │
+                    │   /api/*  → Hono app (interfaces layer)  │
+                    │   /*      → React Router SSR handler     │
+                    │   cron    → IngestCatalog use case       │
+                    └───────────────┬──────────────────────────┘
+                                    │
+                          ┌─────────┴─────────┐
+                          ▼                   ▼
+                    D1 (catalog +        KV (sessions,
+                    Better Auth)         rate limiting)
 ```
+
+Sharing an origin is a deliberate choice, not an accident of packaging:
+
+- Better Auth's session cookie needs no cross-subdomain configuration.
+- The browser makes no CORS preflight before a search.
+- **Loaders call use cases in-process.** A server-rendered artifact page costs
+  one D1 round trip rather than an HTTP hop back into the same Worker. See
+  `frontend/src/shared/api/hub-context.ts`.
 
 ## Module boundaries
 
-| Module | Responsibility | Example |
-|--------|----------------|---------|
-| Frontend `app` | Application setup, providers, routing entry | bootstrapping the SPA |
-| Frontend `pages` | Page composition and routing parameter handling | `/orders` page |
-| Frontend `widgets` | Self-contained UI blocks composed of features | order summary card |
-| Frontend `features` | End-to-end user scenarios | place order, cancel order |
-| Frontend `entities` | Domain data and rules | `Order`, `User` |
-| Frontend `shared` | Reusable primitives and utilities | button, date formatter |
-| Backend `interfaces` | Transport adapters | HTTP controller |
-| Backend `application` | Use-case orchestration | `PlaceOrderService` |
-| Backend `domain` | Business rules | `Order`, `OrderStatus` |
-| Backend `infrastructure` | Concrete implementations | repository using PostgreSQL |
+### Backend — Domain-Driven Design
+
+`backend/src/`, dependencies pointing inward.
+
+| Layer | Contents |
+|---|---|
+| `domain/` | `Artifact` aggregate, `ArtifactKind`, `ArtifactPayload`, `InstallPlan`, `Submission`, `Account`, repository ports |
+| `application/` | Use cases (`SearchArtifacts`, `ResolveInstallPlan`, `SubmitArtifact`, `IngestCatalog`, …), DTOs, indexer ports |
+| `infrastructure/` | D1 repositories, Better Auth composition, GitHub/npm indexers, the container |
+| `interfaces/` | Hono routers, Zod request schemas, the domain-error → HTTP mapping |
+
+The domain has no dependency on Hono, Drizzle, Better Auth or Workers types
+beyond value objects. `infrastructure/container.ts` is the composition root and
+is built **per request**, because D1 and KV bindings arrive per request.
+
+### Frontend — Feature-Sliced Design
+
+`frontend/src/`, imports flowing only downward.
+
+| Layer | Contents |
+|---|---|
+| `app/` | `root.tsx`, `routes.ts`, global styles |
+| `pages/` | One slice per route; composes widgets, owns loaders |
+| `widgets/` | `site-header`, `catalog-grid`, `catalog-filters`, `install-panel` |
+| `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip` |
+| `shared/` | beui components (`ui/motion/`), motion tokens, i18n messages, auth client, `hub-context` |
+
+React Router requires every route module to live inside `appDirectory`, so
+`appDirectory` is `src` — the whole FSD tree. `src/root.tsx` and `src/routes.ts`
+are one-line re-exports of the real modules in the `app` layer, so the framework
+convention is satisfied without moving application setup out of its layer.
+
+## The artifact taxonomy
+
+Six kinds, each taken from something the harness actually loads, each with a
+distinct install mechanism. `ArtifactKind` names them; `buildInstallPlan` owns
+how each reaches a machine.
+
+| Kind | What it is | How it installs |
+|---|---|---|
+| `bundle` | npm package declaring `dsh.bundle.patch` | `dsh plugin --profile <p> add <spec>` |
+| `profile` | ordered `dsh.profile.bundles` stack | one `add` per bundle, in order |
+| `skill` | `SKILL.md` bundle or flat Markdown | files written under `$DSH_HOME/skills` |
+| `mcp-server` | external MCP server | a `dsh-mcp-client` row in the profile patch |
+| `agent-preset` | directory holding one `agent.cordis.yml` | written to `$DSH_HOME/.agent-presets/<id>` |
+| `hook-bridge` | Claude Code / Codex hook bridge | a bridge plugin row in the profile patch |
 
 ## Cross-cutting concerns
 
-- **Authentication / authorization** — document the chosen strategy here once it is decided.
-- **Error handling** — both sides must use the contract defined in [`backend/api-conventions.md`](../backend/api-conventions.md).
-- **Logging and observability** — see [`backend/logging.md`](../backend/logging.md).
-- **Validation** — backend validates at the boundary; frontend validates for immediate UX feedback, but the backend is the source of truth.
+### The install plan is the contract
 
-## Technology-stack placeholders
+`domain/artifact/install-plan.ts` is the single place that knows how each kind
+installs. It returns both `steps` (machine-executable) and `manualCommands`
+(copy-paste). The website renders the second; the `dsh-hub` plugin executes the
+first. Because neither surface authors its own commands, a documented command
+and an agent-driven install cannot drift apart.
 
-Replace these with real decisions:
+### Secrets are referenced, never stored
 
-- Runtime: `__RUNTIME__`
-- Frontend framework: `__FRONTEND_FRAMEWORK__`
-- Backend framework: `__BACKEND_FRAMEWORK__`
-- Database: `__DATABASE__`
-- Cache: `__CACHE__`
-- Message broker: `__MESSAGE_BROKER__`
-- Hosting: `__HOSTING__`
+An MCP server's payload carries a credential *reference* — a POSIX environment
+variable name — never a value, mirroring the harness's own credentials doctrine.
+That is what makes a catalog row safe to serve publicly and safe to render in a
+configuration UI.
+
+### Two authentication channels, unequal trust
+
+A browser session cookie and a device-grant bearer token both resolve to the
+same account, but `Actor.channel` distinguishes them. `requireInteractiveSession`
+restricts account-shaped writes — submitting, claiming — to a real browser
+session, so a harness token cannot publish on a user's behalf.
+
+### Errors
+
+The domain throws `DomainError` with a code; `interfaces/http/error-mapper.ts`
+maps codes to HTTP statuses and emits the one envelope described in
+[`backend/api-conventions.md`](../backend/api-conventions.md). Unexpected
+failures never leak their message — it may carry a binding name or a token.
+
+### No hardcoded copy
+
+`frontend/src/shared/config/messages.ts` holds every user-facing string. The
+backend sends message *keys* (`artifactKind.bundle.label`,
+`install.warning.buildAllowance`), never prose, so the catalog stays
+language-neutral in the database.
+
+## Related documents
+
+- [`decisions/adr-0001-plugin-hub-architecture.md`](../decisions/adr-0001-plugin-hub-architecture.md)
+- [`operations/deployment.md`](../operations/deployment.md)
+- [`frontend/README.md`](../frontend/README.md), [`backend/README.md`](../backend/README.md)

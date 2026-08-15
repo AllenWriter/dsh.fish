@@ -1,0 +1,15 @@
+# The layer this bundle contributes when a profile lists it.
+#
+# One row, mounting the hub tools onto `ctx.tools`. Nothing here overrides a
+# `dsh-base` row: the plugin only adds capability, so a user who installs it
+# keeps every default their profile already had.
+- insert:
+    - id: hub
+      name: dsh-hub
+      config:
+        # The registry this harness talks to. A self-hosted deployment of the
+        # same Worker only needs this one value changed.
+        baseUrl: https://dsh.fish
+        # Profile that `hub_install` writes into. `current` resolves to the
+        # profile this harness booted with.
+        targetProfile: current

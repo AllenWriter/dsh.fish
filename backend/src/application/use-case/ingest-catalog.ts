@@ -1,0 +1,114 @@
+import { Artifact } from '../../domain/artifact/artifact.js'
+import type { ArtifactRepository } from '../../domain/artifact/artifact-repository.js'
+import { slug } from '../../domain/shared/slug.js'
+import { isDomainError } from '../../domain/shared/error.js'
+import type { IndexedSnapshot, SourceIndexer } from '../port/source-indexer.js'
+
+export interface IngestReport {
+  readonly scanned: number
+  readonly created: number
+  readonly updated: number
+  readonly skipped: number
+  readonly errors: readonly { readonly id: string; readonly reason: string }[]
+}
+
+export interface IngestCatalogInput {
+  /** Per-indexer candidate cap, so one scheduled run stays inside a Worker's budget. */
+  readonly limitPerSource?: number
+}
+
+const DEFAULT_LIMIT = 100
+
+/**
+ * Fold freshly crawled snapshots into the catalog.
+ *
+ * Runs on a Cron Trigger. It is deliberately tolerant: one malformed package
+ * must not abort a sweep, because a single bad publish upstream would otherwise
+ * stop the whole registry from refreshing.
+ */
+export class IngestCatalog {
+  constructor(
+    private readonly artifacts: ArtifactRepository,
+    private readonly indexers: readonly SourceIndexer[],
+  ) {}
+
+  async execute(input: IngestCatalogInput = {}): Promise<IngestReport> {
+    const limit = input.limitPerSource ?? DEFAULT_LIMIT
+    let scanned = 0
+    let created = 0
+    let updated = 0
+    let skipped = 0
+    const errors: { id: string; reason: string }[] = []
+
+    for (const indexer of this.indexers) {
+      let snapshots: readonly IndexedSnapshot[]
+      try {
+        snapshots = await indexer.discover(limit)
+      } catch (error) {
+        errors.push({ id: indexer.origin, reason: describe(error) })
+        continue
+      }
+
+      for (const snapshot of snapshots) {
+        scanned += 1
+        try {
+          const existing = await this.artifacts.findById(slug(snapshot.id))
+          if (existing) {
+            const refreshed = existing.refreshedWith({
+              displayName: snapshot.displayName,
+              summary: snapshot.summary,
+              source: snapshot.source,
+              payload: snapshot.payload,
+              keywords: snapshot.keywords,
+              stats: { ...snapshot.stats, installs: existing.stats.installs },
+              ...(snapshot.license === undefined ? {} : { license: snapshot.license }),
+              ...(snapshot.author === undefined ? {} : { author: snapshot.author }),
+              ...(snapshot.readmeMarkdown === undefined
+                ? {}
+                : { readmeMarkdown: snapshot.readmeMarkdown }),
+              ...(snapshot.deprecated === undefined ? {} : { deprecated: snapshot.deprecated }),
+            })
+            await this.artifacts.save(refreshed)
+            updated += 1
+          } else {
+            await this.artifacts.save(toArtifact(snapshot))
+            created += 1
+          }
+        } catch (error) {
+          if (isDomainError(error) && error.code === 'INVALID_ARGUMENT') {
+            // An upstream package that cannot satisfy a catalog invariant is
+            // not an outage; record it and keep sweeping.
+            skipped += 1
+            continue
+          }
+          errors.push({ id: snapshot.id, reason: describe(error) })
+        }
+      }
+    }
+
+    return { scanned, created, updated, skipped, errors }
+  }
+}
+
+export function toArtifact(snapshot: IndexedSnapshot, ownerAccountId?: string): Artifact {
+  return Artifact.create({
+    id: snapshot.id,
+    kind: snapshot.kind,
+    displayName: snapshot.displayName,
+    summary: snapshot.summary,
+    source: snapshot.source,
+    payload: snapshot.payload,
+    keywords: snapshot.keywords,
+    categories: snapshot.categories,
+    ...(snapshot.license === undefined ? {} : { license: snapshot.license }),
+    ...(snapshot.author === undefined ? {} : { author: snapshot.author }),
+    ...(snapshot.readmeMarkdown === undefined ? {} : { readmeMarkdown: snapshot.readmeMarkdown }),
+    stats: { stars: snapshot.stats.stars, downloads: snapshot.stats.downloads, installs: 0 },
+    ...(ownerAccountId === undefined ? {} : { ownerAccountId }),
+    ...(snapshot.deprecated === undefined ? {} : { deprecated: snapshot.deprecated }),
+  })
+}
+
+function describe(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
