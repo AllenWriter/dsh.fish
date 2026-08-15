@@ -1,0 +1,49 @@
+import { describe, expect, it, vi } from 'vitest'
+import { createApiApp } from './app.js'
+import type { HubEnv } from '../../infrastructure/config/env.js'
+
+/**
+ * Routing contract for the API.
+ *
+ * The Worker forwards requests with their original path (`/api/v1/facets`),
+ * so the router has to be mounted at that same prefix. Getting this wrong is
+ * silent and total — every endpoint 404s while the site itself still renders —
+ * so the prefix is pinned here rather than left to be noticed in a browser.
+ */
+
+// Only the fields the routing path reads. The catalog handler is expected to
+// fail without a real D1 binding — reaching it at all is what is asserted.
+const env = {
+  DB: {} as never,
+  KV: {} as never,
+  PUBLIC_BASE_URL: 'https://dsh.fish',
+  BETTER_AUTH_SECRET: 'test-secret',
+} satisfies HubEnv
+
+function call(path: string) {
+  return createApiApp().fetch(new Request(`https://dsh.fish${path}`), env)
+}
+
+describe('API routing', () => {
+  it('serves health under the /api prefix the Worker forwards', async () => {
+    const response = await call('/api/health')
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({ status: 'ok' })
+  })
+
+  it('does not answer the unprefixed path', async () => {
+    // The Worker only routes `/api/*` here; anything else belongs to the SSR
+    // handler, so a bare `/health` must not be claimed.
+    expect((await call('/health')).status).toBe(404)
+  })
+
+  it('exposes the versioned catalog namespace', async () => {
+    // Reaching the handler is what matters: with no D1 binding in this test the
+    // read fails, and that failure must arrive as the standard error envelope
+    // rather than as an unrouted 404.
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const response = await call('/api/v1/facets')
+    expect(response.status).not.toBe(404)
+    consoleError.mockRestore()
+  })
+})

@@ -14,3 +14,11 @@ out/
 *.swp
 *.swo
 *~
+
+# Build output and framework caches
+.react-router/
+build/
+.wrangler/
+.dev.vars
+node-compile-cache/
+packages/*/lib/

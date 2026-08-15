@@ -1,27 +1,88 @@
-# Agentic Coding Template
+# dsh.fish
 
-A language- and framework-agnostic template for projects that are driven by coding agents.
+The plugin hub for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) —
+discovery, distribution and one-command install for every kind of artifact the
+harness can load.
 
-Any agent that opens this repository should start with **`AGENTS.md`** (or `CLAUDE.md` — they are the same file). It contains the ground rules, documentation map, and evolution policy.
+The harness is built on "everything is a plugin" but ships no registry: its
+README asks authors to tag repositories with the `dsh-plugin` topic and leaves
+discovery there. This is that registry, plus the install path on both ends.
 
-## Documentation map
+## What it indexes
 
-- [`docs/`](docs/README.md) — top-level documentation index.
-- [`docs/project/`](docs/project/README.md) — project overview, architecture, and boundaries.
-- [`docs/frontend/`](docs/frontend/README.md) — **Feature-Sliced Design (FSD)** conventions.
-- [`docs/backend/`](docs/backend/README.md) — **Domain-Driven Design (DDD)** layered conventions.
-- [`docs/operations/`](docs/operations/README.md) — development, CI/CD, and deployment guides.
-- [`docs/quality/`](docs/quality/README.md) — testing and code-review expectations.
-- [`docs/decisions/`](docs/decisions/README.md) — architecture decision records (ADRs).
-- [`deploy/`](deploy/README.md) — deployment assets (Docker, Kubernetes) to be adjusted per project.
+Six artifact kinds, each taken from something the harness really loads, each
+with its own install mechanism:
 
-## For agents
+| Kind | What it is | How it installs |
+|---|---|---|
+| **Bundle** | npm package declaring `dsh.bundle.patch` | `dsh plugin --profile <p> add <spec>` |
+| **Profile** | ordered `dsh.profile.bundles` stack | one `add` per bundle, in order |
+| **Skill** | `SKILL.md` bundle or flat Markdown | files written under `$DSH_HOME/skills` |
+| **MCP server** | external Model Context Protocol server | a `dsh-mcp-client` row in the profile patch |
+| **Agent preset** | directory holding one `agent.cordis.yml` | written to `$DSH_HOME/.agent-presets/<id>` |
+| **Hook bridge** | Claude Code / Codex hook bridge | a bridge plugin row in the profile patch |
 
-1. Read `AGENTS.md` first.
-2. Read the relevant section of `docs/` before writing code.
-3. When a boundary is unclear, ask the user before making assumptions.
-4. After completing a task, update or add `docs/` if the implementation changes behavior, architecture, or conventions.
+## Two ways in
 
-## Human quick start
+**From a browser** — search, filter by kind and category, read the plan, copy the
+command.
 
-Copy this repository, replace placeholders in `docs/project/architecture.md`, and start adding your own code under the FSD/DDD structure described in the docs.
+**From inside your agent** — install the hub's own plugin and let the agent do it:
+
+```sh
+dsh plugin --profile web add github:stvlynn/dsh.fish#main
+```
+
+It registers four tools: `hub_search`, `hub_show`, `hub_install` and
+`hub_account`. Signing in uses the OAuth device flow — the plugin prints a code,
+you approve it in a browser, and the harness gets a token.
+
+Both paths resolve the **same** install plan from the same domain code, so the
+command on the website and the one the agent runs cannot drift apart.
+
+## Repository layout
+
+```
+backend/    Domain-Driven Design: domain, application, infrastructure, interfaces
+frontend/   Feature-Sliced Design: app, pages, widgets, features, entities, shared
+packages/
+  dsh-plugin-hub/   the `dsh-hub` bundle users install into their harness
+docs/       architecture, layer conventions, operations, ADRs
+```
+
+Both halves deploy as **one Cloudflare Worker**: Hono at `/api/*`, React Router
+SSR everywhere else, D1 for the catalog and Better Auth's tables, KV for
+sessions and rate limiting, and a Cron Trigger that re-crawls every six hours.
+
+## Development
+
+```sh
+pnpm install
+pnpm --filter @dsh-fish/backend run db:generate   # regenerate migrations
+pnpm run db:migrate:local                          # apply to local D1
+pnpm run dev                                       # http://localhost:5173
+```
+
+Quality gates:
+
+```sh
+pnpm run typecheck
+pnpm run test
+pnpm run build
+```
+
+Deployment, bindings and secrets: [`docs/operations/deployment.md`](docs/operations/deployment.md).
+
+## Documentation
+
+Start with [`AGENTS.md`](AGENTS.md) (same file as `CLAUDE.md`) for the ground
+rules, then:
+
+- [`docs/project/architecture.md`](docs/project/architecture.md) — system architecture and the artifact taxonomy
+- [`docs/decisions/adr-0001-plugin-hub-architecture.md`](docs/decisions/adr-0001-plugin-hub-architecture.md) — why it is built this way
+- [`docs/frontend/`](docs/frontend/README.md) — FSD conventions
+- [`docs/backend/`](docs/backend/README.md) — DDD conventions
+
+## License
+
+MIT
