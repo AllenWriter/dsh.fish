@@ -16,14 +16,14 @@
     {
       "binding": "DB",
       "database_name": "dsh-fish-db",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "database_id": "be324981-52bb-4f2d-ae81-bd1583ec146a",
       "migrations_dir": "../backend/migrations"
     }
   ],
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "REPLACE_WITH_KV_NAMESPACE_ID"
+      "id": "1baebac2338049c0a8294779adde73a7"
     }
   ],
   "triggers": {
