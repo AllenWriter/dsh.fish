@@ -20,6 +20,13 @@ export interface IndexedSnapshot {
   readonly categories: readonly string[]
   readonly license?: string
   readonly author?: ArtifactAuthor
+  /**
+   * The source host's own id for whoever owns this source — GitHub's numeric
+   * user or organisation id. It is what an OAuth link records, so it is what
+   * an ownership claim can be checked against; npm has no equivalent, and
+   * leaves it unset.
+   */
+  readonly sourceOwnerId?: string
   readonly readmeMarkdown?: string
   readonly stats: { readonly stars: number; readonly downloads: number }
   readonly deprecated?: boolean

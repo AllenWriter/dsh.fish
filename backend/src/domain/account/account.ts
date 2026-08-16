@@ -12,8 +12,6 @@ export interface Account {
   readonly displayName: string
   readonly email?: string
   readonly avatarUrl?: string
-  /** GitHub login, when the account linked a GitHub identity. Used for ownership proof. */
-  readonly githubLogin?: string
   readonly isAdmin: boolean
 }
 

@@ -95,7 +95,7 @@ export class HubClient {
     )
   }
 
-  async whoami(): Promise<{ account: { displayName: string; githubLogin: string | null } | null }> {
+  async whoami(): Promise<{ account: { displayName: string } | null }> {
     return this.request('/api/v1/me')
   }
 

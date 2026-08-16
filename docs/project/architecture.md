@@ -154,6 +154,11 @@ same account, but `Actor.channel` distinguishes them. `requireInteractiveSession
 restricts account-shaped writes — submitting, claiming — to a real browser
 session, so a harness token cannot publish on a user's behalf.
 
+The `Account` the domain sees carries no source-host identity. Whether a
+submitter owns a repository is answered by `LinkedIdentityReader`, which reads
+the OAuth link out of Better Auth's `accounts` table at the moment the claim is
+made. Keeping it off the account is deliberate: see ADR-0001 §7.
+
 ### Errors
 
 The domain throws `DomainError` with a code; `interfaces/http/error-mapper.ts`

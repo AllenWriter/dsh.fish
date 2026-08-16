@@ -99,9 +99,6 @@ async function resolveActor(container: Container, request: Request): Promise<Act
     ...(session.user.image === null || session.user.image === undefined
       ? {}
       : { avatarUrl: session.user.image }),
-    ...(typeof (session.user as { githubLogin?: unknown }).githubLogin === 'string'
-      ? { githubLogin: (session.user as { githubLogin: string }).githubLogin }
-      : {}),
     isAdmin: email !== undefined && container.config.adminEmails.includes(email),
   }
 

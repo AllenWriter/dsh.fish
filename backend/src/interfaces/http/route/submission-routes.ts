@@ -45,7 +45,6 @@ export function submissionRoutes() {
         id: actor.account.id,
         displayName: actor.account.displayName,
         avatarUrl: actor.account.avatarUrl ?? null,
-        githubLogin: actor.account.githubLogin ?? null,
         isAdmin: actor.account.isAdmin,
       },
       channel: actor.channel,
