@@ -3,8 +3,15 @@ import { z } from 'zod'
 import { requireAdmin } from '../../../domain/account/account.js'
 import type { HubBindings } from '../app.js'
 
+// Capped well under the search API's own ceiling: a manual sweep runs in the
+// same Worker invocation, and so under the same subrequest budget, as the cron.
+const ingestLimit = z.number().int().min(1).max(250)
+
 const ingestBody = z.object({
-  limitPerSource: z.number().int().min(1).max(250).optional(),
+  limitPerSource: ingestLimit.optional(),
+  limitByOrigin: z
+    .object({ github: ingestLimit.optional(), npm: ingestLimit.optional() })
+    .optional(),
 })
 
 /**

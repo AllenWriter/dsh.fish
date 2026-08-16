@@ -77,6 +77,20 @@ This builds the client assets and the SSR bundle, then runs `wrangler deploy`.
 folds the results into the catalog. It is deliberately tolerant: one malformed
 package upstream must not abort a sweep.
 
+One firing reads a slice, not the whole topic. A Worker invocation may make
+1000 subrequests, so the run is budgeted — 200 GitHub repositories and 100 npm
+packages — and the GitHub sweep resumes from the page it stopped at, stored in
+KV under `crawler:github:next-page`. Sorting by stars puts the same well-known
+repositories at the head of every search, so without that cursor the long tail
+of the topic, which is where most installable plugins are, would never be read.
+GitHub's search API returns at most 1000 results, so the cursor wraps after ten
+pages; a full cycle takes five firings, a little over a day.
+
+`GITHUB_TOKEN` matters more than the crawl's tolerance suggests: unauthenticated
+API calls are capped at 60/hour, which is well under one firing's commit
+resolutions. Without it, rows still land — they are simply not pinned to a
+commit. File reads go to `raw.githubusercontent.com` and never spend API quota.
+
 Trigger a sweep manually as an administrator:
 
 ```sh

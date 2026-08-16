@@ -15,6 +15,15 @@ export interface IngestReport {
 export interface IngestCatalogInput {
   /** Per-indexer candidate cap, so one scheduled run stays inside a Worker's budget. */
   readonly limitPerSource?: number
+  /**
+   * Per-origin override.
+   *
+   * A candidate costs a different number of subrequests at each source — a
+   * GitHub repository is three cheap probes until one of them classifies it, an
+   * npm package is always a packument plus a downloads call — so one number
+   * cannot spend the Worker's budget well at both.
+   */
+  readonly limitByOrigin?: Readonly<Partial<Record<SourceIndexer['origin'], number>>>
 }
 
 const DEFAULT_LIMIT = 100
@@ -33,7 +42,6 @@ export class IngestCatalog {
   ) {}
 
   async execute(input: IngestCatalogInput = {}): Promise<IngestReport> {
-    const limit = input.limitPerSource ?? DEFAULT_LIMIT
     let scanned = 0
     let created = 0
     let updated = 0
@@ -41,6 +49,8 @@ export class IngestCatalog {
     const errors: { id: string; reason: string }[] = []
 
     for (const indexer of this.indexers) {
+      const limit =
+        input.limitByOrigin?.[indexer.origin] ?? input.limitPerSource ?? DEFAULT_LIMIT
       let snapshots: readonly IndexedSnapshot[]
       try {
         snapshots = await indexer.discover(limit)
@@ -60,6 +70,7 @@ export class IngestCatalog {
               source: snapshot.source,
               payload: snapshot.payload,
               keywords: snapshot.keywords,
+              categories: snapshot.categories,
               stats: { ...snapshot.stats, installs: existing.stats.installs },
               ...(snapshot.license === undefined ? {} : { license: snapshot.license }),
               ...(snapshot.author === undefined ? {} : { author: snapshot.author }),

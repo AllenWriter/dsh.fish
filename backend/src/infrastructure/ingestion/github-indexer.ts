@@ -2,6 +2,7 @@ import { parse as parseYaml } from 'yaml'
 import { classifyPackage, parseSkillFrontmatter } from '../../domain/artifact/manifest.js'
 import type { PackageManifest } from '../../domain/artifact/manifest.js'
 import type { ArtifactPayload } from '../../domain/artifact/artifact-payload.js'
+import { resolveCategories } from '../../domain/artifact/category-inference.js'
 import { githubSource } from '../../domain/artifact/source-ref.js'
 import type { SourceRef } from '../../domain/artifact/source-ref.js'
 import { slugify } from '../../domain/shared/slug.js'
@@ -10,11 +11,22 @@ import type {
   IndexRequest,
   SourceIndexer,
 } from '../../application/port/source-indexer.js'
+import type { SweepCursor } from './sweep-cursor.js'
 
 /** The topic the harness README asks plugin authors to tag their repositories with. */
 export const DSH_PLUGIN_TOPIC = 'dsh-plugin'
 
 const API = 'https://api.github.com'
+
+/** GitHub's search API never returns more than this, whatever the paging. */
+const MAX_SEARCH_RESULTS = 1000
+const PAGE_SIZE = 100
+const MAX_PAGE = MAX_SEARCH_RESULTS / PAGE_SIZE
+
+/** The three files that make a repository something the harness can load. */
+const MANIFEST_FILE = 'package.json'
+const SKILL_FILE = 'SKILL.md'
+const PRESET_FILE = 'agent.cordis.yml'
 
 interface RepoSearchItem {
   full_name: string
@@ -40,31 +52,62 @@ interface RepoSearchItem {
  * A repository is classified by what it actually contains, not by what it
  * claims: a `package.json` with `dsh.bundle` is a bundle, a `SKILL.md` is a
  * skill, an `agent.cordis.yml` is a preset. A repository holding none of those
- * yields nothing, because the harness would load nothing from it either.
+ * yields nothing, because the harness would load nothing from it either. That
+ * is the common case by a wide margin — the topic is popular enough that most
+ * of what carries it is an application, not a plugin — so the three probes run
+ * before anything else is fetched, and a repository that fails all three costs
+ * three reads of `raw.githubusercontent.com` and no API quota at all.
  */
 export class GitHubIndexer implements SourceIndexer {
   readonly origin = 'github' as const
 
-  constructor(private readonly token?: string) {}
+  constructor(
+    private readonly token?: string,
+    private readonly cursor?: SweepCursor,
+  ) {}
 
+  /**
+   * Read one slice of the topic, resuming where the last run stopped.
+   *
+   * Sorting by stars puts the same well-known repositories at the head of every
+   * search, and those are precisely the ones that are not plugins. Paging from
+   * a stored cursor is what lets the crawler reach the rest of the topic across
+   * successive scheduled runs instead of re-reading the head forever.
+   */
   async discover(limit: number): Promise<readonly IndexedSnapshot[]> {
-    const perPage = Math.min(limit, 100)
-    const url = `${API}/search/repositories?q=topic:${DSH_PLUGIN_TOPIC}&sort=stars&order=desc&per_page=${perPage}`
-    const response = await this.request(url)
-    if (!response) return []
-
-    const body = (await response.json()) as { items?: RepoSearchItem[] }
-    const items = body.items ?? []
     const snapshots: IndexedSnapshot[] = []
+    let page = clampPage(await this.readCursor())
+    let scanned = 0
+    let pagesRead = 0
 
-    for (const item of items) {
-      try {
-        const snapshot = await this.indexRepository(item)
-        if (snapshot) snapshots.push(snapshot)
-      } catch {
-        // One unreadable repository never fails the sweep.
+    while (scanned < limit && pagesRead < MAX_PAGE) {
+      const items = await this.searchPage(page)
+      pagesRead += 1
+      if (items === undefined || items.length === 0) {
+        page = 1
+        break
       }
+
+      for (const item of items) {
+        if (scanned >= limit) break
+        scanned += 1
+        try {
+          const snapshot = await this.indexRepository(item)
+          if (snapshot) snapshots.push(snapshot)
+        } catch {
+          // One unreadable repository never fails the sweep.
+        }
+      }
+
+      // A short page is the end of the result set. Wrapping to the front is not
+      // wasted work: the sweep is how existing rows get their stars, summary
+      // and readme refreshed.
+      const exhausted = items.length < PAGE_SIZE
+      page = exhausted ? 1 : (page % MAX_PAGE) + 1
+      if (exhausted) break
     }
+
+    await this.writeCursor(page)
     return snapshots
   }
 
@@ -83,64 +126,60 @@ export class GitHubIndexer implements SourceIndexer {
   ): Promise<IndexedSnapshot | undefined> {
     const ref = repo.default_branch
     const prefix = subPath === undefined || subPath === '' ? '' : `${subPath}/`
-    const head = await this.resolveCommit(repo.owner.login, repo.name, ref)
-
-    const source: SourceRef = githubSource({
-      owner: repo.owner.login,
-      repo: repo.name,
-      ...(subPath === undefined || subPath === '' ? {} : { path: subPath }),
-      ...(head === undefined ? {} : { commit: head }),
-    })
+    const topics = repo.topics?.filter((topic) => topic !== DSH_PLUGIN_TOPIC) ?? []
 
     const base = {
-      keywords: repo.topics?.filter((topic) => topic !== DSH_PLUGIN_TOPIC) ?? [],
-      categories: [] as string[],
+      keywords: topics,
       author: { name: repo.owner.login, url: repo.owner.html_url },
       stats: { stars: repo.stargazers_count, downloads: 0 },
       deprecated: repo.archived,
       ...(repo.license?.spdx_id ? { license: repo.license.spdx_id } : {}),
     }
 
-    const readme = await this.readFile(repo, `${prefix}README.md`, ref)
-
     // 1. A harness bundle or profile, decided by the package manifest.
-    const manifestText = await this.readFile(repo, `${prefix}package.json`, ref)
+    const manifestText = await this.readFile(repo, `${prefix}${MANIFEST_FILE}`, ref)
     if (manifestText !== undefined) {
       const manifest = safeJson<PackageManifest>(manifestText)
       if (manifest) {
         const classification = classifyPackage(manifest, true)
         if (classification) {
+          const context = await this.loadContext(repo, subPath, prefix, ref)
+          const keywords = [...topics, ...(manifest.keywords ?? [])]
           return {
             id: slugify(manifest.name),
             kind: classification.kind,
             displayName: manifest.name,
             summary: manifest.description ?? repo.description ?? manifest.name,
-            source,
+            source: context.source,
             payload: classification.payload,
             ...base,
-            keywords: [...base.keywords, ...(manifest.keywords ?? [])],
-            categories: manifest.dsh?.hub?.categories?.map(String) ?? [],
+            keywords,
+            categories: resolveCategories(manifest.dsh?.hub?.categories?.map(String) ?? [], {
+              keywords,
+              text: `${manifest.name} ${manifest.description ?? repo.description ?? ''}`,
+            }),
             ...(manifest.license ? { license: manifest.license } : {}),
-            ...(readme === undefined ? {} : { readmeMarkdown: readme }),
+            ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
           }
         }
       }
     }
 
     // 2. A skill: `SKILL.md` at the indexed root.
-    const skillText = await this.readFile(repo, `${prefix}SKILL.md`, ref)
+    const skillText = await this.readFile(repo, `${prefix}${SKILL_FILE}`, ref)
     if (skillText !== undefined) {
       const frontmatter = readFrontmatter(skillText)
       if (frontmatter) {
         const parsed = parseSkillFrontmatter(frontmatter)
+        const context = await this.loadContext(repo, subPath, prefix, ref)
         const payload: ArtifactPayload = {
           kind: 'skill',
           skillName: parsed.name,
           layout: 'directory',
           files: [
             {
-              path: 'SKILL.md',
-              downloadUrl: rawUrl(repo, `${prefix}SKILL.md`, head ?? ref),
+              path: SKILL_FILE,
+              downloadUrl: rawUrl(repo, `${prefix}${SKILL_FILE}`, context.head ?? ref),
             },
           ],
         }
@@ -149,36 +188,99 @@ export class GitHubIndexer implements SourceIndexer {
           kind: 'skill',
           displayName: parsed.name,
           summary: parsed.description,
-          source,
+          source: context.source,
           payload,
           ...base,
-          ...(readme === undefined ? {} : { readmeMarkdown: readme }),
+          // A skill declares no manifest, so its own name and description are
+          // the whole vocabulary there is to file it by.
+          categories: resolveCategories([], {
+            keywords: topics,
+            text: `${parsed.name} ${parsed.description}`,
+          }),
+          ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
         }
       }
     }
 
     // 3. An agent preset: a directory holding one `agent.cordis.yml`.
-    const presetText = await this.readFile(repo, `${prefix}agent.cordis.yml`, ref)
+    const presetText = await this.readFile(repo, `${prefix}${PRESET_FILE}`, ref)
     if (presetText !== undefined) {
+      const context = await this.loadContext(repo, subPath, prefix, ref)
       const presetId = slugify(repo.name)
       const payload: ArtifactPayload = {
         kind: 'agent-preset',
         presetId,
-        compositionUrl: rawUrl(repo, `${prefix}agent.cordis.yml`, head ?? ref),
+        compositionUrl: rawUrl(repo, `${prefix}${PRESET_FILE}`, context.head ?? ref),
       }
       return {
         id: slugify(`${repo.owner.login}-${repo.name}`),
         kind: 'agent-preset',
         displayName: repo.name,
         summary: repo.description ?? repo.name,
-        source,
+        source: context.source,
         payload,
         ...base,
-        ...(readme === undefined ? {} : { readmeMarkdown: readme }),
+        categories: resolveCategories([], {
+          keywords: topics,
+          text: `${repo.name} ${repo.description ?? ''}`,
+        }),
+        ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
       }
     }
 
     return undefined
+  }
+
+  /**
+   * The commit, source reference and readme — everything a row needs that a
+   * repository which turns out not to be a plugin should never be charged for.
+   */
+  private async loadContext(
+    repo: RepoSearchItem,
+    subPath: string | undefined,
+    prefix: string,
+    ref: string,
+  ): Promise<{ source: SourceRef; head?: string; readme?: string }> {
+    const head = await this.resolveCommit(repo.owner.login, repo.name, ref)
+    const readme = await this.readFile(repo, `${prefix}README.md`, ref)
+    return {
+      source: githubSource({
+        owner: repo.owner.login,
+        repo: repo.name,
+        ...(subPath === undefined || subPath === '' ? {} : { path: subPath }),
+        ...(head === undefined ? {} : { commit: head }),
+      }),
+      ...(head === undefined ? {} : { head }),
+      ...(readme === undefined ? {} : { readme }),
+    }
+  }
+
+  private async searchPage(page: number): Promise<RepoSearchItem[] | undefined> {
+    const url = `${API}/search/repositories?q=topic:${DSH_PLUGIN_TOPIC}&sort=stars&order=desc&per_page=${PAGE_SIZE}&page=${page}`
+    const response = await this.request(url)
+    if (!response) return undefined
+    const body = (await response.json()) as { items?: RepoSearchItem[] }
+    return body.items ?? []
+  }
+
+  private async readCursor(): Promise<number> {
+    if (!this.cursor) return 1
+    try {
+      return await this.cursor.read()
+    } catch {
+      // A cursor read that fails costs coverage, not correctness.
+      return 1
+    }
+  }
+
+  private async writeCursor(page: number): Promise<void> {
+    if (!this.cursor) return
+    try {
+      await this.cursor.write(page)
+    } catch {
+      // The next run repeats this slice instead of advancing. Harmless: the
+      // crawl is idempotent.
+    }
   }
 
   private async resolveCommit(
@@ -218,6 +320,11 @@ export class GitHubIndexer implements SourceIndexer {
     if (!response.ok) return undefined
     return response
   }
+}
+
+/** A stored cursor past the search API's ceiling would return nothing forever. */
+function clampPage(page: number): number {
+  return page >= 1 && page <= MAX_PAGE ? Math.floor(page) : 1
 }
 
 function rawUrl(repo: RepoSearchItem, path: string, ref: string): string {

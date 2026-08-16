@@ -15,6 +15,7 @@ import { createAuth } from './auth/auth.js'
 import type { HubAuth } from './auth/auth.js'
 import { GitHubIndexer } from './ingestion/github-indexer.js'
 import { NpmIndexer } from './ingestion/npm-indexer.js'
+import { KvSweepCursor, sweepCursorKey } from './ingestion/sweep-cursor.js'
 import { D1ArtifactRepository } from './persistence/d1-artifact-repository.js'
 import { D1SubmissionRepository } from './persistence/d1-submission-repository.js'
 import * as schema from './persistence/schema.js'
@@ -50,7 +51,7 @@ export function createContainer(env: HubEnv, cf?: IncomingRequestCfProperties): 
   const artifacts = new D1ArtifactRepository(db)
   const submissions = new D1SubmissionRepository(db)
   const indexers: readonly SourceIndexer[] = [
-    new GitHubIndexer(config.githubToken),
+    new GitHubIndexer(config.githubToken, new KvSweepCursor(env.KV, sweepCursorKey('github'))),
     new NpmIndexer(),
   ]
 

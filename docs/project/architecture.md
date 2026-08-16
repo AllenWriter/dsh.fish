@@ -39,7 +39,8 @@ One Worker serves both halves of the product.
                           ┌─────────┴─────────┐
                           ▼                   ▼
                     D1 (catalog +        KV (sessions,
-                    Better Auth)         rate limiting)
+                    Better Auth)         rate limiting,
+                                         crawl cursor)
 ```
 
 Sharing an origin is a deliberate choice, not an accident of packaging:
@@ -105,6 +106,29 @@ how each reaches a machine.
 | `mcp-server` | external MCP server | a `dsh-mcp-client` row in the profile patch |
 | `agent-preset` | directory holding one `agent.cordis.yml` | written to `$DSH_HOME/.agent-presets/<id>` |
 | `hook-bridge` | Claude Code / Codex hook bridge | a bridge plugin row in the profile patch |
+
+## How a repository becomes a row
+
+The `dsh-plugin` topic is a seed list, not a manifest: most of what carries it
+is an application that mentions the harness. So a repository is classified by
+what it holds, in this order, and a repository that answers none of the three
+yields nothing — the harness would load nothing from it either.
+
+| Probe | Row |
+|---|---|
+| `package.json` with `dsh.profile.bundles` | `profile` |
+| `package.json` with `dsh.bundle` | `bundle` |
+| `SKILL.md` with `name` + `description` frontmatter | `skill` |
+| `agent.cordis.yml` | `agent-preset` |
+
+Those probes run before anything else is fetched, so a repository that is not a
+plugin costs three reads and no API quota — that ordering is what makes it
+affordable to page deep into a topic of several thousand repositories.
+
+Categories are resolved separately, and never block a row: a valid
+`dsh.hub.categories` declaration wins, otherwise `category-inference.ts` reads
+topics, keywords and the description against a fixed token table, and `other` is
+the floor. See ADR-0001 §8.
 
 ## Cross-cutting concerns
 

@@ -103,6 +103,24 @@ row is published immediately, because the row is built by the same indexer a
 crawl uses — waiting for review of one's own package would be friction with no
 safety benefit. Everything else queues.
 
+### 8. A row's category is inferred, never demanded
+
+The taxonomy is the hub's, but nothing in the harness reads it, so an author has
+no reason to write `dsh.hub.categories` — and almost none do. Categories are
+therefore resolved in three steps: a declaration that names real categories wins
+outright, otherwise they are inferred from the row's own vocabulary (topics,
+keywords, description) against a fixed token table, and `other` is the floor.
+
+Two consequences are deliberate. A category name outside the taxonomy is dropped
+rather than rejected: the manifest block is advisory, and an artifact is what the
+harness would load — a misspelled hint must not remove a working plugin from the
+catalog. And no row is ever uncategorised, because a row no category filter can
+reach is, from the browse page, not in the catalog at all.
+
+Rejected: asking authors to declare a category before a row can be listed. That
+makes the hub's taxonomy a publishing requirement for a field the harness itself
+never reads, which is how a registry ends up with an empty long tail.
+
 ## Consequences
 
 - Adding a seventh artifact kind means: one `ArtifactKind` member, one payload

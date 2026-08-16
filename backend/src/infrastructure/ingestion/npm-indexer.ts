@@ -1,5 +1,6 @@
 import { classifyPackage } from '../../domain/artifact/manifest.js'
 import type { PackageManifest } from '../../domain/artifact/manifest.js'
+import { resolveCategories } from '../../domain/artifact/category-inference.js'
 import { npmSource } from '../../domain/artifact/source-ref.js'
 import { slugify } from '../../domain/shared/slug.js'
 import type {
@@ -104,7 +105,10 @@ export class NpmIndexer implements SourceIndexer {
       source: npmSource(name, latest),
       payload: classification.payload,
       keywords: manifest.keywords ?? [],
-      categories: manifest.dsh?.hub?.categories?.map(String) ?? [],
+      categories: resolveCategories(manifest.dsh?.hub?.categories?.map(String) ?? [], {
+        ...(manifest.keywords === undefined ? {} : { keywords: manifest.keywords }),
+        text: `${name} ${manifest.description ?? ''}`,
+      }),
       ...(manifest.license ?? packument.license
         ? { license: manifest.license ?? packument.license ?? '' }
         : {}),

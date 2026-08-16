@@ -4,6 +4,7 @@ import { slug } from '../shared/slug.js'
 import type { ArtifactKind } from './artifact-kind.js'
 import type { ArtifactPayload } from './artifact-payload.js'
 import { assertPayloadMatchesKind } from './artifact-payload.js'
+import { normalizeCategories } from './category.js'
 import type { SourceRef } from './source-ref.js'
 
 export interface ArtifactStats {
@@ -95,7 +96,9 @@ export class Artifact {
       source: input.source,
       payload: input.payload,
       keywords: normalizeKeywords(input.keywords ?? []),
-      categories: (input.categories ?? []).map((value) => slug(value)),
+      // Advisory input, so it is reduced rather than rejected: a category name
+      // outside the taxonomy must not take the whole artifact down with it.
+      categories: normalizeCategories(input.categories ?? []),
       ...(input.license === undefined ? {} : { license: input.license }),
       ...(input.author === undefined ? {} : { author: input.author }),
       ...(input.readmeMarkdown === undefined ? {} : { readmeMarkdown: input.readmeMarkdown }),
@@ -201,8 +204,10 @@ export class Artifact {
     snapshot: Pick<
       ArtifactProps,
       'displayName' | 'summary' | 'source' | 'payload' | 'keywords' | 'stats'
-    > &
-      Partial<Pick<ArtifactProps, 'license' | 'author' | 'readmeMarkdown' | 'deprecated'>>,
+    > & {
+      /** Re-read from the source each sweep, like keywords, not frozen at creation. */
+      readonly categories: readonly string[]
+    } & Partial<Pick<ArtifactProps, 'license' | 'author' | 'readmeMarkdown' | 'deprecated'>>,
   ): Artifact {
     assertPayloadMatchesKind(this.props.kind, snapshot.payload)
     return new Artifact({
@@ -212,6 +217,7 @@ export class Artifact {
       source: snapshot.source,
       payload: snapshot.payload,
       keywords: normalizeKeywords(snapshot.keywords),
+      categories: normalizeCategories(snapshot.categories),
       stats: {
         stars: snapshot.stats.stars,
         downloads: snapshot.stats.downloads,
