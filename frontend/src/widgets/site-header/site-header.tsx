@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Fish, Menu, Moon, Search, Sun, X } from 'lucide-react'
 import { EASE_OUT } from '@/shared/lib/ease'
 import { CommandPalette } from '@/shared/ui/motion/command-palette'
-import { useSession, signOut } from '@/shared/api/auth-client'
+import { AccountMenu } from '@/features/account-menu'
 import { t } from '@/shared/config/messages'
 import { writeThemeCookie } from '@/shared/lib/theme'
 import { cn } from '@/shared/lib/utils'
@@ -17,7 +17,6 @@ const NAV = [
 
 export function SiteHeader() {
   const navigate = useNavigate()
-  const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [paletteOpen, setPaletteOpen] = useState(false)
 
@@ -80,30 +79,7 @@ export function SiteHeader() {
 
         <ThemeToggle className="ml-auto sm:ml-0" />
 
-        {session?.user ? (
-          <div className="hidden items-center gap-2 sm:flex">
-            <Link
-              to="/dashboard"
-              className="press rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:border-border-strong"
-            >
-              {t('nav.dashboard')}
-            </Link>
-            <button
-              type="button"
-              onClick={() => void signOut()}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {t('nav.signOut')}
-            </button>
-          </div>
-        ) : (
-          <Link
-            to="/sign-in"
-            className="press hidden rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground sm:inline-flex"
-          >
-            {t('nav.signIn')}
-          </Link>
-        )}
+        <AccountMenu />
 
         <button
           type="button"
@@ -125,8 +101,10 @@ export function SiteHeader() {
           transition={{ duration: 0.2, ease: EASE_OUT }}
           className="overflow-hidden border-t border-border bg-background px-6 md:hidden"
         >
+          {/* Destinations only. Account actions stay in the avatar menu, which
+              is in the bar at every width. */}
           <div className="py-3">
-          {[...NAV, { to: '/dashboard', key: 'nav.dashboard' } as const].map((entry) => (
+          {NAV.map((entry) => (
             <NavLink
               key={entry.to}
               to={entry.to}
@@ -136,11 +114,6 @@ export function SiteHeader() {
               {t(entry.key)}
             </NavLink>
           ))}
-          {session?.user ? null : (
-            <Link to="/sign-in" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-primary">
-              {t('nav.signIn')}
-            </Link>
-          )}
           </div>
         </motion.nav>
       ) : null}

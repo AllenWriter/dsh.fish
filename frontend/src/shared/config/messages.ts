@@ -136,6 +136,7 @@ export const messages = {
   'auth.signUp': 'Create an account',
   'auth.haveAccount': 'Already have an account?',
   'auth.failed': 'Sign-in failed. Check your details and try again.',
+  'account.menu': 'Account',
 
   'device.title': 'Authorize your harness',
   'device.subtitle': 'Enter the code shown in your terminal.',

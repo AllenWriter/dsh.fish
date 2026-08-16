@@ -76,8 +76,15 @@ is built **per request**, because D1 and KV bindings arrive per request.
 | `app/` | `root.tsx`, `routes.ts`, global styles |
 | `pages/` | One slice per route; composes widgets, owns loaders |
 | `widgets/` | `site-header`, `catalog-grid`, `catalog-filters`, `install-panel` |
+| `features/` | `account-menu` — the signed-in identity, and the actions on it |
 | `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip` |
-| `shared/` | beui components (`ui/motion/`), motion tokens, i18n messages, auth client, `hub-context` |
+| `shared/` | beui components (`ui/motion/`, `ui/avatar`), motion tokens, i18n messages, auth client, `hub-context` |
+
+The account slot in the header is the whole signed-in affordance: signed out it
+is the sign-in call to action; signed in it is the portrait Better Auth cached
+from the OAuth profile — GitHub's, for most accounts — opening a beui popover
+that carries the dashboard link and sign-out. Nothing about the account is
+duplicated in the navigation, at any width.
 
 React Router requires every route module to live inside `appDirectory`, so
 `appDirectory` is `src` — the whole FSD tree. `src/root.tsx` and `src/routes.ts`
