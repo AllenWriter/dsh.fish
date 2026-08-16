@@ -97,6 +97,7 @@ export class SubmitArtifact {
               source: snapshot.source,
               payload: snapshot.payload,
               keywords: snapshot.keywords,
+              categories: snapshot.categories,
               stats: { ...snapshot.stats, installs: existing.stats.installs },
             })
             .claimedBy(session.account.id)

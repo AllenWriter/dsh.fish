@@ -39,7 +39,8 @@ One Worker serves both halves of the product.
                           ┌─────────┴─────────┐
                           ▼                   ▼
                     D1 (catalog +        KV (sessions,
-                    Better Auth)         rate limiting)
+                    Better Auth)         rate limiting,
+                                         crawl cursor)
 ```
 
 Sharing an origin is a deliberate choice, not an accident of packaging:
@@ -76,8 +77,15 @@ is built **per request**, because D1 and KV bindings arrive per request.
 | `app/` | `root.tsx`, `routes.ts`, global styles |
 | `pages/` | One slice per route; composes widgets, owns loaders |
 | `widgets/` | `site-header`, `catalog-grid`, `catalog-filters`, `install-panel` |
+| `features/` | `account-menu` — the signed-in identity, and the actions on it |
 | `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip` |
-| `shared/` | beui components (`ui/motion/`), motion tokens, i18n messages, auth client, `hub-context` |
+| `shared/` | beui components (`ui/motion/`, `ui/avatar`), motion tokens, i18n messages, auth client, `hub-context` |
+
+The account slot in the header is the whole signed-in affordance: signed out it
+is the sign-in call to action; signed in it is the portrait Better Auth cached
+from the OAuth profile — GitHub's, for most accounts — opening a beui popover
+that carries the dashboard link and sign-out. Nothing about the account is
+duplicated in the navigation, at any width.
 
 React Router requires every route module to live inside `appDirectory`, so
 `appDirectory` is `src` — the whole FSD tree. `src/root.tsx` and `src/routes.ts`
@@ -98,6 +106,29 @@ how each reaches a machine.
 | `mcp-server` | external MCP server | a `dsh-mcp-client` row in the profile patch |
 | `agent-preset` | directory holding one `agent.cordis.yml` | written to `$DSH_HOME/.agent-presets/<id>` |
 | `hook-bridge` | Claude Code / Codex hook bridge | a bridge plugin row in the profile patch |
+
+## How a repository becomes a row
+
+The `dsh-plugin` topic is a seed list, not a manifest: most of what carries it
+is an application that mentions the harness. So a repository is classified by
+what it holds, in this order, and a repository that answers none of the three
+yields nothing — the harness would load nothing from it either.
+
+| Probe | Row |
+|---|---|
+| `package.json` with `dsh.profile.bundles` | `profile` |
+| `package.json` with `dsh.bundle` | `bundle` |
+| `SKILL.md` with `name` + `description` frontmatter | `skill` |
+| `agent.cordis.yml` | `agent-preset` |
+
+Those probes run before anything else is fetched, so a repository that is not a
+plugin costs three reads and no API quota — that ordering is what makes it
+affordable to page deep into a topic of several thousand repositories.
+
+Categories are resolved separately, and never block a row: a valid
+`dsh.hub.categories` declaration wins, otherwise `category-inference.ts` reads
+topics, keywords and the description against a fixed token table, and `other` is
+the floor. See ADR-0001 §8.
 
 ## Cross-cutting concerns
 

@@ -42,12 +42,19 @@ export default {
   /**
    * Cron trigger. Refreshes the catalog from the GitHub `dsh-plugin` topic and
    * from npm, so the registry stays current without anyone submitting anything.
+   *
+   * The limits are a subrequest budget, not a taste: a Worker invocation may
+   * make 1000 subrequests, and one run costs roughly 200 GitHub repositories ×
+   * up to 3 probes (plus 2 search pages and a handful of extra reads per
+   * repository that actually classifies) and 100 npm packages × 2. The GitHub
+   * sweep resumes from a stored page each run rather than re-reading the head
+   * of the topic, so the whole reachable result set is covered across runs.
    */
   async scheduled(_controller, env, ctx) {
     const container = createContainer(env)
     ctx.waitUntil(
       container.useCases.ingestCatalog
-        .execute({ limitPerSource: 100 })
+        .execute({ limitPerSource: 100, limitByOrigin: { github: 200 } })
         .then((report) => {
           console.log('catalog_ingest', report)
         })

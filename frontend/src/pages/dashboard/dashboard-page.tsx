@@ -5,6 +5,7 @@ import { hubContext } from '@/shared/api/hub-context'
 import { CatalogGrid } from '@/widgets/catalog-grid/catalog-grid'
 import { useSession } from '@/shared/api/auth-client'
 import { t } from '@/shared/config/messages'
+import { Avatar } from '@/shared/ui/avatar'
 
 export function meta(): Route.MetaDescriptors {
   return [{ title: `${t('dashboard.title')} — ${t('app.name')}` }, { name: 'robots', content: 'noindex' }]
@@ -60,7 +61,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <Frame>
+    <Frame identity={{ name: session.user.name || session.user.email, image: session.user.image }}>
       <section className="mt-8">
         <h2 className="text-base font-semibold tracking-tight">
           {t('dashboard.mySubmissions')}
@@ -92,10 +93,24 @@ export default function DashboardPage() {
   )
 }
 
-function Frame({ children }: { children: React.ReactNode }) {
+interface Identity {
+  name: string
+  image?: string | null
+}
+
+/** The page shell. Signed in, the title carries the account it is showing. */
+function Frame({ identity, children }: { identity?: Identity; children: React.ReactNode }) {
   return (
     <div className="mx-auto max-w-3xl px-6 py-14">
-      <h1 className="text-2xl font-semibold tracking-tight">{t('dashboard.title')}</h1>
+      <div className="flex items-center gap-4">
+        {identity ? <Avatar src={identity.image} name={identity.name} size="lg" /> : null}
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight">{t('dashboard.title')}</h1>
+          {identity ? (
+            <p className="truncate text-sm text-muted-foreground">{identity.name}</p>
+          ) : null}
+        </div>
+      </div>
       {children}
     </div>
   )
