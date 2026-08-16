@@ -28,7 +28,8 @@ export function createAuth(env?: HubEnv, cf?: IncomingRequestCfProperties, baseU
   const db = env ? drizzle(env.DB, { schema }) : ({} as ReturnType<typeof drizzle>)
 
   return betterAuth({
-    ...(baseURL === undefined ? {} : { baseURL }),
+    ...(env === undefined ? {} : { secret: env.BETTER_AUTH_SECRET }),
+    ...(baseURL === undefined ? {} : { baseURL, trustedOrigins: [baseURL] }),
     ...withCloudflare(
       {
         autoDetectIpAddress: true,
@@ -45,6 +46,10 @@ export function createAuth(env?: HubEnv, cf?: IncomingRequestCfProperties, baseU
                 github: {
                   clientId: env.GITHUB_CLIENT_ID,
                   clientSecret: env.GITHUB_CLIENT_SECRET,
+                  scope: ['user:email'],
+                  ...(baseURL === undefined
+                    ? {}
+                    : { redirectURI: `${baseURL}/api/auth/callback/github` }),
                 },
               }
             : {},
