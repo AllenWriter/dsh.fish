@@ -1,9 +1,16 @@
 // beui.dev/components/motion/popover — vendored from the beui registry.
 // Import aliases are remapped onto this project's FSD shared layer and the
 // surface colours onto its semantic tokens (`bg-card`, `text-foreground`);
-// this project has no separate popover palette. The panel is clipped rather
-// than bordered, so elevation is a drop shadow chained after the goo filter.
-// The motion logic is unchanged, so it can be re-pulled from beui on update.
+// this project has no separate popover palette.
+//
+// One structural change on top of the registry component: the goo layer and
+// the morph clip are mounted only while the panel is in motion. At rest the
+// panel is an ordinary bordered, elevated card. beui's version leaves the
+// filtered layer in place at rest, where it cannot carry a border or a shadow
+// (both are cut by the clip) and where engines disagree on how much of the
+// goo's blur fringe survives its alpha ramp — on this palette, a white surface
+// on an off-white page, the residue reads as a grey rectangle around the menu.
+// The morph itself is unchanged, so it can be re-pulled from beui on update.
 
 import {
   animate,
@@ -43,17 +50,6 @@ const GOO_OPEN_SPRING = { type: 'spring', visualDuration: 0.3, bounce: 0.15 } as
 const GOO_CLOSE_SPRING = { type: 'spring', visualDuration: 0.21, bounce: 0.15 } as const
 const HOVER_CLOSE_DELAY = 120
 const CIRCLE_KAPPA = 0.5523
-
-/**
- * Elevation for the clipped surface, chained after the goo filter.
- *
- * A filter is applied before the clip path, so a constant shadow survives the
- * trigger cutout and haloes the closed trigger. Scaling it with the same morph
- * progress leaves nothing behind at rest.
- */
-function panelShadow(progress: number) {
-  return `drop-shadow(0 ${(10 * progress).toFixed(1)}px ${(24 * progress).toFixed(1)}px rgb(0 0 0 / ${(0.16 * progress).toFixed(3)}))`
-}
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
@@ -191,6 +187,8 @@ interface PopoverContextValue {
   toggle: () => void
   openHover: () => void
   scheduleClose: () => void
+  /** False while the morph is running, true once it has landed on either end. */
+  settled: boolean
   triggerMode: TriggerMode
   side: Side
   align: Align
@@ -258,6 +256,7 @@ export function Popover({
   const progress = useMotionValue(defaultOpen ? 1 : 0)
 
   const [internalOpen, setInternalOpen] = useState(defaultOpen)
+  const [settled, setSettled] = useState(true)
   const controlled = controlledOpen !== undefined
   const open = controlled ? controlledOpen : internalOpen
 
@@ -290,13 +289,28 @@ export function Popover({
 
   useEffect(() => () => cancelClose(), [cancelClose])
 
+  // The morph is a transition, not a resting state. Knowing when it has landed
+  // is what lets the panel drop the filter and the clip and become an ordinary
+  // card — see `PopoverContent`.
   useEffect(() => {
+    setSettled(false)
     const animation = animate(
       progress,
       open ? 1 : 0,
       reduce ? { duration: 0 } : open ? GOO_OPEN_SPRING : GOO_CLOSE_SPRING,
     )
-    return () => animation.stop()
+    let cancelled = false
+    animation.finished
+      .then(() => {
+        if (!cancelled) setSettled(true)
+      })
+      .catch(() => {
+        // Stopped mid-flight by the next transition, which sets its own state.
+      })
+    return () => {
+      cancelled = true
+      animation.stop()
+    }
   }, [open, progress, reduce])
 
   useEffect(() => {
@@ -327,6 +341,7 @@ export function Popover({
       toggle,
       openHover,
       scheduleClose,
+      settled,
       triggerMode: trigger,
       side,
       align,
@@ -346,6 +361,7 @@ export function Popover({
       toggle,
       openHover,
       scheduleClose,
+      settled,
       trigger,
       side,
       align,
@@ -453,10 +469,16 @@ export function PopoverContent({ children, className }: PopoverContentProps) {
     triggerRef,
     contentRef,
     open,
+    settled,
     triggerMode,
     openHover,
     scheduleClose,
   } = ctx
+
+  // Until the panel is fully open and standing still it is a shape carved out
+  // of the goo layer. Once it lands it is just a card, and the whole
+  // filter-and-clip apparatus comes off — see the note on the surface below.
+  const resting = settled && open
 
   const measureRef = contentRef
   const gooRef = useRef<HTMLDivElement>(null)
@@ -485,19 +507,12 @@ export function PopoverContent({ children, className }: PopoverContentProps) {
 
   // Morph the same clip on the goo body and the content, so the whole popover
   // oozes as one and the text reveals with it.
-  const render = useCallback(
-    (g: Geo | null, p: number) => {
-      if (!g || g.layerW === 0) return
-      const clip = clipForProgress(g, p, supportsShapeRef.current)
-      if (blobRef.current) blobRef.current.style.clipPath = clip
-      if (clipRef.current) clipRef.current.style.clipPath = clip
-      if (gooRef.current)
-        gooRef.current.style.filter = reduce
-          ? panelShadow(p)
-          : `url(#${gooId}) ${panelShadow(p)}`
-    },
-    [gooId, reduce],
-  )
+  const render = useCallback((g: Geo | null, p: number) => {
+    if (!g || g.layerW === 0) return
+    const clip = clipForProgress(g, p, supportsShapeRef.current)
+    if (blobRef.current) blobRef.current.style.clipPath = clip
+    if (clipRef.current) clipRef.current.style.clipPath = clip
+  }, [])
 
   useLayoutEffect(() => {
     supportsShapeRef.current =
@@ -505,8 +520,8 @@ export function PopoverContent({ children, className }: PopoverContentProps) {
       typeof CSS.supports === 'function' &&
       CSS.supports('clip-path', 'shape(from 0px 0px, line to 1px 1px, close)')
     geoRef.current = geo
-    render(geo, progress.get())
-  }, [geo, progress, render])
+    if (!resting) render(geo, progress.get())
+  }, [geo, resting, progress, render])
 
   useMotionValueEvent(progress, 'change', (p) => render(geoRef.current, p))
 
@@ -544,38 +559,44 @@ export function PopoverContent({ children, className }: PopoverContentProps) {
         </defs>
       </svg>
 
-      {/* Goo body: static trigger pill + morphing blob. */}
-      <div
-        ref={gooRef}
-        aria-hidden
-        className="pointer-events-none absolute z-[-1]"
-        style={{
-          left: geo.left,
-          top: geo.top,
-          width: geo.layerW,
-          height: geo.layerH,
-          filter: reduce
-            ? panelShadow(progress.get())
-            : `url(#${gooId}) ${panelShadow(progress.get())}`,
-          clipPath: triggerCutout(geo),
-        }}
-      >
+      {/* Goo body: static trigger pill + morphing blob. Mounted only while the
+          morph runs. The goo is a blur whose alpha is ramped back into a hard
+          edge, and engines disagree on how completely that ramp erases the
+          blur's fringe; what survives is then cut square by the layer's own
+          clip path, which is a light rectangle framing the panel. Since the
+          neck has pinched off by the time the panel lands, keeping the filter
+          on at rest buys nothing and risks exactly that. */}
+      {resting ? null : (
         <div
-          className="absolute bg-card"
+          ref={gooRef}
+          aria-hidden
+          className="pointer-events-none absolute z-[-1]"
           style={{
-            left: geo.trigger.x,
-            top: geo.trigger.y,
-            width: geo.trigger.w,
-            height: geo.trigger.h,
-            borderRadius: geo.trigger.r,
+            left: geo.left,
+            top: geo.top,
+            width: geo.layerW,
+            height: geo.layerH,
+            filter: reduce ? undefined : `url(#${gooId})`,
+            clipPath: triggerCutout(geo),
           }}
-        />
-        <div
-          ref={blobRef}
-          className="absolute inset-0 bg-card"
-          style={{ clipPath: clipForProgress(geo, progress.get(), false) }}
-        />
-      </div>
+        >
+          <div
+            className="absolute bg-card"
+            style={{
+              left: geo.trigger.x,
+              top: geo.trigger.y,
+              width: geo.trigger.w,
+              height: geo.trigger.h,
+              borderRadius: geo.trigger.r,
+            }}
+          />
+          <div
+            ref={blobRef}
+            className="absolute inset-0 bg-card"
+            style={{ clipPath: clipForProgress(geo, progress.get(), false) }}
+          />
+        </div>
+      )}
 
       {/* Content is clipped by the same morph. The portal wrapper stays
           pointer-transparent; only the fully open panel accepts interaction. */}
@@ -588,7 +609,10 @@ export function PopoverContent({ children, className }: PopoverContentProps) {
           inert={!open}
           className="absolute inset-0"
           style={{
-            clipPath: clipForProgress(geo, progress.get(), false),
+            // Dropped at rest so the panel's own border and shadow are not cut
+            // off at the clip's edge. The two boundaries coincide exactly when
+            // the morph lands, so nothing moves as it comes off.
+            ...(resting ? {} : { clipPath: clipForProgress(geo, progress.get(), false) }),
             pointerEvents: open ? 'auto' : 'none',
           }}
         >
@@ -601,10 +625,16 @@ export function PopoverContent({ children, className }: PopoverContentProps) {
               position: 'absolute',
               left: geo.panel.x,
               top: geo.panel.y,
+              borderRadius: panelRadius,
               transformOrigin: `${ALIGN_ORIGIN[align]} ${side === 'bottom' ? 'top' : 'bottom'}`,
             }}
+            // The panel carries its own surface rather than borrowing the goo
+            // layer's: the goo shape exists only during the morph, and elevation
+            // has to survive the clip coming off. The shadow arrives with the
+            // transition so it fades in as the panel lands instead of popping.
             className={cn(
-              'w-max max-w-[min(92vw,20rem)] p-4 text-foreground outline-none',
+              'w-max max-w-[min(92vw,20rem)] border border-border bg-card p-4 text-foreground outline-none transition-shadow duration-200',
+              resting && 'shadow-lg',
               className,
             )}
           >
