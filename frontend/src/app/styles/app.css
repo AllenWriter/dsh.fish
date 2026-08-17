@@ -9,9 +9,29 @@
  * dropped in without editing its classes.
  *
  * The palette is deliberately not the stock shadcn one, and it is deliberately
- * small: a near-neutral paper ground and exactly one accent. Colour is scarce so
- * that where it does appear — the primary action, a verified badge — it means
- * something. Artifact kinds are told apart by their name, not by a hue.
+ * small: a near-neutral ground and exactly one accent. Colour is scarce so that
+ * where it does appear — the primary action, a verified badge — it means
+ * something. Artifact kinds are told apart by their name and their mark, not by
+ * a hue.
+ *
+ * THE ACCENT IS THE BRAND MARK'S OWN BLUE, sampled from `icons/whale-brand.png`
+ * rather than chosen: the whale's body is `oklch(0.529 0.257 263)` over 44% of the
+ * mark, its shadow is the same hue at `0.320 0.164`, and the plugin tiles on the
+ * social card are drawn in that hue too. So the accent is hue 263 at the lightness
+ * each theme can carry, and no other hue is introduced — the whale's cyan belly is
+ * part of the artwork, not a second accent this UI may spend.
+ *
+ * THE NEUTRALS ARE COOL, at the same hue as the foreground, because the ground the
+ * brand is drawn on is cool: the social card is `oklch(0.148 0.035 242)`. An earlier
+ * version mixed a warm paper ground (hue 106) with a cool foreground (hue 250),
+ * which left the greys disagreeing with each other and made a blue accent look
+ * slightly dirty on top of them. One hue for every neutral, and dark mode's ground
+ * sits close to the card's own value so arriving from a shared link is continuous.
+ *
+ * EVERY VALUE IS INSIDE sRGB. `oklch()` will happily accept a chroma no display can
+ * show, and the browser then gamut-maps it, so the colour that ships is not the
+ * colour that was authored. Three tokens here used to do that. `palette.test.ts`
+ * now fails the build on both that and on a contrast regression.
  *
  * NOTE ON NAMING: the raw properties below (`--bg`, `--fg`, …) deliberately do
  * NOT share names with the `@theme inline` keys that consume them. `inline`
@@ -35,20 +55,20 @@
 
 @layer base {
   :root {
-    --bg: oklch(0.985 0.003 106);
-    --fg: oklch(0.21 0.012 250);
+    --bg: oklch(0.985 0.004 250);
+    --fg: oklch(0.21 0.014 250);
     --card: oklch(1 0 0);
-    --card-fg: oklch(0.21 0.012 250);
-    --muted: oklch(0.965 0.004 106);
-    --muted-fg: oklch(0.51 0.014 254);
-    --primary: oklch(0.52 0.093 195);
-    --primary-fg: oklch(0.99 0.005 190);
-    --accent: oklch(0.95 0.025 195);
-    --accent-fg: oklch(0.35 0.07 195);
-    --destructive: oklch(0.58 0.19 25);
-    --line: oklch(0.918 0.005 106);
-    --line-strong: oklch(0.84 0.008 106);
-    --ring-color: oklch(0.52 0.093 195);
+    --card-fg: oklch(0.21 0.014 250);
+    --muted: oklch(0.965 0.006 250);
+    --muted-fg: oklch(0.505 0.017 250);
+    --primary: oklch(0.52 0.19 263);
+    --primary-fg: oklch(0.99 0.003 263);
+    --accent: oklch(0.95 0.023 263);
+    --accent-fg: oklch(0.38 0.14 263);
+    --destructive: oklch(0.565 0.19 25);
+    --line: oklch(0.916 0.008 250);
+    --line-strong: oklch(0.83 0.014 250);
+    --ring-color: oklch(0.52 0.19 263);
 
     /*
      * Catalog-card Social preview. The image is a texture behind type, not a
@@ -72,20 +92,20 @@
 
   /* Explicit dark choice. */
   :root.dark {
-    --bg: oklch(0.17 0.011 255);
-    --fg: oklch(0.96 0.004 106);
-    --card: oklch(0.212 0.013 255);
-    --card-fg: oklch(0.96 0.004 106);
-    --muted: oklch(0.246 0.014 255);
-    --muted-fg: oklch(0.68 0.014 254);
-    --primary: oklch(0.72 0.106 191);
-    --primary-fg: oklch(0.17 0.03 200);
-    --accent: oklch(0.29 0.038 195);
-    --accent-fg: oklch(0.84 0.08 191);
-    --destructive: oklch(0.65 0.17 25);
-    --line: oklch(0.28 0.012 255);
-    --line-strong: oklch(0.38 0.014 255);
-    --ring-color: oklch(0.72 0.106 191);
+    --bg: oklch(0.155 0.028 250);
+    --fg: oklch(0.96 0.005 250);
+    --card: oklch(0.196 0.03 250);
+    --card-fg: oklch(0.96 0.005 250);
+    --muted: oklch(0.238 0.032 250);
+    --muted-fg: oklch(0.685 0.02 250);
+    --primary: oklch(0.72 0.145 263);
+    --primary-fg: oklch(0.16 0.05 263);
+    --accent: oklch(0.3 0.07 263);
+    --accent-fg: oklch(0.84 0.079 263);
+    --destructive: oklch(0.655 0.17 25);
+    --line: oklch(0.275 0.03 250);
+    --line-strong: oklch(0.375 0.035 250);
+    --ring-color: oklch(0.72 0.145 263);
     color-scheme: dark;
 
     --artifact-og-opacity: 0.38;
@@ -105,20 +125,20 @@
      explicit light choice win over a dark OS setting. */
   @media (prefers-color-scheme: dark) {
     :root:not(.light) {
-      --bg: oklch(0.17 0.011 255);
-      --fg: oklch(0.96 0.004 106);
-      --card: oklch(0.212 0.013 255);
-      --card-fg: oklch(0.96 0.004 106);
-      --muted: oklch(0.246 0.014 255);
-      --muted-fg: oklch(0.68 0.014 254);
-      --primary: oklch(0.72 0.106 191);
-      --primary-fg: oklch(0.17 0.03 200);
-      --accent: oklch(0.29 0.038 195);
-      --accent-fg: oklch(0.84 0.08 191);
-      --destructive: oklch(0.65 0.17 25);
-      --line: oklch(0.28 0.012 255);
-      --line-strong: oklch(0.38 0.014 255);
-      --ring-color: oklch(0.72 0.106 191);
+      --bg: oklch(0.155 0.028 250);
+      --fg: oklch(0.96 0.005 250);
+      --card: oklch(0.196 0.03 250);
+      --card-fg: oklch(0.96 0.005 250);
+      --muted: oklch(0.238 0.032 250);
+      --muted-fg: oklch(0.685 0.02 250);
+      --primary: oklch(0.72 0.145 263);
+      --primary-fg: oklch(0.16 0.05 263);
+      --accent: oklch(0.3 0.07 263);
+      --accent-fg: oklch(0.84 0.079 263);
+      --destructive: oklch(0.655 0.17 25);
+      --line: oklch(0.275 0.03 250);
+      --line-strong: oklch(0.375 0.035 250);
+      --ring-color: oklch(0.72 0.145 263);
       color-scheme: dark;
 
       --artifact-og-opacity: 0.38;
