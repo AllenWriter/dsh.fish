@@ -21,7 +21,6 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   timeout: 60_000,
   expect: { timeout: 10_000 },
-  globalSetup: './e2e/global-setup.ts',
   use: {
     baseURL,
     colorScheme: 'light',
@@ -30,8 +29,8 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: `pnpm --filter @dsh-fish/frontend exec react-router dev --port ${PORT} --strictPort`,
-    url: baseURL,
+    command: `node --experimental-strip-types e2e/dev-server.ts`,
+    url: `${baseURL}/a/dsh-postgres-mcp`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
     cwd: '.',

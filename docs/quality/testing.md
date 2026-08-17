@@ -44,6 +44,12 @@ The tests assert:
 Visual baselines of the first fold are stored for iPhone SE (3rd gen) and Pixel 7.
 Update them with `pnpm exec playwright test --update-snapshots`.
 
+Device projects force Chromium (`defaultBrowserType: 'chromium'`). Playwright's
+iPhone presets default to WebKit; CI only installs Chromium, and the suite is
+asserting CSS-pixel layout, not engine differences.
+
+Install the browser once with `pnpm exec playwright install --with-deps chromium`.
+
 ## Test data
 
 - Use factories, not fixtures, for test data.

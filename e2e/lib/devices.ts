@@ -27,6 +27,6 @@ export function mobileProjects(): Project[] {
     if (device === undefined) {
       throw new Error(`Playwright has no device preset named ${name}`)
     }
-    return { name, use: { ...device } }
+    return { name, use: { ...device, defaultBrowserType: 'chromium' } }
   })
 }

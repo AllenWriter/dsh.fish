@@ -67,12 +67,18 @@ export function Markdown({
  * Nested lists get their vertical margin removed, which is a parent-child
  * relationship the `ul` component cannot see either.
  *
- * `overflow-wrap: anywhere` is for a DSN or a URL with no break point: without
- * it a single token becomes the column's min-content width and the phone
- * scrolls sideways. Tables and fences scroll on their own; this is the rest.
+ * `overflow-wrap: anywhere` on paragraphs and list items is for a DSN or a
+ * URL with no break point: without it a single token becomes the column's
+ * min-content width and the phone scrolls sideways. Tables and fences keep
+ * their own `overflow-x-auto` instead — wrapping their cells would hide the
+ * scroller those wrappers exist for.
  */
 const PROSE = cn(
-  'min-w-0 text-[15px] leading-7 text-foreground/90 [overflow-wrap:anywhere]',
+  'min-w-0 text-[15px] leading-7 text-foreground/90',
+  // Prose tokens wrap; tables and fences scroll on their own. Applying
+  // `anywhere` to the container would wrap a GFM table's cells and the
+  // page would never need the horizontal scroller the wrapper exists for.
+  '[&_p]:[overflow-wrap:anywhere] [&_li]:[overflow-wrap:anywhere]',
   '[&_p>img:only-child]:my-2 [&_p>img:only-child]:rounded-xl',
   '[&_p>img:only-child]:outline [&_p>img:only-child]:outline-1',
   '[&_p>img:only-child]:outline-black/10 dark:[&_p>img:only-child]:outline-white/10',
@@ -217,12 +223,14 @@ const COMPONENTS: Components = {
   hr: () => <hr className="my-8 border-t border-border" />,
 
   // A readme table is arbitrarily wide and the page is not. Scrolling the table
-  // alone keeps the page itself from scrolling sideways.
+  // alone keeps the page itself from scrolling sideways. `min-w-full` fills a
+  // narrow table to the frame; without `w-full` a wide one is allowed to outgrow
+  // the wrapper, which is what makes the scroller actually scroll.
   table: ({ children }) => (
     // The wrapper draws the frame, so the last row must not draw a rule under
     // itself onto it. Only a selector can tell which row is last.
     <div className="my-5 max-w-full min-w-0 overflow-x-auto rounded-xl border border-border [&_tbody_tr:last-child>td]:border-0 [scrollbar-width:thin]">
-      <table className="w-full border-collapse text-sm">{children}</table>
+      <table className="min-w-full border-collapse text-sm">{children}</table>
     </div>
   ),
   // `style` carries the column alignment the author wrote into the delimiter row.

@@ -27,11 +27,11 @@ test.describe('plugin detail readme on a phone', () => {
 
     await expect(readme.getByRole('link', { name: 'setup guide' })).toHaveAttribute(
       'href',
-      'https://github.com/acme/postgres-mcp/blob/HEAD/docs/guide.md',
+      /https:\/\/github.com\/acme\/postgres-mcp\/blob\/[0-9a-f]+\/docs\/guide.md/,
     )
     await expect(readme.getByRole('img', { name: 'Architecture' })).toHaveAttribute(
       'src',
-      'https://github.com/acme/postgres-mcp/raw/HEAD/docs/architecture.png',
+      /https:\/\/github.com\/acme\/postgres-mcp\/raw\/[0-9a-f]+\/docs\/architecture.png/,
     )
 
     await expect(readme.locator('script')).toHaveCount(0)
@@ -53,7 +53,7 @@ test.describe('plugin detail readme on a phone', () => {
     const table = page.locator('#readme table')
     const tableWrap = table.locator('xpath=..')
     await expect(tableWrap).toHaveCSS('overflow-x', 'auto')
-    await expect.poll(() => isWiderThanBox(table)).toBeTruthy()
+    await expect.poll(() => isWiderThanBox(tableWrap)).toBeTruthy()
     await expect.poll(() => boxFitsViewport(page, tableWrap)).toBeTruthy()
 
     const fence = page.locator('#readme pre')
@@ -108,6 +108,8 @@ test.describe('plugin detail readme on a phone', () => {
   test('matches the first fold of the readme', async ({ page }, info) => {
     test.skip(!SCREENSHOT_DEVICES.has(info.project.name), 'Baselines are stored for iPhone SE (3rd gen) and Pixel 7')
 
+    const readme = page.locator('#readme')
+    await readme.scrollIntoViewIfNeeded()
     const clip = await firstFoldClip(page)
     await expect(page).toHaveScreenshot('readme-fold.png', {
       animations: 'disabled',
