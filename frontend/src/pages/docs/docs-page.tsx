@@ -1,6 +1,8 @@
 import type { Route } from './+types/docs-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/motion/tabs'
+import { KindIcon } from '@/entities/artifact/ui/kind-icon'
+import { kindLabelKey, type ArtifactKind } from '@/entities/artifact/model/types'
 import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { breadcrumbLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 
@@ -31,6 +33,21 @@ export function loader({ context, params }: Route.LoaderArgs) {
 }
 
 /**
+ * The kinds this page documents, and the tab each one owns.
+ *
+ * `hook-bridge` has no section yet, so the list is written out rather than
+ * derived from `ARTIFACT_KINDS`: a tab with no panel behind it would be worse
+ * than an absent tab.
+ */
+const DOCUMENTED_KINDS: readonly { tab: string; kind: ArtifactKind }[] = [
+  { tab: 'bundle', kind: 'bundle' },
+  { tab: 'skill', kind: 'skill' },
+  { tab: 'mcp', kind: 'mcp-server' },
+  { tab: 'preset', kind: 'agent-preset' },
+  { tab: 'profile', kind: 'profile' },
+]
+
+/**
  * Author-facing reference: exactly what a source must contain for each artifact
  * kind before the indexer will list it. Every snippet here mirrors what
  * `classifyPackage` and the GitHub indexer actually look for, so following the
@@ -49,12 +66,24 @@ export default function DocsPage() {
       <p className="mt-3 text-lg leading-relaxed text-muted-foreground">{t('docs.intro')}</p>
 
       <Tabs defaultValue="bundle" variant="underline" className="mt-10">
+        {/* Each tab wears the mark its kind wears in the catalog, so the page
+            that explains how to publish a kind is recognisably about the same
+            thing as the chip on the row it produces. */}
         <TabsList className="flex-wrap">
-          <TabsTrigger value="bundle">{t('artifactKind.bundle.label')}</TabsTrigger>
-          <TabsTrigger value="skill">{t('artifactKind.skill.label')}</TabsTrigger>
-          <TabsTrigger value="mcp">{t('artifactKind.mcpServer.label')}</TabsTrigger>
-          <TabsTrigger value="preset">{t('artifactKind.agentPreset.label')}</TabsTrigger>
-          <TabsTrigger value="profile">{t('artifactKind.profile.label')}</TabsTrigger>
+          {DOCUMENTED_KINDS.map((entry) => (
+            <TabsTrigger key={entry.tab} value={entry.tab}>
+              {({ active }) => (
+                <>
+                  <KindIcon
+                    kind={entry.kind}
+                    className="size-4"
+                    weight={active ? 'fill' : 'bold'}
+                  />
+                  {t(kindLabelKey(entry.kind))}
+                </>
+              )}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         <TabsContent value="bundle">

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
-import { Check, Copy } from 'lucide-react'
 import { useT } from '@/shared/config/i18n'
 import { cn } from '@/shared/lib/utils'
+import { ConfirmIcon, CopyIcon } from '@/shared/ui/icon'
+import { IconSwap } from '@/shared/ui/icon-swap'
 
 /** How long the check stays before the button offers to copy again. */
 const CONFIRM_MS = 1600
@@ -10,11 +10,8 @@ const CONFIRM_MS = 1600
 /**
  * Copy-to-clipboard affordance for a block of text.
  *
- * The icon swap is the whole interaction, so it gets the full treatment:
- * opacity, scale and blur together, on a spring with no bounce. Toggling
- * `visibility` instead would make the button blink between two unrelated
- * glyphs; blurring across the swap reads as one mark changing rather than two
- * marks trading places.
+ * The icon swap is the whole interaction, and it runs through the shared
+ * `IconSwap` slot so it moves exactly like every other stateful mark here.
  *
  * A failed clipboard write — an insecure origin, a denied permission — leaves
  * the button in its idle state. That is the honest report: nothing was copied,
@@ -48,23 +45,13 @@ export function CopyButton({ text, className }: { text: string; className?: stri
         className,
       )}
     >
-      {/* initial={false} so the copy icon does not animate in on first paint. */}
-      <AnimatePresence initial={false} mode="wait">
-        <motion.span
-          key={copied ? 'copied' : 'idle'}
-          initial={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
-          animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
-          transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
-          className="grid place-items-center"
-        >
-          {copied ? (
-            <Check className="size-3.5 text-primary" aria-hidden />
-          ) : (
-            <Copy className="size-3.5" aria-hidden />
-          )}
-        </motion.span>
-      </AnimatePresence>
+      <IconSwap swapKey={copied ? 'copied' : 'idle'}>
+        {copied ? (
+          <ConfirmIcon className="size-3.5 text-primary" weight="bold" />
+        ) : (
+          <CopyIcon className="size-3.5" weight="bold" />
+        )}
+      </IconSwap>
     </button>
   )
 }

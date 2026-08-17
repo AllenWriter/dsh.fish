@@ -1,8 +1,11 @@
 import { Form, useSearchParams } from 'react-router'
 import type { FacetsDto } from '@/entities/artifact/model/types'
+import { KindIcon } from '@/entities/artifact/ui/kind-icon'
+import { CategoryIcon } from '@/entities/artifact/ui/category-icon'
 import { useT } from '@/shared/config/i18n'
 import { useLocalePath } from '@/shared/ui/locale-link'
 import { cn } from '@/shared/lib/utils'
+import { VerifiedIcon } from '@/shared/ui/icon'
 
 /**
  * Filter rail.
@@ -43,6 +46,13 @@ export function CatalogFilters({ facets }: { facets: FacetsDto }) {
                       : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                   )}
                 >
+                  {/* A selected filter fills its mark. Colour and weight both
+                      change, so the pressed state never rests on hue alone. */}
+                  <KindIcon
+                    kind={facet.kind}
+                    className="size-4 shrink-0"
+                    weight={active ? 'fill' : 'bold'}
+                  />
                   <span className="flex-1 truncate">{t(facet.labelKey)}</span>
                   <span className="text-xs tabular-nums text-muted-foreground">{facet.count}</span>
                 </a>
@@ -64,12 +74,17 @@ export function CatalogFilters({ facets }: { facets: FacetsDto }) {
                   rel="nofollow"
                   aria-pressed={active}
                   className={cn(
-                    'inline-flex rounded-full border px-2.5 py-1 text-xs transition-colors',
+                    'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors',
                     active
                       ? 'border-primary/30 bg-primary/10 text-primary'
                       : 'border-border text-muted-foreground hover:border-border-strong hover:text-foreground',
                   )}
                 >
+                  <CategoryIcon
+                    id={category.id}
+                    className="size-3.5 shrink-0"
+                    weight={active ? 'fill' : 'regular'}
+                  />
                   {t(category.labelKey)}
                 </a>
               </li>
@@ -79,7 +94,7 @@ export function CatalogFilters({ facets }: { facets: FacetsDto }) {
       </section>
 
       <Form method="get" action={localePath('/browse')}>
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+        <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-muted-foreground">
           <input
             type="checkbox"
             name="verified"
@@ -88,6 +103,9 @@ export function CatalogFilters({ facets }: { facets: FacetsDto }) {
             onChange={(event) => event.currentTarget.form?.requestSubmit()}
             className="size-4 rounded border-border accent-[var(--color-primary)]"
           />
+          {/* The same seal the badge uses, so the filter names its target in the
+              badge's own mark rather than in words alone. */}
+          <VerifiedIcon className="size-4 shrink-0 text-primary" weight="fill" />
           {t('browse.verifiedOnly')}
         </label>
         {/* Preserve the rest of the query when this control submits. */}

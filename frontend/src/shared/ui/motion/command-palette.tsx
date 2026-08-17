@@ -3,7 +3,6 @@
 // component logic is unchanged, so it can be re-pulled from beui on update.
 
 import { motion, useReducedMotion } from 'motion/react'
-import { Search, type LucideIcon } from 'lucide-react'
 import {
   type ReactNode,
   useCallback,
@@ -16,6 +15,7 @@ import {
 import { createPortal } from 'react-dom'
 import { EASE_OUT } from '@/shared/lib/ease'
 import { cn } from '@/shared/lib/utils'
+import { SearchIcon, type Icon } from '@/shared/ui/icon'
 
 export type CommandItem = {
   id: string
@@ -23,7 +23,7 @@ export type CommandItem = {
   group?: string
   hint?: string
   keywords?: string[]
-  icon?: LucideIcon
+  icon?: Icon
   badge?: ReactNode
   onSelect: () => void
 }
@@ -228,7 +228,7 @@ export function CommandPalette({
           )}
         >
           <div className="flex items-center gap-3 border-b border-border px-4">
-            <Search className="h-4 w-4 text-muted-foreground" />
+            <SearchIcon className="size-4 shrink-0 text-muted-foreground" weight="bold" />
             <input
               ref={inputRef}
               value={query}
@@ -301,9 +301,9 @@ export function CommandPalette({
                           />
                         ) : null}
                         {Icon ? (
-                          <Icon className="relative z-10 h-4 w-4" />
+                          <Icon className="relative z-10 size-4 shrink-0" weight={isActive ? 'fill' : 'bold'} />
                         ) : hasIcons ? (
-                          <span className="relative z-10 h-4 w-4" />
+                          <span className="relative z-10 size-4 shrink-0" />
                         ) : null}
                         <span className="relative z-10 flex-1 truncate">{it.label}</span>
                         {it.badge ? (

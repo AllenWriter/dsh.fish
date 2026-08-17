@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { LayoutDashboard, LogOut } from 'lucide-react'
+import { DashboardIcon, SignInIcon, SignOutIcon } from '@/shared/ui/icon'
 import { signOut, useSession } from '@/shared/api/auth-client'
 import { useT } from '@/shared/config/i18n'
 import { LocaleLink } from '@/shared/ui/locale-link'
@@ -28,8 +28,9 @@ export function AccountMenu() {
     return (
       <LocaleLink
         to="/sign-in"
-        className="press inline-flex rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground"
+        className="press inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground"
       >
+        <SignInIcon className="size-4" weight="bold" />
         {t('nav.signIn')}
       </LocaleLink>
     )
@@ -67,7 +68,7 @@ export function AccountMenu() {
           onClick={() => setOpen(false)}
           className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm font-medium transition-colors hover:bg-muted"
         >
-          <LayoutDashboard className="size-4 text-muted-foreground" aria-hidden />
+          <DashboardIcon className="size-4 text-muted-foreground" weight="bold" />
           {t('nav.dashboard')}
         </LocaleLink>
         <button
@@ -78,7 +79,7 @@ export function AccountMenu() {
           }}
           className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-sm font-medium transition-colors hover:bg-muted"
         >
-          <LogOut className="size-4 text-muted-foreground" aria-hidden />
+          <SignOutIcon className="size-4 text-muted-foreground" weight="bold" />
           {t('nav.signOut')}
         </button>
       </PopoverContent>

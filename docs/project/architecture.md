@@ -209,13 +209,37 @@ resolved value straight into each utility, so a theme key defined as
 `var(--color-background)` bakes the light value into `bg-background` and no dark
 override can reach it.
 
+### The palette is derived from the brand mark, not chosen
+
+The one accent is the whale's own blue. `icons/whale-brand.png` is hue 263 over
+two thirds of the mark — `oklch(0.529 0.257 263)` for the body, the same hue at
+`0.320 0.164` for its shadow — and the plugin tiles on the social card are drawn
+in that hue too, so the accent is hue 263 at whatever lightness each theme can
+carry. The whale's cyan belly is part of the artwork and is not a second accent
+the UI may spend.
+
+Every neutral shares one cool hue, because the ground the brand is drawn on is
+cool: the social card is `oklch(0.148 0.035 242)`. An earlier palette mixed a
+warm paper ground with a cool foreground, which left the greys disagreeing with
+each other. Dark mode's ground now sits close to the card's own value, so
+arriving from a shared link is continuous rather than a step onto a lighter,
+flatter page.
+
+`app/styles/palette.test.ts` holds the authored values to what a stylesheet
+cannot check for itself: that every colour is inside sRGB, that the pairs the UI
+renders meet their contrast threshold, and that the dark block — which the
+cascade forces to be written twice — says the same thing both times.
+
+The social cards inline the same tokens, so regenerate them with
+`pnpm --filter @dsh-fish/frontend run og:build` after any palette change.
+
 ### One accent, and kinds are named not coloured
 
-Artifact kinds are distinguished by their label, not by a hue. Six per-kind
-colours competed with the accent and encoded nothing a reader could learn; the
-chip already says "MCP server" in words, which is unambiguous, translatable and
-readable without colour vision. Colour is reserved for the primary action and
-the verified badge.
+Artifact kinds are distinguished by their label and their mark, not by a hue.
+Six per-kind colours competed with the accent and encoded nothing a reader could
+learn; the chip says "MCP server" in words and carries the kind's glyph, both of
+which are unambiguous, translatable and readable without colour vision. Colour
+is reserved for the primary action and the verified badge.
 
 ### Catalog cards use the repository Social preview as texture
 

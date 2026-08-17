@@ -4,51 +4,16 @@
     <meta charset="utf-8" />
     <title>Catalog card Social preview</title>
     <style>
+      /* The design tokens are injected here from `app/styles/app.css` by the spec
+         that serves this file. They used to be restated inline, which is how this
+         fixture ended up asserting a palette the product had already left behind. */
+      /* {{TOKENS}} */
       :root {
-        --bg: oklch(0.985 0.003 106);
-        --fg: oklch(0.21 0.012 250);
-        --card: oklch(1 0 0);
-        --muted-fg: oklch(0.51 0.014 254);
-        --primary: oklch(0.52 0.093 195);
-        --line: oklch(0.918 0.005 106);
-        --line-strong: oklch(0.84 0.008 106);
-        --muted: oklch(0.965 0.004 106);
-        --artifact-og-opacity: 0.42;
-        --artifact-og-opacity-hover: 0.52;
-        --artifact-og-saturate: 0.88;
-        --artifact-og-blur: 6px;
-        --artifact-og-scale: 1.08;
-        --artifact-og-scrim: linear-gradient(
-          180deg,
-          color-mix(in oklch, var(--card) 28%, transparent) 0%,
-          color-mix(in oklch, var(--card) 52%, transparent) 38%,
-          color-mix(in oklch, var(--card) 82%, transparent) 72%,
-          var(--card) 100%
-        );
         font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
         color: var(--fg);
         background: var(--bg);
       }
       html.dark {
-        --bg: oklch(0.17 0.011 255);
-        --fg: oklch(0.96 0.004 106);
-        --card: oklch(0.212 0.013 255);
-        --muted-fg: oklch(0.68 0.014 254);
-        --primary: oklch(0.72 0.106 191);
-        --line: oklch(0.28 0.012 255);
-        --line-strong: oklch(0.38 0.014 255);
-        --muted: oklch(0.246 0.014 255);
-        --artifact-og-opacity: 0.38;
-        --artifact-og-opacity-hover: 0.48;
-        --artifact-og-saturate: 0.8;
-        --artifact-og-blur: 7px;
-        --artifact-og-scrim: linear-gradient(
-          180deg,
-          color-mix(in oklch, var(--card) 22%, transparent) 0%,
-          color-mix(in oklch, var(--card) 48%, transparent) 36%,
-          color-mix(in oklch, var(--card) 78%, transparent) 70%,
-          var(--card) 100%
-        );
         color-scheme: dark;
       }
       body {

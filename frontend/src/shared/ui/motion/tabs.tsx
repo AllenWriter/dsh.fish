@@ -102,6 +102,15 @@ export function TabsList({ children, className }: { children: ReactNode; classNa
   )
 }
 
+/**
+ * Content of a trigger, which may depend on whether that trigger is selected.
+ *
+ * The render form exists so a trigger can swap an outline icon for a filled one
+ * — the project's standard way of marking a selected state — without a caller
+ * having to lift the tab's state out of this component to find out.
+ */
+type TriggerContent = ReactNode | ((state: { active: boolean }) => ReactNode)
+
 export function TabsTrigger({
   value,
   children,
@@ -109,12 +118,13 @@ export function TabsTrigger({
   indicatorClassName,
 }: {
   value: string
-  children: ReactNode
+  children: TriggerContent
   className?: string
   indicatorClassName?: string
 }) {
   const { value: current, setValue, layoutId, variant } = useTabs()
   const active = current === value
+  const content = typeof children === 'function' ? children({ active }) : children
 
   if (variant === 'underline') {
     return (
@@ -124,12 +134,12 @@ export function TabsTrigger({
         aria-selected={active}
         onClick={() => setValue(value)}
         className={cn(
-          'relative isolate -mb-px inline-flex min-h-[44px] items-center px-3 pb-2.5 pt-1 text-sm font-medium transition-colors',
+          'relative isolate -mb-px inline-flex min-h-[44px] items-center gap-1.5 px-3 pb-2.5 pt-1 text-sm font-medium transition-colors',
           active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
           className,
         )}
       >
-        {children}
+        {content}
         {active ? (
           <motion.span
             layoutId={layoutId}
@@ -157,14 +167,14 @@ export function TabsTrigger({
         aria-selected={active}
         onClick={() => setValue(value)}
         className={cn(
-          'relative z-10 inline-flex items-center justify-center whitespace-nowrap bg-transparent px-3.5 py-1.5 text-sm font-medium outline-none',
+          'relative z-10 inline-flex items-center justify-center gap-1.5 whitespace-nowrap bg-transparent px-3.5 py-1.5 text-sm font-medium outline-none',
           'transition-colors',
           active ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
           radius,
           className,
         )}
       >
-        {children}
+        {content}
       </button>
     </div>
   )

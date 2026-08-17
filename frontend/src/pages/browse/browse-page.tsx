@@ -7,6 +7,7 @@ import { CatalogPagination } from '@/widgets/catalog-pagination/catalog-paginati
 import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { useLocalePath } from '@/shared/ui/locale-link'
 import { breadcrumbLd, collectionLd, errorMeta, pageMeta } from '@/shared/lib/seo'
+import { SearchIcon, SortIcon } from '@/shared/ui/icon'
 
 const PAGE_SIZE = 24
 
@@ -99,25 +100,41 @@ export default function BrowsePage({ loaderData }: Route.ComponentProps) {
           {query ? t('browse.searchTitle', { query }) : t('browse.title')}
         </h1>
         <Form method="get" action={localePath('/browse')} className="mt-4 flex flex-wrap gap-2">
-          <input
-            type="search"
-            name="q"
-            defaultValue={query}
-            aria-label={t('nav.search')}
-            placeholder={t('home.searchPlaceholder')}
-            className="h-10 min-w-0 flex-1 rounded-lg border border-border bg-card px-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-border-strong"
-          />
-          <select
-            name="sort"
-            defaultValue={params.get('sort') ?? ''}
-            aria-label={t('browse.sort')}
-            className="h-10 rounded-lg border border-border bg-card px-3 text-sm outline-none"
-          >
-            <option value="">{t('browse.sort.relevance')}</option>
-            <option value="popular">{t('browse.sort.popular')}</option>
-            <option value="recent">{t('browse.sort.recent')}</option>
-            <option value="name">{t('browse.sort.name')}</option>
-          </select>
+          {/* `basis-full` below `sm`: the sort select and the submit button take
+              close to 300px between them, which on a phone leaves the field too
+              narrow to read a query back in. Its own row above them instead. */}
+          <div className="relative min-w-0 basis-full sm:flex-1 sm:basis-auto">
+            <SearchIcon
+              className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <input
+              type="search"
+              name="q"
+              defaultValue={query}
+              aria-label={t('nav.search')}
+              placeholder={t('home.searchPlaceholder')}
+              className="h-11 w-full rounded-lg border border-border bg-card pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-border-strong"
+            />
+          </div>
+          {/* The glyph sits inside the control's box rather than beside it, so
+              the row keeps three fields and not five. The native disclosure
+              arrow stays: it is the only thing that says "this is a select". */}
+          <div className="relative">
+            <SortIcon
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <select
+              name="sort"
+              defaultValue={params.get('sort') ?? ''}
+              aria-label={t('browse.sort')}
+              className="h-11 rounded-lg border border-border bg-card pl-9 pr-3 text-sm outline-none"
+            >
+              <option value="">{t('browse.sort.relevance')}</option>
+              <option value="popular">{t('browse.sort.popular')}</option>
+              <option value="recent">{t('browse.sort.recent')}</option>
+              <option value="name">{t('browse.sort.name')}</option>
+            </select>
+          </div>
           {/* Filters chosen in the rail must survive a re-search. */}
           {params.getAll('kind').map((kind) => (
             <input key={`kind-${kind}`} type="hidden" name="kind" value={kind} />
@@ -127,8 +144,9 @@ export default function BrowsePage({ loaderData }: Route.ComponentProps) {
           ))}
           <button
             type="submit"
-            className="press h-10 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground"
+            className="press inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground"
           >
+            <SearchIcon className="size-4" weight="bold" />
             {t('home.searchAction')}
           </button>
         </Form>

@@ -3,11 +3,20 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { EASE_OUT } from '@/shared/lib/ease'
 import type { Route } from './+types/submit-page'
 import { hubContext } from '@/shared/api/hub-context'
-import { ARTIFACT_KINDS, kindLabelKey } from '@/entities/artifact/model/types'
+import { ARTIFACT_KINDS, kindLabelKey, type ArtifactKind } from '@/entities/artifact/model/types'
 import { useSession } from '@/shared/api/auth-client'
+import { KindIcon } from '@/entities/artifact/ui/kind-icon'
 import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { breadcrumbLd, errorMeta, pageMeta } from '@/shared/lib/seo'
+import {
+  ApprovedIcon,
+  ErrorIcon,
+  ForwardIcon,
+  PendingIcon,
+  SignInIcon,
+  SubmitIcon,
+} from '@/shared/ui/icon'
 
 /**
  * Indexable even though the form itself needs an account: "how do I publish a
@@ -53,6 +62,9 @@ export default function SubmitPage() {
   const { data: session, isPending } = useSession()
   const [outcome, setOutcome] = useState<Outcome | null>(null)
   const [busy, setBusy] = useState(false)
+  // An `<option>` cannot carry a glyph, so the chosen kind's mark is tracked and
+  // drawn inside the field instead. The select stays the source of truth.
+  const [kind, setKind] = useState<ArtifactKind>(ARTIFACT_KINDS[0])
   const reduce = useReducedMotion()
 
   if (isPending) return <Frame>{t('common.loading')}</Frame>
@@ -63,8 +75,9 @@ export default function SubmitPage() {
         <p className="text-muted-foreground">{t('submit.signInRequired')}</p>
         <LocaleLink
           to="/sign-in?redirect=%2Fsubmit"
-          className="press mt-5 inline-flex rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
+          className="press mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
+          <SignInIcon className="size-4" weight="bold" />
           {t('nav.signIn')}
         </LocaleLink>
       </Frame>
@@ -116,17 +129,26 @@ export default function SubmitPage() {
       <form onSubmit={onSubmit} className="mt-8 space-y-4 text-left">
         <label className="block">
           <span className="text-sm font-medium">{t('submit.kind')}</span>
-          <select
-            name="kind"
-            required
-            className="mt-1.5 h-11 w-full rounded-xl border border-border bg-card px-3 text-sm outline-none"
-          >
-            {ARTIFACT_KINDS.map((kind) => (
-              <option key={kind} value={kind}>
-                {t(kindLabelKey(kind))}
-              </option>
-            ))}
-          </select>
+          <span className="relative mt-1.5 block">
+            <KindIcon
+              kind={kind}
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              weight="regular"
+            />
+            <select
+              name="kind"
+              required
+              value={kind}
+              onChange={(event) => setKind(event.currentTarget.value as ArtifactKind)}
+              className="h-11 w-full rounded-xl border border-border bg-card pl-9 pr-3 text-sm outline-none"
+            >
+              {ARTIFACT_KINDS.map((option) => (
+                <option key={option} value={option}>
+                  {t(kindLabelKey(option))}
+                </option>
+              ))}
+            </select>
+          </span>
         </label>
 
         <label className="block">
@@ -152,8 +174,9 @@ export default function SubmitPage() {
         <button
           type="submit"
           disabled={busy}
-          className="press h-11 w-full rounded-lg bg-primary text-sm font-medium text-primary-foreground disabled:opacity-50"
+          className="press inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-primary-foreground disabled:opacity-50"
         >
+          <SubmitIcon className="size-4" weight="bold" />
           {t('submit.action')}
         </button>
       </form>
@@ -168,22 +191,33 @@ export default function SubmitPage() {
           transition={{ duration: 0.22, ease: EASE_OUT }}
           className="mt-6 rounded-xl border border-border bg-card p-4 text-sm"
         >
+          {/* Three outcomes, three marks. The glyph is what a reader takes in
+              first, so accepted, queued and refused are told apart before the
+              sentence beside them is read. */}
           {outcome.kind === 'approved' ? (
             <>
-              <p className="font-medium text-primary">
+              <p className="flex items-center gap-1.5 font-medium text-primary">
+                <ApprovedIcon className="size-4 shrink-0" weight="fill" />
                 {t('submit.approved')}
               </p>
               <LocaleLink
                 to={`/a/${outcome.artifactId}`}
-                className="mt-1 inline-block text-primary underline"
+                className="mt-1 inline-flex items-center gap-1.5 text-primary underline"
               >
                 {outcome.artifactId}
+                <ForwardIcon className="size-3.5 shrink-0" weight="bold" />
               </LocaleLink>
             </>
           ) : outcome.kind === 'pending' ? (
-            <p>{t('submit.pending')}</p>
+            <p className="flex items-center gap-1.5">
+              <PendingIcon className="size-4 shrink-0 text-muted-foreground" />
+              {t('submit.pending')}
+            </p>
           ) : (
-            <p className="text-destructive">{outcome.message}</p>
+            <p className="flex items-center gap-1.5 text-destructive">
+              <ErrorIcon className="size-4 shrink-0" weight="bold" />
+              {outcome.message}
+            </p>
           )}
         </motion.div>
       ) : null}

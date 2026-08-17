@@ -20,6 +20,7 @@ import {
   type Locale,
 } from '@/shared/config/i18n'
 import { documentLanguage } from '@/shared/lib/seo'
+import { HomeIcon, IconDefaults } from '@/shared/ui/icon'
 import './styles/app.css'
 
 export const links: Route.LinksFunction = () => [
@@ -72,15 +73,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="min-h-screen">
-        <LocaleProvider locale={locale}>
-          <a
-            href="#main"
-            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-card focus:px-4 focus:py-2 focus:text-sm focus:shadow-lg"
-          >
-            {translate(locale, 'a11y.skipToContent')}
-          </a>
-          {children}
-        </LocaleProvider>
+        <IconDefaults>
+          <LocaleProvider locale={locale}>
+            <a
+              href="#main"
+              className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-card focus:px-4 focus:py-2 focus:text-sm focus:shadow-lg"
+            >
+              {translate(locale, 'a11y.skipToContent')}
+            </a>
+            {children}
+          </LocaleProvider>
+        </IconDefaults>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -113,8 +116,9 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       <p className="text-muted-foreground">{body}</p>
       <a
         href={localizedPath(locale, '/')}
-        className="press rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
+        className="press inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
       >
+        <HomeIcon className="size-4" weight="bold" />
         {translate(locale, 'notFound.home')}
       </a>
     </div>

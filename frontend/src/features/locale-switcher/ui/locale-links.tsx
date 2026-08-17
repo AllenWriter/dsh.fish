@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router'
-import { Check } from 'lucide-react'
+import { ConfirmIcon } from '@/shared/ui/icon'
 import { LOCALES, localizedPath, splitLocalePath, useLocale } from '@/shared/config/i18n'
 import { cn } from '@/shared/lib/utils'
 
@@ -37,7 +37,7 @@ export function LocaleLinks({
           >
             <span className="flex-1 truncate">{locale.nativeName}</span>
             {locale.code === active ? (
-              <Check className="size-3.5 shrink-0 text-primary" aria-hidden />
+              <ConfirmIcon className="size-3.5 shrink-0 text-primary" weight="bold" />
             ) : null}
           </a>
         </li>

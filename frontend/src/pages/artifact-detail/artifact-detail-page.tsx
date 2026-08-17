@@ -1,11 +1,25 @@
 import { data } from 'react-router'
-import { BadgeCheck, ExternalLink, Scale } from 'lucide-react'
 import type { Route } from './+types/artifact-detail-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { InstallPanel } from '@/widgets/install-panel/install-panel'
 import { KindChip } from '@/entities/artifact/ui/kind-chip'
+import { KindIcon } from '@/entities/artifact/ui/kind-icon'
+import { CategoryIcon } from '@/entities/artifact/ui/category-icon'
 import { artifactLd } from '@/entities/artifact/lib/artifact-ld'
 import { kindLabelKey, kindPluralKey } from '@/entities/artifact/model/types'
+import {
+  DownloadsIcon,
+  ExternalLinkIcon,
+  HomeIcon,
+  InstallsIcon,
+  LicenseIcon,
+  NextPageIcon,
+  StarsIcon,
+  UpdatedIcon,
+  VerifiedIcon,
+  WarningIcon,
+  type Icon,
+} from '@/shared/ui/icon'
 import { requireLocale, translate, useLocale, useT } from '@/shared/config/i18n'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { Markdown } from '@/shared/ui/markdown'
@@ -90,16 +104,25 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
         <nav aria-label={t('browse.title')} className="text-sm text-muted-foreground">
           <ol className="flex flex-wrap items-center gap-1.5">
             <li>
-              <LocaleLink to="/" className="transition-colors hover:text-foreground">
+              <LocaleLink
+                to="/"
+                className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+              >
+                <HomeIcon className="size-3.5" />
                 {t('app.name')}
               </LocaleLink>
             </li>
-            <li aria-hidden>/</li>
+            {/* A caret rather than a slash: the trail points one step further in,
+                and a glyph says that where a punctuation mark only separates. */}
+            <li aria-hidden className="flex items-center">
+              <NextPageIcon className="size-3.5 opacity-60" />
+            </li>
             <li>
               <LocaleLink
                 to={`/kind/${artifact.kind}`}
-                className="transition-colors hover:text-foreground"
+                className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
               >
+                <KindIcon kind={artifact.kind} className="size-3.5" weight="regular" />
                 {t(kindPluralKey(artifact.kind))}
               </LocaleLink>
             </li>
@@ -113,12 +136,13 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
               title={t('artifact.verifiedTitle')}
               className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
             >
-              <BadgeCheck className="size-3.5" aria-hidden />
+              <VerifiedIcon className="size-3.5" weight="fill" />
               {t('artifact.verified')}
             </span>
           ) : null}
           {artifact.deprecated ? (
-            <span className="rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive">
+            <span className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive">
+              <WarningIcon className="size-3.5" weight="bold" />
               {t('artifact.deprecated')}
             </span>
           ) : null}
@@ -137,26 +161,35 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
             </div>
           ) : null}
           {artifact.stats.installs > 0 ? (
-            <Metric label={t('artifact.installs')} value={artifact.stats.installs} />
+            <Metric
+              icon={InstallsIcon}
+              label={t('artifact.installs')}
+              value={artifact.stats.installs}
+            />
           ) : null}
           {artifact.stats.stars > 0 ? (
-            <Metric label={t('artifact.stars')} value={artifact.stats.stars} />
+            <Metric icon={StarsIcon} label={t('artifact.stars')} value={artifact.stats.stars} />
           ) : null}
           {artifact.stats.downloads > 0 ? (
-            <Metric label={t('artifact.downloads')} value={artifact.stats.downloads} />
+            <Metric
+              icon={DownloadsIcon}
+              label={t('artifact.downloads')}
+              value={artifact.stats.downloads}
+            />
           ) : null}
           {artifact.license ? (
             <div className="flex items-center gap-1.5">
               <dt className="sr-only">{t('artifact.license')}</dt>
-              <dd className="inline-flex items-center gap-1">
-                <Scale className="size-3.5" aria-hidden />
+              <dd className="inline-flex items-center gap-1.5">
+                <LicenseIcon className="size-3.5" />
                 {artifact.license}
               </dd>
             </div>
           ) : null}
-          <div>
+          <div className="flex items-center gap-1.5">
             <dt className="sr-only">{t('artifact.updated')}</dt>
-            <dd>
+            <dd className="inline-flex items-center gap-1.5">
+              <UpdatedIcon className="size-3.5" />
               {t('artifact.updated')}{' '}
               {/* A machine-readable date beside the human one: "3 days ago" is
                   unparseable, and freshness is a real ranking input here. */}
@@ -175,8 +208,9 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
                 <li key={category}>
                   <LocaleLink
                     to={`/category/${category}`}
-                    className="inline-flex rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
                   >
+                    <CategoryIcon id={category} className="size-3.5" />
                     {t(`category.${category}`)}
                   </LocaleLink>
                 </li>
@@ -239,7 +273,7 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
             className="press flex items-center justify-between rounded-xl border border-border bg-card px-5 py-4 text-sm font-medium hover:border-border-strong"
           >
             {t('artifact.source')}
-            <ExternalLink className="size-4 text-muted-foreground" aria-hidden />
+            <ExternalLinkIcon className="size-4 text-muted-foreground" weight="bold" />
           </a>
         </div>
       </div>
@@ -247,11 +281,18 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
   )
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
+/**
+ * One counted fact about the artifact.
+ *
+ * The same glyphs a catalog card uses for the same numbers, so a reader who
+ * learned "star means stars" in the grid does not relearn it here.
+ */
+function Metric({ icon: Icon, label, value }: { icon: Icon; label: string; value: number }) {
   return (
     <div className="flex items-center gap-1.5">
       <dt className="sr-only">{label}</dt>
-      <dd>
+      <dd className="inline-flex items-center gap-1.5">
+        <Icon className="size-3.5" />
         <span className="font-medium tabular-nums text-foreground">
           <AnimatedNumber value={value} />
         </span>{' '}

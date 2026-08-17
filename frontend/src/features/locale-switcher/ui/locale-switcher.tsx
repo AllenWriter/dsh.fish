@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Languages } from 'lucide-react'
+import { LanguageIcon } from '@/shared/ui/icon'
 import { useT } from '@/shared/config/i18n'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/motion/popover'
 import { cn } from '@/shared/lib/utils'
@@ -28,11 +28,11 @@ export function LocaleSwitcher({ className }: { className?: string }) {
           type="button"
           aria-label={t('nav.language')}
           className={cn(
-            'press grid size-9 place-items-center rounded-lg border border-border hover:border-border-strong',
+            'press hit-area grid size-9 place-items-center rounded-lg border border-border hover:border-border-strong',
             className,
           )}
         >
-          <Languages className="size-4" aria-hidden />
+          <LanguageIcon className="size-4" weight="bold" />
         </button>
       </PopoverTrigger>
 

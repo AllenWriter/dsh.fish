@@ -1,10 +1,10 @@
-import { AlertTriangle } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/motion/tabs'
 import { CopyButton } from '@/shared/ui/copy-button'
 import type { ArtifactDetail, InstallPlanDto } from '@/entities/artifact/model/types'
 import { useT } from '@/shared/config/i18n'
 import { HUB_PLUGIN_SPEC } from '@/shared/config/site'
 import { cn } from '@/shared/lib/utils'
+import { AgentIcon, CliIcon, CredentialIcon, WarningIcon } from '@/shared/ui/icon'
 
 /**
  * The install surface — the reason the site exists.
@@ -30,9 +30,25 @@ export function InstallPanel({
       <h2 className="text-base font-semibold tracking-tight">{t('install.title')}</h2>
 
       <Tabs defaultValue="cli" variant="segment" className="mt-4">
+        {/* Two routes to the same plan, and the marks say which is which before
+            the labels do: a terminal window against the agent that drives it. */}
         <TabsList>
-          <TabsTrigger value="cli">{t('install.viaCli')}</TabsTrigger>
-          <TabsTrigger value="plugin">{t('install.viaPlugin')}</TabsTrigger>
+          <TabsTrigger value="cli">
+            {({ active }) => (
+              <>
+                <CliIcon className="size-4" weight={active ? 'fill' : 'bold'} />
+                {t('install.viaCli')}
+              </>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="plugin">
+            {({ active }) => (
+              <>
+                <AgentIcon className="size-4" weight={active ? 'fill' : 'bold'} />
+                {t('install.viaPlugin')}
+              </>
+            )}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="cli">
@@ -64,7 +80,7 @@ export function InstallPanel({
               key={key}
               className="flex gap-2 border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground"
             >
-              <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+              <WarningIcon className="mt-0.5 size-3.5 shrink-0" />
               <span>{t(key)}</span>
             </li>
           ))}
@@ -73,7 +89,10 @@ export function InstallPanel({
 
       {credentials.length > 0 ? (
         <div className="mt-5 border-t border-border pt-4">
-          <h3 className="text-xs font-medium text-foreground">{t('install.credentials')}</h3>
+          <h3 className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+            <CredentialIcon className="size-3.5" weight="bold" />
+            {t('install.credentials')}
+          </h3>
           <ul className="mt-2 flex flex-wrap gap-1.5">
             {credentials.map((step) =>
               step.type === 'require-credential' ? (

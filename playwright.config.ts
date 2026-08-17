@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test'
+import { defineConfig, devices } from '@playwright/test'
 import { mobileProjects } from './e2e/lib/devices'
 
 const PORT = 5173
@@ -7,12 +7,15 @@ const baseURL = `http://localhost:${PORT}`
 /**
  * End-to-end coverage.
  *
- * Mobile markdown rendering on the plugin detail page, plus the catalog-card
- * Social preview treatment. One Chromium run, many device projects for the
- * readme: overflow, wrapping and stacking are resolution-dependent, and a
- * single "phone" viewport would miss the 360px Android and 430px iPhone Max
- * cases. The OG-card project is a fixture page and does not need a device
- * matrix.
+ * Mobile markdown rendering on the plugin detail page, the catalog-card Social
+ * preview treatment, and the icon system. One Chromium run, many device projects
+ * for the readme: overflow, wrapping and stacking are resolution-dependent, and a
+ * single "phone" viewport would miss the 360px Android and 430px iPhone Max cases.
+ *
+ * The other three suites each need one viewport, not a matrix. The OG-card project
+ * is a fixture page. The icon suite is split by pointer rather than by width: most
+ * of it needs the desktop bar, which is hidden below `md`, while the menu toggle
+ * and the 44px hit areas only exist under a coarse pointer.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -50,6 +53,19 @@ export default defineConfig({
         deviceScaleFactor: 2,
         defaultBrowserType: 'chromium',
       },
+    },
+    {
+      name: 'icons',
+      testMatch: /icons\/icon-system\.spec\.ts/,
+      use: {
+        viewport: { width: 1280, height: 900 },
+        defaultBrowserType: 'chromium',
+      },
+    },
+    {
+      name: 'icons-touch',
+      testMatch: /icons\/icon-touch\.spec\.ts/,
+      use: { ...devices['Pixel 7'], defaultBrowserType: 'chromium' },
     },
   ],
 })
