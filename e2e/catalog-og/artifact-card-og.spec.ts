@@ -1,14 +1,40 @@
+import { readFileSync } from 'node:fs'
 import { expect, test, type Page } from '@playwright/test'
 
 const catalogOg = `${process.cwd()}/e2e/catalog-og`
+const stylesheet = `${process.cwd()}/frontend/src/app/styles/app.css`
 const shots = '/opt/cursor/artifacts/screenshots'
 
+/**
+ * The product's own tokens, lifted out of `app.css` and rewritten onto the
+ * selectors this fixture uses.
+ *
+ * The fixture used to restate the palette inline, which is how it ended up
+ * asserting contrast against a set of colours the product had already left behind.
+ * Reading the stylesheet means a palette change cannot pass this suite by being
+ * invisible to it. Only the `:root` and `:root.dark` blocks are taken: the
+ * `prefers-color-scheme` copy is the same palette, and this fixture switches theme
+ * by adding a class.
+ */
+function designTokens(): string {
+  const css = readFileSync(stylesheet, 'utf8')
+  const block = (from: string, to: string) => {
+    const body = css.slice(css.indexOf(from) + from.length, css.indexOf(to))
+    return body.slice(0, body.lastIndexOf('}'))
+  }
+  return [
+    `:root {${block(':root {', ':root.dark {')}}`,
+    `html.dark {${block(':root.dark {', '@media (prefers-color-scheme: dark)')}}`,
+  ].join('\n')
+}
+
 async function openPreview(page: Page, theme: 'light' | 'dark') {
+  const html = readFileSync(`${catalogOg}/og-card-preview.html`, 'utf8').replace(
+    '/* {{TOKENS}} */',
+    designTokens(),
+  )
   await page.route('**/og-card-preview.html', (route) =>
-    route.fulfill({
-      contentType: 'text/html; charset=utf-8',
-      path: `${catalogOg}/og-card-preview.html`,
-    }),
+    route.fulfill({ contentType: 'text/html; charset=utf-8', body: html }),
   )
   await page.route('**/fixtures/custom-og.png', (route) =>
     route.fulfill({

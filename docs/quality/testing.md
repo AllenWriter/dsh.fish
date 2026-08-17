@@ -91,6 +91,24 @@ page size of twenty-four, so a browser never reaches a second page.
 
 Install the browser once with `pnpm exec playwright install --with-deps chromium`.
 
+## Design tokens
+
+`frontend/src/app/styles/palette.test.ts` parses `app.css` — it never restates a
+colour — and asserts what a stylesheet cannot check for itself: every value is inside
+sRGB, every foreground/background pair the UI renders meets its WCAG threshold, the
+accent and neutral hues have not drifted, the three stacked surfaces stay
+distinguishable, and the dark block says the same thing in both places the cascade
+forces it to be written.
+
+Borders are deliberately absent from the contrast table. `--line` and `--line-strong`
+draw structure and hover feedback on surfaces a reader identifies by their content,
+so holding them to a component threshold would make the interface heavier for no
+accessibility gain.
+
+The `catalog-og` fixture reads its tokens out of `app.css` for the same reason. It
+used to restate them, which is how it ended up asserting contrast against a palette
+the product had already left behind.
+
 ## Test data
 
 - Use factories, not fixtures, for test data.

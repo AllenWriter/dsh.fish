@@ -53,12 +53,26 @@ import { t } from 'shared/i18n';
 - ✅ Prefer: `bg-bg`, `text-text`, `border-border`, `text-muted`.
 - Theme differences must live in one place (global theme file or CSS variables). Do not scatter `dark:` or media queries across components.
 
+### The accent is the brand mark's hue
+
+The palette is a near-neutral ground and exactly one accent. That accent is hue 263,
+sampled from `icons/whale-brand.png` rather than chosen: the whale's body is
+`oklch(0.529 0.257 263)` over 44% of the mark and its shadow is the same hue, and the
+plugin tiles on the social card are drawn in it too. The whale's cyan belly is part
+of the artwork, not a second accent this UI may spend.
+
+Every neutral shares one cool hue (250), so the greys never disagree with each other
+or look dirty under a blue accent. Dark mode's ground sits close to the social card's
+own `oklch(0.148 0.035 242)`, so arriving from a shared link is continuous.
+
+Do not add a token in a new hue. If a state needs distinguishing, use lightness,
+weight or a glyph.
+
 ### Colour is scarce; shape is not
 
-The palette is a near-neutral ground and exactly one accent, and the accent is spent
-on two things only: the primary action and a verified badge. Do not give a taxonomy
-entry a hue — six kind colours encode nothing a reader can learn and compete with the
-one accent.
+The accent is spent on two things only: the primary action and a verified badge. Do
+not give a taxonomy entry a hue — six kind colours encode nothing a reader can learn
+and compete with the one accent.
 
 A glyph is the opposite trade and is encouraged: it is one mark per entry, it
 survives translation into ten languages where the word does not, and it stays
@@ -67,6 +81,19 @@ its mark, never by a colour.
 
 Where a state does use the accent, it must also change shape or weight, so the state
 is never carried by hue alone.
+
+### Every colour must be inside sRGB
+
+`oklch()` accepts a chroma no display can produce, and the browser then gamut-maps
+it — so the colour that ships is not the colour that was authored, and two tokens
+authored at different chromas can silently render as the same thing. Three tokens
+used to do this.
+
+`app/styles/palette.test.ts` fails the build on that, on a contrast regression in any
+pair the UI renders, on a token drifting off the accent or neutral hue, and on the
+two copies of the dark block disagreeing. Change a token, run the frontend tests, and
+then regenerate the social cards with
+`pnpm --filter @dsh-fish/frontend run og:build` — they inline the same values.
 
 ## Functional icons
 
