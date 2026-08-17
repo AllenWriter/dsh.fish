@@ -18,6 +18,11 @@ social card is not used as a logo: it is a sharing canvas with background
 artwork and does not satisfy the shape or identity semantics of an organization
 mark.
 
+`Organization.sameAs` lists the profiles the project actually maintains: the
+`HUB_REPO_URL` repository and the `HUB_DISCORD_URL` community invite, both from
+`shared/config/site.ts`. Adding a profile the project does not control would
+claim an identity it cannot back.
+
 `WebSite` and `Organization` are emitted **once**, on the home page, and
 referenced by `@id` from every other page (`isPartOf`, `publisher`). Repeating
 them on every page would restate the same facts a few thousand times per crawl.

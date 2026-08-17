@@ -2,12 +2,14 @@ import { ARTIFACT_KINDS, CATEGORIES, kindPluralKey } from '@/entities/artifact/m
 import { KindIcon } from '@/entities/artifact/ui/kind-icon'
 import { CategoryIcon } from '@/entities/artifact/ui/category-icon'
 import { useT } from '@/shared/config/i18n'
-import { HARNESS_REPO_URL } from '@/shared/config/site'
+import { HARNESS_REPO_URL, HUB_DISCORD_URL, HUB_REPO_URL } from '@/shared/config/site'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import {
   BrowseIcon,
+  DiscordIcon,
   DocsIcon,
   ExternalLinkIcon,
+  GithubIcon,
   SubmitIcon,
   type Icon,
 } from '@/shared/ui/icon'
@@ -17,6 +19,19 @@ const NAV: readonly { to: string; key: string; icon: Icon }[] = [
   { to: '/browse', key: 'nav.browse', icon: BrowseIcon },
   { to: '/docs', key: 'nav.docs', icon: DocsIcon },
   { to: '/submit', key: 'nav.submit', icon: SubmitIcon },
+]
+
+/**
+ * Everything this footer points to that is not part of the site.
+ *
+ * The two brand marks carry the destination on their own, so they are the label
+ * as much as the text is; the harness keeps the generic outbound mark because
+ * there is no mark that means "the project this hub serves".
+ */
+const EXTERNAL: readonly { href: string; key: string; icon: Icon }[] = [
+  { href: HUB_REPO_URL, key: 'nav.github', icon: GithubIcon },
+  { href: HUB_DISCORD_URL, key: 'nav.discord', icon: DiscordIcon },
+  { href: HARNESS_REPO_URL, key: 'nav.harness', icon: ExternalLinkIcon },
 ]
 
 /**
@@ -75,19 +90,19 @@ export function SiteFooter() {
                   </FooterLink>
                 </li>
               ))}
-              <li>
-                {/* The one link in this footer that leaves the site says so with
-                    the same mark the plugin page uses for its source link. */}
-                <a
-                  href={HARNESS_REPO_URL}
-                  className="inline-flex min-h-9 items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  rel="noreferrer noopener"
-                  target="_blank"
-                >
-                  <ExternalLinkIcon className="size-4 shrink-0" />
-                  {t('nav.harness')}
-                </a>
-              </li>
+              {EXTERNAL.map((entry) => (
+                <li key={entry.href}>
+                  <a
+                    href={entry.href}
+                    className="inline-flex min-h-9 items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    rel="noreferrer noopener"
+                    target="_blank"
+                  >
+                    <entry.icon className="size-4 shrink-0" />
+                    {t(entry.key)}
+                  </a>
+                </li>
+              ))}
             </ul>
           </nav>
         </div>

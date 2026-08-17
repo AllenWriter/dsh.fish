@@ -43,9 +43,11 @@ test.describe('the mobile menu toggle', () => {
     const sheet = page.locator('nav.overflow-hidden')
     await expect(sheet).toBeVisible()
 
+    // Three destinations, then the source repository and the community.
     const links = sheet.getByRole('link')
-    await expect(links).toHaveCount(3)
-    for (let index = 0; index < 3; index += 1) {
+    await expect(links).toHaveCount(5)
+    const count = await links.count()
+    for (let index = 0; index < count; index += 1) {
       const link = links.nth(index)
       await expect(link.locator('svg')).toHaveCount(1)
       const box = await link.boundingBox()

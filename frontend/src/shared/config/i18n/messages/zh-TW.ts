@@ -18,6 +18,8 @@ export const zhTW: Catalog = {
   'nav.language': '語言',
   'nav.menu': '選單',
   'nav.harness': 'DeepSeek Harness',
+  'nav.github': 'GitHub',
+  'nav.discord': 'Discord',
 
   'a11y.skipToContent': '跳至主要內容',
   'theme.toLight': '切換至淺色佈景',

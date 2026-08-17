@@ -29,6 +29,9 @@ export const HARNESS_REPO_URL = 'https://github.com/deepseek-ai/deepseek-harness
 /** This registry's own source, used as the publisher's `sameAs`. */
 export const HUB_REPO_URL = 'https://github.com/stvlynn/dsh.fish'
 
+/** Where the people who build and publish plugins talk to each other. */
+export const HUB_DISCORD_URL = 'https://discord.gg/PwZDHH4mv3'
+
 /** The spec a reader copies to install the hub's plugin into their harness. */
 export const HUB_PLUGIN_SPEC = 'github:stvlynn/dsh.fish#main'
 

@@ -18,6 +18,8 @@ export const ru: Catalog = {
   'nav.language': 'Язык',
   'nav.menu': 'Меню',
   'nav.harness': 'DeepSeek Harness',
+  'nav.github': 'GitHub',
+  'nav.discord': 'Discord',
 
   'a11y.skipToContent': 'Перейти к содержимому',
   'theme.toLight': 'Переключить на светлую тему',

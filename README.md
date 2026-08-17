@@ -2,7 +2,7 @@
 
 **Discover and install plugins for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).**
 
-[Browse the plugin hub](https://dsh.fish) · [Explore the architecture](docs/project/architecture.md) · [Read the SEO design](docs/seo/README.md)
+[Browse the plugin hub](https://dsh.fish) · [Join the Discord](https://discord.gg/PwZDHH4mv3) · [Explore the architecture](docs/project/architecture.md) · [Read the SEO design](docs/seo/README.md)
 
 dsh.fish is the open-source plugin registry and installer for DeepSeek Harness.
 Search bundles, profiles, skills, MCP servers, agent presets, and hook bridges;
@@ -118,6 +118,17 @@ This writes the site-wide Open Graph image to `frontend/public/og.png` and the
 GitHub repository Social Preview to `.github/social-preview.png`.
 
 Deployment, bindings and secrets: [`docs/operations/deployment.md`](docs/operations/deployment.md).
+
+## Community
+
+- **Source and issues** — [github.com/stvlynn/dsh.fish](https://github.com/stvlynn/dsh.fish)
+- **Discord** — [discord.gg/PwZDHH4mv3](https://discord.gg/PwZDHH4mv3), for plugin
+  authors, harness questions, and anything that is not yet an issue
+
+Both are linked from the site itself: the header bar carries the two marks, and
+the footer names them. The URLs live in
+[`frontend/src/shared/config/site.ts`](frontend/src/shared/config/site.ts), so
+they are declared once and reused by the pages and by `Organization.sameAs`.
 
 ## Documentation
 

@@ -18,6 +18,8 @@ export const zhCN: Catalog = {
   'nav.language': '语言',
   'nav.menu': '菜单',
   'nav.harness': 'DeepSeek Harness',
+  'nav.github': 'GitHub',
+  'nav.discord': 'Discord',
 
   'a11y.skipToContent': '跳到正文',
   'theme.toLight': '切换到浅色主题',

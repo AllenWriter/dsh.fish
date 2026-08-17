@@ -18,6 +18,8 @@ export const ko: Catalog = {
   'nav.language': '언어',
   'nav.menu': '메뉴',
   'nav.harness': 'DeepSeek Harness',
+  'nav.github': 'GitHub',
+  'nav.discord': 'Discord',
 
   'a11y.skipToContent': '본문으로 건너뛰기',
   'theme.toLight': '라이트 테마로 전환',

@@ -18,6 +18,8 @@ export const ja: Catalog = {
   'nav.language': '言語',
   'nav.menu': 'メニュー',
   'nav.harness': 'DeepSeek Harness',
+  'nav.github': 'GitHub',
+  'nav.discord': 'Discord',
 
   'a11y.skipToContent': '本文へスキップ',
   'theme.toLight': 'ライトテーマに切り替える',
