@@ -19,6 +19,7 @@ interface RepoStub {
   description?: string
   topics?: string[]
   files?: Record<string, string>
+  ogImageUrl?: string
 }
 
 function repoItem(repo: RepoStub) {
@@ -51,9 +52,30 @@ function stubGitHub(pages: Record<number, RepoStub[]>) {
     for (const repo of repos) byRepo.set(`${repo.owner}/${repo.name}`, repo)
   }
 
-  vi.stubGlobal('fetch', async (input: string) => {
-    const url = String(input)
+  vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
     calls.push(url)
+
+    if (url.includes('/graphql')) {
+      const owner = graphqlOwner(init?.body)
+      const repo = owner ? byRepo.get(owner) : undefined
+      const custom = repo?.ogImageUrl
+      if (custom) {
+        return Response.json({
+          data: {
+            repository: { usesCustomOpenGraphImage: true, openGraphImageUrl: custom },
+          },
+        })
+      }
+      return Response.json({
+        data: {
+          repository: {
+            usesCustomOpenGraphImage: false,
+            openGraphImageUrl: 'https://avatars.githubusercontent.com/u/1',
+          },
+        },
+      })
+    }
 
     const search = url.match(/search\/repositories\?.*page=(\d+)/)
     if (search) {
@@ -139,7 +161,26 @@ describe('GitHubIndexer.discover', () => {
       // Nothing declared a category anywhere; before, this row landed with
       // none and no category filter could reach it.
       categories: ['data'],
+      ogImageUrl: 'https://opengraph.githubassets.com/c0ffee0000000000000000000000000000000000/acme/pg-tools',
     })
+  })
+
+  it('stores an uploaded Social preview instead of the generated card', async () => {
+    const custom =
+      'https://repository-images.githubusercontent.com/70107786/4602445c-10a2-4903-a360-c96d70531f67'
+    stubGitHub({
+      1: [
+        {
+          owner: 'acme',
+          name: 'pg-tools',
+          ogImageUrl: custom,
+          files: { 'SKILL.md': SKILL_MD },
+        },
+      ],
+    })
+
+    const [snapshot] = await new GitHubIndexer().discover(1)
+    expect(snapshot?.ogImageUrl).toBe(custom)
   })
 
   it('stops at the caller\'s limit', async () => {
@@ -195,3 +236,15 @@ describe('GitHubIndexer.discover', () => {
     expect(calls[0]).toContain('page=1')
   })
 })
+
+function graphqlOwner(body: BodyInit | null | undefined): string | undefined {
+  if (typeof body !== 'string') return undefined
+  try {
+    const parsed = JSON.parse(body) as { variables?: { owner?: string; name?: string } }
+    const owner = parsed.variables?.owner
+    const name = parsed.variables?.name
+    return owner !== undefined && name !== undefined ? `${owner}/${name}` : undefined
+  } catch {
+    return undefined
+  }
+}

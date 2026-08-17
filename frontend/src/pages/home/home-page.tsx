@@ -7,7 +7,7 @@ import { kindDescriptionKey, kindPluralKey } from '@/entities/artifact/model/typ
 import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { LocaleLink, useLocalePath } from '@/shared/ui/locale-link'
 import { errorMeta, organizationLd, pageMeta, websiteLd } from '@/shared/lib/seo'
-import { compactNumber } from '@/shared/lib/format'
+import { AnimatedNumber } from '@/shared/ui/animated-number'
 
 export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
   if (!loaderData) return errorMeta(params.locale)
@@ -103,7 +103,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           </Form>
 
           <p className="mt-7 text-sm text-muted-foreground">
-            {compactNumber(total)} {t('home.statsArtifacts')}
+            <AnimatedNumber value={total} /> {t('home.statsArtifacts')}
           </p>
 
           {/* Each chip goes to that type's own indexable page rather than to a

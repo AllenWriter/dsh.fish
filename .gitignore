@@ -22,3 +22,6 @@ build/
 .dev.vars
 node-compile-cache/
 packages/*/lib/
+test-results/
+playwright-report/
+blob-report/

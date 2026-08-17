@@ -15,6 +15,13 @@
       "when": 1786900871250,
       "tag": "0001_early_ricochet",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786945000000,
+      "tag": "0002_artifact_og_image",
+      "breakpoints": true
     }
   ]
 }

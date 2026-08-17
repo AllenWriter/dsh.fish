@@ -24,6 +24,10 @@
 - Keep them stable and fast enough to run in CI.
 - Use deterministic test data.
 
+Catalog-card Social preview treatment is asserted in `frontend/e2e/artifact-card-og.spec.ts`
+against a fixture page that uses the same `--artifact-og-*` tokens as `app.css`.
+Run it with `pnpm test:e2e`.
+
 ## Test data
 
 - Use factories, not fixtures, for test data.

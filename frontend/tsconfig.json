@@ -14,5 +14,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".react-router/types/**/*"
-  ]
+  ],
+  "exclude": ["e2e"]
 }

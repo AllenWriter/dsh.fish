@@ -10,7 +10,8 @@ import { requireLocale, translate, useLocale, useT } from '@/shared/config/i18n'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { Markdown } from '@/shared/ui/markdown'
 import { breadcrumbLd, errorMeta, pageMeta } from '@/shared/lib/seo'
-import { compactNumber, relativeTime } from '@/shared/lib/format'
+import { relativeTime } from '@/shared/lib/format'
+import { AnimatedNumber } from '@/shared/ui/animated-number'
 
 /**
  * A plugin page, which is the page this whole site exists to get indexed.
@@ -248,7 +249,9 @@ function Metric({ label, value }: { label: string; value: number }) {
     <div className="flex items-center gap-1.5">
       <dt className="sr-only">{label}</dt>
       <dd>
-        <span className="font-medium tabular-nums text-foreground">{compactNumber(value)}</span>{' '}
+        <span className="font-medium tabular-nums text-foreground">
+          <AnimatedNumber value={value} />
+        </span>{' '}
         {label}
       </dd>
     </div>

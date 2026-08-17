@@ -15,6 +15,7 @@ import type { HubConfig, HubEnv } from './config/env.js'
 import { createAuth } from './auth/auth.js'
 import type { HubAuth } from './auth/auth.js'
 import { GitHubIndexer } from './ingestion/github-indexer.js'
+import { GitHubSocialPreview } from './ingestion/github-social-preview.js'
 import { NpmIndexer } from './ingestion/npm-indexer.js'
 import { KvSweepCursor, sweepCursorKey } from './ingestion/sweep-cursor.js'
 import { D1ArtifactRepository } from './persistence/d1-artifact-repository.js'
@@ -54,9 +55,14 @@ export function createContainer(env: HubEnv, cf?: IncomingRequestCfProperties): 
   const artifacts = new D1ArtifactRepository(db)
   const submissions = new D1SubmissionRepository(db)
   const identities = new D1LinkedIdentityReader(db)
+  const socialPreview = new GitHubSocialPreview(config.githubToken)
   const indexers: readonly SourceIndexer[] = [
-    new GitHubIndexer(config.githubToken, new KvSweepCursor(env.KV, sweepCursorKey('github'))),
-    new NpmIndexer(),
+    new GitHubIndexer(
+      config.githubToken,
+      new KvSweepCursor(env.KV, sweepCursorKey('github')),
+      socialPreview,
+    ),
+    new NpmIndexer(socialPreview),
   ]
 
   return {

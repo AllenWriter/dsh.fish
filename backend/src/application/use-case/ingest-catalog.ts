@@ -77,6 +77,7 @@ export class IngestCatalog {
               ...(snapshot.readmeMarkdown === undefined
                 ? {}
                 : { readmeMarkdown: snapshot.readmeMarkdown }),
+              ...(snapshot.ogImageUrl === undefined ? {} : { ogImageUrl: snapshot.ogImageUrl }),
               ...(snapshot.deprecated === undefined ? {} : { deprecated: snapshot.deprecated }),
             })
             await this.artifacts.save(refreshed)
@@ -114,6 +115,7 @@ export function toArtifact(snapshot: IndexedSnapshot, ownerAccountId?: string): 
     ...(snapshot.license === undefined ? {} : { license: snapshot.license }),
     ...(snapshot.author === undefined ? {} : { author: snapshot.author }),
     ...(snapshot.readmeMarkdown === undefined ? {} : { readmeMarkdown: snapshot.readmeMarkdown }),
+    ...(snapshot.ogImageUrl ? { ogImageUrl: snapshot.ogImageUrl } : {}),
     stats: { stars: snapshot.stats.stars, downloads: snapshot.stats.downloads, installs: 0 },
     ...(ownerAccountId === undefined ? {} : { ownerAccountId }),
     ...(snapshot.deprecated === undefined ? {} : { deprecated: snapshot.deprecated }),

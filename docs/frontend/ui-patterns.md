@@ -53,6 +53,28 @@ import { t } from 'shared/i18n';
 - ✅ Prefer: `bg-bg`, `text-text`, `border-border`, `text-muted`.
 - Theme differences must live in one place (global theme file or CSS variables). Do not scatter `dark:` or media queries across components.
 
+## Catalog card Social preview
+
+A GitHub Social preview is a texture behind the card, not a second title.
+
+- Render it only when `artifact.ogImageUrl` is present. Do not invent a placeholder image.
+- Mark it decorative: `aria-hidden` on the layer, empty `alt` on the `img`.
+- Drive opacity, blur, saturation and the scrim from `--artifact-og-*` in `app.css`.
+- Hover may shift opacity only, only under `@media (hover: hover) and (pointer: fine)`, and not under `prefers-reduced-motion`.
+- Animate `opacity` only. Do not animate `blur` or `transform` on hover.
+
+## Animated counts
+
+User-facing counts (stars, downloads, the home total) go through
+`shared/ui/animated-number.tsx`, which wraps `@number-flow/react`.
+
+- Format with `compactNumberParts` in `shared/lib/format.ts`. Do not pass
+  `notation: 'compact'` to NumberFlow — ICU compact notation hydrates
+  differently on the Worker and in the browser.
+- Pin `locales="en"` and explicit `minimumFractionDigits` / `maximumFractionDigits`.
+- Keep `font-variant-numeric: tabular-nums` so changing digits do not shift layout.
+- First paint is static. Do not add extra entrance motion around the number.
+
 ## Components are small and focused
 
 - A component should do one thing.

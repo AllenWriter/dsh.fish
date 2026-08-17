@@ -12,6 +12,7 @@ import type {
   SourceIndexer,
 } from '../../application/port/source-indexer.js'
 import type { SweepCursor } from './sweep-cursor.js'
+import { GitHubSocialPreview } from './github-social-preview.js'
 
 /** The topic the harness README asks plugin authors to tag their repositories with. */
 export const DSH_PLUGIN_TOPIC = 'dsh-plugin'
@@ -64,6 +65,7 @@ export class GitHubIndexer implements SourceIndexer {
   constructor(
     private readonly token?: string,
     private readonly cursor?: SweepCursor,
+    private readonly socialPreview: GitHubSocialPreview = new GitHubSocialPreview(token),
   ) {}
 
   /**
@@ -163,6 +165,7 @@ export class GitHubIndexer implements SourceIndexer {
             }),
             ...(manifest.license ? { license: manifest.license } : {}),
             ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
+            ogImageUrl: context.ogImageUrl,
           }
         }
       }
@@ -201,6 +204,7 @@ export class GitHubIndexer implements SourceIndexer {
             text: `${parsed.name} ${parsed.description}`,
           }),
           ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
+          ogImageUrl: context.ogImageUrl,
         }
       }
     }
@@ -228,6 +232,7 @@ export class GitHubIndexer implements SourceIndexer {
           text: `${repo.name} ${repo.description ?? ''}`,
         }),
         ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
+        ogImageUrl: context.ogImageUrl,
       }
     }
 
@@ -243,9 +248,10 @@ export class GitHubIndexer implements SourceIndexer {
     subPath: string | undefined,
     prefix: string,
     ref: string,
-  ): Promise<{ source: SourceRef; head?: string; readme?: string }> {
+  ): Promise<{ source: SourceRef; head?: string; readme?: string; ogImageUrl: string }> {
     const head = await this.resolveCommit(repo.owner.login, repo.name, ref)
     const readme = await this.readFile(repo, `${prefix}README.md`, ref)
+    const ogImageUrl = await this.socialPreview.read(repo.owner.login, repo.name, head)
     return {
       source: githubSource({
         owner: repo.owner.login,
@@ -255,6 +261,7 @@ export class GitHubIndexer implements SourceIndexer {
       }),
       ...(head === undefined ? {} : { head }),
       ...(readme === undefined ? {} : { readme }),
+      ogImageUrl,
     }
   }
 

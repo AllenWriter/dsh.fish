@@ -1,13 +1,14 @@
 import { classifyPackage } from '../../domain/artifact/manifest.js'
 import type { PackageManifest } from '../../domain/artifact/manifest.js'
 import { resolveCategories } from '../../domain/artifact/category-inference.js'
-import { npmSource } from '../../domain/artifact/source-ref.js'
+import { npmSource, githubRepoFromUrl } from '../../domain/artifact/source-ref.js'
 import { slugify } from '../../domain/shared/slug.js'
 import type {
   IndexedSnapshot,
   IndexRequest,
   SourceIndexer,
 } from '../../application/port/source-indexer.js'
+import { GitHubSocialPreview } from './github-social-preview.js'
 
 const REGISTRY = 'https://registry.npmjs.org'
 const SEARCH = `${REGISTRY}/-/v1/search`
@@ -47,6 +48,8 @@ interface Packument {
  */
 export class NpmIndexer implements SourceIndexer {
   readonly origin = 'npm' as const
+
+  constructor(private readonly socialPreview: GitHubSocialPreview = new GitHubSocialPreview()) {}
 
   async discover(limit: number): Promise<readonly IndexedSnapshot[]> {
     const names = new Set<string>()
@@ -96,6 +99,7 @@ export class NpmIndexer implements SourceIndexer {
 
     const downloads = await this.weeklyDownloads(name)
     const publishedIso = packument.time?.[latest]
+    const ogImageUrl = await this.resolveOgImage(manifest.repository)
 
     return {
       id: slugify(name),
@@ -114,10 +118,25 @@ export class NpmIndexer implements SourceIndexer {
         : {}),
       ...(authorOf(manifest) === undefined ? {} : { author: authorOf(manifest)! }),
       ...(packument.readme === undefined ? {} : { readmeMarkdown: packument.readme }),
+      ...(ogImageUrl === undefined ? { ogImageUrl: null } : { ogImageUrl }),
       stats: { stars: 0, downloads },
       deprecated: typeof manifest.deprecated === 'string',
       ...(publishedIso === undefined ? {} : {}),
     }
+  }
+
+  /**
+   * An npm package only has a Social preview when its packument points at a
+   * GitHub repository. No repository, no preview — not a guessed image.
+   */
+  private async resolveOgImage(
+    repository: PackumentVersion['repository'],
+  ): Promise<string | undefined> {
+    const url = typeof repository === 'string' ? repository : repository?.url
+    if (url === undefined) return undefined
+    const github = githubRepoFromUrl(url)
+    if (!github) return undefined
+    return this.socialPreview.read(github.owner, github.repo)
   }
 
   private async weeklyDownloads(name: string): Promise<number> {

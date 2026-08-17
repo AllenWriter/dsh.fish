@@ -102,6 +102,7 @@ export class SubmitArtifact {
               keywords: snapshot.keywords,
               categories: snapshot.categories,
               stats: { ...snapshot.stats, installs: existing.stats.installs },
+              ...(snapshot.ogImageUrl === undefined ? {} : { ogImageUrl: snapshot.ogImageUrl }),
             })
             .claimedBy(session.account.id)
         : toArtifact(snapshot, session.account.id)

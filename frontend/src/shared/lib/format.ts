@@ -9,11 +9,28 @@ import { localeDefinition, type Locale } from '@/shared/config/i18n'
  * ICU data — a mismatch here is a hydration error on every card that shows a
  * star count. The suffixes are conventional in developer tooling in every
  * language this site serves.
+ *
+ * Split into parts so NumberFlow can animate the numeric side without calling
+ * `Intl` itself.
  */
+export interface CompactNumberParts {
+  readonly value: number
+  readonly suffix: string
+  readonly fractionDigits: number
+}
+
+export function compactNumberParts(value: number): CompactNumberParts {
+  if (value < 1000) return { value, suffix: '', fractionDigits: 0 }
+  if (value < 1_000_000) {
+    const fractionDigits = value < 10_000 ? 1 : 0
+    return { value: value / 1000, suffix: 'k', fractionDigits }
+  }
+  return { value: value / 1_000_000, suffix: 'M', fractionDigits: 1 }
+}
+
 export function compactNumber(value: number): string {
-  if (value < 1000) return String(value)
-  if (value < 1_000_000) return `${(value / 1000).toFixed(value < 10_000 ? 1 : 0)}k`
-  return `${(value / 1_000_000).toFixed(1)}M`
+  const parts = compactNumberParts(value)
+  return `${parts.value.toFixed(parts.fractionDigits)}${parts.suffix}`
 }
 
 /**

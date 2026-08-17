@@ -179,6 +179,7 @@ export class D1ArtifactRepository implements ArtifactRepository {
       authorName: props.author?.name ?? null,
       authorUrl: props.author?.url ?? null,
       readmeMarkdown: props.readmeMarkdown ?? null,
+      ogImageUrl: props.ogImageUrl ?? null,
       stars: props.stats.stars,
       downloads: props.stats.downloads,
       installs: props.stats.installs,
@@ -259,6 +260,7 @@ function toEntity(row: ArtifactRow): Artifact {
       ? {}
       : { author: { name: row.authorName, ...(row.authorUrl === null ? {} : { url: row.authorUrl }) } }),
     ...(row.readmeMarkdown === null ? {} : { readmeMarkdown: row.readmeMarkdown }),
+    ...(row.ogImageUrl === null ? {} : { ogImageUrl: row.ogImageUrl }),
     stats: { stars: row.stars, downloads: row.downloads, installs: row.installs },
     ...(row.ownerAccountId === null ? {} : { ownerAccountId: row.ownerAccountId }),
     publishedAt: row.publishedAt,
