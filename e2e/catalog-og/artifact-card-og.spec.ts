@@ -1,10 +1,28 @@
 import { expect, test, type Page } from '@playwright/test'
 
-const preview = new URL('./og-card-preview.html', import.meta.url)
+const catalogOg = `${process.cwd()}/e2e/catalog-og`
 const shots = '/opt/cursor/artifacts/screenshots'
 
 async function openPreview(page: Page, theme: 'light' | 'dark') {
-  await page.goto(preview.href)
+  await page.route('**/og-card-preview.html', (route) =>
+    route.fulfill({
+      contentType: 'text/html; charset=utf-8',
+      path: `${catalogOg}/og-card-preview.html`,
+    }),
+  )
+  await page.route('**/fixtures/custom-og.png', (route) =>
+    route.fulfill({
+      contentType: 'image/png',
+      path: `${catalogOg}/fixtures/custom-og.png`,
+    }),
+  )
+  await page.route('**/fixtures/generated-og.png', (route) =>
+    route.fulfill({
+      contentType: 'image/png',
+      path: `${catalogOg}/fixtures/generated-og.png`,
+    }),
+  )
+  await page.goto('/og-card-preview.html')
   if (theme === 'dark') {
     await page.evaluate(() => document.documentElement.classList.add('dark'))
   }

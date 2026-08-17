@@ -51,9 +51,11 @@ iPhone presets default to WebKit; CI only installs Chromium, and the suite is
 asserting CSS-pixel layout, not engine differences.
 
 **Catalog-card Social preview** (`e2e/catalog-og/`) is a fixture page that uses
-the same `--artifact-og-*` tokens as `app.css`. It asserts image opacity, blur
-and title contrast, and writes treatment screenshots. Run that project alone
-with `pnpm exec playwright test --project=catalog-og`.
+the same `--artifact-og-*` tokens as `app.css`. Playwright fulfills
+`/og-card-preview.html` and its PNGs from that folder (the spec cannot import
+`node:` modules — the loader is ESM and those compile to `require`). It asserts
+image opacity, blur and title contrast, and writes treatment screenshots. Run
+that project alone with `pnpm exec playwright test --project=catalog-og`.
 
 Install the browser once with `pnpm exec playwright install --with-deps chromium`.
 
