@@ -94,6 +94,32 @@ export function sourceUrl(source: SourceRef): string {
 }
 
 /**
+ * Bases a README's *relative* paths resolve against.
+ *
+ * A readme is read out of a repository, so `[guide](docs/guide.md)` and
+ * `![shot](docs/hero.png)` are relative to where it was read from, not to this
+ * site. Documents resolve to a browsable page; assets have to resolve to raw
+ * bytes, because an HTML page is not an image. Both end in a slash — without
+ * one, `new URL('a.png', '…/HEAD/pkg')` drops the last segment.
+ *
+ * npm and submission sources return undefined. A packument readme carries no
+ * knowable root, and rendering a relative path there as an unresolvable path is
+ * honest, where guessing one would produce confident 404s.
+ */
+export function sourceDocBase(source: SourceRef): string | undefined {
+  return source.origin === 'github' ? `${githubTree(source, 'blob')}/` : undefined
+}
+
+export function sourceAssetBase(source: SourceRef): string | undefined {
+  return source.origin === 'github' ? `${githubTree(source, 'raw')}/` : undefined
+}
+
+function githubTree(source: GitHubSource, view: 'blob' | 'raw'): string {
+  const root = `https://github.com/${source.owner}/${source.repo}/${view}/${source.commit ?? 'HEAD'}`
+  return source.path === undefined ? root : `${root}/${source.path}`
+}
+
+/**
  * The package-manager specifier `dsh plugin add` receives.
  *
  * Git installs are pinned to a commit whenever the registry knows one: an

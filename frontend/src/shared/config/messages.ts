@@ -99,8 +99,6 @@ export const messages = {
   'install.viaPluginBody':
     'With the hub plugin installed, ask your agent to install it by name — it resolves the same plan shown here.',
   'install.profileLabel': 'Profile',
-  'install.copy': 'Copy',
-  'install.copied': 'Copied',
   'install.credentials': 'Credentials this artifact needs',
   'install.credentialsBody':
     'Set these as environment variables or through `ctx.credentials`. The registry only ever stores the reference, never the value.',
@@ -163,6 +161,8 @@ export const messages = {
   'notFound.body': 'That page does not exist.',
   'notFound.home': 'Back to the hub',
 
+  'common.copy': 'Copy',
+  'common.copied': 'Copied',
   'common.loading': 'Loading',
   'common.error': 'Something went wrong.',
   'common.retry': 'Retry',
