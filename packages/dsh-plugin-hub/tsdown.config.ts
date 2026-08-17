@@ -8,7 +8,7 @@ import { defineConfig } from 'tsdown'
  * config transpiles `src/` on its own, with no project references.
  */
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: ['src/index.ts', 'src/install.ts'],
   outDir: 'lib',
   format: ['esm'],
   dts: true,

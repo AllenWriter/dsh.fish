@@ -131,6 +131,8 @@ export const en = {
   'install.viaCli': 'Via CLI',
   'install.viaPluginBody':
     'With the hub plugin installed, ask your agent to install it by name — it resolves the same plan shown here.',
+  'install.viaCliBody':
+    'This command talks to dsh.fish and applies the same plan the plugin would, including skills, MCP rows and presets the harness launcher does not install.',
   'install.profileLabel': 'Profile',
   'install.credentials': 'Credentials this artifact needs',
   'install.credentialsBody':

@@ -122,6 +122,8 @@ export const ja: Catalog = {
   'install.viaCli': 'CLI 経由',
   'install.viaPluginBody':
     'ハブプラグインを入れておけば、名前を伝えるだけでエージェントが入れてくれます。ここに表示されているのと同じ手順を解決します。',
+  'install.viaCliBody':
+    'このコマンドは dsh.fish に問い合わせ、プラグインと同じ手順を実行します。Harness のランチャーでは入らない skill、MCP 行、プリセットも含みます。',
   'install.profileLabel': 'プロファイル',
   'install.credentials': 'この項目に必要な認証情報',
   'install.credentialsBody':

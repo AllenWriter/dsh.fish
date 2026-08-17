@@ -23,8 +23,19 @@ your `web` profile:
 dsh plugin --profile web add github:stvlynn/dsh.fish#main
 ```
 
-The plugin registers `hub_search`, `hub_show`, `hub_install`, and `hub_account`,
-so an agent can discover and install artifacts without leaving the harness.
+The plugin registers `hub_search`, `hub_show`, `hub_install`, `hub_list`,
+`hub_remove`, `hub_update`, and `hub_account`, so an agent can discover and
+install artifacts without leaving the harness.
+
+Prefer a terminal? The same plan is a copy-pasteable command:
+
+```sh
+npx @dsh-fish/cli add <artifact-id>
+```
+
+`add` / `find` / `list` / `remove` / `update` match the [skills CLI](https://github.com/vercel-labs/skills)
+vocabulary. Unlike a comment telling you to copy files, this actually writes
+skills, MCP rows, presets and hook bridges into `$DSH_HOME`.
 
 Publishing a compatible project? Add the **`dsh-plugin` GitHub topic**. The hub
 will inspect its `package.json`, `SKILL.md`, or `agent.cordis.yml` and classify
@@ -47,14 +58,18 @@ with its own install mechanism:
 ## How it works
 
 **From a browser** — search, filter by kind and category, read the plan, copy the
-command.
+command (`npx @dsh-fish/cli add <id>`).
+
+**From a terminal** — the hub CLI applies that plan: files under `$DSH_HOME`,
+package-manager adds, and profile patch rows.
 
 **From inside your agent** — use the hub plugin installed in the quick start.
 Signing in uses the OAuth device flow: the plugin prints a code, you approve it
 in a browser, and the harness gets a token.
 
 Both paths resolve the **same** install plan from the same domain code, so the
-command on the website and the one the agent runs cannot drift apart.
+command on the website and the one the agent (or the CLI) runs cannot drift
+apart.
 
 ## Repository layout
 
@@ -63,6 +78,7 @@ backend/    Domain-Driven Design: domain, application, infrastructure, interface
 frontend/   Feature-Sliced Design: app, pages, widgets, features, entities, shared
 packages/
   dsh-plugin-hub/   the `dsh-hub` bundle users install into their harness
+  dsh-cli/          `@dsh-fish/cli` — `npx @dsh-fish/cli add <id>`
 docs/       architecture, layer conventions, operations, ADRs
 ```
 

@@ -123,6 +123,8 @@ export const de: Catalog = {
   'install.viaCli': 'Über die CLI',
   'install.viaPluginBody':
     'Ist das Hub-Plugin installiert, bitte deinen Agenten einfach namentlich darum — er löst denselben Plan auf, der hier steht.',
+  'install.viaCliBody':
+    'Dieser Befehl spricht mit dsh.fish und wendet denselben Plan an wie das Plugin — inklusive Skills, MCP-Zeilen und Presets, die der Harness-Launcher nicht installiert.',
   'install.profileLabel': 'Profil',
   'install.credentials': 'Zugangsdaten, die dieses Artefakt braucht',
   'install.credentialsBody':

@@ -8,7 +8,12 @@ import * as schema from '../persistence/schema.js'
 import type { HubEnv } from '../config/env.js'
 
 /** The client id the `dsh-hub` plugin presents when it starts a device flow. */
-export const HUB_CLI_CLIENT_ID = 'dsh-hub-plugin'
+export const HUB_PLUGIN_CLIENT_ID = 'dsh-hub-plugin'
+
+/** The client id `@dsh-fish/cli` presents for the same device grant. */
+export const HUB_CLI_CLIENT_ID = 'dsh-fish-cli'
+
+const DEVICE_CLIENT_IDS = new Set([HUB_PLUGIN_CLIENT_ID, HUB_CLI_CLIENT_ID])
 
 /** Path the device-approval page is served from. */
 export const DEVICE_VERIFICATION_PATH = '/device'
@@ -70,7 +75,7 @@ export function createAuth(env?: HubEnv, cf?: IncomingRequestCfProperties, baseU
             verificationUri: DEVICE_VERIFICATION_PATH,
             expiresIn: '15m',
             interval: '5s',
-            validateClient: async (clientId) => clientId === HUB_CLI_CLIENT_ID,
+            validateClient: async (clientId) => DEVICE_CLIENT_IDS.has(clientId),
             // Numeric so the approval page can use a one-time-code input and the
             // terminal can print something unambiguous — no O/0 or I/1 to
             // misread off a screen and retype.

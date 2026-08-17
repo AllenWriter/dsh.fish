@@ -117,6 +117,8 @@ export const zhCN: Catalog = {
   'install.viaCli': '通过命令行',
   'install.viaPluginBody':
     '装好中心插件后，直接让你的 Agent 按名称安装——它解析的是这里展示的同一套方案。',
+  'install.viaCliBody':
+    '这条命令会访问 dsh.fish，并执行与插件相同的安装方案，包括 Harness 启动器不会安装的 skill、MCP 行和预设。',
   'install.profileLabel': '配置档',
   'install.credentials': '该条目需要的凭据',
   'install.credentialsBody':

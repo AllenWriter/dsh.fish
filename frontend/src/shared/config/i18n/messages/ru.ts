@@ -123,6 +123,8 @@ export const ru: Catalog = {
   'install.viaCli': 'Через CLI',
   'install.viaPluginBody':
     'Если плагин хаба установлен, просто попросите агента поставить его по имени — он разрешит тот же план, что показан здесь.',
+  'install.viaCliBody':
+    'Эта команда обращается к dsh.fish и применяет тот же план, что и плагин, включая skills, строки MCP и пресеты, которые лаунчер harness не ставит.',
   'install.profileLabel': 'Профиль',
   'install.credentials': 'Учётные данные, нужные этому артефакту',
   'install.credentialsBody':

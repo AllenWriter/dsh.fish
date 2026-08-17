@@ -123,6 +123,8 @@ export const fr: Catalog = {
   'install.viaCli': 'Via la CLI',
   'install.viaPluginBody':
     'Une fois le plugin du hub installé, demandez à votre agent de l’installer par son nom : il résout le même plan que celui affiché ici.',
+  'install.viaCliBody':
+    'Cette commande interroge dsh.fish et applique le même plan que le plugin, y compris les skills, lignes MCP et préréglages que le lanceur du harness n’installe pas.',
   'install.profileLabel': 'Profil',
   'install.credentials': 'Identifiants requis par cet artefact',
   'install.credentialsBody':

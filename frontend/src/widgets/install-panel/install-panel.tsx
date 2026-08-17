@@ -10,7 +10,8 @@ import { AgentIcon, CliIcon, CredentialIcon, WarningIcon } from '@/shared/ui/ico
  * The install surface — the reason the site exists.
  *
  * Both tabs render the *same* server-resolved plan. The CLI tab shows the plan's
- * `manualCommands`; the plugin tab shows the one sentence an agent needs. They
+ * `manualCommands` — the first of which is a real `npx @dsh-fish/cli add`
+ * invocation; the plugin tab shows the one sentence an agent needs. They
  * cannot drift, because neither is written here: the domain's `buildInstallPlan`
  * produced both.
  */
@@ -52,7 +53,10 @@ export function InstallPanel({
         </TabsList>
 
         <TabsContent value="cli">
-          <div className="space-y-2">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {t('install.viaCliBody')}
+          </p>
+          <div className="mt-3 space-y-2">
             {plan.manualCommands.map((command, index) => (
               <CopyBlock key={`${command}-${index}`} text={command} />
             ))}
