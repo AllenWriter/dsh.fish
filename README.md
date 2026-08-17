@@ -87,6 +87,7 @@ Quality gates:
 ```sh
 pnpm run typecheck
 pnpm run test
+pnpm run test:e2e
 pnpm run build
 ```
 

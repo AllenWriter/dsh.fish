@@ -89,9 +89,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen min-w-0 flex-col">
       <SiteHeader />
-      <main id="main" className="flex-1">
+      <main id="main" className="min-w-0 flex-1">
         <Outlet />
       </main>
       <SiteFooter />

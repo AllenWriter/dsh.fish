@@ -22,3 +22,10 @@ build/
 .dev.vars
 node-compile-cache/
 packages/*/lib/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+e2e/.generated-*.sql
+e2e/*-snapshots/*.png.diff.*

@@ -63,7 +63,7 @@ import { t } from 'shared/i18n';
 
 - Use Flexbox to partition the screen into stable regions (header, content, footer).
 - Only designated containers scroll. Do not allow the body or arbitrary containers to scroll.
-- Set `min-height: 0` on every flex container that participates in the scroll chain.
+- Set `min-height: 0` on every flex container that participates in the scroll chain, and `min-width: 0` on every grid or flex child that must shrink below its content's intrinsic size (a readme table, a code fence).
 - The page root should fill the viewport (`min-h-dvh` / `h-dvh`).
 
 ## Accessibility

@@ -66,9 +66,13 @@ export function Markdown({
  *
  * Nested lists get their vertical margin removed, which is a parent-child
  * relationship the `ul` component cannot see either.
+ *
+ * `overflow-wrap: anywhere` is for a DSN or a URL with no break point: without
+ * it a single token becomes the column's min-content width and the phone
+ * scrolls sideways. Tables and fences scroll on their own; this is the rest.
  */
 const PROSE = cn(
-  'text-[15px] leading-7 text-foreground/90',
+  'min-w-0 text-[15px] leading-7 text-foreground/90 [overflow-wrap:anywhere]',
   '[&_p>img:only-child]:my-2 [&_p>img:only-child]:rounded-xl',
   '[&_p>img:only-child]:outline [&_p>img:only-child]:outline-1',
   '[&_p>img:only-child]:outline-black/10 dark:[&_p>img:only-child]:outline-white/10',
@@ -157,7 +161,7 @@ const COMPONENTS: Components = {
         alt={alt ?? ''}
         loading="lazy"
         decoding="async"
-        className="inline-block max-w-full align-middle"
+        className="inline-block h-auto max-w-full align-middle"
       />
     ) : null,
 
@@ -217,7 +221,7 @@ const COMPONENTS: Components = {
   table: ({ children }) => (
     // The wrapper draws the frame, so the last row must not draw a rule under
     // itself onto it. Only a selector can tell which row is last.
-    <div className="my-5 overflow-x-auto rounded-xl border border-border [&_tbody_tr:last-child>td]:border-0 [scrollbar-width:thin]">
+    <div className="my-5 max-w-full min-w-0 overflow-x-auto rounded-xl border border-border [&_tbody_tr:last-child>td]:border-0 [scrollbar-width:thin]">
       <table className="w-full border-collapse text-sm">{children}</table>
     </div>
   ),
@@ -237,8 +241,8 @@ const COMPONENTS: Components = {
 /** A code fence, with the copy affordance the reader came for. */
 function CodeFence({ code, children }: { code: string; children?: React.ReactNode }) {
   return (
-    <div className="group relative my-5">
-      <pre className="overflow-x-auto rounded-xl border border-border bg-card p-4 pr-12 font-mono text-[13px] leading-relaxed [scrollbar-width:thin]">
+    <div className="group relative my-5 min-w-0 max-w-full">
+      <pre className="max-w-full min-w-0 overflow-x-auto rounded-xl border border-border bg-card p-4 pr-12 font-mono text-[13px] leading-relaxed [scrollbar-width:thin]">
         {children}
       </pre>
       {code === '' ? null : (
