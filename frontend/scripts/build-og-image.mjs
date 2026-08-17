@@ -38,18 +38,31 @@ const GITHUB_HEIGHT = 640;
 const brandIcon = await readFile(BRAND_ICON, "base64");
 const ecosystemBackground = await readFile(GITHUB_BACKGROUND, "base64");
 
-/** The dark palette from `app/styles/app.css`, inlined — this is one image. */
+/**
+ * The dark palette from `app/styles/app.css`, inlined once for both cards.
+ *
+ * Both images used to carry their own copy, and the GitHub one had drifted onto a
+ * set of green-leaning hexes that agreed with neither the site nor the blue
+ * background PNG they were painted over. One declaration for both is the fix.
+ *
+ * Chromium is what these tokens were authored against, so `oklch()` renders here
+ * exactly as it does in the product. Keep this block in step with `app.css` by
+ * hand and regenerate: the card is the first thing a reader sees, and a ground that
+ * does not match the page it links to reads as two different sites.
+ */
+const TOKENS = `
+      :root {
+        --bg: oklch(0.155 0.028 250);
+        --fg: oklch(0.96 0.005 250);
+        --muted-fg: oklch(0.685 0.02 250);
+        --primary: oklch(0.72 0.145 263);
+      }`;
+
 const PAGE = `<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
-    <style>
-      :root {
-        --bg: oklch(0.17 0.011 255);
-        --fg: oklch(0.96 0.004 106);
-        --muted-fg: oklch(0.68 0.014 254);
-        --primary: oklch(0.72 0.106 191);
-      }
+    <style>${TOKENS}
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body {
         width: ${WIDTH}px;
@@ -104,13 +117,13 @@ const GITHUB_PAGE = `<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
-    <style>
+    <style>${TOKENS}
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body {
         width: ${GITHUB_WIDTH}px;
         height: ${GITHUB_HEIGHT}px;
-        background: #0b1114 url("data:image/png;base64,${ecosystemBackground}") center / cover no-repeat;
-        color: #f2f5f3;
+        background: var(--bg) url("data:image/png;base64,${ecosystemBackground}") center / cover no-repeat;
+        color: var(--fg);
         font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, 'Segoe UI', Roboto,
           'Helvetica Neue', Arial, sans-serif;
         display: flex;
@@ -121,11 +134,17 @@ const GITHUB_PAGE = `<!doctype html>
         overflow: hidden;
         -webkit-font-smoothing: antialiased;
       }
+      /* Holds the wordmark's contrast over the busiest part of the artwork. Mixed
+         from the ground itself, so it darkens rather than tinting. */
       body::after {
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(90deg, rgba(7, 13, 16, 0.18) 0%, rgba(7, 13, 16, 0) 68%);
+        background: linear-gradient(
+          90deg,
+          color-mix(in oklch, var(--bg) 55%, transparent) 0%,
+          color-mix(in oklch, var(--bg) 0%, transparent) 68%
+        );
         pointer-events: none;
       }
       main { position: relative; z-index: 1; width: 650px; }
@@ -151,7 +170,7 @@ const GITHUB_PAGE = `<!doctype html>
       }
       p {
         margin-top: 24px;
-        color: #a7b7b8;
+        color: var(--muted-fg);
         font-size: 27px;
         line-height: 1.35;
       }
