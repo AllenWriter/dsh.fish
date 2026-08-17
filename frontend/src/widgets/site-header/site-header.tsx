@@ -8,6 +8,7 @@ import { LocaleLink, LocaleNavLink, useLocalePath } from '@/shared/ui/locale-lin
 import { AccountMenu } from '@/features/account-menu'
 import { LocaleSwitcher } from '@/features/locale-switcher'
 import { useT } from '@/shared/config/i18n'
+import { HUB_DISCORD_URL, HUB_REPO_URL } from '@/shared/config/site'
 import { writeThemeCookie } from '@/shared/lib/theme'
 import { cn } from '@/shared/lib/utils'
 import {
@@ -15,7 +16,9 @@ import {
   CloseIcon,
   DarkThemeIcon,
   DashboardIcon,
+  DiscordIcon,
   DocsIcon,
+  GithubIcon,
   LightThemeIcon,
   MenuIcon,
   SearchIcon,
@@ -32,6 +35,18 @@ const NAV: readonly { to: string; key: string; icon: Icon }[] = [
   { to: '/browse', key: 'nav.browse', icon: BrowseIcon },
   { to: '/docs', key: 'nav.docs', icon: DocsIcon },
   { to: '/submit', key: 'nav.submit', icon: SubmitIcon },
+]
+
+/**
+ * The project's source and its community, in the bar and in the mobile sheet.
+ *
+ * Both are icon-only in the bar: a logo mark that a reader already recognises
+ * needs no word beside it, and the word would cost the room the destinations
+ * need. The accessible name carries it for anyone the mark does not reach.
+ */
+const SOCIAL: readonly { href: string; key: string; icon: Icon }[] = [
+  { href: HUB_REPO_URL, key: 'nav.github', icon: GithubIcon },
+  { href: HUB_DISCORD_URL, key: 'nav.discord', icon: DiscordIcon },
 ]
 
 export function SiteHeader() {
@@ -117,6 +132,19 @@ export function SiteHeader() {
           </kbd>
         </button>
 
+        {SOCIAL.map((entry) => (
+          <a
+            key={entry.href}
+            href={entry.href}
+            aria-label={t(entry.key)}
+            rel="noreferrer noopener"
+            target="_blank"
+            className="press hit-area hidden size-9 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:grid"
+          >
+            <entry.icon className="size-4" weight="bold" />
+          </a>
+        ))}
+
         <LocaleSwitcher className="ml-auto sm:ml-0" />
 
         <ThemeToggle />
@@ -150,8 +178,9 @@ export function SiteHeader() {
           transition={{ duration: 0.2, ease: EASE_OUT }}
           className="overflow-hidden border-t border-border bg-background px-6 md:hidden"
         >
-          {/* Destinations only. Account actions stay in the avatar menu, which
-              is in the bar at every width. */}
+          {/* Destinations only, the two outbound ones labelled because the bar
+              has no room to label them. Account actions stay in the avatar menu,
+              which is in the bar at every width. */}
           <div className="py-3">
           {NAV.map((entry) => (
             <LocaleNavLink
@@ -172,6 +201,19 @@ export function SiteHeader() {
                 </>
               )}
             </LocaleNavLink>
+          ))}
+          {SOCIAL.map((entry) => (
+            <a
+              key={entry.href}
+              href={entry.href}
+              rel="noreferrer noopener"
+              target="_blank"
+              onClick={() => setMobileOpen(false)}
+              className="flex min-h-11 items-center gap-2.5 text-sm font-medium text-muted-foreground"
+            >
+              <entry.icon className="size-4" weight="bold" />
+              {t(entry.key)}
+            </a>
           ))}
           </div>
         </motion.nav>

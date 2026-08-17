@@ -18,6 +18,8 @@ export const ptBR: Catalog = {
   'nav.language': 'Idioma',
   'nav.menu': 'Menu',
   'nav.harness': 'DeepSeek Harness',
+  'nav.github': 'GitHub',
+  'nav.discord': 'Discord',
 
   'a11y.skipToContent': 'Pular para o conteúdo',
   'theme.toLight': 'Mudar para o tema claro',

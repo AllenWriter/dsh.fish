@@ -76,6 +76,8 @@ The suite asserts what only a browser can show:
 - The same fact wears the same mark everywhere a reader meets it.
 - The footer covers the whole taxonomy in one page, with every mark distinct and
   none shared between kinds and categories.
+- The outbound links — the source repository and the Discord community — carry
+  their own mark in the bar and in the footer, and open in a new tab.
 - Icon-only controls reach 40px on a mouse and 44px on a thumb without stealing
   each other's clicks.
 

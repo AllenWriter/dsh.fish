@@ -57,9 +57,27 @@ test.describe('destination marks', () => {
     }
 
     const siteNav = page.getByRole('navigation', { name: 'dsh.fish' })
-    for (const label of ['Browse', 'Docs', 'Submit', 'DeepSeek Harness']) {
+    for (const label of ['Browse', 'Docs', 'Submit', 'GitHub', 'Discord', 'DeepSeek Harness']) {
       await expect(siteNav.getByRole('link', { name: label }).locator('svg')).toHaveCount(1)
     }
+  })
+
+  test('the source and the community are marked in the bar and leave the tab behind', async ({
+    page,
+  }) => {
+    await page.goto('/browse', { waitUntil: 'domcontentloaded' })
+
+    const header = page.locator('header')
+    const github = header.getByRole('link', { name: 'GitHub' })
+    const discord = header.getByRole('link', { name: 'Discord' })
+
+    for (const link of [github, discord]) {
+      await expect(link.locator('svg')).toHaveCount(1)
+      await expect(link).toHaveAttribute('target', '_blank')
+    }
+
+    // Icon-only in the bar, so the two marks carry the destination on their own.
+    expect(await markOf(github)).not.toEqual(await markOf(discord))
   })
 
   test('the current destination fills its mark rather than only recolouring it', async ({

@@ -37,11 +37,12 @@ export {
   MoonIcon as DarkThemeIcon,
   ArrowSquareOutIcon as ExternalLinkIcon,
 
-  // Account.
+  // Account, and the two places the project itself lives.
   SignInIcon as SignInIcon,
   UserPlusIcon as SignUpIcon,
   SignOutIcon as SignOutIcon,
   GithubLogoIcon as GithubIcon,
+  DiscordLogoIcon as DiscordIcon,
 
   // Facts a catalog row carries.
   SealCheckIcon as VerifiedIcon,

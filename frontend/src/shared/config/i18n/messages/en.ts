@@ -27,6 +27,8 @@ export const en = {
   'nav.language': 'Language',
   'nav.menu': 'Menu',
   'nav.harness': 'DeepSeek Harness',
+  'nav.github': 'GitHub',
+  'nav.discord': 'Discord',
 
   'a11y.skipToContent': 'Skip to content',
   'theme.toLight': 'Switch to light theme',
