@@ -65,12 +65,22 @@ export interface RequireCredentialStep {
 
 export type InstallStep = AddPackageStep | WriteFileStep | PatchRowStep | RequireCredentialStep
 
+/** npm package name of the hub CLI. `npx` runs its `dsh-fish` bin. */
+export const HUB_CLI_PACKAGE = '@dsh-fish/cli'
+
+export function hubCliAddCommand(artifactId: string, profile: string): string {
+  return `npx ${HUB_CLI_PACKAGE} add ${artifactId} --profile ${profile}`
+}
+
 export interface InstallPlan {
   readonly artifactId: string
   readonly kind: ArtifactKind
   readonly target: InstallTarget
   readonly steps: readonly InstallStep[]
-  /** Equivalent shell commands, for a user who would rather not install the hub plugin. */
+  /**
+   * Equivalent shell commands. The first is always `npx @dsh-fish/cli add …`,
+   * which applies this plan. Native `dsh plugin add` lines follow for bundles.
+   */
   readonly manualCommands: readonly string[]
   /** Things the user should read before running the plan. i18n keys, not prose. */
   readonly warningKeys: readonly string[]
@@ -80,13 +90,15 @@ export interface InstallPlan {
  * Domain service: turn one catalog row into the concrete steps that install it.
  *
  * This is the single place that knows how each artifact kind reaches a machine.
- * The website renders `manualCommands` from it and the `dsh-hub` plugin executes
- * `steps` from it, so a copy-pasted command and an agent-driven install can
- * never drift apart.
+ * The website renders `manualCommands` from it; the `dsh-hub` plugin and the
+ * `@dsh-fish/cli` binary execute `steps` from it. The first command is always
+ * the hub CLI, so a copied line actually installs — kinds that the harness
+ * launcher does not cover (skills, MCP rows, presets, hooks) used to ship only
+ * a comment, which is not a command.
  */
 export function buildInstallPlan(artifact: Artifact, target: InstallTarget): InstallPlan {
   const steps: InstallStep[] = []
-  const manualCommands: string[] = []
+  const manualCommands: string[] = [hubCliAddCommand(artifact.id, target.profile)]
   const warningKeys: string[] = []
   const payload = artifact.payload
 

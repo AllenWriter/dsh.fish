@@ -123,6 +123,8 @@ export const ptBR: Catalog = {
   'install.viaCli': 'Pela CLI',
   'install.viaPluginBody':
     'Com o plugin do hub instalado, peça ao seu agente para instalar pelo nome — ele resolve o mesmo plano mostrado aqui.',
+  'install.viaCliBody':
+    'Este comando fala com o dsh.fish e aplica o mesmo plano do plugin, incluindo skills, linhas MCP e presets que o launcher do harness não instala.',
   'install.profileLabel': 'Perfil',
   'install.credentials': 'Credenciais que este artefato precisa',
   'install.credentialsBody':

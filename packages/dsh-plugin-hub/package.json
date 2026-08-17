@@ -18,6 +18,10 @@
       "types": "./lib/index.d.ts",
       "default": "./lib/index.js"
     },
+    "./install": {
+      "types": "./lib/install.d.ts",
+      "default": "./lib/install.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -37,7 +41,7 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "prepare": "tsdown"
   },
   "peerDependencies": {

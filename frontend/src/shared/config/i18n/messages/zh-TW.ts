@@ -117,6 +117,8 @@ export const zhTW: Catalog = {
   'install.viaCli': '透過命令列',
   'install.viaPluginBody':
     '裝好中心外掛後，直接請你的 Agent 依名稱安裝——它解析的正是這裡顯示的同一套方案。',
+  'install.viaCliBody':
+    '這條命令會連到 dsh.fish，並套用與外掛相同的安裝方案，包括 Harness 啟動器不會安裝的 skill、MCP 列與預設。',
   'install.profileLabel': '設定檔',
   'install.credentials': '這個項目需要的憑證',
   'install.credentialsBody':

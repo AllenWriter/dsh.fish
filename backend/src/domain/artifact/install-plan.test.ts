@@ -46,7 +46,10 @@ describe('buildInstallPlan', () => {
         requiresBuildAllowance: false,
       },
     ])
-    expect(plan.manualCommands).toEqual(['dsh plugin --profile web add dsh-example@1.2.3'])
+    expect(plan.manualCommands).toEqual([
+      'npx @dsh-fish/cli add example --profile web',
+      'dsh plugin --profile web add dsh-example@1.2.3',
+    ])
     expect(plan.warningKeys).toEqual([])
   })
 
@@ -59,9 +62,10 @@ describe('buildInstallPlan', () => {
       ),
       target,
     )
-    expect(pinned.manualCommands[0]).toBe(
+    expect(pinned.manualCommands).toEqual([
+      'npx @dsh-fish/cli add example --profile web',
       `dsh plugin --profile web add github:acme/thing#${'a'.repeat(40)}`,
-    )
+    ])
     // A build allowance is permission to run code at install time, so it must
     // reach the user; an unpinned spec is a separate, additional warning.
     expect(pinned.warningKeys).toContain('install.warning.buildAllowance')
@@ -113,6 +117,8 @@ describe('buildInstallPlan', () => {
         downloadUrl: 'https://example.test/SKILL.md',
       },
     ])
+    expect(plan.manualCommands[0]).toBe('npx @dsh-fish/cli add example --profile web')
+    expect(plan.manualCommands[0]?.startsWith('#')).toBe(false)
   })
 
   it('writes a flat skill as a single markdown file', () => {

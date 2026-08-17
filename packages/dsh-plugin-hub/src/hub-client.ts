@@ -3,6 +3,9 @@ import { readToken, writeToken, type StoredToken } from './token-store.js'
 /** Client id this plugin presents to the hub's device-authorization endpoint. */
 export const CLIENT_ID = 'dsh-hub-plugin'
 
+/** Client id the `@dsh-fish/cli` binary presents for the same device grant. */
+export const CLI_CLIENT_ID = 'dsh-fish-cli'
+
 export interface ArtifactSummary {
   id: string
   kind: string
@@ -57,7 +60,10 @@ export class HubError extends Error {
  * later, serve a user's private or unlisted artifacts.
  */
 export class HubClient {
-  constructor(private readonly baseUrl: string) {}
+  constructor(
+    private readonly baseUrl: string,
+    private readonly clientId: string = CLIENT_ID,
+  ) {}
 
   async search(input: {
     query?: string
@@ -104,7 +110,7 @@ export class HubClient {
     return this.request('/api/auth/device/code', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ client_id: CLIENT_ID, scope: 'openid profile email' }),
+      body: JSON.stringify({ client_id: this.clientId, scope: 'openid profile email' }),
     })
   }
 
@@ -132,7 +138,7 @@ export class HubClient {
         body: JSON.stringify({
           grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
           device_code: grant.device_code,
-          client_id: CLIENT_ID,
+          client_id: this.clientId,
         }),
         signal,
       })

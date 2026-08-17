@@ -122,6 +122,8 @@ export const ko: Catalog = {
   'install.viaCli': 'CLI로',
   'install.viaPluginBody':
     '허브 플러그인을 설치해 두면 에이전트에게 이름만 말하면 됩니다. 여기 표시된 것과 같은 계획을 그대로 해석합니다.',
+  'install.viaCliBody':
+    '이 명령은 dsh.fish에 접속해 플러그인과 같은 설치 계획을 적용합니다. 하네스 런처가 설치하지 않는 skill, MCP 행, 프리셋도 포함합니다.',
   'install.profileLabel': '프로필',
   'install.credentials': '이 항목에 필요한 자격 증명',
   'install.credentialsBody':

@@ -8,8 +8,9 @@ dsh.fish is a discovery, distribution and installation service for every kind of
 artifact the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
 can load. The harness has no registry of its own — its README asks authors to
 tag repositories with the `dsh-plugin` topic and leaves discovery there. This
-project is that missing registry, plus the install path on both ends: a website
-a human browses, and a harness plugin an agent drives.
+project is that missing registry, plus the install path on three ends: a website
+a human browses, a CLI they copy from an artifact page, and a harness plugin
+an agent drives.
 
 ## Technology stack
 
@@ -162,9 +163,12 @@ the floor. See ADR-0001 §8.
 
 `domain/artifact/install-plan.ts` is the single place that knows how each kind
 installs. It returns both `steps` (machine-executable) and `manualCommands`
-(copy-paste). The website renders the second; the `dsh-hub` plugin executes the
-first. Because neither surface authors its own commands, a documented command
-and an agent-driven install cannot drift apart.
+(copy-paste). The website renders the second; the `dsh-hub` plugin and
+`@dsh-fish/cli` execute the first. The first manual command is always
+`npx @dsh-fish/cli add <id> --profile <p>`, so a copied line actually installs
+kinds the harness launcher does not cover (skills, MCP rows, presets, hooks).
+Because no surface authors its own commands, a documented command and an
+agent-driven install cannot drift apart.
 
 ### Secrets are referenced, never stored
 

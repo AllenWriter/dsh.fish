@@ -22,9 +22,9 @@ const DEFAULT_PROFILE = 'web'
 /**
  * Turn a catalog row into the steps that put it on a machine.
  *
- * Both surfaces call this: the site renders `manualCommands` for copy-paste and
- * the `dsh-hub` plugin executes `steps`. One resolver means the documented
- * command and the automated install can never disagree.
+ * Three surfaces call this: the site renders `manualCommands` for copy-paste,
+ * and the `dsh-hub` plugin plus `@dsh-fish/cli` execute `steps`. One resolver
+ * means the documented command and the automated install can never disagree.
  */
 export class ResolveInstallPlan {
   constructor(private readonly artifacts: ArtifactRepository) {}

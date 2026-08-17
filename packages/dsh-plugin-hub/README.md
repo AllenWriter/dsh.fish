@@ -29,6 +29,9 @@ so a later push cannot change what runs.
 | `hub_search` | Search the registry by text and artifact kind. |
 | `hub_show` | One artifact in detail, including exactly what installing it would do. |
 | `hub_install` | Apply the install plan on this machine. |
+| `hub_list` | Artifacts this machine already installed through the hub. |
+| `hub_remove` | Reverse a recorded install (files, patch rows, packages). |
+| `hub_update` | Re-apply the current plan for an installed artifact. |
 | `hub_account` | Sign in via the OAuth device flow, check status, or sign out. |
 
 ## Signing in
@@ -54,6 +57,10 @@ on your behalf — it has to come back and ask.
 
 File-writing steps are fenced to the resolved `$DSH_HOME`; a plan that tries to
 escape it is refused.
+
+Successful installs are recorded in `$DSH_HOME/.dsh-fish-lock.json`, which is
+what `hub_list`, `hub_remove` and `hub_update` (and the matching CLI commands)
+read. The same lockfile is shared with `@dsh-fish/cli`.
 
 ## Configuration
 

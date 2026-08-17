@@ -25,9 +25,9 @@ export interface SearchArtifactsInput {
 const SORTS: readonly ArtifactSort[] = ['relevance', 'popular', 'recent', 'name']
 
 /**
- * The one read path behind the site's browse page, the home page rails and the
- * `dsh-hub` plugin's `hub_search` tool. Sharing it is what keeps the agent's
- * view of the catalog identical to the human's.
+ * The one read path behind the site's browse page, the home page rails, the
+ * `dsh-hub` plugin's `hub_search` tool, and `@dsh-fish/cli find`. Sharing it is
+ * what keeps the agent's view of the catalog identical to the human's.
  */
 export class SearchArtifacts {
   constructor(private readonly artifacts: ArtifactRepository) {}

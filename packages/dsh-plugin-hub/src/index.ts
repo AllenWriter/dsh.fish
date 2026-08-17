@@ -1,8 +1,9 @@
 /**
  * dsh.fish inside the harness.
  *
- * Registers four tools on `ctx.tools`, so an agent can find an artifact and put
- * it on the machine without the user leaving their session. The hub resolves
+ * Registers search, show, install, list, remove, update and account tools on
+ * `ctx.tools`, so an agent can find an artifact and put it on the machine
+ * without the user leaving their session. The hub resolves
  * *what* to do — the same install plan the website renders — and this plugin
  * decides whether to do it, because it is the side that bears the consequences.
  *
@@ -177,6 +178,113 @@ export function apply(ctx: Context, config: Config = Config): void {
 
   ctx.tools.register(
     defineTool({
+      name: 'hub_list',
+      description:
+        'List artifacts this machine installed through dsh.fish (the hub plugin or the CLI). ' +
+        'Ids can be passed to hub_remove or hub_update.',
+      parameters: {},
+      output: {
+        schema: { type: 'json' },
+        render: (_args, value) => [{ type: 'text', text: renderList(value) }],
+      },
+      async execute() {
+        const items = await installer.list()
+        return {
+          profile,
+          items: items.map((item) => ({
+            id: item.artifactId,
+            kind: item.kind,
+            installedAt: item.installedAt,
+            files: item.files,
+            packages: item.packages.map((pkg) => pkg.name),
+          })),
+        }
+      },
+    }),
+  )
+
+  ctx.tools.register(
+    defineTool({
+      name: 'hub_remove',
+      description:
+        'Uninstall a dsh.fish artifact this machine previously installed. Reverses the recorded ' +
+        'files, profile patch rows and package-manager adds. Restart the harness afterwards.',
+      parameters: {
+        artifactId: { type: 'string', required: true, description: 'Id from hub_list or hub_search.' },
+      },
+      output: {
+        schema: { type: 'json' },
+        render: (_args, value) => [{ type: 'text', text: renderRemove(value) }],
+      },
+      async execute(args, exec) {
+        const outcome = await installer.remove(args.artifactId, { signal: exec.signal })
+        return {
+          artifactId: outcome.artifactId,
+          steps: outcome.steps.map((step) => ({
+            summary: step.summary,
+            applied: step.applied,
+            ...(step.detail === undefined ? {} : { detail: step.detail }),
+          })),
+          restartRequired: outcome.restartRequired,
+        }
+      },
+    }),
+  )
+
+  ctx.tools.register(
+    defineTool({
+      name: 'hub_update',
+      description:
+        'Re-apply the current install plan for an artifact already on this machine. File steps ' +
+        'overwrite; patch rows are replaced. Build-from-source packages still need explicit consent.',
+      parameters: {
+        artifactId: { type: 'string', required: true, description: 'Id from hub_list.' },
+        allowBuildScripts: {
+          type: 'boolean',
+          description:
+            'Set only after the user has explicitly agreed to let this package run its build ' +
+            'script at install time. Do not set it on your own initiative.',
+        },
+      },
+      output: {
+        schema: { type: 'json' },
+        render: (_args, value) => [{ type: 'text', text: renderInstall(value) }],
+      },
+      async execute(args, exec) {
+        const installed = (await installer.list()).some((item) => item.artifactId === args.artifactId)
+        if (!installed) {
+          throw new InstallRefused(
+            `Nothing installed as ${args.artifactId} in profile ${profile}.`,
+            'NOT_INSTALLED',
+          )
+        }
+        const plan = await client.installPlan({
+          artifactId: args.artifactId,
+          profile,
+          record: true,
+        })
+        const outcome = await installer.apply(plan, {
+          allowBuildScripts: args.allowBuildScripts === true,
+          signal: exec.signal,
+          replaceExisting: true,
+        })
+        return {
+          artifactId: outcome.artifactId,
+          steps: outcome.steps.map((step) => ({
+            summary: step.summary,
+            applied: step.applied,
+            ...(step.detail === undefined ? {} : { detail: step.detail }),
+          })),
+          credentialsNeeded: [...outcome.credentialsNeeded],
+          restartRequired: outcome.restartRequired,
+          warnings: plan.warningKeys,
+        }
+      },
+    }),
+  )
+
+  ctx.tools.register(
+    defineTool({
       name: 'hub_account',
       description:
         'Sign in to dsh.fish from this machine, or report who is signed in. Signing in uses the ' +
@@ -294,6 +402,34 @@ function renderInstall(value: unknown): string {
   }
   if (outcome.restartRequired) {
     lines.push('Restart the harness for the new rows to load.')
+  }
+  return lines.join('\n')
+}
+
+function renderList(value: unknown): string {
+  const result = value as {
+    profile: string
+    items: { id: string; kind: string; installedAt: string }[]
+  }
+  if (result.items.length === 0) {
+    return `No dsh.fish artifacts installed in profile ${result.profile}.`
+  }
+  const lines = result.items.map((item) => `${item.id}  [${item.kind}]  ${item.installedAt}`)
+  return `Installed in ${result.profile}:\n\n${lines.join('\n')}`
+}
+
+function renderRemove(value: unknown): string {
+  const outcome = value as {
+    artifactId: string
+    steps: { summary: string; applied: boolean }[]
+    restartRequired: boolean
+  }
+  const lines = [`Removed ${outcome.artifactId}:`]
+  for (const step of outcome.steps) {
+    lines.push(`  ${step.applied ? '✓' : '·'} ${step.summary}`)
+  }
+  if (outcome.restartRequired) {
+    lines.push('Restart the harness for the removal to take effect.')
   }
   return lines.join('\n')
 }
