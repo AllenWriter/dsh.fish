@@ -53,6 +53,106 @@ import { t } from 'shared/i18n';
 - ✅ Prefer: `bg-bg`, `text-text`, `border-border`, `text-muted`.
 - Theme differences must live in one place (global theme file or CSS variables). Do not scatter `dark:` or media queries across components.
 
+### Colour is scarce; shape is not
+
+The palette is a near-neutral ground and exactly one accent, and the accent is spent
+on two things only: the primary action and a verified badge. Do not give a taxonomy
+entry a hue — six kind colours encode nothing a reader can learn and compete with the
+one accent.
+
+A glyph is the opposite trade and is encouraged: it is one mark per entry, it
+survives translation into ten languages where the word does not, and it stays
+legible without colour vision. So a kind or a category is told apart by its word and
+its mark, never by a colour.
+
+Where a state does use the accent, it must also change shape or weight, so the state
+is never carried by hue alone.
+
+## Functional icons
+
+Every functional mark comes from [Phosphor](https://phosphoricons.com) through
+`shared/ui/icon`. No component imports `@phosphor-icons/react` directly.
+
+### One place names the marks
+
+`shared/ui/icon/icons.ts` re-exports each glyph under the name of what it means —
+`SearchIcon`, `VerifiedIcon`, `CliIcon`, `BundleIcon` — and is the only file that
+mentions the library. Reach for a semantic alias, add one there when a new concept
+needs a mark, and never introduce a second icon library.
+
+One concept, one alias. Where two roles share a meaning they share the alias too;
+a synonym would let the two drift apart. An install warning and a deprecated badge
+are both `WarningIcon`.
+
+### Weight follows the text beside it
+
+A Phosphor weight is a fixed fraction of the rendered size, so the choice is a rule
+rather than a judgement:
+
+| Where the mark sits | Weight | Stroke |
+| --- | --- | --- |
+| Beside body copy at 400 | `regular` | 1.5px at 24px |
+| Beside a label at 500–600, and on icon-only controls | `bold` | 2.25px at 24px |
+| Selected, applied, or affirmed | `fill` | solid |
+
+`ICON_WEIGHT` in `shared/ui/icon/icon.tsx` names these three roles. `regular` is the
+document default; state the others at the call site.
+
+`fill` is a state and not an emphasis. Colour must change with it, so a selected
+filter, an active tab, the current navigation link and a verified badge are each
+told apart twice — by shape and by colour — and neither channel carries the state
+alone.
+
+### Defaults come from the document, not the call site
+
+`IconDefaults` wraps the app in `root.tsx` and supplies:
+
+- `size="1em"`, so an unstyled glyph matches the cap height of its text. A `size-*`
+  class still wins where a control needs an exact box.
+- `color="currentColor"`, so hover, active and disabled are CSS colour changes on
+  one SVG. Never a second asset per state.
+- `aria-hidden`, because every mark here accompanies a visible label or an
+  `aria-label` on its control. Do not repeat it at call sites. A mark that ever
+  does need announcing overrides `aria-hidden` and passes `alt`.
+
+### What earns a mark
+
+A mark earns its place when it speeds recognition of a repeated, scannable item, or
+when it names an action. Taxonomy entries and controls qualify; a section heading
+that appears once does not, and neither does free text such as an artifact's
+keywords, which has no taxonomy behind it to learn.
+
+### Kinds and categories
+
+`entities/artifact/model/icons.ts` owns the two taxonomy maps. `KIND_ICON` is keyed
+by the `ArtifactKind` union, so a new kind fails the typecheck; category ids are
+slugs and cannot be, so `icons.test.ts` walks the taxonomy instead and fails when it
+grows past the map. `categoryIcon` returns `undefined` for an unmapped id rather
+than a stand-in, which would look deliberate and hide the gap.
+
+Kinds gain a shape and still no hue — see the colour rule below. Each mark names the
+install mechanism the kind owns, and it follows that kind through the chip, the
+filter rail, the footer, the home chips, the collection heading, the breadcrumb and
+the docs tab. Do not use a different glyph for the same kind in a new place.
+
+### Stateful marks
+
+An icon that swaps with state goes through `shared/ui/icon-swap.tsx`, which
+crossfades opacity, scale and blur on a bounceless spring and reduces to a plain
+fade under `prefers-reduced-motion`. Do not hand-roll a second crossfade.
+
+Motion is never the only channel. A swap always accompanies a changed label,
+`aria-expanded`, or `aria-selected`.
+
+Marks are otherwise static. Do not animate an icon that is only identifying
+something.
+
+### Hit areas
+
+An icon-only control takes `.hit-area`, which extends the target to 44px under a
+coarse pointer and 40px under a fine one without changing how the control looks.
+Keep adjacent centres at least as far apart as the target is wide.
+
 ## Brand icons
 
 The dsh.fish brand uses the generated, faceless blue-whale assets in
@@ -72,10 +172,9 @@ The dsh.fish brand uses the generated, faceless blue-whale assets in
 - Generate PNG favicon derivatives from `whale-brand.png`; do not maintain a
   second hand-drawn logo in SVG.
 
-This rule is limited to brand artwork. Continue to use Lucide for conventional
-functional controls such as search, menu, theme, copy, and external-link icons.
-Invisible SVG filter definitions and SVG security/layout test fixtures are not
-icons and must remain structural code.
+This rule is limited to brand artwork. Functional controls use Phosphor through
+`shared/ui/icon`, as above. Invisible SVG filter definitions and SVG
+security/layout test fixtures are not icons and must remain structural code.
 
 ## Catalog card Social preview
 
