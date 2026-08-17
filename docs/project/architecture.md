@@ -262,6 +262,13 @@ through `ArtifactDetailDto`. Both are absent for npm and submission sources,
 where no root is knowable; a relative path then renders as text rather than as a
 confident 404.
 
+On a phone, a readme is also a layout problem: grid items default to
+`min-width: auto`, so a wide GFM table or an unbroken DSN becomes the column
+width and the page scrolls sideways. The plugin page pins `min-w-0` on the
+readme column, and the markdown container sets `overflow-wrap: anywhere` for
+tokens that have no break point. Tables and fences keep their own
+`overflow-x-auto`. `pnpm run test:e2e` locks this at six device resolutions.
+
 ### No hardcoded copy
 
 `frontend/src/shared/config/i18n/messages/` holds every user-facing string. The

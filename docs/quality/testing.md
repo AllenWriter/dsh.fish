@@ -24,9 +24,38 @@
 - Keep them stable and fast enough to run in CI.
 - Use deterministic test data.
 
-Catalog-card Social preview treatment is asserted in `frontend/e2e/artifact-card-og.spec.ts`
-against a fixture page that uses the same `--artifact-og-*` tokens as `app.css`.
-Run it with `pnpm test:e2e`.
+`pnpm run test:e2e` runs Playwright. Two projects share one config:
+
+**Plugin-detail markdown** is an exception to "journeys only": a third-party
+readme is the unique content of `/a/:id`, and its layout is resolution-dependent.
+The suite runs against the real SSR app at six device sizes (iPhone SE 320,
+Galaxy S8 360, iPhone SE 3rd gen 375, Pixel 7 412, iPhone 14 Pro Max 430,
+iPad Mini 768). It seeds a kitchen-sink readme onto the local D1
+`dsh-postgres-mcp` row so tables, fences, images and long tokens are present
+to measure.
+
+The tests assert:
+
+- GFM structure (demoted headings, tables, fences, task lists) and that raw
+  HTML never reaches the DOM.
+- The *page* does not scroll sideways; wide tables and fences scroll inside
+  themselves.
+- A 1600px screenshot shrinks to the column; inline badges stay inline.
+- Below the `lg` breakpoint the install panel stacks under the readme.
+
+Visual baselines of the first fold are stored for iPhone SE (3rd gen) and Pixel 7.
+Update them with `pnpm exec playwright test --update-snapshots`.
+
+Device projects force Chromium (`defaultBrowserType: 'chromium'`). Playwright's
+iPhone presets default to WebKit; CI only installs Chromium, and the suite is
+asserting CSS-pixel layout, not engine differences.
+
+**Catalog-card Social preview** (`e2e/catalog-og/`) is a fixture page that uses
+the same `--artifact-og-*` tokens as `app.css`. It asserts image opacity, blur
+and title contrast, and writes treatment screenshots. Run that project alone
+with `pnpm exec playwright test --project=catalog-og`.
+
+Install the browser once with `pnpm exec playwright install --with-deps chromium`.
 
 ## Test data
 

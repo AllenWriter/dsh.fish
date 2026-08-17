@@ -82,7 +82,7 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
   const locale = useLocale()
 
   return (
-    <article className="mx-auto max-w-6xl px-6 py-10">
+    <article className="mx-auto w-full min-w-0 max-w-6xl px-6 py-10">
       <header className="border-b border-border pb-8">
         {/* A visible trail, matching the BreadcrumbList in the head. A crawler
             reads both; a reader arriving from a search result only has this
@@ -205,8 +205,11 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
         ) : null}
       </header>
 
-      <div className="grid gap-10 pt-8 lg:grid-cols-[1fr_22rem]">
-        <section>
+      {/* `min-w-0` is what lets a wide table or fence scroll inside the
+          column instead of stretching the grid — grid items default to
+          `min-width: auto`, which is the content's intrinsic width. */}
+      <div className="grid min-w-0 gap-10 pt-8 lg:grid-cols-[1fr_22rem]">
+        <section id="readme" className="min-w-0">
           <h2 className="text-base font-semibold tracking-tight">{t('artifact.readme')}</h2>
           {artifact.readmeMarkdown ? (
             // The bases are what a relative path inside the readme resolves
@@ -224,7 +227,7 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
           )}
         </section>
 
-        <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+        <div className="min-w-0 space-y-4 lg:sticky lg:top-24 lg:self-start">
           <InstallPanel artifact={artifact} plan={plan} />
 
           <a
