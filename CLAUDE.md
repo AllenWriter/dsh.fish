@@ -31,6 +31,7 @@
 - [`docs/frontend/public-api.md`](docs/frontend/public-api.md) — public API and re-export rules.
 - [`docs/frontend/import-rules.md`](docs/frontend/import-rules.md) — cross-layer and cross-slice import rules.
 - [`docs/frontend/ui-patterns.md`](docs/frontend/ui-patterns.md) — semantic styling, no hardcoded copy, no redundant copy.
+- [`docs/frontend/i18n.md`](docs/frontend/i18n.md) — locales, message catalogs, locale-aware links and loaders.
 
 ### Write backend code
 
@@ -42,6 +43,15 @@
 - [`docs/backend/api-conventions.md`](docs/backend/api-conventions.md) — response format, error codes, versioning.
 - [`docs/backend/database.md`](docs/backend/database.md) — database, migrations, ID strategy.
 - [`docs/backend/logging.md`](docs/backend/logging.md) — logging, tracing, and masking.
+
+### Make it findable
+
+- [`docs/seo/README.md`](docs/seo/README.md) — SEO and multilingual delivery, entry point.
+- [`docs/seo/url-strategy.md`](docs/seo/url-strategy.md) — language prefixes, canonical URLs, redirects.
+- [`docs/seo/indexation.md`](docs/seo/indexation.md) — what is offered to the index and what is withheld.
+- [`docs/seo/structured-data.md`](docs/seo/structured-data.md) — the schema.org graph.
+- [`docs/seo/crawling.md`](docs/seo/crawling.md) — robots.txt, sitemaps, internal link graph.
+- [`docs/seo/recommendations.md`](docs/seo/recommendations.md) — prioritised follow-up work.
 
 ### Operations and quality
 
@@ -60,7 +70,7 @@
 
 ### Forbidden patterns
 
-- **No hardcoded strings.** All user-facing text must be defined in a single place (i18n keys, constants, configuration) and referenced by identifier.
+- **No hardcoded strings.** All user-facing text must be defined in a single place (i18n keys, constants, configuration) and referenced by identifier. In this project that place is `frontend/src/shared/config/i18n/messages/` — one catalog per language, all of them typed against English.
 - **No redundant UI copy.** Do not repeat information that is already conveyed by a title, icon, selected state, or surrounding context.
 - **No duplicated implementations.** If a piece of logic already exists, reuse it or extract it to the correct layer/slice. Do not copy-paste with minor variations.
 - **No fallback/clever bypass logic.** Do not mask a root cause with a default value, a silent catch, or a conditional shortcut. Face the actual problem and fix it, or ask the user.

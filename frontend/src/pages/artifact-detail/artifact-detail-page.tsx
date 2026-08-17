@@ -1,29 +1,59 @@
-import { data, Link } from 'react-router'
+import { data } from 'react-router'
 import { BadgeCheck, ExternalLink, Scale } from 'lucide-react'
 import type { Route } from './+types/artifact-detail-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { InstallPanel } from '@/widgets/install-panel/install-panel'
 import { KindChip } from '@/entities/artifact/ui/kind-chip'
+import { artifactLd } from '@/entities/artifact/lib/artifact-ld'
+import { kindLabelKey, kindPluralKey } from '@/entities/artifact/model/types'
+import { requireLocale, translate, useLocale, useT } from '@/shared/config/i18n'
+import { LocaleLink } from '@/shared/ui/locale-link'
 import { Markdown } from '@/shared/ui/markdown'
-import { t } from '@/shared/config/messages'
+import { breadcrumbLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 import { compactNumber, relativeTime } from '@/shared/lib/format'
 
-export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
+/**
+ * A plugin page, which is the page this whole site exists to get indexed.
+ *
+ * The catalog row is language-neutral — the summary and readme are whatever the
+ * author wrote upstream, and translating a third party's prose is not this
+ * registry's to do. What *is* localized is the frame around it: the title
+ * pattern, the type, the description sentence, the breadcrumb trail and the
+ * `inLanguage` on the structured data. That is enough for one crawled artifact
+ * to be a legitimate result in ten languages without inventing content for it.
+ */
+export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
   // A 404 renders the error boundary, so loaderData is absent there.
-  if (!loaderData) return [{ title: t('notFound.title') }]
-  const { artifact } = loaderData
-  return [
-    { title: `${artifact.displayName} — ${t('app.name')}` },
-    { name: 'description', content: artifact.summary },
-    // A directory lives on link previews; these are what a shared plugin URL
-    // renders as in chat and on social.
-    { property: 'og:title', content: artifact.displayName },
-    { property: 'og:description', content: artifact.summary },
-    { property: 'og:type', content: 'website' },
-  ]
+  if (!loaderData) return errorMeta(params.locale)
+
+  const { artifact, plan, origin, locale } = loaderData
+  const kindName = translate(locale, kindLabelKey(artifact.kind))
+
+  return pageMeta({
+    origin,
+    locale,
+    // Deliberately without `?profile=`: previewing the plan for another profile
+    // is the same document, and every one of them must fold into this URL.
+    path: `/a/${artifact.id}`,
+    title: `${artifact.displayName} — ${kindName} · ${translate(locale, 'app.name')}`,
+    description: translate(locale, 'seo.artifact.description', {
+      summary: artifact.summary,
+      kind: kindName,
+    }),
+    type: 'article',
+    jsonLd: [
+      artifactLd(origin, locale, artifact, plan.manualCommands),
+      breadcrumbLd(origin, locale, [
+        { name: translate(locale, 'app.name'), path: '/' },
+        { name: translate(locale, kindPluralKey(artifact.kind)), path: `/kind/${artifact.kind}` },
+        { name: artifact.displayName, path: `/a/${artifact.id}` },
+      ]),
+    ],
+  })
 }
 
 export async function loader({ context, params, request }: Route.LoaderArgs) {
+  const locale = requireLocale(params.locale)
   const { container } = context.get(hubContext)
   const profile = new URL(request.url).searchParams.get('profile') ?? undefined
 
@@ -32,7 +62,7 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
     .catch(() => undefined)
 
   if (!artifact) {
-    throw data({ message: t('notFound.body') }, { status: 404 })
+    throw data({ message: translate(locale, 'notFound.body') }, { status: 404 })
   }
 
   // Previewing a plan is not installing: `recordInstall` stays off here, so the
@@ -42,16 +72,40 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
     ...(profile === undefined ? {} : { profile }),
   })
 
-  return { artifact, plan, now: Date.now() }
+  return { artifact, plan, locale, now: Date.now(), origin: container.config.baseUrl }
 }
 
 export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps) {
   const { artifact, plan, now } = loaderData
+  const t = useT()
+  const locale = useLocale()
 
   return (
     <article className="mx-auto max-w-6xl px-6 py-10">
       <header className="border-b border-border pb-8">
-        <div className="flex flex-wrap items-center gap-2">
+        {/* A visible trail, matching the BreadcrumbList in the head. A crawler
+            reads both; a reader arriving from a search result only has this
+            one to tell them where in the catalog they landed. */}
+        <nav aria-label={t('browse.title')} className="text-sm text-muted-foreground">
+          <ol className="flex flex-wrap items-center gap-1.5">
+            <li>
+              <LocaleLink to="/" className="transition-colors hover:text-foreground">
+                {t('app.name')}
+              </LocaleLink>
+            </li>
+            <li aria-hidden>/</li>
+            <li>
+              <LocaleLink
+                to={`/kind/${artifact.kind}`}
+                className="transition-colors hover:text-foreground"
+              >
+                {t(kindPluralKey(artifact.kind))}
+              </LocaleLink>
+            </li>
+          </ol>
+        </nav>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <KindChip kind={artifact.kind} />
           {artifact.verified ? (
             <span
@@ -102,32 +156,57 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
           <div>
             <dt className="sr-only">{t('artifact.updated')}</dt>
             <dd>
-              {t('artifact.updated')} {relativeTime(artifact.updatedAt, now)}
+              {t('artifact.updated')}{' '}
+              {/* A machine-readable date beside the human one: "3 days ago" is
+                  unparseable, and freshness is a real ranking input here. */}
+              <time dateTime={artifact.updatedAt}>
+                {relativeTime(artifact.updatedAt, now, locale)}
+              </time>
             </dd>
           </div>
         </dl>
 
+        {artifact.categories.length > 0 ? (
+          <>
+            <h2 className="sr-only">{t('artifact.categories')}</h2>
+            <ul className="mt-4 flex flex-wrap gap-1.5">
+              {artifact.categories.map((category) => (
+                <li key={category}>
+                  <LocaleLink
+                    to={`/category/${category}`}
+                    className="inline-flex rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+                  >
+                    {t(`category.${category}`)}
+                  </LocaleLink>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
+
         {artifact.keywords.length > 0 ? (
-          <ul className="mt-4 flex flex-wrap gap-1.5">
-            {artifact.keywords.slice(0, 12).map((keyword) => (
-              <li key={keyword}>
-                <Link
-                  to={`/browse?q=${encodeURIComponent(keyword)}`}
-                  className="inline-flex rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
-                >
-                  {keyword}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <>
+            <h2 className="sr-only">{t('artifact.keywords')}</h2>
+            <ul className="mt-2 flex flex-wrap gap-1.5">
+              {artifact.keywords.slice(0, 12).map((keyword) => (
+                <li key={keyword}>
+                  <LocaleLink
+                    to={`/browse?q=${encodeURIComponent(keyword)}`}
+                    rel="nofollow"
+                    className="inline-flex rounded-full border border-dashed border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+                  >
+                    {keyword}
+                  </LocaleLink>
+                </li>
+              ))}
+            </ul>
+          </>
         ) : null}
       </header>
 
       <div className="grid gap-10 pt-8 lg:grid-cols-[1fr_22rem]">
         <section>
-          <h2 className="text-base font-semibold tracking-tight">
-            {t('artifact.readme')}
-          </h2>
+          <h2 className="text-base font-semibold tracking-tight">{t('artifact.readme')}</h2>
           {artifact.readmeMarkdown ? (
             // The bases are what a relative path inside the readme resolves
             // against — the readme was written against its own repository, not
@@ -150,7 +229,9 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
           <a
             href={artifact.sourceUrl}
             target="_blank"
-            rel="noreferrer noopener"
+            // `ugc`: the source URL is supplied by whoever submitted the row, so
+            // the catalog does not pass its own authority to it.
+            rel="noreferrer noopener ugc"
             className="press flex items-center justify-between rounded-xl border border-border bg-card px-5 py-4 text-sm font-medium hover:border-border-strong"
           >
             {t('artifact.source')}

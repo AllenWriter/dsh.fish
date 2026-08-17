@@ -76,10 +76,10 @@ is built **per request**, because D1 and KV bindings arrive per request.
 |---|---|
 | `app/` | `root.tsx`, `routes.ts`, global styles |
 | `pages/` | One slice per route; composes widgets, owns loaders |
-| `widgets/` | `site-header`, `catalog-grid`, `catalog-filters`, `install-panel` |
-| `features/` | `account-menu` — the signed-in identity, and the actions on it |
-| `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip` |
-| `shared/` | beui components (`ui/motion/`, `ui/avatar`), motion tokens, i18n messages, auth client, `hub-context` |
+| `widgets/` | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel` |
+| `features/` | `account-menu` — the signed-in identity and the actions on it; `locale-switcher` — the language of the page you are on |
+| `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip`, `artifactLd` |
+| `shared/` | beui components (`ui/motion/`, `ui/avatar`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, auth client, `hub-context` |
 
 The account slot in the header is the whole signed-in affordance: signed out it
 is the sign-in call to action; signed in it is the portrait Better Auth cached
@@ -91,6 +91,32 @@ React Router requires every route module to live inside `appDirectory`, so
 `appDirectory` is `src` — the whole FSD tree. `src/root.tsx` and `src/routes.ts`
 are one-line re-exports of the real modules in the `app` layer, so the framework
 convention is satisfied without moving application setup out of its layer.
+
+## The discovery surface
+
+A registry is a search product with no traffic of its own: nobody bookmarks a
+plugin page, they find it. That makes the crawler-facing surface part of the
+architecture rather than a finishing touch.
+
+**Ten languages, in the URL.** Every reader-facing route carries an optional
+`:locale?` first segment, so one route module serves `/browse` (English,
+unprefixed) and `/ja/browse` alike. Each loader passes that segment through
+`requireLocale`, which 404s anything that is not a declared language — without
+it, an optional segment matches everything and the site publishes an unbounded
+set of URLs rendering one page.
+
+**Two crawlable facet axes.** `/kind/:kind` and `/category/:category` are real
+pages, not query strings, because that is the form an engine will rank and the
+form the footer can link from every page on the site.
+
+**Four resource routes.** `/robots.txt`, `/sitemap.xml` and the two sitemap
+files it indexes are React Router routes with a `loader` and no component, so
+they resolve their data through the same container as every page — the artifact
+sitemap reads `ListSitemapEntries`, an application use case over a dedicated
+`ArtifactRepository.listForSitemap` projection rather than over search.
+
+Full treatment in [`../seo/README.md`](../seo/README.md); language conventions
+in [`../frontend/i18n.md`](../frontend/i18n.md).
 
 ## The artifact taxonomy
 
@@ -212,7 +238,7 @@ confident 404.
 
 ### No hardcoded copy
 
-`frontend/src/shared/config/messages.ts` holds every user-facing string. The
+`frontend/src/shared/config/i18n/messages/` holds every user-facing string. The
 backend sends message *keys* (`artifactKind.bundle.label`,
 `install.warning.buildAllowance`), never prose, so the catalog stays
 language-neutral in the database.

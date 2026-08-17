@@ -54,6 +54,25 @@ Both halves deploy as **one Cloudflare Worker**: Hono at `/api/*`, React Router
 SSR everywhere else, D1 for the catalog and Better Auth's tables, KV for
 sessions and rate limiting, and a Cron Trigger that re-crawls every six hours.
 
+## Ten languages
+
+Every page is served in English, Simplified and Traditional Chinese, Japanese,
+Korean, Spanish, French, German, Brazilian Portuguese and Russian, under a path
+prefix — `/ja/browse`, `/zh-CN/a/<id>` — with English unprefixed at the root.
+
+A directory only ranks if it is found, so the multilingual surface is part of
+the product rather than a translation layer bolted on: reciprocal `hreflang`
+across all ten, canonical URLs that fold filters and profile previews away,
+`schema.org` markup on every plugin page, indexable `/kind/<kind>` and
+`/category/<category>` landing pages instead of query-string filters, and a
+sitemap set that lists every indexed plugin in every language with its real
+`lastmod`.
+
+The catalog itself stays language-neutral: an artifact's summary and readme are
+whatever its author wrote, and the frame around them is what gets translated.
+See [`docs/seo/`](docs/seo/README.md) and
+[`docs/frontend/i18n.md`](docs/frontend/i18n.md).
+
 ## Development
 
 ```sh
@@ -71,6 +90,12 @@ pnpm run test
 pnpm run build
 ```
 
+The social card is generated, not drawn. Re-run it when the palette changes:
+
+```sh
+pnpm --filter @dsh-fish/frontend run og:build
+```
+
 Deployment, bindings and secrets: [`docs/operations/deployment.md`](docs/operations/deployment.md).
 
 ## Documentation
@@ -82,6 +107,7 @@ rules, then:
 - [`docs/decisions/adr-0001-plugin-hub-architecture.md`](docs/decisions/adr-0001-plugin-hub-architecture.md) — why it is built this way
 - [`docs/frontend/`](docs/frontend/README.md) — FSD conventions
 - [`docs/backend/`](docs/backend/README.md) — DDD conventions
+- [`docs/seo/`](docs/seo/README.md) — multilingual URLs, indexation, structured data, crawling
 
 ## License
 

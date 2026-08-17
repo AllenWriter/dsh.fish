@@ -1,15 +1,39 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import { Github } from 'lucide-react'
 import type { Route } from './+types/sign-in-page'
+import { hubContext } from '@/shared/api/hub-context'
 import { authClient } from '@/shared/api/auth-client'
-import { t } from '@/shared/config/messages'
+import { requireLocale, translate, useT } from '@/shared/config/i18n'
+import { LocaleLink } from '@/shared/ui/locale-link'
+import { errorMeta, pageMeta } from '@/shared/lib/seo'
 
-export function meta(): Route.MetaDescriptors {
-  return [{ title: `${t('auth.signInTitle')} — ${t('app.name')}` }, { name: 'robots', content: 'noindex' }]
+/**
+ * Never indexed: an account page has nothing a search result should lead to.
+ * `follow` still applies, so the links out of it are not dead ends.
+ */
+export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta(params.locale)
+  const { origin, locale } = loaderData
+  return pageMeta({
+    origin,
+    locale,
+    path: '/sign-in',
+    title: `${translate(locale, 'auth.signInTitle')} — ${translate(locale, 'app.name')}`,
+    description: translate(locale, 'auth.signInSubtitle'),
+    index: false,
+  })
+}
+
+export function loader({ context, params }: Route.LoaderArgs) {
+  return {
+    locale: requireLocale(params.locale),
+    origin: context.get(hubContext).container.config.baseUrl,
+  }
 }
 
 export default function SignInPage() {
+  const t = useT()
   const [params] = useSearchParams()
   const redirect = params.get('redirect') ?? '/dashboard'
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in')
@@ -102,9 +126,9 @@ export default function SignInPage() {
         {mode === 'sign-in' ? t('auth.signUp') : t('auth.haveAccount')}
       </button>
 
-      <Link to="/" className="mt-8 text-xs text-muted-foreground hover:text-foreground">
+      <LocaleLink to="/" className="mt-8 text-xs text-muted-foreground hover:text-foreground">
         {t('notFound.home')}
-      </Link>
+      </LocaleLink>
     </div>
   )
 }

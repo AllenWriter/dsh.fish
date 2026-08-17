@@ -87,6 +87,9 @@ function harness(options: {
     saveMany: async () => {},
     incrementInstalls: async () => {},
     listIdsByOrigin: async () => [],
+    listForSitemap: async () => {
+      throw new Error('not used')
+    },
   }
   const indexer: SourceIndexer = {
     origin: 'github',

@@ -1,16 +1,30 @@
-import { Form, Link } from 'react-router'
+import { Form } from 'react-router'
 import { ArrowRight, Search } from 'lucide-react'
 import type { Route } from './+types/home-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { CatalogGrid } from '@/widgets/catalog-grid/catalog-grid'
-import { t } from '@/shared/config/messages'
+import { kindDescriptionKey, kindPluralKey } from '@/entities/artifact/model/types'
+import { requireLocale, translate, useT } from '@/shared/config/i18n'
+import { LocaleLink, useLocalePath } from '@/shared/ui/locale-link'
+import { errorMeta, organizationLd, pageMeta, websiteLd } from '@/shared/lib/seo'
 import { compactNumber } from '@/shared/lib/format'
 
-export function meta(): Route.MetaDescriptors {
-  return [
-    { title: `${t('app.name')} — ${t('app.tagline')}` },
-    { name: 'description', content: t('app.description') },
-  ]
+export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta(params.locale)
+  const { origin, locale } = loaderData
+  return pageMeta({
+    origin,
+    locale,
+    path: '/',
+    title: translate(locale, 'seo.home.title', {
+      name: translate(locale, 'app.name'),
+      tagline: translate(locale, 'app.tagline'),
+    }),
+    description: translate(locale, 'app.description'),
+    // The site-level nodes are emitted once, here, and referenced by `@id`
+    // from every other page rather than repeated on each of them.
+    jsonLd: [websiteLd(origin, locale), organizationLd(origin, locale)],
+  })
 }
 
 /**
@@ -20,7 +34,8 @@ export function meta(): Route.MetaDescriptors {
  * response, so serializing them would triple the page's time to first byte for
  * no reason.
  */
-export async function loader({ context }: Route.LoaderArgs) {
+export async function loader({ context, params }: Route.LoaderArgs) {
+  const locale = requireLocale(params.locale)
   const { container } = context.get(hubContext)
   const { searchArtifacts, listCatalogFacets } = container.useCases
 
@@ -35,11 +50,13 @@ export async function loader({ context }: Route.LoaderArgs) {
   const shown = new Set(trending.items.map((item) => item.id))
   const recent = recentPool.items.filter((item) => !shown.has(item.id)).slice(0, 3)
 
-  return { trending, recent, facets }
+  return { trending, recent, facets, locale, origin: container.config.baseUrl }
 }
 
 export default function HomePage({ loaderData }: Route.ComponentProps) {
   const { trending, recent, facets } = loaderData
+  const t = useT()
+  const localePath = useLocalePath()
   const total = facets.kinds.reduce((sum, facet) => sum + facet.count, 0)
 
   return (
@@ -59,7 +76,11 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             {t('home.heroSubtitle')}
           </p>
 
-          <Form action="/browse" method="get" className="mx-auto mt-8 flex max-w-lg gap-2">
+          <Form
+            action={localePath('/browse')}
+            method="get"
+            className="mx-auto mt-8 flex max-w-lg gap-2"
+          >
             <div className="relative flex-1">
               <Search
                 className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
@@ -85,17 +106,20 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             {compactNumber(total)} {t('home.statsArtifacts')}
           </p>
 
+          {/* Each chip goes to that type's own indexable page rather than to a
+              `?kind=` filter, so the site's most linked-to internal pages are
+              the ones a crawler can rank. */}
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             {facets.kinds.map((facet) => (
-              <Link
+              <LocaleLink
                 key={facet.kind}
-                to={`/browse?kind=${facet.kind}`}
-                title={t(facet.descriptionKey)}
+                to={`/kind/${facet.kind}`}
+                title={t(kindDescriptionKey(facet.kind))}
                 className="press inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-border-strong hover:text-foreground"
               >
-                {t(facet.labelKey)}
+                {t(kindPluralKey(facet.kind))}
                 <span className="tabular-nums opacity-60">{facet.count}</span>
-              </Link>
+              </LocaleLink>
             ))}
           </div>
         </div>
@@ -127,17 +151,18 @@ function Rail({
   linkKey: string
   children: React.ReactNode
 }) {
+  const t = useT()
   return (
     <section>
       <div className="mb-5 flex items-baseline justify-between">
         <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
-        <Link
+        <LocaleLink
           to={to}
           className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           {t(linkKey)}
           <ArrowRight className="size-3.5" aria-hidden />
-        </Link>
+        </LocaleLink>
       </div>
       {children}
     </section>

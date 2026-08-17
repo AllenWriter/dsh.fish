@@ -59,6 +59,13 @@ pnpm dlx wrangler secret put ADMIN_EMAILS
 throws when it is empty rather than defaulting — a wrong origin silently breaks
 OAuth callbacks and cookie scoping, which is far harder to diagnose later.
 
+It is also the origin every canonical URL, `hreflang` alternate and sitemap
+`<loc>` is built from. A preview deployment that inherits the production value
+publishes production canonicals from a preview host; one left pointing at
+`localhost` publishes `http://localhost` canonicals to a crawler. Set it per
+environment, and keep preview deployments out of the index — see
+[`../seo/recommendations.md`](../seo/recommendations.md).
+
 The GitHub OAuth app's callback URL is
 `<PUBLIC_BASE_URL>/api/auth/callback/github`.
 
@@ -69,6 +76,11 @@ pnpm run deploy
 ```
 
 This builds the client assets and the SSR bundle, then runs `wrangler deploy`.
+
+`public/og.png` — the social card every link preview renders — is committed
+rather than generated at build time, so no browser is needed in CI. Regenerate
+it with `pnpm --filter @dsh-fish/frontend run og:build` whenever the palette or
+the wordmark changes.
 
 ## Scheduled ingestion
 

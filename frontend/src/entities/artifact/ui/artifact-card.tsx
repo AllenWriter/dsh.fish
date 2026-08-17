@@ -1,9 +1,9 @@
-import { Link } from 'react-router'
 import { motion, useReducedMotion } from 'motion/react'
 import { BadgeCheck, Download, Star } from 'lucide-react'
 import type { Artifact } from '../model/types'
 import { KindChip } from './kind-chip'
-import { t } from '@/shared/config/messages'
+import { useT } from '@/shared/config/i18n'
+import { LocaleLink } from '@/shared/ui/locale-link'
 import { compactNumber } from '@/shared/lib/format'
 import { EASE_OUT } from '@/shared/lib/ease'
 import { cn } from '@/shared/lib/utils'
@@ -18,6 +18,7 @@ import { cn } from '@/shared/lib/utils'
  * add noise to every row to serve neither.
  */
 export function ArtifactCard({ artifact, index = 0 }: { artifact: Artifact; index?: number }) {
+  const t = useT()
   const reduce = useReducedMotion()
 
   return (
@@ -46,12 +47,12 @@ export function ArtifactCard({ artifact, index = 0 }: { artifact: Artifact; inde
       </div>
 
       <h3 className="mt-3 text-base font-semibold leading-snug tracking-tight">
-        <Link
+        <LocaleLink
           to={`/a/${artifact.id}`}
           className="after:absolute after:inset-0 after:content-['']"
         >
           {artifact.displayName}
-        </Link>
+        </LocaleLink>
       </h3>
 
       <p className="mt-1.5 line-clamp-2 flex-1 text-pretty text-sm leading-relaxed text-muted-foreground">

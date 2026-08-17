@@ -11,6 +11,7 @@ This section defines how the frontend is organized using **Feature-Sliced Design
 - [`public-api.md`](public-api.md) — public API and re-export rules.
 - [`import-rules.md`](import-rules.md) — cross-layer and cross-slice import rules.
 - [`ui-patterns.md`](ui-patterns.md) — semantic styling, no hardcoded copy, no redundant copy.
+- [`i18n.md`](i18n.md) — locales, message catalogs, locale-aware links and loaders.
 
 ## Quick start
 
@@ -18,6 +19,7 @@ This section defines how the frontend is organized using **Feature-Sliced Design
 2. Read [`layers.md`](layers.md) to understand where a new file belongs.
 3. Read [`import-rules.md`](import-rules.md) before adding any import.
 4. Read [`ui-patterns.md`](ui-patterns.md) before writing UI code.
+5. Read [`i18n.md`](i18n.md) before writing any user-facing string or internal link.
 
 ## Core principle
 

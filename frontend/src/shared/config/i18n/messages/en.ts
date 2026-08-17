@@ -1,12 +1,16 @@
 /**
- * Every user-facing string in the product, keyed.
+ * The source catalog. Every other language is typed against this one, so a key
+ * added here fails the build in nine other files until it is translated.
  *
- * `CLAUDE.md` forbids hardcoded copy in components, so this module is the one
+ * `CLAUDE.md` forbids hardcoded copy in components, so these modules are the one
  * place text lives. The backend never sends prose either: it sends keys
  * (`artifactKind.bundle.label`, `install.warning.buildAllowance`) that resolve
- * here, which is what lets the catalog stay language-neutral in the database.
+ * here, which is what lets the catalog stay language-neutral in the database and
+ * a single crawled artifact render in ten languages.
+ *
+ * Placeholders are `{name}` and are substituted by `translate`.
  */
-export const messages = {
+export const en = {
   'app.name': 'dsh.fish',
   'app.tagline': 'The plugin hub for DeepSeek Harness',
   'app.description':
@@ -20,24 +24,37 @@ export const messages = {
   'nav.signOut': 'Sign out',
   'nav.search': 'Search plugins',
   'nav.searchHint': 'Press ⌘K',
+  'nav.language': 'Language',
+  'nav.menu': 'Menu',
+  'nav.harness': 'DeepSeek Harness',
+
+  'a11y.skipToContent': 'Skip to content',
+  'theme.toLight': 'Switch to light theme',
+  'theme.toDark': 'Switch to dark theme',
 
   'artifactKind.bundle.label': 'Bundle',
   'artifactKind.bundle.description':
     'An npm package declaring dsh.bundle — the unit `dsh plugin add` installs.',
+  'artifactKind.bundle.plural': 'Bundles',
   'artifactKind.profile.label': 'Profile',
   'artifactKind.profile.description': 'A whole runnable composition: an ordered stack of bundles.',
+  'artifactKind.profile.plural': 'Profiles',
   'artifactKind.skill.label': 'Skill',
   'artifactKind.skill.description':
     'Reusable agent instructions the model loads on demand, as SKILL.md.',
+  'artifactKind.skill.plural': 'Skills',
   'artifactKind.mcpServer.label': 'MCP server',
   'artifactKind.mcpServer.description':
     'An external Model Context Protocol server mounted as native tools.',
+  'artifactKind.mcpServer.plural': 'MCP servers',
   'artifactKind.agentPreset.label': 'Agent preset',
   'artifactKind.agentPreset.description':
     'A composition of tools, prompt sections and persona for one agent.',
+  'artifactKind.agentPreset.plural': 'Agent presets',
   'artifactKind.hookBridge.label': 'Hook bridge',
   'artifactKind.hookBridge.description':
     'Runs your existing Claude Code or Codex shell hooks inside dsh.',
+  'artifactKind.hookBridge.plural': 'Hook bridges',
 
   'category.coding': 'Coding',
   'category.research': 'Research',
@@ -79,6 +96,18 @@ export const messages = {
   'browse.emptyHint': 'Try removing a filter, or submit a plugin you know of.',
   'browse.resultCount': 'results',
   'browse.clearFilters': 'Clear filters',
+  'browse.searchTitle': 'Search results for “{query}”',
+  'browse.previous': 'Previous page',
+  'browse.next': 'Next page',
+  'browse.pagination': 'Pagination',
+
+  'collection.kind.title': '{kind} for DeepSeek Harness',
+  'collection.kind.description':
+    '{count} {kind} indexed for DeepSeek Harness. Read the install plan and copy one command.',
+  'collection.category.title': '{category} plugins for DeepSeek Harness',
+  'collection.category.description':
+    '{count} DeepSeek Harness plugins for {category}: bundles, skills, MCP servers and agent presets, each with a resolved install plan.',
+  'collection.everything': 'All plugins',
 
   'artifact.verified': 'Verified',
   'artifact.verifiedTitle': 'The author proved they control this source.',
@@ -92,6 +121,8 @@ export const messages = {
   'artifact.readme': 'Readme',
   'artifact.install': 'Install',
   'artifact.noReadme': 'This artifact ships no readme.',
+  'artifact.categories': 'Categories',
+  'artifact.keywords': 'Keywords',
 
   'install.title': 'Install',
   'install.viaPlugin': 'Via hub plugin',
@@ -108,8 +139,7 @@ export const messages = {
     'This source has no pinned commit, so a later push upstream changes what installs. Prefer pinning a commit.',
   'install.warning.profileOrder':
     'Bundles apply in listed order and later layers win per row. Install them in the order shown.',
-  'install.warning.credentialsNeeded':
-    'This server needs credentials before it will connect.',
+  'install.warning.credentialsNeeded': 'This server needs credentials before it will connect.',
   'install.warning.hookExecutesShell':
     'Hook bridges run your existing shell hooks on harness lifecycle events.',
 
@@ -157,6 +187,26 @@ export const messages = {
   'dashboard.status.rejected': 'Rejected',
 
   'docs.title': 'Publishing to dsh.fish',
+  'docs.intro':
+    'Tag your repository with the dsh-plugin topic, or submit it directly. The registry reads your real manifest — what it lists is what the harness would load.',
+  'docs.bundle.title': 'A bundle declares dsh.bundle',
+  'docs.bundle.body':
+    'A package without that declaration still installs, but the harness activates no layer for it — so the registry does not list it as a plugin either.',
+  'docs.bundle.note':
+    'Publishing to npm ships prebuilt code, so users need no build allowance. A git install fetches sources: add a self-contained prepare script, and expect users to allowlist it.',
+  'docs.skill.title': 'A skill is a SKILL.md with frontmatter',
+  'docs.skill.body':
+    'name must be kebab-case and description is required — the provider drops a skill missing either.',
+  'docs.mcp.title': 'An MCP server is a client row',
+  'docs.mcp.body':
+    'The registry stores credential references, never values. Declare the environment variable names your server needs and the harness resolves them through ctx.credentials.',
+  'docs.preset.title': 'An agent preset is one agent.cordis.yml',
+  'docs.preset.body':
+    'Put it at the repository root (or in the submitted subdirectory). The directory name becomes the preset id.',
+  'docs.profile.title': 'A profile lists bundles in order',
+  'docs.profile.body':
+    'Later layers win per row, and a patch replaces a row’s whole config rather than deep-merging it — so order is meaningful.',
+
   'notFound.title': 'Nothing here',
   'notFound.body': 'That page does not exist.',
   'notFound.home': 'Back to the hub',
@@ -166,11 +216,17 @@ export const messages = {
   'common.loading': 'Loading',
   'common.error': 'Something went wrong.',
   'common.retry': 'Retry',
+
+  'seo.home.title': '{name} — {tagline}',
+  'seo.browse.description':
+    'Search every bundle, skill, MCP server, agent preset, hook bridge and profile indexed for DeepSeek Harness.',
+  'seo.artifact.description':
+    '{summary} A {kind} for DeepSeek Harness — copy one command to install it.',
+  'seo.docs.description':
+    'What a repository or npm package must declare for the dsh.fish crawler to index it as a bundle, skill, MCP server, agent preset or profile.',
 } as const
 
-export type MessageKey = keyof typeof messages
+export type MessageKey = keyof typeof en
 
-/** Resolve a key. An unknown key returns the key itself, which is loud in review. */
-export function t(key: string): string {
-  return (messages as Record<string, string>)[key] ?? key
-}
+/** Shape every other language must satisfy: same keys, no gaps, no extras. */
+export type Catalog = Readonly<Record<MessageKey, string>>

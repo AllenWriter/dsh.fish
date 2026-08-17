@@ -9,9 +9,10 @@ import type {
   ArtifactQuery,
   ArtifactRepository,
   KindCount,
+  SitemapEntry,
 } from '../../domain/artifact/artifact-repository.js'
 import type { SourceRef } from '../../domain/artifact/source-ref.js'
-import type { Page } from '../../domain/shared/pagination.js'
+import type { Page, PageRequest } from '../../domain/shared/pagination.js'
 import { page } from '../../domain/shared/pagination.js'
 import type { Slug } from '../../domain/shared/slug.js'
 import { slug } from '../../domain/shared/slug.js'
@@ -126,6 +127,32 @@ export class D1ArtifactRepository implements ArtifactRepository {
       .update(artifacts)
       .set({ installs: sql`${artifacts.installs} + ${by}` })
       .where(eq(artifacts.id, id))
+  }
+
+  async listForSitemap(request: PageRequest): Promise<Page<SitemapEntry>> {
+    // A deprecated artifact still resolves and is still linked from the pages
+    // that reference it, but it is not something to invite a crawler to.
+    const where = eq(artifacts.deprecated, false)
+
+    const [countRow] = await this.db
+      .select({ total: sql<number>`count(*)` })
+      .from(artifacts)
+      .where(where)
+
+    const rows = await this.db
+      .select({ id: artifacts.id, updatedAt: artifacts.updatedAt })
+      .from(artifacts)
+      .where(where)
+      .orderBy(desc(artifacts.updatedAt))
+      .limit(request.limit)
+      .offset(request.offset)
+
+    // `updated_at` is a `timestamp_ms` column, so Drizzle hands back a Date.
+    return page(
+      rows.map((row) => ({ id: slug(row.id), updatedAt: row.updatedAt })),
+      Number(countRow?.total ?? 0),
+      request,
+    )
   }
 
   async listIdsByOrigin(origin: string): Promise<readonly Slug[]> {

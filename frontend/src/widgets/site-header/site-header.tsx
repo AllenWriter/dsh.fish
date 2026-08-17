@@ -1,11 +1,13 @@
-import { Link, NavLink, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Fish, Menu, Moon, Search, Sun, X } from 'lucide-react'
 import { EASE_OUT } from '@/shared/lib/ease'
 import { CommandPalette } from '@/shared/ui/motion/command-palette'
+import { LocaleLink, LocaleNavLink, useLocalePath } from '@/shared/ui/locale-link'
 import { AccountMenu } from '@/features/account-menu'
-import { t } from '@/shared/config/messages'
+import { LocaleSwitcher } from '@/features/locale-switcher'
+import { useT } from '@/shared/config/i18n'
 import { writeThemeCookie } from '@/shared/lib/theme'
 import { cn } from '@/shared/lib/utils'
 
@@ -16,7 +18,9 @@ const NAV = [
 ] as const
 
 export function SiteHeader() {
+  const t = useT()
   const navigate = useNavigate()
+  const localePath = useLocalePath()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [paletteOpen, setPaletteOpen] = useState(false)
 
@@ -26,29 +30,31 @@ export function SiteHeader() {
         id: entry.to,
         label: t(entry.key),
         group: t('nav.browse'),
-        onSelect: () => navigate(entry.to),
+        onSelect: () => navigate(localePath(entry.to)),
       })),
       {
         id: 'dashboard',
         label: t('nav.dashboard'),
         group: t('nav.dashboard'),
-        onSelect: () => navigate('/dashboard'),
+        onSelect: () => navigate(localePath('/dashboard')),
       },
     ],
-    [navigate],
+    // `t` and `localePath` are both derived from the request's language, so the
+    // palette's labels and destinations change together when it does.
+    [navigate, localePath, t],
   )
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-6">
-        <Link to="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
+        <LocaleLink to="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
           <Fish className="size-5 text-primary" aria-hidden />
           {t('app.name')}
-        </Link>
+        </LocaleLink>
 
         <nav className="ml-4 hidden items-center gap-1 md:flex">
           {NAV.map((entry) => (
-            <NavLink
+            <LocaleNavLink
               key={entry.to}
               to={entry.to}
               className={({ isActive }) =>
@@ -61,7 +67,7 @@ export function SiteHeader() {
               }
             >
               {t(entry.key)}
-            </NavLink>
+            </LocaleNavLink>
           ))}
         </nav>
 
@@ -77,13 +83,15 @@ export function SiteHeader() {
           </kbd>
         </button>
 
-        <ThemeToggle className="ml-auto sm:ml-0" />
+        <LocaleSwitcher className="ml-auto sm:ml-0" />
+
+        <ThemeToggle />
 
         <AccountMenu />
 
         <button
           type="button"
-          aria-label={t('nav.browse')}
+          aria-label={t('nav.menu')}
           onClick={() => setMobileOpen((open) => !open)}
           className="press rounded-lg border border-border p-1.5 md:hidden"
         >
@@ -105,14 +113,14 @@ export function SiteHeader() {
               is in the bar at every width. */}
           <div className="py-3">
           {NAV.map((entry) => (
-            <NavLink
+            <LocaleNavLink
               key={entry.to}
               to={entry.to}
               onClick={() => setMobileOpen(false)}
               className="block py-2 text-sm font-medium text-muted-foreground"
             >
               {t(entry.key)}
-            </NavLink>
+            </LocaleNavLink>
           ))}
           </div>
         </motion.nav>
@@ -129,6 +137,7 @@ export function SiteHeader() {
  * in `root.tsx` consults before first paint, so the two never disagree.
  */
 function ThemeToggle({ className }: { className?: string }) {
+  const t = useT()
   const reduce = useReducedMotion()
   // Initialised from what is actually painted, which covers all three cases:
   // an explicit class from the server, or the system preference when there is
@@ -146,7 +155,7 @@ function ThemeToggle({ className }: { className?: string }) {
   return (
     <button
       type="button"
-      aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
+      aria-label={dark ? t('theme.toLight') : t('theme.toDark')}
       onClick={() => {
         const next = !dark
         setDark(next)

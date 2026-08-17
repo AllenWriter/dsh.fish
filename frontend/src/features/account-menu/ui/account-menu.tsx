@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
 import { LayoutDashboard, LogOut } from 'lucide-react'
 import { signOut, useSession } from '@/shared/api/auth-client'
-import { t } from '@/shared/config/messages'
+import { useT } from '@/shared/config/i18n'
+import { LocaleLink } from '@/shared/ui/locale-link'
 import { Avatar } from '@/shared/ui/avatar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/motion/popover'
 
@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/motion/popo
  * which keeps one control in the bar instead of a row of text links.
  */
 export function AccountMenu() {
+  const t = useT()
   const { data: session, isPending } = useSession()
   const [open, setOpen] = useState(false)
   const user = session?.user
@@ -25,12 +26,12 @@ export function AccountMenu() {
 
   if (!user) {
     return (
-      <Link
+      <LocaleLink
         to="/sign-in"
         className="press inline-flex rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground"
       >
         {t('nav.signIn')}
-      </Link>
+      </LocaleLink>
     )
   }
 
@@ -61,14 +62,14 @@ export function AccountMenu() {
 
         <span className="my-1 block h-px bg-border" />
 
-        <Link
+        <LocaleLink
           to="/dashboard"
           onClick={() => setOpen(false)}
           className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm font-medium transition-colors hover:bg-muted"
         >
           <LayoutDashboard className="size-4 text-muted-foreground" aria-hidden />
           {t('nav.dashboard')}
-        </Link>
+        </LocaleLink>
         <button
           type="button"
           onClick={() => {

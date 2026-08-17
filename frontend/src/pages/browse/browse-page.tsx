@@ -1,25 +1,68 @@
-import { Form, Link, useSearchParams } from 'react-router'
+import { Form, useSearchParams } from 'react-router'
 import type { Route } from './+types/browse-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { CatalogGrid } from '@/widgets/catalog-grid/catalog-grid'
 import { CatalogFilters } from '@/widgets/catalog-filters/catalog-filters'
-import { t } from '@/shared/config/messages'
+import { CatalogPagination } from '@/widgets/catalog-pagination/catalog-pagination'
+import { requireLocale, translate, useT } from '@/shared/config/i18n'
+import { useLocalePath } from '@/shared/ui/locale-link'
+import { breadcrumbLd, collectionLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 
 const PAGE_SIZE = 24
 
-export function meta({ location }: Route.MetaArgs): Route.MetaDescriptors {
-  const query = new URLSearchParams(location.search).get('q')
-  const title = query ? `${query} — ${t('app.name')}` : `${t('browse.title')} — ${t('app.name')}`
-  return [{ title }, { name: 'description', content: t('app.description') }]
+/**
+ * Search and faceted browse.
+ *
+ * Only the bare `/browse` is offered to the index. Every query — a search term,
+ * a filter combination, a page offset — produces a near-duplicate of a listing
+ * that is already reachable at `/kind/<kind>` or `/category/<category>`, and a
+ * catalog of thousands can mint effectively unlimited such URLs. They stay
+ * `noindex, follow`: a crawler still walks through them to the plugin pages
+ * they link to, which is the only thing worth reaching here.
+ */
+export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta(params.locale)
+  const { origin, locale, filtered, results, query } = loaderData
+  const title = query
+    ? `${translate(locale, 'browse.searchTitle', { query })} — ${translate(locale, 'app.name')}`
+    : `${translate(locale, 'browse.title')} — ${translate(locale, 'app.name')}`
+
+  return pageMeta({
+    origin,
+    locale,
+    path: '/browse',
+    title,
+    description: translate(locale, 'seo.browse.description'),
+    index: !filtered,
+    jsonLd: filtered
+      ? []
+      : [
+          breadcrumbLd(origin, locale, [
+            { name: translate(locale, 'app.name'), path: '/' },
+            { name: translate(locale, 'browse.title'), path: '/browse' },
+          ]),
+          collectionLd(origin, locale, {
+            path: '/browse',
+            name: translate(locale, 'browse.title'),
+            description: translate(locale, 'seo.browse.description'),
+            items: results.items.map((item) => ({
+              name: item.displayName,
+              path: `/a/${item.id}`,
+            })),
+          }),
+        ],
+  })
 }
 
-export async function loader({ context, request }: Route.LoaderArgs) {
+export async function loader({ context, params, request }: Route.LoaderArgs) {
+  const locale = requireLocale(params.locale)
   const url = new URL(request.url)
   const { container } = context.get(hubContext)
+  const query = url.searchParams.get('q') ?? ''
 
   const [results, facets] = await Promise.all([
     container.useCases.searchArtifacts.execute({
-      ...(url.searchParams.get('q') ? { text: url.searchParams.get('q')! } : {}),
+      ...(query === '' ? {} : { text: query }),
       kinds: url.searchParams.getAll('kind'),
       categories: url.searchParams.getAll('category'),
       ...(url.searchParams.get('sort') ? { sort: url.searchParams.get('sort')! } : {}),
@@ -30,19 +73,32 @@ export async function loader({ context, request }: Route.LoaderArgs) {
     container.useCases.listCatalogFacets.execute(),
   ])
 
-  return { results, facets }
+  return {
+    results,
+    facets,
+    locale,
+    query,
+    origin: container.config.baseUrl,
+    // Any narrowing at all makes this a view of the catalog rather than the
+    // catalog, and views are not what gets indexed.
+    filtered: [...url.searchParams.keys()].length > 0,
+  }
 }
 
 export default function BrowsePage({ loaderData }: Route.ComponentProps) {
   const { results, facets } = loaderData
+  const t = useT()
+  const localePath = useLocalePath()
   const [params] = useSearchParams()
   const query = params.get('q') ?? ''
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">{t('browse.title')}</h1>
-        <Form method="get" className="mt-4 flex flex-wrap gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {query ? t('browse.searchTitle', { query }) : t('browse.title')}
+        </h1>
+        <Form method="get" action={localePath('/browse')} className="mt-4 flex flex-wrap gap-2">
           <input
             type="search"
             name="q"
@@ -86,59 +142,14 @@ export default function BrowsePage({ loaderData }: Route.ComponentProps) {
             <span className="tabular-nums">{results.total}</span> {t('browse.resultCount')}
           </p>
           <CatalogGrid artifacts={results.items} />
-          <Pagination total={results.total} limit={results.limit} offset={results.offset} />
+          <CatalogPagination
+            basePath="/browse"
+            total={results.total}
+            limit={results.limit}
+            offset={results.offset}
+          />
         </div>
       </div>
     </div>
-  )
-}
-
-function Pagination({
-  total,
-  limit,
-  offset,
-}: {
-  total: number
-  limit: number
-  offset: number
-}) {
-  const [params] = useSearchParams()
-  if (total <= limit) return null
-
-  const build = (nextOffset: number) => {
-    const next = new URLSearchParams(params)
-    next.set('offset', String(nextOffset))
-    return `/browse?${next.toString()}`
-  }
-
-  const hasPrevious = offset > 0
-  const hasNext = offset + limit < total
-
-  return (
-    <nav className="mt-8 flex items-center justify-between text-sm">
-      {hasPrevious ? (
-        <Link
-          to={build(Math.max(0, offset - limit))}
-          className="press inline-flex h-10 items-center rounded-lg border border-border px-4 hover:border-border-strong"
-        >
-          &larr;
-        </Link>
-      ) : (
-        <span />
-      )}
-      <span className="tabular-nums text-muted-foreground">
-        {Math.floor(offset / limit) + 1} / {Math.ceil(total / limit)}
-      </span>
-      {hasNext ? (
-        <Link
-          to={build(offset + limit)}
-          className="press inline-flex h-10 items-center rounded-lg border border-border px-4 hover:border-border-strong"
-        >
-          &rarr;
-        </Link>
-      ) : (
-        <span />
-      )}
-    </nav>
   )
 }
