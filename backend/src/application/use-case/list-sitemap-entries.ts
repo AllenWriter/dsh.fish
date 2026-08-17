@@ -20,10 +20,12 @@ export interface SitemapPageDto {
  * The protocol allows 50,000 URLs or 50 MB uncompressed per file, whichever
  * comes first. Every entry here carries ten `xhtml:link` alternates, so the
  * byte limit binds long before the URL limit — and a Worker has to hold the
- * whole document in memory to send it. 5,000 keeps a file comfortably inside
- * both and keeps each response cheap to regenerate.
+ * whole document in memory to send it. Production data is currently about
+ * 12.7 KB per artifact after all language alternates are expanded, so 5,000
+ * rows would exceed 50 MB. 2,500 leaves headroom for longer ids and future
+ * locales while keeping every public artifact reachable through pagination.
  */
-export const SITEMAP_PAGE_SIZE = 5_000
+export const SITEMAP_PAGE_SIZE = 2_500
 
 /**
  * The catalog as a crawler needs to see it.

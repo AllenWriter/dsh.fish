@@ -236,7 +236,8 @@ export class Artifact {
         : snapshot.ogImageUrl === null
           ? undefined
           : ogImageUrl(snapshot.ogImageUrl)
-    return new Artifact({
+    const refreshedAt = new Date()
+    const next = {
       ...rest,
       displayName: snapshot.displayName,
       summary: snapshot.summary,
@@ -257,14 +258,45 @@ export class Artifact {
         : { readmeMarkdown: snapshot.readmeMarkdown }),
       ...(nextOg === undefined ? {} : { ogImageUrl: nextOg }),
       ...(snapshot.deprecated === undefined ? {} : { deprecated: snapshot.deprecated }),
-      updatedAt: new Date(),
-      indexedAt: new Date(),
+      indexedAt: refreshedAt,
+    }
+
+    // `indexedAt` records that the crawler checked the source. `updatedAt` is
+    // exposed as sitemap `lastmod`, so it may only advance when the public page
+    // actually changed. Updating both on every sweep made the entire catalog
+    // look freshly modified every few hours and taught crawlers to distrust the
+    // sitemap signal.
+    return new Artifact({
+      ...next,
+      updatedAt: publicArtifactChanged(this.props, next) ? refreshedAt : this.props.updatedAt,
     })
   }
 
   toProps(): ArtifactProps {
     return this.props
   }
+}
+
+function publicArtifactChanged(
+  previous: ArtifactProps,
+  next: Omit<ArtifactProps, 'updatedAt'>,
+): boolean {
+  const publicFields = (value: Omit<ArtifactProps, 'updatedAt'> | ArtifactProps) => ({
+    displayName: value.displayName,
+    summary: value.summary,
+    source: value.source,
+    payload: value.payload,
+    keywords: value.keywords,
+    categories: value.categories,
+    license: value.license,
+    author: value.author,
+    readmeMarkdown: value.readmeMarkdown,
+    ogImageUrl: value.ogImageUrl,
+    stats: value.stats,
+    deprecated: value.deprecated,
+  })
+
+  return JSON.stringify(publicFields(previous)) !== JSON.stringify(publicFields(next))
 }
 
 function normalizeKeywords(raw: readonly string[]): readonly string[] {

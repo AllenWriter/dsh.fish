@@ -65,6 +65,8 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
     { property: 'og:type', content: type },
     { property: 'og:locale', content: definition.ogLocale },
     { property: 'og:image', content: image },
+    ...(image.startsWith('https://') ? [{ property: 'og:image:secure_url', content: image }] : []),
+    { property: 'og:image:type', content: OG_IMAGE.type },
     { property: 'og:image:width', content: String(OG_IMAGE.width) },
     { property: 'og:image:height', content: String(OG_IMAGE.height) },
     { property: 'og:image:alt', content: translate(locale, 'app.tagline') },
@@ -73,6 +75,7 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
     { name: 'twitter:title', content: title },
     { name: 'twitter:description', content: summary },
     { name: 'twitter:image', content: image },
+    { name: 'twitter:image:alt', content: translate(locale, 'app.tagline') },
   ]
 
   // A link preview offers the reader other languages it could have rendered in.

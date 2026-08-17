@@ -12,6 +12,15 @@ export const OG_IMAGE = {
   path: '/og.png',
   width: 1200,
   height: 630,
+  type: 'image/png',
+} as const
+
+/** Square brand mark for schema.org identity and install surfaces. */
+export const BRAND_IMAGE = {
+  path: '/icons/whale-brand.png',
+  width: 256,
+  height: 256,
+  type: 'image/png',
 } as const
 
 /** The project this registry exists for. */

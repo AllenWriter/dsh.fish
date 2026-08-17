@@ -78,21 +78,13 @@ const PAGE = `<!doctype html>
       }
       .mark { display: flex; align-items: center; gap: 18px; }
       .mark img { width: 58px; height: 58px; object-fit: contain; }
-      .mark span { font-size: 40px; font-weight: 600; letter-spacing: -0.02em; }
-      h1 {
-        margin-top: 44px;
-        font-size: 76px;
-        line-height: 1.04;
-        font-weight: 600;
-        letter-spacing: -0.035em;
-        max-width: 9ch;
-      }
-      p {
-        margin-top: 28px;
-        font-size: 32px;
+      .mark span { font-size: 76px; font-weight: 600; letter-spacing: -0.035em; }
+      .context {
+        margin-top: 24px;
+        font-size: 30px;
         line-height: 1.4;
         color: var(--muted-fg);
-        max-width: 42ch;
+        letter-spacing: 0.01em;
       }
     </style>
   </head>
@@ -103,8 +95,7 @@ const PAGE = `<!doctype html>
         <img src="data:image/png;base64,${brandIcon}" alt="" />
         <span>dsh.fish</span>
       </div>
-      <h1>Everything is a plugin.</h1>
-      <p>The plugin hub for DeepSeek Harness.</p>
+      <div class="context">DeepSeek Harness</div>
     </main>
   </body>
 </html>`;

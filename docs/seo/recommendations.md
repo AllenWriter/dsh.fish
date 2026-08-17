@@ -42,6 +42,14 @@ with a readme has a few hundred words of it. The crawler already reads readmes â
 make sure the ingestion path is actually populating `readmeMarkdown` for the
 majority of rows, and treat a low fill rate as an SEO defect, not a cosmetic one.
 
+### Keep sitemap modification times truthful
+
+The crawler records every source check in `indexedAt`, while sitemap `lastmod`
+comes from `updatedAt`. Only a change to public artifact content or metadata may
+advance `updatedAt`; a no-op sweep must leave it untouched. The domain aggregate
+enforces this distinction and its regression tests remain part of the release
+gate.
+
 ---
 
 ## P1 â€” once there is traffic

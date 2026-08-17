@@ -13,6 +13,11 @@ One connected graph, emitted as `application/ld+json` through React Router's
 | `CollectionPage` + `ItemList` | Browse, kind, category | `collectionLd` |
 | `SoftwareApplication` | Artifact detail | `artifactLd` |
 
+The `Organization.logo` is the square 256×256 whale brand mark. The 1200×630
+social card is not used as a logo: it is a sharing canvas with background
+artwork and does not satisfy the shape or identity semantics of an organization
+mark.
+
 `WebSite` and `Organization` are emitted **once**, on the home page, and
 referenced by `@id` from every other page (`isPartOf`, `publisher`). Repeating
 them on every page would restate the same facts a few thousand times per crawl.

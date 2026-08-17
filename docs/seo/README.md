@@ -50,6 +50,11 @@ than merging it, so a page that hand-writes a `title` silently drops whatever
 the root set — building the full set in one function is what prevents a page
 shipping a title with no canonical, or a canonical with no alternates.
 
+The Open Graph set includes a localized title, description, locale and image
+alternative, plus the image MIME type and exact dimensions. Twitter receives
+the equivalent large-card fields. The shared bitmap itself is language-neutral;
+the surrounding metadata is the localized information a preview consumer reads.
+
 ## Verifying a change
 
 ```sh

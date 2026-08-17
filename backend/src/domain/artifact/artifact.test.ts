@@ -70,3 +70,38 @@ describe('Artifact categories', () => {
     expect(cleared.ogImageUrl).toBeUndefined()
   })
 })
+
+describe('Artifact crawl timestamps', () => {
+  const earlier = new Date('2025-01-01T00:00:00.000Z')
+
+  it('keeps lastmod stable when a crawl finds no public change', () => {
+    const artifact = Artifact.create({ ...base, updatedAt: earlier, indexedAt: earlier })
+    const refreshed = artifact.refreshedWith({
+      displayName: artifact.displayName,
+      summary: artifact.summary,
+      source: artifact.source,
+      payload: artifact.payload,
+      keywords: artifact.keywords,
+      categories: artifact.categories.map(String),
+      stats: artifact.stats,
+    })
+
+    expect(refreshed.updatedAt).toEqual(earlier)
+    expect(refreshed.indexedAt.getTime()).toBeGreaterThan(earlier.getTime())
+  })
+
+  it('advances lastmod when content visible on the artifact page changes', () => {
+    const artifact = Artifact.create({ ...base, updatedAt: earlier, indexedAt: earlier })
+    const refreshed = artifact.refreshedWith({
+      displayName: artifact.displayName,
+      summary: 'A changed bundle summary.',
+      source: artifact.source,
+      payload: artifact.payload,
+      keywords: artifact.keywords,
+      categories: artifact.categories.map(String),
+      stats: artifact.stats,
+    })
+
+    expect(refreshed.updatedAt.getTime()).toBeGreaterThan(earlier.getTime())
+  })
+})

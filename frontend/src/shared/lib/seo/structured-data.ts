@@ -1,5 +1,5 @@
 import { localeDefinition, translate, type Locale } from '@/shared/config/i18n'
-import { HUB_REPO_URL, OG_IMAGE } from '@/shared/config/site'
+import { BRAND_IMAGE, HUB_REPO_URL } from '@/shared/config/site'
 import { absoluteUrl, clampDescription } from './url'
 
 export type Ld = Record<string, unknown>
@@ -48,7 +48,12 @@ export function organizationLd(origin: string, locale: Locale): Ld {
     '@id': `${origin}/#organization`,
     name: translate(locale, 'app.name'),
     url: origin,
-    logo: `${origin}${OG_IMAGE.path}`,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${origin}${BRAND_IMAGE.path}`,
+      width: BRAND_IMAGE.width,
+      height: BRAND_IMAGE.height,
+    },
     sameAs: [HUB_REPO_URL],
   }
 }

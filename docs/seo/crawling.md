@@ -3,13 +3,14 @@
 ## robots.txt
 
 Served from `frontend/src/pages/seo/robots.ts` at `/robots.txt`. It disallows
-the account paths (bare and under every language prefix) and `/api/`, and names
-the sitemap index.
+`/api/` and names the sitemap index.
 
-The disallow list repeats what those pages already say in their own `noindex`
-tags, on purpose: the two do different jobs. `noindex` keeps a page out of the
-index but only *after* it is fetched; `Disallow` stops the fetch, which is what
-protects crawl budget.
+Account pages remain crawlable even though they are `noindex, follow`. A search
+engine must fetch a page to read that directive; blocking `/dashboard`,
+`/device`, or `/sign-in` in robots.txt can leave the URL indexed without a
+snippet because the crawler knows the URL exists but cannot see its `noindex`.
+The API is different: it is machine-only JSON with no HTML directive to read,
+so blocking it saves crawl budget without hiding an indexation instruction.
 
 Nothing there is a security boundary. robots.txt is a request, and the paths it
 names are exactly the paths anyone can read in it.
@@ -19,12 +20,15 @@ names are exactly the paths anyone can read in it.
 ```
 /sitemap.xml                  sitemapindex
 ├── /sitemaps/pages.xml       home, browse, 6 kinds, 12 categories, docs, submit
-└── /sitemaps/artifacts/:page one page of the catalog, 5,000 artifacts each
+└── /sitemaps/artifacts/:page one page of the catalog, 2,500 artifacts each
 ```
 
-An index rather than one flat file. Every URL is emitted once **per language**,
-so a catalog of a few thousand artifacts would pass the 50 MB per-file limit in
-the flat form — and a Worker has to hold the whole document in memory to send
+An index rather than one flat file. Every non-deprecated artifact in the catalog
+is included, not only the popular or recently updated rows, and every URL is
+emitted once **per language**. At the current ten locales, production XML uses
+about 12.7 KB per artifact after its alternate links are expanded; 2,500 rows
+per file stays below the 50 MB uncompressed limit with room for longer ids and
+future locales. A Worker also has to hold the whole document in memory to send
 it. The index costs one extra fetch and never has to be restructured later.
 
 Static pages get their own file so a crawler re-reading the catalog does not
@@ -43,7 +47,9 @@ therefore 220 `<url>` elements for 22 paths, which is correct, not a bug.
 ### `lastmod`
 
 Artifact entries carry the artifact's own `updatedAt`, so a crawler re-reads
-exactly the rows the six-hourly sweep changed instead of the whole catalog.
+exactly the rows whose public page changed. A routine source check advances
+`indexedAt` but leaves `updatedAt` alone; otherwise every six-hourly sweep would
+falsely mark the whole catalog as modified and make `lastmod` meaningless.
 
 ### The read model
 
@@ -97,6 +103,11 @@ control; its panel is portal-rendered and is not in the server's HTML.
 ```sh
 pnpm --filter @dsh-fish/frontend run og:build
 ```
+
+The site card deliberately contains no translatable sentence. All ten language
+variants share the same image while their `og:title`, `og:description`,
+`og:locale`, and image alt text stay localized in the page head; an English-only
+claim baked into the bitmap would contradict nine of those previews.
 
 Generated rather than drawn, and committed rather than rendered per request: a
 Worker would need a font rasteriser and a few hundred milliseconds to produce it

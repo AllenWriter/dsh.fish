@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { LOCALE_CODES } from '@/shared/config/i18n'
 import { pageMeta } from './meta'
+import { organizationLd } from './structured-data'
 import { alternates, clampDescription } from './url'
 
 const ORIGIN = 'https://dsh.fish'
@@ -89,6 +90,15 @@ describe('pageMeta', () => {
   it('carries a Twitter card as well as Open Graph', () => {
     expect(content(indexed, 'name', 'twitter:card')).toBe('summary_large_image')
     expect(content(indexed, 'name', 'twitter:image')).toBe(`${ORIGIN}/og.png`)
+    expect(content(indexed, 'name', 'twitter:image:alt')).toBe('DeepSeek Harness のプラグインハブ')
+  })
+
+  it('fully describes the preview image for Open Graph consumers', () => {
+    expect(content(indexed, 'property', 'og:image:secure_url')).toBe(`${ORIGIN}/og.png`)
+    expect(content(indexed, 'property', 'og:image:type')).toBe('image/png')
+    expect(content(indexed, 'property', 'og:image:width')).toBe('1200')
+    expect(content(indexed, 'property', 'og:image:height')).toBe('630')
+    expect(content(indexed, 'property', 'og:image:alt')).toBe('DeepSeek Harness のプラグインハブ')
   })
 
   describe('when the page is not for the index', () => {
@@ -123,5 +133,16 @@ describe('pageMeta', () => {
     const blocks = find(withLd, (entry) => 'script:ld+json' in entry)
     expect(blocks).toHaveLength(1)
     expect(blocks[0]!['script:ld+json']).toEqual({ '@type': 'WebSite' })
+  })
+})
+
+describe('organizationLd', () => {
+  it('uses the square brand mark as the organization logo, not the social card', () => {
+    expect(organizationLd(ORIGIN, 'en').logo).toEqual({
+      '@type': 'ImageObject',
+      url: `${ORIGIN}/icons/whale-brand.png`,
+      width: 256,
+      height: 256,
+    })
   })
 })
