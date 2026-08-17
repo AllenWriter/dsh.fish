@@ -1,21 +1,38 @@
 import { useNavigate } from 'react-router'
 import { useEffect, useMemo, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Menu, Moon, Search, Sun, X } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
 import { EASE_OUT } from '@/shared/lib/ease'
 import { CommandPalette } from '@/shared/ui/motion/command-palette'
+import { IconSwap } from '@/shared/ui/icon-swap'
 import { LocaleLink, LocaleNavLink, useLocalePath } from '@/shared/ui/locale-link'
 import { AccountMenu } from '@/features/account-menu'
 import { LocaleSwitcher } from '@/features/locale-switcher'
 import { useT } from '@/shared/config/i18n'
 import { writeThemeCookie } from '@/shared/lib/theme'
 import { cn } from '@/shared/lib/utils'
+import {
+  BrowseIcon,
+  CloseIcon,
+  DarkThemeIcon,
+  DashboardIcon,
+  DocsIcon,
+  LightThemeIcon,
+  MenuIcon,
+  SearchIcon,
+  SubmitIcon,
+  type Icon,
+} from '@/shared/ui/icon'
 
-const NAV = [
-  { to: '/browse', key: 'nav.browse' },
-  { to: '/docs', key: 'nav.docs' },
-  { to: '/submit', key: 'nav.submit' },
-] as const
+/**
+ * The three destinations, each with the mark it keeps everywhere else: the same
+ * glyph identifies a destination in the bar, in the mobile sheet, in the command
+ * palette and in the footer, which is what lets a reader learn it once.
+ */
+const NAV: readonly { to: string; key: string; icon: Icon }[] = [
+  { to: '/browse', key: 'nav.browse', icon: BrowseIcon },
+  { to: '/docs', key: 'nav.docs', icon: DocsIcon },
+  { to: '/submit', key: 'nav.submit', icon: SubmitIcon },
+]
 
 export function SiteHeader() {
   const t = useT()
@@ -30,12 +47,14 @@ export function SiteHeader() {
         id: entry.to,
         label: t(entry.key),
         group: t('nav.browse'),
+        icon: entry.icon,
         onSelect: () => navigate(localePath(entry.to)),
       })),
       {
         id: 'dashboard',
         label: t('nav.dashboard'),
         group: t('nav.dashboard'),
+        icon: DashboardIcon,
         onSelect: () => navigate(localePath('/dashboard')),
       },
     ],
@@ -66,14 +85,26 @@ export function SiteHeader() {
               to={entry.to}
               className={({ isActive }) =>
                 cn(
-                  'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                   isActive
                     ? 'bg-muted text-foreground'
                     : 'text-muted-foreground hover:text-foreground',
                 )
               }
             >
-              {t(entry.key)}
+              {/* The current destination fills its mark. Colour already says
+                  which link is active; the fill says it a second way, for a
+                  reader who cannot see the first. */}
+              {({ isActive }) => (
+                <>
+                  <entry.icon
+                    className="size-4"
+                    weight={isActive ? 'fill' : 'bold'}
+                    aria-hidden
+                  />
+                  {t(entry.key)}
+                </>
+              )}
             </LocaleNavLink>
           ))}
         </nav>
@@ -83,7 +114,7 @@ export function SiteHeader() {
           onClick={() => setPaletteOpen(true)}
           className="press ml-auto hidden h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm text-muted-foreground hover:border-border-strong sm:flex"
         >
-          <Search className="size-4" aria-hidden />
+          <SearchIcon className="size-4" weight="bold" aria-hidden />
           {t('nav.search')}
           <kbd className="ml-2 rounded border border-border px-1.5 py-0.5 font-mono text-[10px]">
             &#8984;K
@@ -99,10 +130,17 @@ export function SiteHeader() {
         <button
           type="button"
           aria-label={t('nav.menu')}
+          aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((open) => !open)}
-          className="press rounded-lg border border-border p-1.5 md:hidden"
+          className="press hit-area grid size-9 place-items-center rounded-lg border border-border md:hidden"
         >
-          {mobileOpen ? <X className="size-4" /> : <Menu className="size-4" />}
+          <IconSwap swapKey={mobileOpen ? 'close' : 'menu'}>
+            {mobileOpen ? (
+              <CloseIcon className="size-4" weight="bold" aria-hidden />
+            ) : (
+              <MenuIcon className="size-4" weight="bold" aria-hidden />
+            )}
+          </IconSwap>
         </button>
       </div>
 
@@ -124,9 +162,23 @@ export function SiteHeader() {
               key={entry.to}
               to={entry.to}
               onClick={() => setMobileOpen(false)}
-              className="block py-2 text-sm font-medium text-muted-foreground"
+              className={({ isActive }) =>
+                cn(
+                  'flex min-h-11 items-center gap-2.5 text-sm font-medium',
+                  isActive ? 'text-foreground' : 'text-muted-foreground',
+                )
+              }
             >
-              {t(entry.key)}
+              {({ isActive }) => (
+                <>
+                  <entry.icon
+                    className="size-4"
+                    weight={isActive ? 'fill' : 'bold'}
+                    aria-hidden
+                  />
+                  {t(entry.key)}
+                </>
+              )}
             </LocaleNavLink>
           ))}
           </div>
@@ -145,7 +197,6 @@ export function SiteHeader() {
  */
 function ThemeToggle({ className }: { className?: string }) {
   const t = useT()
-  const reduce = useReducedMotion()
   // Initialised from what is actually painted, which covers all three cases:
   // an explicit class from the server, or the system preference when there is
   // no cookie yet.
@@ -174,24 +225,17 @@ function ThemeToggle({ className }: { className?: string }) {
         writeThemeCookie(next ? 'dark' : 'light')
       }}
       className={cn(
-        'press grid size-9 place-items-center rounded-lg border border-border hover:border-border-strong',
+        'press hit-area grid size-9 place-items-center rounded-lg border border-border hover:border-border-strong',
         className,
       )}
     >
-      {/* Same crossfade as the copy control, so every icon that swaps state in
-          this product moves the same way. */}
-      <AnimatePresence initial={false} mode="wait">
-        <motion.span
-          key={dark ? 'sun' : 'moon'}
-          initial={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
-          animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
-          transition={reduce ? { duration: 0.12 } : { type: 'spring', duration: 0.3, bounce: 0 }}
-          className="grid place-items-center"
-        >
-          {dark ? <Sun className="size-4" aria-hidden /> : <Moon className="size-4" aria-hidden />}
-        </motion.span>
-      </AnimatePresence>
+      <IconSwap swapKey={dark ? 'sun' : 'moon'}>
+        {dark ? (
+          <LightThemeIcon className="size-4" weight="bold" aria-hidden />
+        ) : (
+          <DarkThemeIcon className="size-4" weight="bold" aria-hidden />
+        )}
+      </IconSwap>
     </button>
   )
 }

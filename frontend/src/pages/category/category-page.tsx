@@ -3,6 +3,7 @@ import { hubContext } from '@/shared/api/hub-context'
 import { CatalogGrid } from '@/widgets/catalog-grid/catalog-grid'
 import { CatalogPagination } from '@/widgets/catalog-pagination/catalog-pagination'
 import { CATEGORIES, isCategory } from '@/entities/artifact/model/types'
+import { CategoryIcon } from '@/entities/artifact/ui/category-icon'
 import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { breadcrumbLd, collectionLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 
@@ -90,7 +91,8 @@ export default function CategoryPage({ loaderData }: Route.ComponentProps) {
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="flex items-center gap-2.5 text-2xl font-semibold tracking-tight">
+          <CategoryIcon id={category} className="size-7 shrink-0 text-muted-foreground" />
           {t('collection.category.title', { category: name })}
         </h1>
         <p className="mt-2 max-w-2xl text-pretty leading-relaxed text-muted-foreground">

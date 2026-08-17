@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from 'motion/react'
-import { BadgeCheck, Download, Star } from 'lucide-react'
+import { DownloadsIcon, StarsIcon, VerifiedIcon, WarningIcon } from '@/shared/ui/icon'
 import type { Artifact } from '../model/types'
 import { KindChip } from './kind-chip'
 import { ArtifactOgBackdrop } from './artifact-og-backdrop'
@@ -47,7 +47,10 @@ export function ArtifactCard({ artifact, index = 0 }: { artifact: Artifact; inde
               title={t('artifact.verifiedTitle')}
               className="inline-flex items-center gap-1 text-xs font-medium text-primary"
             >
-              <BadgeCheck className="size-3.5" aria-hidden />
+              {/* Filled, unlike every other mark on the card: verification is
+                  an affirmed state, and it is one of the two places this palette
+                  spends its single accent. */}
+              <VerifiedIcon className="size-3.5" weight="fill" aria-hidden />
               {t('artifact.verified')}
             </span>
           ) : null}
@@ -72,11 +75,14 @@ export function ArtifactCard({ artifact, index = 0 }: { artifact: Artifact; inde
           ) : null}
           <span className="ml-auto flex shrink-0 items-center gap-3">
             {artifact.stats.stars > 0 ? (
-              <Stat icon={<Star className="size-3.5" aria-hidden />} value={artifact.stats.stars} />
+              <Stat
+                icon={<StarsIcon className="size-3.5" aria-hidden />}
+                value={artifact.stats.stars}
+              />
             ) : null}
             {artifact.stats.downloads > 0 ? (
               <Stat
-                icon={<Download className="size-3.5" aria-hidden />}
+                icon={<DownloadsIcon className="size-3.5" aria-hidden />}
                 value={artifact.stats.downloads}
               />
             ) : null}
@@ -84,7 +90,8 @@ export function ArtifactCard({ artifact, index = 0 }: { artifact: Artifact; inde
         </div>
 
         {artifact.deprecated ? (
-          <span className="mt-3 inline-flex w-fit rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
+          <span className="mt-3 inline-flex w-fit items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
+            <WarningIcon className="size-3" weight="bold" aria-hidden />
             {t('artifact.deprecated')}
           </span>
         ) : null}

@@ -7,6 +7,15 @@ import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { errorMeta, pageMeta } from '@/shared/lib/seo'
 import { Avatar } from '@/shared/ui/avatar'
+import { cn } from '@/shared/lib/utils'
+import {
+  ApprovedIcon,
+  PendingIcon,
+  RejectedIcon,
+  SignInIcon,
+  SubmitIcon,
+  type Icon,
+} from '@/shared/ui/icon'
 
 /** Someone else's dashboard is not a search result. */
 export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
@@ -30,10 +39,36 @@ interface SubmissionRow {
   createdAt: string
 }
 
-const STATUS_KEY: Record<SubmissionRow['status'], string> = {
-  pending: 'dashboard.status.pending',
-  approved: 'dashboard.status.approved',
-  rejected: 'dashboard.status.rejected',
+/**
+ * How each review outcome presents itself.
+ *
+ * A mark and a colour, not a colour alone: in a list where every row looks the
+ * same, the shape is what a reader picks out, and it is the half of the signal
+ * that survives without colour vision. Only `approved` fills its glyph — it is
+ * the one settled, affirmative outcome of the three.
+ */
+const STATUS: Record<
+  SubmissionRow['status'],
+  { key: string; icon: Icon; weight: 'regular' | 'bold' | 'fill'; className: string }
+> = {
+  pending: {
+    key: 'dashboard.status.pending',
+    icon: PendingIcon,
+    weight: 'regular',
+    className: 'text-muted-foreground',
+  },
+  approved: {
+    key: 'dashboard.status.approved',
+    icon: ApprovedIcon,
+    weight: 'fill',
+    className: 'text-primary',
+  },
+  rejected: {
+    key: 'dashboard.status.rejected',
+    icon: RejectedIcon,
+    weight: 'bold',
+    className: 'text-destructive',
+  },
 }
 
 export function loader({ context, params }: Route.LoaderArgs) {
@@ -71,8 +106,9 @@ export default function DashboardPage() {
       <Frame>
         <LocaleLink
           to="/sign-in?redirect=%2Fdashboard"
-          className="press inline-flex rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
+          className="press mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
+          <SignInIcon className="size-4" weight="bold" aria-hidden />
           {t('nav.signIn')}
         </LocaleLink>
       </Frame>
@@ -88,7 +124,10 @@ export default function DashboardPage() {
         {submissions === null ? (
           <p className="mt-4 text-sm text-muted-foreground">{t('common.loading')}</p>
         ) : submissions.length === 0 ? (
-          <p className="mt-4 text-sm text-muted-foreground">{t('dashboard.noSubmissions')}</p>
+          <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+            <SubmitIcon className="size-4 shrink-0" aria-hidden />
+            {t('dashboard.noSubmissions')}
+          </p>
         ) : (
           <ul className="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
             {submissions.map((submission) => (
@@ -102,13 +141,24 @@ export default function DashboardPage() {
                     submission.id.slice(0, 8)
                   )}
                 </span>
-                <span className="text-xs text-muted-foreground">{t(STATUS_KEY[submission.status])}</span>
+                <SubmissionStatus status={submission.status} />
               </li>
             ))}
           </ul>
         )}
       </section>
     </Frame>
+  )
+}
+
+function SubmissionStatus({ status }: { status: SubmissionRow['status'] }) {
+  const t = useT()
+  const { key, icon: Icon, weight, className } = STATUS[status]
+  return (
+    <span className={cn('inline-flex shrink-0 items-center gap-1.5 text-xs', className)}>
+      <Icon className="size-4" weight={weight} aria-hidden />
+      {t(key)}
+    </span>
   )
 }
 

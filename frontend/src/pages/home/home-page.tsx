@@ -1,9 +1,10 @@
 import { Form } from 'react-router'
-import { ArrowRight, Search } from 'lucide-react'
 import type { Route } from './+types/home-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { CatalogGrid } from '@/widgets/catalog-grid/catalog-grid'
+import { KindIcon } from '@/entities/artifact/ui/kind-icon'
 import { kindDescriptionKey, kindPluralKey } from '@/entities/artifact/model/types'
+import { ForwardIcon, SearchIcon } from '@/shared/ui/icon'
 import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { LocaleLink, useLocalePath } from '@/shared/ui/locale-link'
 import { errorMeta, organizationLd, pageMeta, websiteLd } from '@/shared/lib/seo'
@@ -82,7 +83,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             className="mx-auto mt-8 flex max-w-lg gap-2"
           >
             <div className="relative flex-1">
-              <Search
+              <SearchIcon
                 className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden
               />
@@ -96,8 +97,9 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             </div>
             <button
               type="submit"
-              className="press h-12 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground"
+              className="press inline-flex h-12 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground"
             >
+              <SearchIcon className="size-4" weight="bold" aria-hidden />
               {t('home.searchAction')}
             </button>
           </Form>
@@ -115,8 +117,9 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                 key={facet.kind}
                 to={`/kind/${facet.kind}`}
                 title={t(kindDescriptionKey(facet.kind))}
-                className="press inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-border-strong hover:text-foreground"
+                className="press inline-flex min-h-9 items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-border-strong hover:text-foreground"
               >
+                <KindIcon kind={facet.kind} className="size-4 shrink-0" />
                 {t(kindPluralKey(facet.kind))}
                 <span className="tabular-nums opacity-60">{facet.count}</span>
               </LocaleLink>
@@ -161,7 +164,7 @@ function Rail({
           className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           {t(linkKey)}
-          <ArrowRight className="size-3.5" aria-hidden />
+          <ForwardIcon className="size-3.5" weight="bold" aria-hidden />
         </LocaleLink>
       </div>
       {children}

@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { Github } from 'lucide-react'
 import type { Route } from './+types/sign-in-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { authClient } from '@/shared/api/auth-client'
 import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { errorMeta, pageMeta } from '@/shared/lib/seo'
+import { ErrorIcon, GithubIcon, HomeIcon, SignInIcon, SignUpIcon } from '@/shared/ui/icon'
+import { IconSwap } from '@/shared/ui/icon-swap'
 
 /**
  * Never indexed: an account page has nothing a search result should lead to.
@@ -70,7 +71,7 @@ export default function SignInPage() {
         onClick={() => void authClient.signIn.social({ provider: 'github', callbackURL: redirect })}
         className="press mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-foreground text-sm font-medium text-background"
       >
-        <Github className="size-4" aria-hidden />
+        <GithubIcon className="size-4" weight="fill" aria-hidden />
         {t('auth.withGithub')}
       </button>
 
@@ -104,16 +105,26 @@ export default function SignInPage() {
         </label>
 
         {failed ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="flex items-center gap-1.5 text-sm text-destructive">
+            <ErrorIcon className="size-4 shrink-0" weight="bold" aria-hidden />
             {t('auth.failed')}
           </p>
         ) : null}
 
+        {/* The mark changes with the mode, so the button says which of the two
+            things it will do without the reader re-reading its label. */}
         <button
           type="submit"
           disabled={busy}
-          className="press h-11 w-full rounded-lg bg-primary text-sm font-medium text-primary-foreground disabled:opacity-50"
+          className="press inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-primary-foreground disabled:opacity-50"
         >
+          <IconSwap swapKey={mode}>
+            {mode === 'sign-in' ? (
+              <SignInIcon className="size-4" weight="bold" aria-hidden />
+            ) : (
+              <SignUpIcon className="size-4" weight="bold" aria-hidden />
+            )}
+          </IconSwap>
           {mode === 'sign-in' ? t('auth.signInTitle') : t('auth.signUp')}
         </button>
       </form>
@@ -126,7 +137,11 @@ export default function SignInPage() {
         {mode === 'sign-in' ? t('auth.signUp') : t('auth.haveAccount')}
       </button>
 
-      <LocaleLink to="/" className="mt-8 text-xs text-muted-foreground hover:text-foreground">
+      <LocaleLink
+        to="/"
+        className="mt-8 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+      >
+        <HomeIcon className="size-3.5" aria-hidden />
         {t('notFound.home')}
       </LocaleLink>
     </div>

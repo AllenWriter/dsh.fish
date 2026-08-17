@@ -241,9 +241,13 @@
     }
   }
 
-  /* Extends a small control's hit area to 40x40 without changing how it looks.
+  /* Extends a small control's hit area without changing how it looks.
      The pseudo-element is centred on the control, so two adjacent icon buttons
-     never overlap each other's target. */
+     never overlap each other's target.
+
+     44px where the pointer is a finger, 40px where it is a mouse: a thumb needs
+     the larger target, and in the dense header a mouse does not, so the desktop
+     bar keeps clear space between adjacent controls. */
   .hit-area {
     position: relative;
   }
@@ -252,9 +256,15 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     transform: translate(-50%, -50%);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .hit-area::after {
+      width: 40px;
+      height: 40px;
+    }
   }
 }
 

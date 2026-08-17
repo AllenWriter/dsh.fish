@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router'
 import { useT } from '@/shared/config/i18n'
 import { LocaleLink } from '@/shared/ui/locale-link'
+import { NextPageIcon, PreviousPageIcon } from '@/shared/ui/icon'
 
 /**
  * Page-to-page navigation for any listing.
@@ -48,9 +49,10 @@ export function CatalogPagination({
           to={build(Math.max(0, offset - limit))}
           rel="prev"
           aria-label={t('browse.previous')}
-          className="press inline-flex h-10 items-center rounded-lg border border-border px-4 hover:border-border-strong"
+          className="press inline-flex h-11 items-center gap-1.5 rounded-lg border border-border px-4 font-medium hover:border-border-strong"
         >
-          &larr;
+          <PreviousPageIcon className="size-4" weight="bold" aria-hidden />
+          <span className="hidden sm:inline">{t('browse.previous')}</span>
         </LocaleLink>
       ) : (
         <span />
@@ -63,9 +65,10 @@ export function CatalogPagination({
           to={build(offset + limit)}
           rel="next"
           aria-label={t('browse.next')}
-          className="press inline-flex h-10 items-center rounded-lg border border-border px-4 hover:border-border-strong"
+          className="press inline-flex h-11 items-center gap-1.5 rounded-lg border border-border px-4 font-medium hover:border-border-strong"
         >
-          &rarr;
+          <span className="hidden sm:inline">{t('browse.next')}</span>
+          <NextPageIcon className="size-4" weight="bold" aria-hidden />
         </LocaleLink>
       ) : (
         <span />

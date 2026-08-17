@@ -8,6 +8,7 @@ import {
   kindPluralKey,
   type ArtifactKind,
 } from '@/entities/artifact/model/types'
+import { KindIcon } from '@/entities/artifact/ui/kind-icon'
 import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { breadcrumbLd, collectionLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 
@@ -95,7 +96,11 @@ export default function KindPage({ loaderData }: Route.ComponentProps) {
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        {/* The kind's mark at heading scale. It is the same glyph the chip on
+            every row below carries, which is what makes the listing read as one
+            collection rather than a filtered pile. */}
+        <h1 className="flex items-center gap-2.5 text-2xl font-semibold tracking-tight">
+          <KindIcon kind={kind} className="size-7 shrink-0 text-muted-foreground" />
           {t('collection.kind.title', { kind: kindName })}
         </h1>
         <p className="mt-2 max-w-2xl text-pretty leading-relaxed text-muted-foreground">

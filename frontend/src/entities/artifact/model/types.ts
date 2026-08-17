@@ -30,12 +30,13 @@ export type ArtifactDetail = ArtifactDetailDto
  * Deliberately colourless. An earlier version gave each kind its own hue —
  * violet skills, amber MCP servers — which produced a six-colour rainbow that
  * competed with the one accent and encoded nothing a reader could learn. The
- * chip already says "MCP server" in words, which is unambiguous, translatable
- * and readable without colour vision. The accent is reserved for the two things
- * that genuinely need to stand out: a verified badge and the primary action.
+ * chip says "MCP server" in words and shows the kind's mark from `KIND_ICON`,
+ * both of which are unambiguous, translatable and readable without colour
+ * vision. The accent is reserved for the two things that genuinely need to stand
+ * out: a verified badge and the primary action.
  */
 export const KIND_CHIP =
-  'inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground'
+  'inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground'
 
 /**
  * The message-key stem for each kind.
