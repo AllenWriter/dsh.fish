@@ -221,6 +221,7 @@ The plugin-page author card uses beui's `Avatar`, not a second image primitive.
 - A URL that is not a single-segment GitHub profile has no portrait. Initials inside the Avatar slot are what the primitive does when `src` is absent, not a second asset.
 - Mark the image decorative: the name next to it is the accessible identity. `Avatar` already sets empty `alt` and `aria-hidden`.
 - The author name belongs in this card. Do not also list it in the metrics row.
+- The source link belongs under the portrait, in the same header column. Do not park it beside the install panel — that column is for installing, not for saying where the plugin came from.
 
 ## Animated counts
 

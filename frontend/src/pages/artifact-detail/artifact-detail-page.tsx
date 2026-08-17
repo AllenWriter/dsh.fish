@@ -130,13 +130,7 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
           </ol>
         </nav>
 
-        <div
-          className={
-            artifact.author
-              ? 'mt-4 grid min-w-0 items-start gap-x-8 gap-y-6 lg:grid-cols-[1fr_22rem]'
-              : 'mt-4'
-          }
-        >
+        <div className="mt-4 grid min-w-0 items-start gap-x-8 gap-y-6 lg:grid-cols-[1fr_22rem]">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <KindChip kind={artifact.kind} />
@@ -242,7 +236,20 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
             ) : null}
           </div>
 
-          {artifact.author ? <AuthorCard author={artifact.author} /> : null}
+          <div className="flex min-w-0 flex-col gap-3">
+            {artifact.author ? <AuthorCard author={artifact.author} /> : null}
+            <a
+              href={artifact.sourceUrl}
+              target="_blank"
+              // `ugc`: the source URL is supplied by whoever submitted the row, so
+              // the catalog does not pass its own authority to it.
+              rel="noreferrer noopener ugc"
+              className="press flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium hover:border-border-strong"
+            >
+              {t('artifact.source')}
+              <ExternalLinkIcon className="size-4 text-muted-foreground" weight="bold" />
+            </a>
+          </div>
         </div>
       </header>
 
@@ -268,20 +275,8 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
           )}
         </section>
 
-        <div className="min-w-0 space-y-4 lg:sticky lg:top-24 lg:self-start">
+        <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
           <InstallPanel artifact={artifact} plan={plan} />
-
-          <a
-            href={artifact.sourceUrl}
-            target="_blank"
-            // `ugc`: the source URL is supplied by whoever submitted the row, so
-            // the catalog does not pass its own authority to it.
-            rel="noreferrer noopener ugc"
-            className="press flex items-center justify-between rounded-xl border border-border bg-card px-5 py-4 text-sm font-medium hover:border-border-strong"
-          >
-            {t('artifact.source')}
-            <ExternalLinkIcon className="size-4 text-muted-foreground" weight="bold" />
-          </a>
         </div>
       </div>
     </article>

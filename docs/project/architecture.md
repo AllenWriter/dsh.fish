@@ -90,8 +90,11 @@ duplicated in the navigation, at any width.
 
 The plugin page header gives the repository author their own card, in the
 column the install panel occupies below: beui's Avatar, the name the catalog
-stored, and an outbound link to the profile. A GitHub profile URL is also
-GitHub's `{login}.png`, so the portrait is not a second stored image.
+stored, and an outbound link to the profile. The source link sits directly
+under that portrait — two facts about where the plugin comes from, stacked,
+rather than a source row parked beside the install commands. A GitHub
+profile URL is also GitHub's `{login}.png`, so the portrait is not a second
+stored image.
 
 The header control labelled "Search plugins" queries `GET /api/v1/artifacts`
 as the reader types — the same `SearchArtifacts` use case the browse page
