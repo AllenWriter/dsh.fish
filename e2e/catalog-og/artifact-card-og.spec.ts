@@ -1,14 +1,10 @@
 import { expect, test, type Page } from '@playwright/test'
-import { mkdir } from 'node:fs/promises'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
-const here = path.dirname(fileURLToPath(import.meta.url))
-const preview = path.join(here, 'og-card-preview.html')
+const preview = new URL('./og-card-preview.html', import.meta.url)
 const shots = '/opt/cursor/artifacts/screenshots'
 
 async function openPreview(page: Page, theme: 'light' | 'dark') {
-  await page.goto(`file://${preview}`)
+  await page.goto(preview.href)
   if (theme === 'dark') {
     await page.evaluate(() => document.documentElement.classList.add('dark'))
   }
@@ -40,27 +36,25 @@ test.describe('catalog card Social preview', () => {
   })
 
   test('captures light and dark treatments', async ({ page }) => {
-    await mkdir(shots, { recursive: true })
-
     await openPreview(page, 'light')
     await page.screenshot({
-      path: path.join(shots, 'artifact-card-og-light.png'),
+      path: `${shots}/artifact-card-og-light.png`,
       fullPage: true,
     })
     await page.locator('[data-card="generated"]').screenshot({
-      path: path.join(shots, 'artifact-card-og-generated-light.png'),
+      path: `${shots}/artifact-card-og-generated-light.png`,
     })
     await page.locator('[data-card="custom"]').screenshot({
-      path: path.join(shots, 'artifact-card-og-custom-light.png'),
+      path: `${shots}/artifact-card-og-custom-light.png`,
     })
 
     await openPreview(page, 'dark')
     await page.screenshot({
-      path: path.join(shots, 'artifact-card-og-dark.png'),
+      path: `${shots}/artifact-card-og-dark.png`,
       fullPage: true,
     })
     await page.locator('[data-card="generated"]').screenshot({
-      path: path.join(shots, 'artifact-card-og-generated-dark.png'),
+      path: `${shots}/artifact-card-og-generated-dark.png`,
     })
   })
 })
