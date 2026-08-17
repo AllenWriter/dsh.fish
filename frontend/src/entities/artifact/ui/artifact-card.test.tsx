@@ -2,31 +2,21 @@ import { describe, expect, it } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router'
 import { LocaleProvider } from '@/shared/config/i18n'
+import { IconDefaults } from '@/shared/ui/icon'
 import { ArtifactCard } from './artifact-card'
+import { mockArtifact } from '../model/artifact.fixture'
 import type { Artifact } from '../model/types'
 
-const base: Artifact = {
-  id: 'dsh-hello',
-  kind: 'bundle',
-  displayName: '@acme/dsh-hello',
-  summary: 'A bundle.',
-  keywords: [],
-  categories: ['other'],
-  sourceOrigin: 'github',
-  sourceUrl: 'https://github.com/acme/dsh-hello',
-  author: { name: 'acme' },
-  verified: false,
-  deprecated: false,
-  stats: { stars: 1200, downloads: 0, installs: 0 },
-  updatedAt: '2026-01-01T00:00:00.000Z',
-}
+const base = mockArtifact()
 
 function render(artifact: Artifact) {
   return renderToStaticMarkup(
     <MemoryRouter>
-      <LocaleProvider locale="en">
-        <ArtifactCard artifact={artifact} />
-      </LocaleProvider>
+      <IconDefaults>
+        <LocaleProvider locale="en">
+          <ArtifactCard artifact={artifact} />
+        </LocaleProvider>
+      </IconDefaults>
     </MemoryRouter>,
   )
 }
