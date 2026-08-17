@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  githubRepoFromUrl,
   githubSource,
   npmSource,
   sourceAssetBase,
@@ -41,5 +42,24 @@ describe('readme bases', () => {
     expect(sourceDocBase(npmSource('thing', '1.0.0'))).toBeUndefined()
     expect(sourceAssetBase(npmSource('thing', '1.0.0'))).toBeUndefined()
     expect(sourceDocBase(submissionSource('https://example.com/x'))).toBeUndefined()
+  })
+})
+
+describe('githubRepoFromUrl', () => {
+  it('reads the shapes npm and git actually write', () => {
+    expect(githubRepoFromUrl('git+https://github.com/NanmiCoder/dsh-plugin-market.git')).toEqual({
+      owner: 'NanmiCoder',
+      repo: 'dsh-plugin-market',
+    })
+    expect(githubRepoFromUrl('git@github.com:acme/plugin.git')).toEqual({
+      owner: 'acme',
+      repo: 'plugin',
+    })
+    expect(githubRepoFromUrl('github:acme/plugin')).toEqual({ owner: 'acme', repo: 'plugin' })
+  })
+
+  it('ignores a remote that is not GitHub', () => {
+    expect(githubRepoFromUrl('https://gitlab.com/acme/plugin.git')).toBeUndefined()
+    expect(githubRepoFromUrl('not a url')).toBeUndefined()
   })
 })

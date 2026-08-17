@@ -138,3 +138,44 @@ export function packageSpec(source: SourceRef): string | undefined {
       return undefined
   }
 }
+
+/**
+ * Pull `owner/repo` out of the shapes npm and git use to name a GitHub remote.
+ *
+ * Returns undefined rather than throwing: a packument `repository` field is
+ * advisory, and a malformed one must not take the whole artifact down.
+ */
+export function githubRepoFromUrl(raw: string): { owner: string; repo: string } | undefined {
+  const trimmed = raw.trim()
+  if (trimmed === '') return undefined
+
+  const ssh = trimmed.match(/^git@github\.com:([^/]+)\/([^/]+?)(?:\.git)?$/i)
+  if (ssh?.[1] !== undefined && ssh[2] !== undefined) {
+    return githubOwnerRepo(ssh[1], ssh[2])
+  }
+
+  const shorthand = trimmed.match(/^github:([^/]+)\/([^/]+)$/i)
+  if (shorthand?.[1] !== undefined && shorthand[2] !== undefined) {
+    return githubOwnerRepo(shorthand[1], shorthand[2])
+  }
+
+  let parsed: URL
+  try {
+    parsed = new URL(trimmed.replace(/^git\+/, ''))
+  } catch {
+    return undefined
+  }
+  if (!/^(www\.)?github\.com$/i.test(parsed.hostname)) return undefined
+  const [owner, repoWithGit] = parsed.pathname.split('/').filter((part) => part !== '')
+  if (owner === undefined || repoWithGit === undefined) return undefined
+  return githubOwnerRepo(owner, repoWithGit.replace(/\.git$/i, ''))
+}
+
+function githubOwnerRepo(owner: string, repo: string): { owner: string; repo: string } | undefined {
+  try {
+    const source = githubSource({ owner, repo })
+    return { owner: source.owner, repo: source.repo }
+  } catch {
+    return undefined
+  }
+}

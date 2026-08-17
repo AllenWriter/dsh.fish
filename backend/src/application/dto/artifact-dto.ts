@@ -24,6 +24,8 @@ export interface ArtifactSummaryDto {
   readonly deprecated: boolean
   readonly stats: { stars: number; downloads: number; installs: number }
   readonly updatedAt: string
+  /** GitHub Social preview, when the source repository has one. */
+  readonly ogImageUrl?: string
 }
 
 export interface ArtifactDetailDto extends ArtifactSummaryDto {
@@ -68,6 +70,7 @@ export function toSummaryDto(artifact: Artifact): ArtifactSummaryDto {
     deprecated: artifact.deprecated,
     stats: artifact.stats,
     updatedAt: artifact.updatedAt.toISOString(),
+    ...(artifact.ogImageUrl === undefined ? {} : { ogImageUrl: artifact.ogImageUrl }),
   }
 }
 

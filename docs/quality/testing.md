@@ -24,13 +24,15 @@
 - Keep them stable and fast enough to run in CI.
 - Use deterministic test data.
 
-Plugin-detail markdown rendering is an exception to "journeys only": a
-third-party readme is the unique content of `/a/:id`, and its layout is
-resolution-dependent. `pnpm run test:e2e` runs Playwright against the real
-SSR app at six device sizes (iPhone SE 320, Galaxy S8 360, iPhone SE 3rd
-gen 375, Pixel 7 412, iPhone 14 Pro Max 430, iPad Mini 768). The suite
-seeds a kitchen-sink readme onto the local D1 `dsh-postgres-mcp` row so
-tables, fences, images and long tokens are present to measure.
+`pnpm run test:e2e` runs Playwright. Two projects share one config:
+
+**Plugin-detail markdown** is an exception to "journeys only": a third-party
+readme is the unique content of `/a/:id`, and its layout is resolution-dependent.
+The suite runs against the real SSR app at six device sizes (iPhone SE 320,
+Galaxy S8 360, iPhone SE 3rd gen 375, Pixel 7 412, iPhone 14 Pro Max 430,
+iPad Mini 768). It seeds a kitchen-sink readme onto the local D1
+`dsh-postgres-mcp` row so tables, fences, images and long tokens are present
+to measure.
 
 The tests assert:
 
@@ -47,6 +49,13 @@ Update them with `pnpm exec playwright test --update-snapshots`.
 Device projects force Chromium (`defaultBrowserType: 'chromium'`). Playwright's
 iPhone presets default to WebKit; CI only installs Chromium, and the suite is
 asserting CSS-pixel layout, not engine differences.
+
+**Catalog-card Social preview** (`e2e/catalog-og/`) is a fixture page that uses
+the same `--artifact-og-*` tokens as `app.css`. Playwright fulfills
+`/og-card-preview.html` and its PNGs from that folder (the spec cannot import
+`node:` modules — the loader is ESM and those compile to `require`). It asserts
+image opacity, blur and title contrast, and writes treatment screenshots. Run
+that project alone with `pnpm exec playwright test --project=catalog-og`.
 
 Install the browser once with `pnpm exec playwright install --with-deps chromium`.
 

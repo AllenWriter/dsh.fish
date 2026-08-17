@@ -5,11 +5,14 @@ const PORT = 5173
 const baseURL = `http://localhost:${PORT}`
 
 /**
- * Mobile markdown rendering on the plugin detail page.
+ * End-to-end coverage.
  *
- * One Chromium run, many device projects: the readme's overflow, wrapping and
- * stacking are resolution-dependent, and a single "phone" viewport would miss
- * the 360px Android and 430px iPhone Max cases.
+ * Mobile markdown rendering on the plugin detail page, plus the catalog-card
+ * Social preview treatment. One Chromium run, many device projects for the
+ * readme: overflow, wrapping and stacking are resolution-dependent, and a
+ * single "phone" viewport would miss the 360px Android and 430px iPhone Max
+ * cases. The OG-card project is a fixture page and does not need a device
+ * matrix.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -37,5 +40,16 @@ export default defineConfig({
     stdout: 'pipe',
     stderr: 'pipe',
   },
-  projects: mobileProjects(),
+  projects: [
+    ...mobileProjects(),
+    {
+      name: 'catalog-og',
+      testMatch: /catalog-og\/.*\.spec\.ts/,
+      use: {
+        viewport: { width: 780, height: 520 },
+        deviceScaleFactor: 2,
+        defaultBrowserType: 'chromium',
+      },
+    },
+  ],
 })

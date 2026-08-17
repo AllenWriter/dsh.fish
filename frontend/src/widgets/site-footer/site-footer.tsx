@@ -1,5 +1,4 @@
 import { ARTIFACT_KINDS, CATEGORIES, kindPluralKey } from '@/entities/artifact/model/types'
-import { LocaleLinks } from '@/features/locale-switcher'
 import { useT } from '@/shared/config/i18n'
 import { HARNESS_REPO_URL } from '@/shared/config/site'
 import { LocaleLink } from '@/shared/ui/locale-link'
@@ -70,18 +69,6 @@ export function SiteFooter() {
             </ul>
           </nav>
         </div>
-
-        {/* The crawlable copy of the language switcher. The control in the
-            header renders its options into a portal on open, so these anchors
-            are the only ones present in the server's HTML — which is what lets
-            a crawler that reached one language reach the other nine. */}
-        <nav aria-label={t('nav.language')} className="mt-10 border-t border-border pt-6">
-          <h2 className="text-sm font-medium text-foreground">{t('nav.language')}</h2>
-          <LocaleLinks
-            className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5"
-            itemClassName="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          />
-        </nav>
 
         <p className="mt-8 border-t border-border pt-6 text-sm text-muted-foreground">
           {t('app.tagline')}

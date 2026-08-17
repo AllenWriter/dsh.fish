@@ -84,8 +84,8 @@ The site never redirects on `Accept-Language`, and never varies the response
 body by it. A crawler sends no language preference, so a site that guesses
 serves it whatever language happens to be first in the header — and indexes one
 language while the other nine stay invisible. Readers get a language switcher
-instead: a control in the header and a crawlable list of the same links in the
-footer.
+in the header. Crawlers get the `hreflang` set in the page head and the sitemap
+`xhtml:link` alternates.
 
 ## Trailing slashes
 

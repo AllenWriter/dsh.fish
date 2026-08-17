@@ -50,4 +50,23 @@ describe('Artifact categories', () => {
 
     expect(refreshed.categories).toEqual(['devops'])
   })
+
+  it('stores a GitHub Social preview and can clear it on refresh', () => {
+    const preview =
+      'https://opengraph.githubassets.com/preview/acme/hello'
+    const artifact = Artifact.create({ ...base, ogImageUrl: preview })
+    expect(artifact.ogImageUrl).toBe(preview)
+
+    const cleared = artifact.refreshedWith({
+      displayName: artifact.displayName,
+      summary: artifact.summary,
+      source: artifact.source,
+      payload: artifact.payload,
+      keywords: [],
+      categories: ['other'],
+      stats: artifact.stats,
+      ogImageUrl: null,
+    })
+    expect(cleared.ogImageUrl).toBeUndefined()
+  })
 })

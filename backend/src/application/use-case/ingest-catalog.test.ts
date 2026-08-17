@@ -83,6 +83,16 @@ describe('IngestCatalog', () => {
     expect(rows.get('dsh-hello-plugin')?.categories).toEqual(['devops'])
   })
 
+  it('writes a Social preview onto a new row', async () => {
+    const { repository, rows } = memoryRepository()
+    const preview = 'https://opengraph.githubassets.com/preview/acme/hello'
+    const github = indexer('github', [snapshot({ ogImageUrl: preview })])
+
+    await new IngestCatalog(repository, [github.source]).execute()
+
+    expect(rows.get('dsh-hello-plugin')?.ogImageUrl).toBe(preview)
+  })
+
   it('spends a different candidate budget at each origin', async () => {
     const { repository } = memoryRepository()
     const github = indexer('github', [])

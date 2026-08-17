@@ -24,6 +24,8 @@ export const artifacts = sqliteTable(
     authorName: text('author_name'),
     authorUrl: text('author_url'),
     readmeMarkdown: text('readme_markdown'),
+    /** GitHub Social preview URL; null when the source has none. */
+    ogImageUrl: text('og_image_url'),
     stars: integer('stars').notNull().default(0),
     downloads: integer('downloads').notNull().default(0),
     installs: integer('installs').notNull().default(0),

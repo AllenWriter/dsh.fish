@@ -84,9 +84,10 @@ A page nothing links to is a page nothing ranks. Three deliberate link sources:
 3. **Each plugin page** carries a visible breadcrumb up to its type's collection
    page, and links its categories to theirs.
 
-The language switcher in the header renders into a portal on open, so its links
-are not in the server's HTML. The crawlable copy of that list is in the footer —
-that is what lets a crawler that reached one language reach the other nine.
+Language variants are not in the internal link graph. A crawler that reached one
+language finds the other nine through the `hreflang` set in the page head and
+the sitemap `xhtml:link` alternates. The header language switcher is a reader
+control; its panel is portal-rendered and is not in the server's HTML.
 
 ## Social card
 

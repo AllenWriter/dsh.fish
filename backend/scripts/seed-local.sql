@@ -96,6 +96,18 @@ INSERT INTO artifacts (
 INSERT INTO artifact_search (artifact_id, haystack)
 SELECT id, lower(display_name || ' ' || summary) FROM artifacts;
 
+-- GitHub Social previews. The turtle-ui row uses a real uploaded preview so
+-- local screenshots exercise the custom-image path; GitHub-sourced rows use
+-- the generated Open Graph card for that owner/repo.
+UPDATE artifacts SET og_image_url = 'https://repository-images.githubusercontent.com/70107786/4602445c-10a2-4903-a360-c96d70531f67'
+  WHERE id = 'dsh-turtle-ui';
+UPDATE artifacts SET og_image_url = 'https://opengraph.githubassets.com/preview/acme/postgres-mcp'
+  WHERE id = 'dsh-postgres-mcp';
+UPDATE artifacts SET og_image_url = 'https://opengraph.githubassets.com/preview/acme/release-notes-skill'
+  WHERE id = 'acme-release-notes';
+UPDATE artifacts SET og_image_url = 'https://opengraph.githubassets.com/preview/stvlynn/reviewer-preset'
+  WHERE id = 'reviewer-preset';
+
 INSERT INTO artifact_categories (artifact_id, category_id) VALUES
   ('dsh-turtle-ui', 'ui'),
   ('dsh-turtle-ui', 'productivity'),

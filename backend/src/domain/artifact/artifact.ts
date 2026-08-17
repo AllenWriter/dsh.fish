@@ -5,6 +5,7 @@ import type { ArtifactKind } from './artifact-kind.js'
 import type { ArtifactPayload } from './artifact-payload.js'
 import { assertPayloadMatchesKind } from './artifact-payload.js'
 import { normalizeCategories } from './category.js'
+import { ogImageUrl } from './og-image-url.js'
 import type { SourceRef } from './source-ref.js'
 
 export interface ArtifactStats {
@@ -33,6 +34,13 @@ export interface ArtifactProps {
   readonly license?: string
   readonly author?: ArtifactAuthor
   readonly readmeMarkdown?: string
+  /**
+   * GitHub Social preview for the source repository, when one is known.
+   *
+   * Either an author-uploaded image or GitHub's generated Open Graph card.
+   * Absent when the source has no GitHub repository to read a preview from.
+   */
+  readonly ogImageUrl?: string
   readonly stats: ArtifactStats
   /** Set once a signed-in account has proven it controls the source. */
   readonly ownerAccountId?: string
@@ -65,6 +73,7 @@ export class Artifact {
     license?: string
     author?: ArtifactAuthor
     readmeMarkdown?: string
+    ogImageUrl?: string
     stats?: Partial<ArtifactStats>
     ownerAccountId?: string
     publishedAt?: Date
@@ -102,6 +111,7 @@ export class Artifact {
       ...(input.license === undefined ? {} : { license: input.license }),
       ...(input.author === undefined ? {} : { author: input.author }),
       ...(input.readmeMarkdown === undefined ? {} : { readmeMarkdown: input.readmeMarkdown }),
+      ...(input.ogImageUrl === undefined ? {} : { ogImageUrl: ogImageUrl(input.ogImageUrl) }),
       stats: {
         stars: input.stats?.stars ?? 0,
         downloads: input.stats?.downloads ?? 0,
@@ -151,6 +161,9 @@ export class Artifact {
   }
   get readmeMarkdown(): string | undefined {
     return this.props.readmeMarkdown
+  }
+  get ogImageUrl(): string | undefined {
+    return this.props.ogImageUrl
   }
   get stats(): ArtifactStats {
     return this.props.stats
@@ -207,11 +220,24 @@ export class Artifact {
     > & {
       /** Re-read from the source each sweep, like keywords, not frozen at creation. */
       readonly categories: readonly string[]
+      /**
+       * `string` sets it, `null` clears it, omitted leaves the stored URL.
+       * Omitted is for a crawl that did not look; `null` is for a source that
+       * has no GitHub repository to read a preview from.
+       */
+      readonly ogImageUrl?: string | null
     } & Partial<Pick<ArtifactProps, 'license' | 'author' | 'readmeMarkdown' | 'deprecated'>>,
   ): Artifact {
     assertPayloadMatchesKind(this.props.kind, snapshot.payload)
+    const { ogImageUrl: previousOg, ...rest } = this.props
+    const nextOg =
+      snapshot.ogImageUrl === undefined
+        ? previousOg
+        : snapshot.ogImageUrl === null
+          ? undefined
+          : ogImageUrl(snapshot.ogImageUrl)
     return new Artifact({
-      ...this.props,
+      ...rest,
       displayName: snapshot.displayName,
       summary: snapshot.summary,
       source: snapshot.source,
@@ -229,6 +255,7 @@ export class Artifact {
       ...(snapshot.readmeMarkdown === undefined
         ? {}
         : { readmeMarkdown: snapshot.readmeMarkdown }),
+      ...(nextOg === undefined ? {} : { ogImageUrl: nextOg }),
       ...(snapshot.deprecated === undefined ? {} : { deprecated: snapshot.deprecated }),
       updatedAt: new Date(),
       indexedAt: new Date(),

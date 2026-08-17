@@ -59,7 +59,7 @@ Sharing an origin is a deliberate choice, not an accident of packaging:
 
 | Layer | Contents |
 |---|---|
-| `domain/` | `Artifact` aggregate, `ArtifactKind`, `ArtifactPayload`, `InstallPlan`, `Submission`, `Account`, repository ports |
+| `domain/` | `Artifact` aggregate, `ArtifactKind`, `ArtifactPayload`, `InstallPlan`, `Submission`, `Account`, `ogImageUrl`, repository ports |
 | `application/` | Use cases (`SearchArtifacts`, `ResolveInstallPlan`, `SubmitArtifact`, `IngestCatalog`, …), DTOs, indexer ports |
 | `infrastructure/` | D1 repositories, Better Auth composition, GitHub/npm indexers, the container |
 | `interfaces/` | Hono routers, Zod request schemas, the domain-error → HTTP mapping |
@@ -79,7 +79,7 @@ is built **per request**, because D1 and KV bindings arrive per request.
 | `widgets/` | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel` |
 | `features/` | `account-menu` — the signed-in identity and the actions on it; `locale-switcher` — the language of the page you are on |
 | `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip`, `artifactLd` |
-| `shared/` | beui components (`ui/motion/`, `ui/avatar`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, auth client, `hub-context` |
+| `shared/` | beui components (`ui/motion/`, `ui/avatar`, `ui/animated-number`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, auth client, `hub-context` |
 
 The account slot in the header is the whole signed-in affordance: signed out it
 is the sign-in call to action; signed in it is the portrait Better Auth cached
@@ -216,6 +216,32 @@ colours competed with the accent and encoded nothing a reader could learn; the
 chip already says "MCP server" in words, which is unambiguous, translatable and
 readable without colour vision. Colour is reserved for the primary action and
 the verified badge.
+
+### Catalog cards use the repository Social preview as texture
+
+When an artifact's source has a GitHub repository, the crawler stores the
+image GitHub would emit as `og:image`: an author-uploaded Social preview
+(`repository-images.githubusercontent.com`) if one exists, otherwise the
+generated Open Graph card (`opengraph.githubassets.com/{key}/{owner}/{repo}`).
+The owner's avatar is neither, and is rejected by `ogImageUrl()` in the
+domain. An npm packument contributes a preview only when its `repository`
+field points at GitHub.
+
+The URL is a domain value. Only those two hosts are accepted, so a
+submission cannot paint an arbitrary tracker onto every catalog card.
+
+On the card, the image is a blurred, desaturated, low-opacity backdrop
+with a `var(--card)` gradient scrim. Type stays on `--fg` / `--muted-fg`.
+Opacity, blur and the scrim are CSS variables in `app.css` — theme
+differences do not scatter as `dark:` on the component.
+
+### Counts tick through a shared NumberFlow wrapper
+
+`@number-flow/react` is wrapped in `shared/ui/animated-number.tsx`. Compact
+formatting (`1.2k`) stays in `compactNumberParts` so Cloudflare's ICU and
+the browser cannot disagree at hydration. The wrapper pins `locales="en"`
+and explicit fraction digits. First paint is static; digits only spin if
+that instance's value later changes, so scanning the grid does not animate.
 
 ### Readmes are third-party content, rendered structurally
 

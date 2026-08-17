@@ -28,6 +28,12 @@ export interface IndexedSnapshot {
    */
   readonly sourceOwnerId?: string
   readonly readmeMarkdown?: string
+  /**
+   * GitHub Social preview URL when the source has a GitHub repository.
+   * `null` means the indexer looked and there is none; omitted means it did
+   * not look, so a refresh must keep whatever is already stored.
+   */
+  readonly ogImageUrl?: string | null
   readonly stats: { readonly stars: number; readonly downloads: number }
   readonly deprecated?: boolean
 }
