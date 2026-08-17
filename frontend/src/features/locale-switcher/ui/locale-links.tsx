@@ -6,16 +6,12 @@ import { cn } from '@/shared/lib/utils'
 /**
  * Every language of the page the reader is on, as real anchors.
  *
- * Two properties matter and both come from the same list. A reader gets each
- * option named in its own language — a switcher that offers "German" to someone
- * who only reads German is unusable. And a crawler gets ten `<a href>`s to the
- * other nine URLs of this page, which is the discovery path that works even
- * where `hreflang` head tags are ignored.
- *
- * Plain anchors, not client-side links: switching language re-renders the whole
- * document on the server, which is the only way the `lang` attribute, the
- * canonical URL and the copy change together. The query string rides along, so
- * a reader who switches mid-search keeps their search.
+ * Each option is named in its own language — a switcher that offers "German"
+ * to someone who only reads German is unusable. Plain anchors, not client-side
+ * links: switching language re-renders the whole document on the server, which
+ * is the only way the `lang` attribute, the canonical URL and the copy change
+ * together. The query string rides along, so a reader who switches mid-search
+ * keeps their search.
  */
 export function LocaleLinks({
   className,
