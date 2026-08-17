@@ -158,9 +158,6 @@ export function buildInstallPlan(artifact: Artifact, target: InstallTarget): Ins
           downloadUrl: file.downloadUrl,
         })
       }
-      manualCommands.push(
-        `# Skills are files: copy them into $DSH_HOME/${base} (defaults to ~/.dsh/${base})`,
-      )
       break
     }
 

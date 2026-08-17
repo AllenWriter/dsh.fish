@@ -117,8 +117,7 @@ describe('buildInstallPlan', () => {
         downloadUrl: 'https://example.test/SKILL.md',
       },
     ])
-    expect(plan.manualCommands[0]).toBe('npx @dsh-fish/cli add example --profile web')
-    expect(plan.manualCommands[0]?.startsWith('#')).toBe(false)
+    expect(plan.manualCommands).toEqual(['npx @dsh-fish/cli add example --profile web'])
   })
 
   it('writes a flat skill as a single markdown file', () => {

@@ -122,6 +122,31 @@ curl -X POST https://dsh.fish/api/v1/admin/ingest \
   -d '{"limitPerSource": 50}'
 ```
 
+## 5. Publish the CLI
+
+`@dsh-fish/cli` is the copy-pasteable installer (`npx @dsh-fish/cli add <id>`).
+It is a public scoped package on the npm registry; the Worker deploy does not
+publish it.
+
+The binary bundles `dsh-hub/install` at build time, so a published tarball has
+no runtime dependency on the plugin package. Build the plugin first, then
+publish from the workspace root:
+
+```sh
+pnpm run publish:cli
+```
+
+The first publish of a scoped package needs `--access public` (the script
+passes it) and an npm user who owns the `@dsh-fish` organization. Create that
+org at [npmjs.com/org/create](https://www.npmjs.com/org/create) if it does not
+exist, then `npm login`.
+
+Later versions: bump `packages/dsh-cli/package.json`, then either run the same
+command or push a `cli-v*` tag (for `0.1.1`, `cli-v0.1.1`). The
+`publish-cli` workflow publishes with npm provenance when the repository is
+configured as a [trusted publisher](https://docs.npmjs.com/trusted-publishers)
+for `@dsh-fish/cli`.
+
 ## Local development
 
 ```sh

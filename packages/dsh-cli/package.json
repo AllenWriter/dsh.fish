@@ -19,16 +19,24 @@
     "lib",
     "README.md"
   ],
+  "homepage": "https://dsh.fish",
+  "bugs": {
+    "url": "https://github.com/stvlynn/dsh.fish/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stvlynn/dsh.fish.git",
     "directory": "packages/dsh-cli"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "prepare": "tsdown"
+    "prepare": "tsdown",
+    "prepublishOnly": "tsdown"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

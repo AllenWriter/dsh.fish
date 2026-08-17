@@ -5,7 +5,7 @@ This section covers how the project is run, built, deployed, and monitored.
 ## Documents
 
 - [`local-dev.md`](local-dev.md) — local development setup.
-- [`deployment.md`](deployment.md) — deployment guide.
+- [`deployment.md`](deployment.md) — Worker deployment and CLI publish.
 
 ## Environment
 
