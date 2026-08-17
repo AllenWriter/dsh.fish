@@ -6,7 +6,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/shared/lib/utils'
 
-export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl'
+export type AvatarSize = 'sm' | 'md' | 'lg'
 
 export interface AvatarProps {
   /** Remote portrait. A missing or unreachable one falls back to initials. */
@@ -21,7 +21,6 @@ const SIZE_CLASS: Record<AvatarSize, string> = {
   sm: 'size-7 text-[10px]',
   md: 'size-9 text-xs',
   lg: 'size-12 text-sm',
-  xl: 'size-16 text-base',
 }
 
 /** Up to two initials, so a long name still fits the circle. */

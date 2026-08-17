@@ -133,7 +133,7 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
         <div
           className={
             artifact.author
-              ? 'mt-4 grid min-w-0 gap-8 lg:grid-cols-[1fr_22rem]'
+              ? 'mt-4 grid min-w-0 items-start gap-x-8 gap-y-6 lg:grid-cols-[1fr_22rem]'
               : 'mt-4'
           }
         >
