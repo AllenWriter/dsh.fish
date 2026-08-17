@@ -23,6 +23,19 @@ export interface KindCount {
 }
 
 /**
+ * The projection a sitemap needs: an id to build a URL from and the timestamp
+ * that decides whether a crawler bothers re-reading it.
+ *
+ * Deliberately not an `Artifact`. A sitemap covers the whole catalog, not one
+ * page of it, and rehydrating thousands of entities — payload, readme and all —
+ * to emit two fields each would cost far more than the document it produces.
+ */
+export interface SitemapEntry {
+  readonly id: Slug
+  readonly updatedAt: Date
+}
+
+/**
  * Port owned by the domain; implemented in `infrastructure` over D1.
  */
 export interface ArtifactRepository {
@@ -34,4 +47,12 @@ export interface ArtifactRepository {
   incrementInstalls(id: Slug, by: number): Promise<void>
   /** Ids already indexed from a given origin, so a crawl can diff rather than re-insert. */
   listIdsByOrigin(origin: string): Promise<readonly Slug[]>
+  /**
+   * Every listable artifact, oldest-updated last, for the sitemap.
+   *
+   * Ordered by `updatedAt` descending and paged, so the first sitemap file holds
+   * what changed most recently — which is what a crawler that only fetches one
+   * file should see.
+   */
+  listForSitemap(page: PageRequest): Promise<Page<SitemapEntry>>
 }

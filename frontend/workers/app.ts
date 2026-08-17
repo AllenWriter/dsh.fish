@@ -3,6 +3,7 @@ import { createApiApp } from '@dsh-fish/backend'
 import { createContainer } from '@dsh-fish/backend/infrastructure/container.js'
 import type { HubEnv } from '@dsh-fish/backend/infrastructure/config/env.js'
 import { hubContext } from '@/shared/api/hub-context'
+import { canonicalLocaleRedirect } from '@/shared/config/i18n'
 
 /**
  * The Worker entry. One deployment serves both halves of the product.
@@ -25,6 +26,15 @@ export default {
 
     if (url.pathname.startsWith('/api/')) {
       return api.fetch(request, env, ctx)
+    }
+
+    // One document, one URL. `/en/browse` duplicates `/browse`, and `/ZH-cn`
+    // duplicates `/zh-CN` to a router that matches case-insensitively; both are
+    // folded into the canonical form before routing, permanently, so a crawler
+    // that ever saw the other form drops it.
+    const canonical = canonicalLocaleRedirect(url.pathname, url.search)
+    if (canonical !== undefined) {
+      return Response.redirect(new URL(canonical, url.origin).toString(), 301)
     }
 
     // Loaders resolve use cases in-process. A server-rendered page therefore

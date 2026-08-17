@@ -1,22 +1,38 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { ShieldCheck, Terminal } from 'lucide-react'
 import { EASE_OUT } from '@/shared/lib/ease'
 import type { Route } from './+types/device-page'
+import { hubContext } from '@/shared/api/hub-context'
 import { OTPInput, type OTPStatus } from '@/shared/ui/motion/otp-input'
 import { authClient, useSession } from '@/shared/api/auth-client'
-import { t } from '@/shared/config/messages'
+import { requireLocale, translate, useT } from '@/shared/config/i18n'
+import { LocaleLink } from '@/shared/ui/locale-link'
+import { errorMeta, pageMeta } from '@/shared/lib/seo'
 
 /** Kept in step with `DEVICE_USER_CODE_LENGTH` on the auth configuration. */
 const CODE_LENGTH = 8
 
-export function meta(): Route.MetaDescriptors {
-  return [
-    { title: `${t('device.title')} — ${t('app.name')}` },
-    // Nothing about an in-flight authorization belongs in a search index.
-    { name: 'robots', content: 'noindex' },
-  ]
+/** Nothing about an in-flight authorization belongs in a search index. */
+export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta(params.locale)
+  const { origin, locale } = loaderData
+  return pageMeta({
+    origin,
+    locale,
+    path: '/device',
+    title: `${translate(locale, 'device.title')} — ${translate(locale, 'app.name')}`,
+    description: translate(locale, 'device.subtitle'),
+    index: false,
+  })
+}
+
+export function loader({ context, params }: Route.LoaderArgs) {
+  return {
+    locale: requireLocale(params.locale),
+    origin: context.get(hubContext).container.config.baseUrl,
+  }
 }
 
 type Phase = 'entering' | 'confirming' | 'approved' | 'denied'
@@ -31,6 +47,7 @@ type Phase = 'entering' | 'confirming' | 'approved' | 'denied'
  * prefilled, so the common path is one click and one confirmation.
  */
 export default function DevicePage() {
+  const t = useT()
   const [params] = useSearchParams()
   const { data: session, isPending } = useSession()
 
@@ -55,12 +72,12 @@ export default function DevicePage() {
     return (
       <Shell>
         <p className="text-muted-foreground">{t('device.signInFirst')}</p>
-        <Link
+        <LocaleLink
           to={`/sign-in?redirect=${encodeURIComponent(`/device?user_code=${code}`)}`}
           className="press mt-5 inline-flex rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
           {t('nav.signIn')}
-        </Link>
+        </LocaleLink>
       </Shell>
     )
   }
@@ -179,6 +196,7 @@ function PhaseReveal({ show, children }: { show: boolean; children: React.ReactN
 }
 
 function Shell({ children, icon }: { children: React.ReactNode; icon?: React.ReactNode }) {
+  const t = useT()
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col items-center justify-center px-6 text-center">
       {icon ? (

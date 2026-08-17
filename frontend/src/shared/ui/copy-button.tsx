@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Check, Copy } from 'lucide-react'
-import { t } from '@/shared/config/messages'
+import { useT } from '@/shared/config/i18n'
 import { cn } from '@/shared/lib/utils'
 
 /** How long the check stays before the button offers to copy again. */
@@ -21,6 +21,7 @@ const CONFIRM_MS = 1600
  * so nothing claims it was.
  */
 export function CopyButton({ text, className }: { text: string; className?: string }) {
+  const t = useT()
   const [copied, setCopied] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
 

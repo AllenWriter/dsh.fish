@@ -21,6 +21,9 @@ function memoryRepository() {
     saveMany: async () => {},
     incrementInstalls: async () => {},
     listIdsByOrigin: async () => [],
+    listForSitemap: async () => {
+      throw new Error('not used')
+    },
   }
   return { repository, rows }
 }

@@ -1,15 +1,42 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { EASE_OUT } from '@/shared/lib/ease'
 import type { Route } from './+types/submit-page'
-import { ARTIFACT_KINDS } from '@dsh-fish/backend/domain/artifact/artifact-kind.js'
-import { kindLabelKey } from '@/entities/artifact/model/types'
+import { hubContext } from '@/shared/api/hub-context'
+import { ARTIFACT_KINDS, kindLabelKey } from '@/entities/artifact/model/types'
 import { useSession } from '@/shared/api/auth-client'
-import { t } from '@/shared/config/messages'
+import { requireLocale, translate, useT } from '@/shared/config/i18n'
+import { LocaleLink } from '@/shared/ui/locale-link'
+import { breadcrumbLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 
-export function meta(): Route.MetaDescriptors {
-  return [{ title: `${t('submit.title')} — ${t('app.name')}` }]
+/**
+ * Indexable even though the form itself needs an account: "how do I publish a
+ * DeepSeek Harness plugin" is a question people search, and this page is the
+ * answer to it. Only the form behind it is gated, not the explanation.
+ */
+export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta(params.locale)
+  const { origin, locale } = loaderData
+  return pageMeta({
+    origin,
+    locale,
+    path: '/submit',
+    title: `${translate(locale, 'submit.title')} — ${translate(locale, 'app.name')}`,
+    description: translate(locale, 'submit.body'),
+    jsonLd: [
+      breadcrumbLd(origin, locale, [
+        { name: translate(locale, 'app.name'), path: '/' },
+        { name: translate(locale, 'submit.title'), path: '/submit' },
+      ]),
+    ],
+  })
+}
+
+export function loader({ context, params }: Route.LoaderArgs) {
+  return {
+    locale: requireLocale(params.locale),
+    origin: context.get(hubContext).container.config.baseUrl,
+  }
 }
 
 type Outcome = { kind: 'approved'; artifactId: string } | { kind: 'pending' } | { kind: 'error'; message: string }
@@ -22,6 +49,7 @@ type Outcome = { kind: 'approved'; artifactId: string } | { kind: 'pending' } | 
  * would not itself have produced.
  */
 export default function SubmitPage() {
+  const t = useT()
   const { data: session, isPending } = useSession()
   const [outcome, setOutcome] = useState<Outcome | null>(null)
   const [busy, setBusy] = useState(false)
@@ -33,12 +61,12 @@ export default function SubmitPage() {
     return (
       <Frame>
         <p className="text-muted-foreground">{t('submit.signInRequired')}</p>
-        <Link
+        <LocaleLink
           to="/sign-in?redirect=%2Fsubmit"
           className="press mt-5 inline-flex rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
           {t('nav.signIn')}
-        </Link>
+        </LocaleLink>
       </Frame>
     )
   }
@@ -145,9 +173,12 @@ export default function SubmitPage() {
               <p className="font-medium text-primary">
                 {t('submit.approved')}
               </p>
-              <Link to={`/a/${outcome.artifactId}`} className="mt-1 inline-block text-primary underline">
+              <LocaleLink
+                to={`/a/${outcome.artifactId}`}
+                className="mt-1 inline-block text-primary underline"
+              >
                 {outcome.artifactId}
-              </Link>
+              </LocaleLink>
             </>
           ) : outcome.kind === 'pending' ? (
             <p>{t('submit.pending')}</p>
@@ -162,6 +193,7 @@ export default function SubmitPage() {
 }
 
 function Frame({ children }: { children: React.ReactNode }) {
+  const t = useT()
   return (
     <div className="mx-auto max-w-lg px-6 py-14">
       <h1 className="text-2xl font-semibold tracking-tight">{t('submit.title')}</h1>

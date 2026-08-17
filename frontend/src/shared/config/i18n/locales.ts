@@ -1,0 +1,84 @@
+/**
+ * The locale registry.
+ *
+ * One list drives everything language-shaped in the product: the URL prefix a
+ * page is served under, the `lang`/`dir` attributes on the document, the
+ * `hreflang` alternates a crawler reads, the `og:locale` a link preview shows,
+ * and the switcher in the header. Adding a language means adding one entry here
+ * plus one message catalog — nothing else has a list of languages in it.
+ *
+ * `nativeName` is deliberately not a translated string. A language switcher
+ * that renders "German" to a reader who only speaks German is unusable; every
+ * option names itself, in itself, which is how a reader finds their own row.
+ */
+export interface LocaleDefinition {
+  /** URL prefix and catalog key. BCP 47, region only where it disambiguates. */
+  readonly code: string
+  /** Value for `<html lang>` and `hreflang`. */
+  readonly tag: string
+  /** Underscored form Open Graph wants: `zh_CN`, not `zh-CN`. */
+  readonly ogLocale: string
+  readonly dir: 'ltr' | 'rtl'
+  /** How this language names itself, for the switcher. */
+  readonly nativeName: string
+}
+
+export const LOCALES = [
+  { code: 'en', tag: 'en', ogLocale: 'en_US', dir: 'ltr', nativeName: 'English' },
+  { code: 'zh-CN', tag: 'zh-Hans', ogLocale: 'zh_CN', dir: 'ltr', nativeName: '简体中文' },
+  { code: 'zh-TW', tag: 'zh-Hant', ogLocale: 'zh_TW', dir: 'ltr', nativeName: '繁體中文' },
+  { code: 'ja', tag: 'ja', ogLocale: 'ja_JP', dir: 'ltr', nativeName: '日本語' },
+  { code: 'ko', tag: 'ko', ogLocale: 'ko_KR', dir: 'ltr', nativeName: '한국어' },
+  { code: 'es', tag: 'es', ogLocale: 'es_ES', dir: 'ltr', nativeName: 'Español' },
+  { code: 'fr', tag: 'fr', ogLocale: 'fr_FR', dir: 'ltr', nativeName: 'Français' },
+  { code: 'de', tag: 'de', ogLocale: 'de_DE', dir: 'ltr', nativeName: 'Deutsch' },
+  { code: 'pt-BR', tag: 'pt-BR', ogLocale: 'pt_BR', dir: 'ltr', nativeName: 'Português (Brasil)' },
+  { code: 'ru', tag: 'ru', ogLocale: 'ru_RU', dir: 'ltr', nativeName: 'Русский' },
+] as const satisfies readonly LocaleDefinition[]
+
+export type Locale = (typeof LOCALES)[number]['code']
+
+/**
+ * The language served without a URL prefix.
+ *
+ * English lives at `/browse`, not `/en/browse`. A prefixed duplicate of the
+ * default language is the most common way a multilingual site splits its own
+ * ranking signal across two URLs, so `/en/*` is redirected to the bare path
+ * rather than served.
+ */
+export const DEFAULT_LOCALE: Locale = 'en'
+
+const BY_CODE = new Map<string, LocaleDefinition>(LOCALES.map((entry) => [entry.code, entry]))
+
+/** Lower-cased index, so `/ZH-cn/browse` resolves rather than 404s. */
+const BY_LOWER_CODE = new Map<string, LocaleDefinition>(
+  LOCALES.map((entry) => [entry.code.toLowerCase(), entry]),
+)
+
+export const LOCALE_CODES: readonly Locale[] = LOCALES.map((entry) => entry.code)
+
+export function isLocale(raw: string): raw is Locale {
+  return BY_CODE.has(raw)
+}
+
+export function localeDefinition(locale: Locale): LocaleDefinition {
+  const found = BY_CODE.get(locale)
+  if (!found) {
+    // Unreachable through `Locale`, but a cast at a boundary could get here and
+    // a silent fallback would hide the bad input rather than surface it.
+    throw new Error(`Unknown locale: ${locale}`)
+  }
+  return found
+}
+
+/**
+ * Resolve a raw URL segment to a locale.
+ *
+ * Case-insensitive because links get typed and copied by hand; anything that is
+ * not a language returns `undefined` so the caller can treat the segment as a
+ * path instead of guessing.
+ */
+export function matchLocale(raw: string | undefined): Locale | undefined {
+  if (raw === undefined || raw === '') return undefined
+  return (BY_LOWER_CODE.get(raw.toLowerCase())?.code as Locale) ?? undefined
+}

@@ -2,10 +2,9 @@ import { AlertTriangle } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/motion/tabs'
 import { CopyButton } from '@/shared/ui/copy-button'
 import type { ArtifactDetail, InstallPlanDto } from '@/entities/artifact/model/types'
-import { t } from '@/shared/config/messages'
+import { useT } from '@/shared/config/i18n'
+import { HUB_PLUGIN_SPEC } from '@/shared/config/site'
 import { cn } from '@/shared/lib/utils'
-
-const HUB_PLUGIN_SPEC = 'github:stvlynn/dsh.fish#main'
 
 /**
  * The install surface — the reason the site exists.
@@ -22,6 +21,7 @@ export function InstallPanel({
   artifact: ArtifactDetail
   plan: InstallPlanDto
 }) {
+  const t = useT()
   const credentials =
     plan.steps.filter((step) => step.type === 'require-credential') ?? []
 

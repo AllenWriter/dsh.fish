@@ -1,5 +1,5 @@
 import { KIND_CHIP, kindLabelKey, type ArtifactKind } from '../model/types'
-import { t } from '@/shared/config/messages'
+import { useT } from '@/shared/config/i18n'
 import { cn } from '@/shared/lib/utils'
 
 /**
@@ -9,5 +9,6 @@ import { cn } from '@/shared/lib/utils'
  * installs — but it is carried by the word, not by a colour. See KIND_CHIP.
  */
 export function KindChip({ kind, className }: { kind: ArtifactKind; className?: string }) {
+  const t = useT()
   return <span className={cn(KIND_CHIP, className)}>{t(kindLabelKey(kind))}</span>
 }

@@ -1,33 +1,103 @@
-import { Link } from 'react-router'
-import { t } from '@/shared/config/messages'
+import { ARTIFACT_KINDS, CATEGORIES, kindPluralKey } from '@/entities/artifact/model/types'
+import { LocaleLinks } from '@/features/locale-switcher'
+import { useT } from '@/shared/config/i18n'
+import { HARNESS_REPO_URL } from '@/shared/config/site'
+import { LocaleLink } from '@/shared/ui/locale-link'
 
-const HARNESS_REPO = 'https://github.com/deepseek-ai/deepseek-harness'
+const NAV = [
+  { to: '/browse', key: 'nav.browse' },
+  { to: '/docs', key: 'nav.docs' },
+  { to: '/submit', key: 'nav.submit' },
+] as const
 
+/**
+ * The footer, and the site's internal link graph.
+ *
+ * Every type and every category gets a real link to its own indexable path.
+ * Without this the collection pages are reachable only from a query-string
+ * filter, which is to say reachable by a reader and effectively not by a
+ * crawler: a page nothing links to is a page nothing ranks. Eighteen links in a
+ * footer is unremarkable for a directory, and it is the cheapest way to make
+ * every landing page one hop from every other page on the site.
+ */
 export function SiteFooter() {
+  const t = useT()
+
   return (
     <footer className="border-t border-border">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-10 text-sm text-muted-foreground sm:flex-row sm:items-center">
-        <p className="flex-1">{t('app.tagline')}</p>
-        <nav className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <Link to="/browse" className="transition-colors hover:text-foreground">
-            {t('nav.browse')}
-          </Link>
-          <Link to="/docs" className="transition-colors hover:text-foreground">
-            {t('nav.docs')}
-          </Link>
-          <Link to="/submit" className="transition-colors hover:text-foreground">
-            {t('nav.submit')}
-          </Link>
-          <a
-            href={HARNESS_REPO}
-            className="transition-colors hover:text-foreground"
-            rel="noreferrer noopener"
-            target="_blank"
-          >
-            DeepSeek Harness
-          </a>
+      <div className="mx-auto max-w-6xl px-6 py-12">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <nav aria-label={t('browse.kind')}>
+            <h2 className="text-sm font-medium text-foreground">{t('browse.kind')}</h2>
+            <ul className="mt-3 space-y-1.5">
+              {ARTIFACT_KINDS.map((kind) => (
+                <li key={kind}>
+                  <FooterLink to={`/kind/${kind}`}>{t(kindPluralKey(kind))}</FooterLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav aria-label={t('browse.category')} className="lg:col-span-2">
+            <h2 className="text-sm font-medium text-foreground">{t('browse.category')}</h2>
+            <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5">
+              {CATEGORIES.map((category) => (
+                <li key={category.id}>
+                  <FooterLink to={`/category/${category.id}`}>{t(category.labelKey)}</FooterLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav aria-label={t('app.name')}>
+            <h2 className="text-sm font-medium text-foreground">{t('app.name')}</h2>
+            <ul className="mt-3 space-y-1.5">
+              {NAV.map((entry) => (
+                <li key={entry.to}>
+                  <FooterLink to={entry.to}>{t(entry.key)}</FooterLink>
+                </li>
+              ))}
+              <li>
+                <a
+                  href={HARNESS_REPO_URL}
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  rel="noreferrer noopener"
+                  target="_blank"
+                >
+                  {t('nav.harness')}
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+        {/* The crawlable copy of the language switcher. The control in the
+            header renders its options into a portal on open, so these anchors
+            are the only ones present in the server's HTML — which is what lets
+            a crawler that reached one language reach the other nine. */}
+        <nav aria-label={t('nav.language')} className="mt-10 border-t border-border pt-6">
+          <h2 className="text-sm font-medium text-foreground">{t('nav.language')}</h2>
+          <LocaleLinks
+            className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5"
+            itemClassName="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          />
         </nav>
+
+        <p className="mt-8 border-t border-border pt-6 text-sm text-muted-foreground">
+          {t('app.tagline')}
+        </p>
       </div>
     </footer>
+  )
+}
+
+function FooterLink({ to, children }: { to: string; children: React.ReactNode }) {
+  return (
+    <LocaleLink
+      to={to}
+      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+    >
+      {children}
+    </LocaleLink>
   )
 }

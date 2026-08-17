@@ -1,14 +1,25 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router'
 import type { Route } from './+types/dashboard-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { CatalogGrid } from '@/widgets/catalog-grid/catalog-grid'
 import { useSession } from '@/shared/api/auth-client'
-import { t } from '@/shared/config/messages'
+import { requireLocale, translate, useT } from '@/shared/config/i18n'
+import { LocaleLink } from '@/shared/ui/locale-link'
+import { errorMeta, pageMeta } from '@/shared/lib/seo'
 import { Avatar } from '@/shared/ui/avatar'
 
-export function meta(): Route.MetaDescriptors {
-  return [{ title: `${t('dashboard.title')} — ${t('app.name')}` }, { name: 'robots', content: 'noindex' }]
+/** Someone else's dashboard is not a search result. */
+export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta(params.locale)
+  const { origin, locale } = loaderData
+  return pageMeta({
+    origin,
+    locale,
+    path: '/dashboard',
+    title: `${translate(locale, 'dashboard.title')} — ${translate(locale, 'app.name')}`,
+    description: translate(locale, 'dashboard.mySubmissions'),
+    index: false,
+  })
 }
 
 interface SubmissionRow {
@@ -25,7 +36,15 @@ const STATUS_KEY: Record<SubmissionRow['status'], string> = {
   rejected: 'dashboard.status.rejected',
 }
 
+export function loader({ context, params }: Route.LoaderArgs) {
+  return {
+    locale: requireLocale(params.locale),
+    origin: context.get(hubContext).container.config.baseUrl,
+  }
+}
+
 export default function DashboardPage() {
+  const t = useT()
   const { data: session, isPending } = useSession()
   const [submissions, setSubmissions] = useState<SubmissionRow[] | null>(null)
 
@@ -50,12 +69,12 @@ export default function DashboardPage() {
   if (!session?.user) {
     return (
       <Frame>
-        <Link
+        <LocaleLink
           to="/sign-in?redirect=%2Fdashboard"
           className="press inline-flex rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
           {t('nav.signIn')}
-        </Link>
+        </LocaleLink>
       </Frame>
     )
   }
@@ -76,9 +95,9 @@ export default function DashboardPage() {
               <li key={submission.id} className="flex items-center gap-3 px-5 py-3.5 text-sm">
                 <span className="flex-1 truncate font-medium">
                   {submission.artifactId ? (
-                    <Link to={`/a/${submission.artifactId}`} className="hover:underline">
+                    <LocaleLink to={`/a/${submission.artifactId}`} className="hover:underline">
                       {submission.artifactId}
-                    </Link>
+                    </LocaleLink>
                   ) : (
                     submission.id.slice(0, 8)
                   )}
@@ -100,6 +119,7 @@ interface Identity {
 
 /** The page shell. Signed in, the title carries the account it is showing. */
 function Frame({ identity, children }: { identity?: Identity; children: React.ReactNode }) {
+  const t = useT()
   return (
     <div className="mx-auto max-w-3xl px-6 py-14">
       <div className="flex items-center gap-4">

@@ -1,12 +1,33 @@
 import type { Route } from './+types/docs-page'
+import { hubContext } from '@/shared/api/hub-context'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/motion/tabs'
-import { t } from '@/shared/config/messages'
+import { requireLocale, translate, useT } from '@/shared/config/i18n'
+import { breadcrumbLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 
-export function meta(): Route.MetaDescriptors {
-  return [
-    { title: `${t('docs.title')} — ${t('app.name')}` },
-    { name: 'description', content: t('app.description') },
-  ]
+export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta(params.locale)
+  const { origin, locale } = loaderData
+  return pageMeta({
+    origin,
+    locale,
+    path: '/docs',
+    title: `${translate(locale, 'docs.title')} — ${translate(locale, 'app.name')}`,
+    description: translate(locale, 'seo.docs.description'),
+    type: 'article',
+    jsonLd: [
+      breadcrumbLd(origin, locale, [
+        { name: translate(locale, 'app.name'), path: '/' },
+        { name: translate(locale, 'docs.title'), path: '/docs' },
+      ]),
+    ],
+  })
+}
+
+export function loader({ context, params }: Route.LoaderArgs) {
+  return {
+    locale: requireLocale(params.locale),
+    origin: context.get(hubContext).container.config.baseUrl,
+  }
 }
 
 /**
@@ -14,29 +35,32 @@ export function meta(): Route.MetaDescriptors {
  * kind before the indexer will list it. Every snippet here mirrors what
  * `classifyPackage` and the GitHub indexer actually look for, so following the
  * page is sufficient to get indexed.
+ *
+ * The prose is translated; the snippets are not. A JSON key is an identifier,
+ * and an identifier that changes with the reader's language is a broken
+ * instruction.
  */
 export default function DocsPage() {
+  const t = useT()
+
   return (
     <div className="mx-auto max-w-3xl px-6 py-14">
       <h1 className="text-3xl font-semibold tracking-tight">{t('docs.title')}</h1>
-      <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
-        Tag your repository with the <Code>dsh-plugin</Code> topic, or submit it directly. The
-        registry reads your real manifest — what it lists is what the harness would load.
-      </p>
+      <p className="mt-3 text-lg leading-relaxed text-muted-foreground">{t('docs.intro')}</p>
 
       <Tabs defaultValue="bundle" variant="underline" className="mt-10">
         <TabsList className="flex-wrap">
-          <TabsTrigger value="bundle">Bundle</TabsTrigger>
-          <TabsTrigger value="skill">Skill</TabsTrigger>
-          <TabsTrigger value="mcp">MCP server</TabsTrigger>
-          <TabsTrigger value="preset">Agent preset</TabsTrigger>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="bundle">{t('artifactKind.bundle.label')}</TabsTrigger>
+          <TabsTrigger value="skill">{t('artifactKind.skill.label')}</TabsTrigger>
+          <TabsTrigger value="mcp">{t('artifactKind.mcpServer.label')}</TabsTrigger>
+          <TabsTrigger value="preset">{t('artifactKind.agentPreset.label')}</TabsTrigger>
+          <TabsTrigger value="profile">{t('artifactKind.profile.label')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="bundle">
           <Section
-            title="A bundle declares dsh.bundle"
-            body="A package without that declaration still installs, but the harness activates no layer for it — so the registry does not list it as a plugin either."
+            title={t('docs.bundle.title')}
+            body={t('docs.bundle.body')}
             code={`{
   "name": "dsh-hello-plugin",
   "version": "0.1.0",
@@ -45,17 +69,13 @@ export default function DocsPage() {
   "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
 }`}
           />
-          <Note>
-            Publishing to npm ships prebuilt code, so users need no build allowance. A git install
-            fetches sources: add a self-contained <Code>prepare</Code> script, and expect users to
-            allowlist it.
-          </Note>
+          <Note>{t('docs.bundle.note')}</Note>
         </TabsContent>
 
         <TabsContent value="skill">
           <Section
-            title="A skill is a SKILL.md with frontmatter"
-            body="name must be kebab-case and description is required — the provider drops a skill missing either."
+            title={t('docs.skill.title')}
+            body={t('docs.skill.body')}
             code={`---
 name: release-notes
 description: Draft release notes from a commit range.
@@ -69,8 +89,8 @@ Steps the agent should follow…`}
 
         <TabsContent value="mcp">
           <Section
-            title="An MCP server is a client row"
-            body="The registry stores credential references, never values. Declare the environment variable names your server needs and the harness resolves them through ctx.credentials."
+            title={t('docs.mcp.title')}
+            body={t('docs.mcp.body')}
             code={`{
   "dsh": {
     "hub": {
@@ -90,8 +110,8 @@ Steps the agent should follow…`}
 
         <TabsContent value="preset">
           <Section
-            title="An agent preset is one agent.cordis.yml"
-            body="Put it at the repository root (or in the submitted subdirectory). The directory name becomes the preset id."
+            title={t('docs.preset.title')}
+            body={t('docs.preset.body')}
             code={`- id: tools
   name: 'dsh-tools'
 - id: prompt
@@ -103,8 +123,8 @@ Steps the agent should follow…`}
 
         <TabsContent value="profile">
           <Section
-            title="A profile lists bundles in order"
-            body="Later layers win per row, and a patch replaces a row's whole config rather than deep-merging it — so order is meaningful."
+            title={t('docs.profile.title')}
+            body={t('docs.profile.body')}
             code={`{
   "dsh": {
     "profile": {
@@ -136,11 +156,5 @@ function Note({ children }: { children: React.ReactNode }) {
     <p className="mt-4 rounded-xl border border-border bg-muted/50 p-4 text-sm leading-relaxed text-muted-foreground">
       {children}
     </p>
-  )
-}
-
-function Code({ children }: { children: React.ReactNode }) {
-  return (
-    <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.9em]">{children}</code>
   )
 }

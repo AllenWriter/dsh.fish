@@ -3,6 +3,7 @@ import type { IncomingRequestCfProperties } from '@cloudflare/workers-types'
 import { GetArtifactDetail } from '../application/use-case/get-artifact-detail.js'
 import { IngestCatalog } from '../application/use-case/ingest-catalog.js'
 import { ListCatalogFacets } from '../application/use-case/list-catalog-facets.js'
+import { ListSitemapEntries } from '../application/use-case/list-sitemap-entries.js'
 import { ResolveInstallPlan } from '../application/use-case/resolve-install-plan.js'
 import { SearchArtifacts } from '../application/use-case/search-artifacts.js'
 import { SubmitArtifact } from '../application/use-case/submit-artifact.js'
@@ -30,6 +31,7 @@ export interface Container {
     readonly searchArtifacts: SearchArtifacts
     readonly getArtifactDetail: GetArtifactDetail
     readonly listCatalogFacets: ListCatalogFacets
+    readonly listSitemapEntries: ListSitemapEntries
     readonly resolveInstallPlan: ResolveInstallPlan
     readonly submitArtifact: SubmitArtifact
     readonly ingestCatalog: IngestCatalog
@@ -66,6 +68,7 @@ export function createContainer(env: HubEnv, cf?: IncomingRequestCfProperties): 
       searchArtifacts: new SearchArtifacts(artifacts),
       getArtifactDetail: new GetArtifactDetail(artifacts),
       listCatalogFacets: new ListCatalogFacets(artifacts),
+      listSitemapEntries: new ListSitemapEntries(artifacts),
       resolveInstallPlan: new ResolveInstallPlan(artifacts),
       submitArtifact: new SubmitArtifact(submissions, artifacts, indexers, ids, identities),
       ingestCatalog: new IngestCatalog(artifacts, indexers),

@@ -1,0 +1,80 @@
+# Structured data
+
+One connected graph, emitted as `application/ld+json` through React Router's
+`script:ld+json` meta descriptor.
+
+## The nodes
+
+| Node | Emitted on | Built by |
+|---|---|---|
+| `WebSite` (+ `SearchAction`) | Home, per language | `websiteLd` |
+| `Organization` | Home, per language | `organizationLd` |
+| `BreadcrumbList` | Artifact, kind, category, browse, docs, submit | `breadcrumbLd` |
+| `CollectionPage` + `ItemList` | Browse, kind, category | `collectionLd` |
+| `SoftwareApplication` | Artifact detail | `artifactLd` |
+
+`WebSite` and `Organization` are emitted **once**, on the home page, and
+referenced by `@id` from every other page (`isPartOf`, `publisher`). Repeating
+them on every page would restate the same facts a few thousand times per crawl.
+
+## Where the artifact node lives
+
+`artifactLd` is in `entities/artifact/lib/`, not in `shared/lib/seo/`. It is the
+one structured-data node that has to know what an artifact is — its kind, its
+source, the counters the crawler measured — and `shared` may not import from
+`entities`. Everything entity-agnostic stays in `shared/lib/seo`.
+
+## What is deliberately absent
+
+`SoftwareApplication` supports `offers` and `aggregateRating`, and either would
+unlock a richer search result. Neither is emitted, because this registry has no
+data for them: nobody has rated these plugins, and the hub does not know what a
+third party's package costs. Markup that asserts facts a site does not have is
+ignored at best and manually penalised at worst.
+
+What *is* emitted instead is `interactionStatistic` — install count, weekly
+downloads and stars as `InteractionCounter` nodes. Those are measured numbers,
+and it is the one place schema.org lets a registry state popularity without
+inventing a rating.
+
+`softwareHelp` carries the install command, but only a real one: a plan's
+`manualCommands` can include comment lines (`# Copy the composition to …`) that
+are instructions to a reader, and publishing one would tell a machine that `#`
+is how you install this.
+
+## Language
+
+Every node carries `inLanguage` set to the same tag as `<html lang>` — the
+locale registry's `tag` field, so `zh-Hans` rather than `zh-CN`, matching the
+`hreflang` set.
+
+The artifact node's `name`, `description` and `keywords` come from the crawled
+manifest and stay in whatever language the author wrote. Only the frame around
+them is translated: `applicationSubCategory` (the artifact's type),
+`softwareRequirements`, and the breadcrumb names. See
+[`../frontend/i18n.md`](../frontend/i18n.md) for why the catalog itself is not
+translated.
+
+## Adding a node
+
+1. Add a builder to `shared/lib/seo/structured-data.ts` (or to the owning entity
+   if it needs domain knowledge) that returns a plain object.
+2. Export it from the slice's public API.
+3. Pass it in the page's `pageMeta({ jsonLd: [...] })`.
+
+Do not build JSON-LD inline in a page. A node duplicated across two pages drifts
+between them, and the drift is invisible until a validator reports it.
+
+## Verifying
+
+The rendered blocks are plain JSON in the response body:
+
+```sh
+curl -s http://localhost:5173/ja/a/<id> \
+  | grep -o '<script type="application/ld+json">[^<]*' \
+  | sed 's/^[^>]*>//' \
+  | python3 -m json.tool
+```
+
+Against a deployed origin, use Google's Rich Results Test and Schema.org's
+validator for the same URLs.
