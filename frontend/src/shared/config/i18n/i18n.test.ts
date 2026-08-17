@@ -9,7 +9,7 @@ import { buildInstallPlan, installTarget } from '@dsh-fish/backend/domain/artifa
 import { githubSource, npmSource } from '@dsh-fish/backend/domain/artifact/source-ref.js'
 import { CATALOGS, DEFAULT_LOCALE, LOCALES, LOCALE_CODES, translate } from './index'
 import { canonicalLocaleRedirect, localizedPath, splitLocalePath } from './path'
-import { en } from './messages/en'
+import { en } from './messages'
 
 /**
  * Contract tests between the layers, and between the languages.

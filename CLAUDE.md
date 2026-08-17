@@ -70,7 +70,7 @@
 
 ### Forbidden patterns
 
-- **No hardcoded strings.** All user-facing text must be defined in a single place (i18n keys, constants, configuration) and referenced by identifier. In this project that place is `frontend/src/shared/config/i18n/messages/` — one catalog per language, all of them typed against English.
+- **No hardcoded strings.** All user-facing text must be defined in a single place (i18n keys, constants, configuration) and referenced by identifier. In this project that place is `frontend/src/shared/config/i18n/messages/*.json` — one catalog per language, all of them typed against English.
 - **No redundant UI copy.** Do not repeat information that is already conveyed by a title, icon, selected state, or surrounding context.
 - **No duplicated implementations.** If a piece of logic already exists, reuse it or extract it to the correct layer/slice. Do not copy-paste with minor variations.
 - **No fallback/clever bypass logic.** Do not mask a root cause with a default value, a silent catch, or a conditional shortcut. Face the actual problem and fix it, or ask the user.

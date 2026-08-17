@@ -304,7 +304,7 @@ tokens that have no break point. Tables and fences keep their own
 
 ### No hardcoded copy
 
-`frontend/src/shared/config/i18n/messages/` holds every user-facing string. The
+`frontend/src/shared/config/i18n/messages/*.json` holds every user-facing string. The
 backend sends message *keys* (`artifactKind.bundle.label`,
 `install.warning.buildAllowance`), never prose, so the catalog stays
 language-neutral in the database.
