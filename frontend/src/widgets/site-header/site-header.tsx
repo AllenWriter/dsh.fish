@@ -97,11 +97,7 @@ export function SiteHeader() {
                   reader who cannot see the first. */}
               {({ isActive }) => (
                 <>
-                  <entry.icon
-                    className="size-4"
-                    weight={isActive ? 'fill' : 'bold'}
-                    aria-hidden
-                  />
+                  <entry.icon className="size-4" weight={isActive ? 'fill' : 'bold'} />
                   {t(entry.key)}
                 </>
               )}
@@ -114,7 +110,7 @@ export function SiteHeader() {
           onClick={() => setPaletteOpen(true)}
           className="press ml-auto hidden h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm text-muted-foreground hover:border-border-strong sm:flex"
         >
-          <SearchIcon className="size-4" weight="bold" aria-hidden />
+          <SearchIcon className="size-4" weight="bold" />
           {t('nav.search')}
           <kbd className="ml-2 rounded border border-border px-1.5 py-0.5 font-mono text-[10px]">
             &#8984;K
@@ -136,9 +132,9 @@ export function SiteHeader() {
         >
           <IconSwap swapKey={mobileOpen ? 'close' : 'menu'}>
             {mobileOpen ? (
-              <CloseIcon className="size-4" weight="bold" aria-hidden />
+              <CloseIcon className="size-4" weight="bold" />
             ) : (
-              <MenuIcon className="size-4" weight="bold" aria-hidden />
+              <MenuIcon className="size-4" weight="bold" />
             )}
           </IconSwap>
         </button>
@@ -171,11 +167,7 @@ export function SiteHeader() {
             >
               {({ isActive }) => (
                 <>
-                  <entry.icon
-                    className="size-4"
-                    weight={isActive ? 'fill' : 'bold'}
-                    aria-hidden
-                  />
+                  <entry.icon className="size-4" weight={isActive ? 'fill' : 'bold'} />
                   {t(entry.key)}
                 </>
               )}
@@ -231,9 +223,9 @@ function ThemeToggle({ className }: { className?: string }) {
     >
       <IconSwap swapKey={dark ? 'sun' : 'moon'}>
         {dark ? (
-          <LightThemeIcon className="size-4" weight="bold" aria-hidden />
+          <LightThemeIcon className="size-4" weight="bold" />
         ) : (
-          <DarkThemeIcon className="size-4" weight="bold" aria-hidden />
+          <DarkThemeIcon className="size-4" weight="bold" />
         )}
       </IconSwap>
     </button>

@@ -77,7 +77,7 @@ export default function SubmitPage() {
           to="/sign-in?redirect=%2Fsubmit"
           className="press mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
-          <SignInIcon className="size-4" weight="bold" aria-hidden />
+          <SignInIcon className="size-4" weight="bold" />
           {t('nav.signIn')}
         </LocaleLink>
       </Frame>
@@ -176,7 +176,7 @@ export default function SubmitPage() {
           disabled={busy}
           className="press inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-primary-foreground disabled:opacity-50"
         >
-          <SubmitIcon className="size-4" weight="bold" aria-hidden />
+          <SubmitIcon className="size-4" weight="bold" />
           {t('submit.action')}
         </button>
       </form>
@@ -197,7 +197,7 @@ export default function SubmitPage() {
           {outcome.kind === 'approved' ? (
             <>
               <p className="flex items-center gap-1.5 font-medium text-primary">
-                <ApprovedIcon className="size-4 shrink-0" weight="fill" aria-hidden />
+                <ApprovedIcon className="size-4 shrink-0" weight="fill" />
                 {t('submit.approved')}
               </p>
               <LocaleLink
@@ -205,17 +205,17 @@ export default function SubmitPage() {
                 className="mt-1 inline-flex items-center gap-1.5 text-primary underline"
               >
                 {outcome.artifactId}
-                <ForwardIcon className="size-3.5 shrink-0" weight="bold" aria-hidden />
+                <ForwardIcon className="size-3.5 shrink-0" weight="bold" />
               </LocaleLink>
             </>
           ) : outcome.kind === 'pending' ? (
             <p className="flex items-center gap-1.5">
-              <PendingIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+              <PendingIcon className="size-4 shrink-0 text-muted-foreground" />
               {t('submit.pending')}
             </p>
           ) : (
             <p className="flex items-center gap-1.5 text-destructive">
-              <ErrorIcon className="size-4 shrink-0" weight="bold" aria-hidden />
+              <ErrorIcon className="size-4 shrink-0" weight="bold" />
               {outcome.message}
             </p>
           )}

@@ -18,5 +18,5 @@ export function CategoryIcon({
 }) {
   const Icon = categoryIcon(id)
   if (!Icon) return null
-  return <Icon className={className} weight={weight} aria-hidden />
+  return <Icon className={className} weight={weight} />
 }

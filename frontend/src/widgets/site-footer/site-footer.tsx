@@ -84,7 +84,7 @@ export function SiteFooter() {
                   rel="noreferrer noopener"
                   target="_blank"
                 >
-                  <ExternalLinkIcon className="size-4 shrink-0" aria-hidden />
+                  <ExternalLinkIcon className="size-4 shrink-0" />
                   {t('nav.harness')}
                 </a>
               </li>

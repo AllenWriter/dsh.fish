@@ -100,10 +100,12 @@ export default function BrowsePage({ loaderData }: Route.ComponentProps) {
           {query ? t('browse.searchTitle', { query }) : t('browse.title')}
         </h1>
         <Form method="get" action={localePath('/browse')} className="mt-4 flex flex-wrap gap-2">
-          <div className="relative min-w-0 flex-1">
+          {/* `basis-full` below `sm`: the sort select and the submit button take
+              close to 300px between them, which on a phone leaves the field too
+              narrow to read a query back in. Its own row above them instead. */}
+          <div className="relative min-w-0 basis-full sm:flex-1 sm:basis-auto">
             <SearchIcon
               className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden
             />
             <input
               type="search"
@@ -120,7 +122,6 @@ export default function BrowsePage({ loaderData }: Route.ComponentProps) {
           <div className="relative">
             <SortIcon
               className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden
             />
             <select
               name="sort"
@@ -145,7 +146,7 @@ export default function BrowsePage({ loaderData }: Route.ComponentProps) {
             type="submit"
             className="press inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground"
           >
-            <SearchIcon className="size-4" weight="bold" aria-hidden />
+            <SearchIcon className="size-4" weight="bold" />
             {t('home.searchAction')}
           </button>
         </Form>

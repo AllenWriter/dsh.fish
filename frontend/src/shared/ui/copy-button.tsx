@@ -47,9 +47,9 @@ export function CopyButton({ text, className }: { text: string; className?: stri
     >
       <IconSwap swapKey={copied ? 'copied' : 'idle'}>
         {copied ? (
-          <ConfirmIcon className="size-3.5 text-primary" weight="bold" aria-hidden />
+          <ConfirmIcon className="size-3.5 text-primary" weight="bold" />
         ) : (
-          <CopyIcon className="size-3.5" weight="bold" aria-hidden />
+          <CopyIcon className="size-3.5" weight="bold" />
         )}
       </IconSwap>
     </button>

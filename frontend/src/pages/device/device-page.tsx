@@ -76,7 +76,7 @@ export default function DevicePage() {
           to={`/sign-in?redirect=${encodeURIComponent(`/device?user_code=${code}`)}`}
           className="press mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
-          <SignInIcon className="size-4" weight="bold" aria-hidden />
+          <SignInIcon className="size-4" weight="bold" />
           {t('nav.signIn')}
         </LocaleLink>
       </Shell>
@@ -85,7 +85,7 @@ export default function DevicePage() {
 
   if (phase === 'approved') {
     return (
-      <Shell icon={<SecureIcon className="size-6 text-primary" weight="fill" aria-hidden />}>
+      <Shell icon={<SecureIcon className="size-6 text-primary" weight="fill" />}>
         <p className="text-lg font-medium">{t('device.approved')}</p>
       </Shell>
     )
@@ -93,7 +93,7 @@ export default function DevicePage() {
 
   if (phase === 'denied') {
     return (
-      <Shell icon={<DenyIcon className="size-6 text-muted-foreground" aria-hidden />}>
+      <Shell icon={<DenyIcon className="size-6 text-muted-foreground" />}>
         <p className="text-lg font-medium">{t('device.denied')}</p>
       </Shell>
     )
@@ -122,7 +122,7 @@ export default function DevicePage() {
   }
 
   return (
-    <Shell icon={<CliIcon className="size-6 text-primary" aria-hidden />}>
+    <Shell icon={<CliIcon className="size-6 text-primary" />}>
       <p className="text-muted-foreground">{t('device.subtitle')}</p>
 
       <div className="mt-8 flex justify-center">
@@ -158,7 +158,7 @@ export default function DevicePage() {
               onClick={() => void decide(false)}
               className="press inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-medium hover:border-border-strong disabled:opacity-50"
             >
-              <DenyIcon className="size-4" weight="bold" aria-hidden />
+              <DenyIcon className="size-4" weight="bold" />
               {t('device.deny')}
             </button>
             <button
@@ -167,7 +167,7 @@ export default function DevicePage() {
               onClick={() => void decide(true)}
               className="press inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
             >
-              <ConfirmIcon className="size-4" weight="bold" aria-hidden />
+              <ConfirmIcon className="size-4" weight="bold" />
               {t('device.approve')}
             </button>
           </div>

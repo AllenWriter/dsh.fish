@@ -37,7 +37,7 @@ export function LocaleLinks({
           >
             <span className="flex-1 truncate">{locale.nativeName}</span>
             {locale.code === active ? (
-              <ConfirmIcon className="size-3.5 shrink-0 text-primary" weight="bold" aria-hidden />
+              <ConfirmIcon className="size-3.5 shrink-0 text-primary" weight="bold" />
             ) : null}
           </a>
         </li>

@@ -85,7 +85,6 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
             <div className="relative flex-1">
               <SearchIcon
                 className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-                aria-hidden
               />
               <input
                 type="search"
@@ -99,7 +98,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               type="submit"
               className="press inline-flex h-12 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground"
             >
-              <SearchIcon className="size-4" weight="bold" aria-hidden />
+              <SearchIcon className="size-4" weight="bold" />
               {t('home.searchAction')}
             </button>
           </Form>
@@ -164,7 +163,7 @@ function Rail({
           className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           {t(linkKey)}
-          <ForwardIcon className="size-3.5" weight="bold" aria-hidden />
+          <ForwardIcon className="size-3.5" weight="bold" />
         </LocaleLink>
       </div>
       {children}

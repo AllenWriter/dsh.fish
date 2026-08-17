@@ -50,7 +50,7 @@ export function ArtifactCard({ artifact, index = 0 }: { artifact: Artifact; inde
               {/* Filled, unlike every other mark on the card: verification is
                   an affirmed state, and it is one of the two places this palette
                   spends its single accent. */}
-              <VerifiedIcon className="size-3.5" weight="fill" aria-hidden />
+              <VerifiedIcon className="size-3.5" weight="fill" />
               {t('artifact.verified')}
             </span>
           ) : null}
@@ -76,13 +76,13 @@ export function ArtifactCard({ artifact, index = 0 }: { artifact: Artifact; inde
           <span className="ml-auto flex shrink-0 items-center gap-3">
             {artifact.stats.stars > 0 ? (
               <Stat
-                icon={<StarsIcon className="size-3.5" aria-hidden />}
+                icon={<StarsIcon className="size-3.5" />}
                 value={artifact.stats.stars}
               />
             ) : null}
             {artifact.stats.downloads > 0 ? (
               <Stat
-                icon={<DownloadsIcon className="size-3.5" aria-hidden />}
+                icon={<DownloadsIcon className="size-3.5" />}
                 value={artifact.stats.downloads}
               />
             ) : null}
@@ -91,7 +91,7 @@ export function ArtifactCard({ artifact, index = 0 }: { artifact: Artifact; inde
 
         {artifact.deprecated ? (
           <span className="mt-3 inline-flex w-fit items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
-            <WarningIcon className="size-3" weight="bold" aria-hidden />
+            <WarningIcon className="size-3" weight="bold" />
             {t('artifact.deprecated')}
           </span>
         ) : null}

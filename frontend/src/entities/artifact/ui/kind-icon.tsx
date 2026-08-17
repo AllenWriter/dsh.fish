@@ -19,5 +19,5 @@ export function KindIcon({
   weight?: IconWeight
 }) {
   const Icon = kindIcon(kind)
-  return <Icon className={className} weight={weight} aria-hidden />
+  return <Icon className={className} weight={weight} />
 }

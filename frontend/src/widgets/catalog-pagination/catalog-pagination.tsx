@@ -51,7 +51,7 @@ export function CatalogPagination({
           aria-label={t('browse.previous')}
           className="press inline-flex h-11 items-center gap-1.5 rounded-lg border border-border px-4 font-medium hover:border-border-strong"
         >
-          <PreviousPageIcon className="size-4" weight="bold" aria-hidden />
+          <PreviousPageIcon className="size-4" weight="bold" />
           <span className="hidden sm:inline">{t('browse.previous')}</span>
         </LocaleLink>
       ) : (
@@ -68,7 +68,7 @@ export function CatalogPagination({
           className="press inline-flex h-11 items-center gap-1.5 rounded-lg border border-border px-4 font-medium hover:border-border-strong"
         >
           <span className="hidden sm:inline">{t('browse.next')}</span>
-          <NextPageIcon className="size-4" weight="bold" aria-hidden />
+          <NextPageIcon className="size-4" weight="bold" />
         </LocaleLink>
       ) : (
         <span />

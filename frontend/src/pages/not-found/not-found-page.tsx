@@ -30,7 +30,7 @@ export default function NotFoundPage() {
         to="/"
         className="press inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
       >
-        <HomeIcon className="size-4" weight="bold" aria-hidden />
+        <HomeIcon className="size-4" weight="bold" />
         {t('notFound.home')}
       </LocaleLink>
     </div>

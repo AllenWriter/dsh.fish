@@ -36,7 +36,7 @@ export function InstallPanel({
           <TabsTrigger value="cli">
             {({ active }) => (
               <>
-                <CliIcon className="size-4" weight={active ? 'fill' : 'bold'} aria-hidden />
+                <CliIcon className="size-4" weight={active ? 'fill' : 'bold'} />
                 {t('install.viaCli')}
               </>
             )}
@@ -44,7 +44,7 @@ export function InstallPanel({
           <TabsTrigger value="plugin">
             {({ active }) => (
               <>
-                <AgentIcon className="size-4" weight={active ? 'fill' : 'bold'} aria-hidden />
+                <AgentIcon className="size-4" weight={active ? 'fill' : 'bold'} />
                 {t('install.viaPlugin')}
               </>
             )}
@@ -80,7 +80,7 @@ export function InstallPanel({
               key={key}
               className="flex gap-2 border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground"
             >
-              <WarningIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+              <WarningIcon className="mt-0.5 size-3.5 shrink-0" />
               <span>{t(key)}</span>
             </li>
           ))}
@@ -90,7 +90,7 @@ export function InstallPanel({
       {credentials.length > 0 ? (
         <div className="mt-5 border-t border-border pt-4">
           <h3 className="flex items-center gap-1.5 text-xs font-medium text-foreground">
-            <CredentialIcon className="size-3.5" weight="bold" aria-hidden />
+            <CredentialIcon className="size-3.5" weight="bold" />
             {t('install.credentials')}
           </h3>
           <ul className="mt-2 flex flex-wrap gap-1.5">

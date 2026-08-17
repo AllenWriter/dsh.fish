@@ -105,7 +105,7 @@ export function CatalogFilters({ facets }: { facets: FacetsDto }) {
           />
           {/* The same seal the badge uses, so the filter names its target in the
               badge's own mark rather than in words alone. */}
-          <VerifiedIcon className="size-4 shrink-0 text-primary" weight="fill" aria-hidden />
+          <VerifiedIcon className="size-4 shrink-0 text-primary" weight="fill" />
           {t('browse.verifiedOnly')}
         </label>
         {/* Preserve the rest of the query when this control submits. */}

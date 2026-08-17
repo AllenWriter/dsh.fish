@@ -30,14 +30,14 @@ export function CatalogGrid({ artifacts }: { artifacts: readonly Artifact[] }) {
             to="/browse"
             className="press inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:border-border-strong"
           >
-            <BrowseIcon className="size-4" weight="bold" aria-hidden />
+            <BrowseIcon className="size-4" weight="bold" />
             {t('browse.clearFilters')}
           </LocaleLink>
           <LocaleLink
             to="/submit"
             className="press inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
           >
-            <SubmitIcon className="size-4" weight="bold" aria-hidden />
+            <SubmitIcon className="size-4" weight="bold" />
             {t('nav.submit')}
           </LocaleLink>
         </div>

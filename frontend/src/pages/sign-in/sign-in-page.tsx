@@ -71,7 +71,7 @@ export default function SignInPage() {
         onClick={() => void authClient.signIn.social({ provider: 'github', callbackURL: redirect })}
         className="press mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-foreground text-sm font-medium text-background"
       >
-        <GithubIcon className="size-4" weight="fill" aria-hidden />
+        <GithubIcon className="size-4" weight="fill" />
         {t('auth.withGithub')}
       </button>
 
@@ -106,7 +106,7 @@ export default function SignInPage() {
 
         {failed ? (
           <p role="alert" className="flex items-center gap-1.5 text-sm text-destructive">
-            <ErrorIcon className="size-4 shrink-0" weight="bold" aria-hidden />
+            <ErrorIcon className="size-4 shrink-0" weight="bold" />
             {t('auth.failed')}
           </p>
         ) : null}
@@ -120,9 +120,9 @@ export default function SignInPage() {
         >
           <IconSwap swapKey={mode}>
             {mode === 'sign-in' ? (
-              <SignInIcon className="size-4" weight="bold" aria-hidden />
+              <SignInIcon className="size-4" weight="bold" />
             ) : (
-              <SignUpIcon className="size-4" weight="bold" aria-hidden />
+              <SignUpIcon className="size-4" weight="bold" />
             )}
           </IconSwap>
           {mode === 'sign-in' ? t('auth.signInTitle') : t('auth.signUp')}
@@ -141,7 +141,7 @@ export default function SignInPage() {
         to="/"
         className="mt-8 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
       >
-        <HomeIcon className="size-3.5" aria-hidden />
+        <HomeIcon className="size-3.5" />
         {t('notFound.home')}
       </LocaleLink>
     </div>

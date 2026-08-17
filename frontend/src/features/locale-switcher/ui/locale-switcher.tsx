@@ -32,7 +32,7 @@ export function LocaleSwitcher({ className }: { className?: string }) {
             className,
           )}
         >
-          <LanguageIcon className="size-4" weight="bold" aria-hidden />
+          <LanguageIcon className="size-4" weight="bold" />
         </button>
       </PopoverTrigger>
 

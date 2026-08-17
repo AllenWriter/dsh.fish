@@ -30,7 +30,7 @@ export function AccountMenu() {
         to="/sign-in"
         className="press inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground"
       >
-        <SignInIcon className="size-4" weight="bold" aria-hidden />
+        <SignInIcon className="size-4" weight="bold" />
         {t('nav.signIn')}
       </LocaleLink>
     )
@@ -68,7 +68,7 @@ export function AccountMenu() {
           onClick={() => setOpen(false)}
           className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm font-medium transition-colors hover:bg-muted"
         >
-          <DashboardIcon className="size-4 text-muted-foreground" weight="bold" aria-hidden />
+          <DashboardIcon className="size-4 text-muted-foreground" weight="bold" />
           {t('nav.dashboard')}
         </LocaleLink>
         <button
@@ -79,7 +79,7 @@ export function AccountMenu() {
           }}
           className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-sm font-medium transition-colors hover:bg-muted"
         >
-          <SignOutIcon className="size-4 text-muted-foreground" weight="bold" aria-hidden />
+          <SignOutIcon className="size-4 text-muted-foreground" weight="bold" />
           {t('nav.signOut')}
         </button>
       </PopoverContent>

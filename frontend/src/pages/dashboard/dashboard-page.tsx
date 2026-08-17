@@ -108,7 +108,7 @@ export default function DashboardPage() {
           to="/sign-in?redirect=%2Fdashboard"
           className="press mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
-          <SignInIcon className="size-4" weight="bold" aria-hidden />
+          <SignInIcon className="size-4" weight="bold" />
           {t('nav.signIn')}
         </LocaleLink>
       </Frame>
@@ -125,7 +125,7 @@ export default function DashboardPage() {
           <p className="mt-4 text-sm text-muted-foreground">{t('common.loading')}</p>
         ) : submissions.length === 0 ? (
           <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-            <SubmitIcon className="size-4 shrink-0" aria-hidden />
+            <SubmitIcon className="size-4 shrink-0" />
             {t('dashboard.noSubmissions')}
           </p>
         ) : (
@@ -156,7 +156,7 @@ function SubmissionStatus({ status }: { status: SubmissionRow['status'] }) {
   const { key, icon: Icon, weight, className } = STATUS[status]
   return (
     <span className={cn('inline-flex shrink-0 items-center gap-1.5 text-xs', className)}>
-      <Icon className="size-4" weight={weight} aria-hidden />
+      <Icon className="size-4" weight={weight} />
       {t(key)}
     </span>
   )

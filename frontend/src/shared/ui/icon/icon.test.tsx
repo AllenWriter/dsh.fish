@@ -76,13 +76,22 @@ describe('IconDefaults', () => {
 })
 
 describe('an icon as markup', () => {
-  it('is silent to assistive technology when a caller marks it decorative', () => {
-    const html = render(<SearchIcon aria-hidden />)
-    expect(html).toContain('aria-hidden="true"')
-    expect(html).not.toContain('<title>')
+  it('is silent to assistive technology without a call site asking', () => {
+    // Every mark here accompanies a label, so announcing the glyph too would
+    // read the same thing twice. Making it the default is what stops the one
+    // call site that forgets from being the one that regresses.
+    for (const [name, Glyph] of SET) {
+      expect(render(<Glyph />), name).toContain('aria-hidden="true"')
+    }
   })
 
   it('carries no title of its own, so a decorative glyph adds no tooltip', () => {
     expect(render(<SearchIcon />)).not.toContain('<title>')
+  })
+
+  it('lets a caller announce a glyph that ever needs it', () => {
+    const html = render(<SearchIcon aria-hidden={false} alt="Search" />)
+    expect(html).toContain('<title>Search</title>')
+    expect(html).toContain('aria-hidden="false"')
   })
 })

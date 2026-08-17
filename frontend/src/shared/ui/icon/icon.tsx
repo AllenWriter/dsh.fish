@@ -34,11 +34,23 @@ export const ICON_WEIGHT = {
  * Phosphor's own default and is restated here because it is the rule the whole
  * system depends on: one glyph, recoloured by CSS for hover, active and
  * disabled, never a second asset per state.
+ *
+ * `aria-hidden` is a default and not a per-call-site duty. Every mark in this
+ * product accompanies a visible label, or an `aria-label` on the control it sits
+ * inside, so announcing the glyph as well would read the same thing twice; making
+ * that the default is what stops the one call site that forgets from being the
+ * one that regresses. A caller that ever does need an announced icon overrides
+ * both `aria-hidden` and `alt`, which Phosphor renders as a `<title>`.
  */
 export function IconDefaults({ children }: { children: ReactNode }) {
   return (
     <IconContext.Provider
-      value={{ size: '1em', weight: ICON_WEIGHT.BODY, color: 'currentColor' }}
+      value={{
+        size: '1em',
+        weight: ICON_WEIGHT.BODY,
+        color: 'currentColor',
+        'aria-hidden': true,
+      }}
     >
       {children}
     </IconContext.Provider>

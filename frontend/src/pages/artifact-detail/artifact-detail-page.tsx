@@ -108,7 +108,7 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
                 to="/"
                 className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
               >
-                <HomeIcon className="size-3.5" aria-hidden />
+                <HomeIcon className="size-3.5" />
                 {t('app.name')}
               </LocaleLink>
             </li>
@@ -136,13 +136,13 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
               title={t('artifact.verifiedTitle')}
               className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
             >
-              <VerifiedIcon className="size-3.5" weight="fill" aria-hidden />
+              <VerifiedIcon className="size-3.5" weight="fill" />
               {t('artifact.verified')}
             </span>
           ) : null}
           {artifact.deprecated ? (
             <span className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive">
-              <WarningIcon className="size-3.5" weight="bold" aria-hidden />
+              <WarningIcon className="size-3.5" weight="bold" />
               {t('artifact.deprecated')}
             </span>
           ) : null}
@@ -181,7 +181,7 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
             <div className="flex items-center gap-1.5">
               <dt className="sr-only">{t('artifact.license')}</dt>
               <dd className="inline-flex items-center gap-1.5">
-                <LicenseIcon className="size-3.5" aria-hidden />
+                <LicenseIcon className="size-3.5" />
                 {artifact.license}
               </dd>
             </div>
@@ -189,7 +189,7 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
           <div className="flex items-center gap-1.5">
             <dt className="sr-only">{t('artifact.updated')}</dt>
             <dd className="inline-flex items-center gap-1.5">
-              <UpdatedIcon className="size-3.5" aria-hidden />
+              <UpdatedIcon className="size-3.5" />
               {t('artifact.updated')}{' '}
               {/* A machine-readable date beside the human one: "3 days ago" is
                   unparseable, and freshness is a real ranking input here. */}
@@ -273,7 +273,7 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
             className="press flex items-center justify-between rounded-xl border border-border bg-card px-5 py-4 text-sm font-medium hover:border-border-strong"
           >
             {t('artifact.source')}
-            <ExternalLinkIcon className="size-4 text-muted-foreground" weight="bold" aria-hidden />
+            <ExternalLinkIcon className="size-4 text-muted-foreground" weight="bold" />
           </a>
         </div>
       </div>
@@ -292,7 +292,7 @@ function Metric({ icon: Icon, label, value }: { icon: Icon; label: string; value
     <div className="flex items-center gap-1.5">
       <dt className="sr-only">{label}</dt>
       <dd className="inline-flex items-center gap-1.5">
-        <Icon className="size-3.5" aria-hidden />
+        <Icon className="size-3.5" />
         <span className="font-medium tabular-nums text-foreground">
           <AnimatedNumber value={value} />
         </span>{' '}

@@ -228,7 +228,7 @@ export function CommandPalette({
           )}
         >
           <div className="flex items-center gap-3 border-b border-border px-4">
-            <SearchIcon className="size-4 shrink-0 text-muted-foreground" weight="bold" aria-hidden />
+            <SearchIcon className="size-4 shrink-0 text-muted-foreground" weight="bold" />
             <input
               ref={inputRef}
               value={query}
@@ -301,11 +301,7 @@ export function CommandPalette({
                           />
                         ) : null}
                         {Icon ? (
-                          <Icon
-                            className="relative z-10 size-4 shrink-0"
-                            weight={isActive ? 'fill' : 'bold'}
-                            aria-hidden
-                          />
+                          <Icon className="relative z-10 size-4 shrink-0" weight={isActive ? 'fill' : 'bold'} />
                         ) : hasIcons ? (
                           <span className="relative z-10 size-4 shrink-0" />
                         ) : null}
