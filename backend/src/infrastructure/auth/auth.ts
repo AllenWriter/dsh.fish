@@ -53,13 +53,14 @@ export function createAuth(env?: HubEnv, cf?: IncomingRequestCfProperties, baseU
                 },
               }
             : {},
-        user: {
-          additionalFields: {
-            // Cached from the GitHub OAuth profile so ownership checks on a
-            // submission do not need a live API call on every request.
-            githubLogin: { type: 'string', required: false, input: false },
-          },
-        },
+        // No `user.additionalFields` for the GitHub identity on purpose. A
+        // field declared `input: false` is dropped from an OAuth profile before
+        // it is written — `parseAdditionalUserInputFromProviderProfile` skips
+        // exactly those fields — so it would always be null; declaring it
+        // writable instead would let any signed-in account set its own GitHub
+        // identity through `update-user`, which is the one thing the ownership
+        // check must not accept. The link Better Auth already records in
+        // `accounts` is read directly instead — see `LinkedIdentityReader`.
         plugins: [
           // The CLI half of the hub. A harness on a developer machine cannot
           // receive an OAuth redirect, so it asks for a short user code, the

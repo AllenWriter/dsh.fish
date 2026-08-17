@@ -98,10 +98,19 @@ blocks it from submitting or claiming artifacts.
 
 A cron trigger sweeps the GitHub `dsh-plugin` topic and npm every six hours, so
 the registry is populated without anyone submitting anything. A signed-in user
-may also submit a source; if their linked GitHub login owns the repository, the
-row is published immediately, because the row is built by the same indexer a
-crawl uses — waiting for review of one's own package would be friction with no
-safety benefit. Everything else queues.
+may also submit a source; if the GitHub account they signed in with owns the
+repository, the row is published immediately, because the row is built by the
+same indexer a crawl uses — waiting for review of one's own package would be
+friction with no safety benefit. Everything else queues.
+
+Ownership is decided by comparing GitHub's numeric ids — the repository's, from
+the API, against the submitter's, from the OAuth link Better Auth recorded in
+`accounts`. Not logins: GitHub lets an account rename itself and lets the freed
+name be taken by someone else, and a login copied into this hub's tables would
+eventually name the wrong person while still carrying publish-without-review
+rights. The id is read at submission time rather than cached on the user, so
+there is no copy to go stale, and no field on the user that a signed-in account
+could set for itself through Better Auth's `update-user` endpoint.
 
 ### 8. A row's category is inferred, never demanded
 

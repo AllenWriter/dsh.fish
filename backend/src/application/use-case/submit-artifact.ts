@@ -8,7 +8,8 @@ import { Submission } from '../../domain/submission/submission.js'
 import type { SubmissionRepository } from '../../domain/submission/submission.js'
 import { DomainError } from '../../domain/shared/error.js'
 import { slug } from '../../domain/shared/slug.js'
-import type { IdGenerator, SourceIndexer } from '../port/source-indexer.js'
+import type { LinkedIdentityReader } from '../port/linked-identity.js'
+import type { IdGenerator, IndexedSnapshot, SourceIndexer } from '../port/source-indexer.js'
 import { toArtifact } from './ingest-catalog.js'
 
 export interface SubmitArtifactInput {
@@ -38,6 +39,7 @@ export class SubmitArtifact {
     private readonly artifacts: ArtifactRepository,
     private readonly indexers: readonly SourceIndexer[],
     private readonly ids: IdGenerator,
+    private readonly identities: LinkedIdentityReader,
   ) {}
 
   async execute(actor: Actor | undefined, input: SubmitArtifactInput): Promise<SubmitArtifactResult> {
@@ -88,7 +90,8 @@ export class SubmitArtifact {
       })
     }
 
-    if (ownsSource(session, source)) {
+    const submitterGitHubId = await this.identities.githubUserId(session.account.id)
+    if (ownsSource(submitterGitHubId, snapshot)) {
       const artifact = existing
         ? existing
             .refreshedWith({
@@ -116,15 +119,24 @@ export class SubmitArtifact {
 /**
  * Ownership proof for the auto-approve path.
  *
- * A GitHub source whose owner matches the signed-in account's linked GitHub
- * login is proof enough: Better Auth verified that identity through OAuth. An
- * npm package has no equivalent link, so it always goes to review.
+ * A GitHub source whose owner is the same GitHub account the submitter signed
+ * in with is proof enough: Better Auth verified that identity through OAuth,
+ * and both halves of this comparison are the provider's own numeric id — the
+ * repository's from the API, the submitter's from the OAuth link. Logins are
+ * deliberately not compared: GitHub lets an account rename itself and lets the
+ * freed name be claimed by someone else, which would hand that someone a
+ * publish-without-review path over the original owner's repositories.
+ *
+ * An organisation's repositories are owned by the organisation, whose id is
+ * nobody's user id, so they queue for review like npm packages do.
  */
-function ownsSource(session: Actor, source: SourceRef): boolean {
-  if (source.origin !== 'github') return false
-  const login = session.account.githubLogin
-  if (login === undefined) return false
-  return login.toLowerCase() === source.owner.toLowerCase()
+export function ownsSource(
+  submitterGitHubId: string | undefined,
+  snapshot: Pick<IndexedSnapshot, 'source' | 'sourceOwnerId'>,
+): boolean {
+  if (snapshot.source.origin !== 'github') return false
+  if (submitterGitHubId === undefined || snapshot.sourceOwnerId === undefined) return false
+  return submitterGitHubId === snapshot.sourceOwnerId
 }
 
 export function parseSourceSpec(raw: string): SourceRef {

@@ -31,7 +31,7 @@ const PRESET_FILE = 'agent.cordis.yml'
 interface RepoSearchItem {
   full_name: string
   name: string
-  owner: { login: string; html_url: string; avatar_url: string }
+  owner: { id: number; login: string; html_url: string; avatar_url: string }
   description: string | null
   stargazers_count: number
   license: { spdx_id: string } | null
@@ -131,6 +131,9 @@ export class GitHubIndexer implements SourceIndexer {
     const base = {
       keywords: topics,
       author: { name: repo.owner.login, url: repo.owner.html_url },
+      // The numeric id, not the login: it is what an OAuth link records, and it
+      // survives the owner renaming themselves.
+      sourceOwnerId: String(repo.owner.id),
       stats: { stars: repo.stargazers_count, downloads: 0 },
       deprecated: repo.archived,
       ...(repo.license?.spdx_id ? { license: repo.license.spdx_id } : {}),

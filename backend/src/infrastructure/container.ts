@@ -17,6 +17,7 @@ import { GitHubIndexer } from './ingestion/github-indexer.js'
 import { NpmIndexer } from './ingestion/npm-indexer.js'
 import { KvSweepCursor, sweepCursorKey } from './ingestion/sweep-cursor.js'
 import { D1ArtifactRepository } from './persistence/d1-artifact-repository.js'
+import { D1LinkedIdentityReader } from './persistence/d1-linked-identity.js'
 import { D1SubmissionRepository } from './persistence/d1-submission-repository.js'
 import * as schema from './persistence/schema.js'
 
@@ -50,6 +51,7 @@ export function createContainer(env: HubEnv, cf?: IncomingRequestCfProperties): 
 
   const artifacts = new D1ArtifactRepository(db)
   const submissions = new D1SubmissionRepository(db)
+  const identities = new D1LinkedIdentityReader(db)
   const indexers: readonly SourceIndexer[] = [
     new GitHubIndexer(config.githubToken, new KvSweepCursor(env.KV, sweepCursorKey('github'))),
     new NpmIndexer(),
@@ -65,7 +67,7 @@ export function createContainer(env: HubEnv, cf?: IncomingRequestCfProperties): 
       getArtifactDetail: new GetArtifactDetail(artifacts),
       listCatalogFacets: new ListCatalogFacets(artifacts),
       resolveInstallPlan: new ResolveInstallPlan(artifacts),
-      submitArtifact: new SubmitArtifact(submissions, artifacts, indexers, ids),
+      submitArtifact: new SubmitArtifact(submissions, artifacts, indexers, ids, identities),
       ingestCatalog: new IngestCatalog(artifacts, indexers),
     },
   }
