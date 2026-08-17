@@ -10,6 +10,7 @@
   "nav.signOut": "Abmelden",
   "nav.search": "Plugins suchen",
   "nav.searchHint": "⌘K drücken",
+  "nav.searchAll": "Katalog nach „{query}“ durchsuchen",
   "nav.language": "Sprache",
   "nav.menu": "Menü",
   "nav.harness": "DeepSeek Harness",

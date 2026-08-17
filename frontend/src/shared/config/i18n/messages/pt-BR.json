@@ -10,6 +10,7 @@
   "nav.signOut": "Sair",
   "nav.search": "Buscar plugins",
   "nav.searchHint": "Pressione ⌘K",
+  "nav.searchAll": "Buscar “{query}” no catálogo",
   "nav.language": "Idioma",
   "nav.menu": "Menu",
   "nav.harness": "DeepSeek Harness",

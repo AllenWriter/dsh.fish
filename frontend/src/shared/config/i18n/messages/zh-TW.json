@@ -10,6 +10,7 @@
   "nav.signOut": "登出",
   "nav.search": "搜尋外掛",
   "nav.searchHint": "按 ⌘K",
+  "nav.searchAll": "在目錄中搜尋「{query}」",
   "nav.language": "語言",
   "nav.menu": "選單",
   "nav.harness": "DeepSeek Harness",

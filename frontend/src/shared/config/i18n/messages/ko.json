@@ -10,6 +10,7 @@
   "nav.signOut": "로그아웃",
   "nav.search": "플러그인 검색",
   "nav.searchHint": "⌘K 누르기",
+  "nav.searchAll": "카탈로그에서 “{query}” 검색",
   "nav.language": "언어",
   "nav.menu": "메뉴",
   "nav.harness": "DeepSeek Harness",

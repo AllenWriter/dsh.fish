@@ -10,6 +10,7 @@
   "nav.signOut": "Выйти",
   "nav.search": "Искать плагины",
   "nav.searchHint": "Нажмите ⌘K",
+  "nav.searchAll": "Искать «{query}» в каталоге",
   "nav.language": "Язык",
   "nav.menu": "Меню",
   "nav.harness": "DeepSeek Harness",

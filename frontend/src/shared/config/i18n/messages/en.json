@@ -10,6 +10,7 @@
   "nav.signOut": "Sign out",
   "nav.search": "Search plugins",
   "nav.searchHint": "Press ⌘K",
+  "nav.searchAll": "Search the catalog for “{query}”",
   "nav.language": "Language",
   "nav.menu": "Menu",
   "nav.harness": "DeepSeek Harness",

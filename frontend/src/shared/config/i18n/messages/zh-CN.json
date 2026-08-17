@@ -10,6 +10,7 @@
   "nav.signOut": "退出登录",
   "nav.search": "搜索插件",
   "nav.searchHint": "按 ⌘K",
+  "nav.searchAll": "在目录中搜索“{query}”",
   "nav.language": "语言",
   "nav.menu": "菜单",
   "nav.harness": "DeepSeek Harness",

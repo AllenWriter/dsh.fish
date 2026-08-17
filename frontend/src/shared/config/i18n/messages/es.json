@@ -10,6 +10,7 @@
   "nav.signOut": "Cerrar sesión",
   "nav.search": "Buscar plugins",
   "nav.searchHint": "Pulsa ⌘K",
+  "nav.searchAll": "Buscar “{query}” en el catálogo",
   "nav.language": "Idioma",
   "nav.menu": "Menú",
   "nav.harness": "DeepSeek Harness",
