@@ -104,6 +104,7 @@ export const zhCN: Catalog = {
   'artifact.stars': '星标',
   'artifact.downloads': '周下载量',
   'artifact.source': '来源',
+  'artifact.author': '作者',
   'artifact.license': '许可证',
   'artifact.updated': '更新于',
   'artifact.readme': '说明文档',

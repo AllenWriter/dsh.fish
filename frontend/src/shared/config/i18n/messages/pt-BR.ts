@@ -110,6 +110,7 @@ export const ptBR: Catalog = {
   'artifact.stars': 'estrelas',
   'artifact.downloads': 'downloads semanais',
   'artifact.source': 'Fonte',
+  'artifact.author': 'Autor',
   'artifact.license': 'Licença',
   'artifact.updated': 'Atualizado',
   'artifact.readme': 'Readme',

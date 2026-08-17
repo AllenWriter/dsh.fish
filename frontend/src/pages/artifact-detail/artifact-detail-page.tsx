@@ -2,6 +2,7 @@ import { data } from 'react-router'
 import type { Route } from './+types/artifact-detail-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { InstallPanel } from '@/widgets/install-panel/install-panel'
+import { AuthorCard } from '@/entities/artifact/ui/author-card'
 import { KindChip } from '@/entities/artifact/ui/kind-chip'
 import { KindIcon } from '@/entities/artifact/ui/kind-icon'
 import { CategoryIcon } from '@/entities/artifact/ui/category-icon'
@@ -129,114 +130,120 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
           </ol>
         </nav>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <KindChip kind={artifact.kind} />
-          {artifact.verified ? (
-            <span
-              title={t('artifact.verifiedTitle')}
-              className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
-            >
-              <VerifiedIcon className="size-3.5" weight="fill" />
-              {t('artifact.verified')}
-            </span>
-          ) : null}
-          {artifact.deprecated ? (
-            <span className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive">
-              <WarningIcon className="size-3.5" weight="bold" />
-              {t('artifact.deprecated')}
-            </span>
-          ) : null}
-        </div>
-
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight">{artifact.displayName}</h1>
-        <p className="mt-2 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          {artifact.summary}
-        </p>
-
-        <dl className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-          {artifact.author ? (
-            <div className="flex items-center gap-1.5">
-              <dt className="sr-only">{t('artifact.source')}</dt>
-              <dd className="font-medium text-foreground">{artifact.author.name}</dd>
+        <div
+          className={
+            artifact.author
+              ? 'mt-4 grid min-w-0 gap-8 lg:grid-cols-[1fr_22rem]'
+              : 'mt-4'
+          }
+        >
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <KindChip kind={artifact.kind} />
+              {artifact.verified ? (
+                <span
+                  title={t('artifact.verifiedTitle')}
+                  className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
+                >
+                  <VerifiedIcon className="size-3.5" weight="fill" />
+                  {t('artifact.verified')}
+                </span>
+              ) : null}
+              {artifact.deprecated ? (
+                <span className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive">
+                  <WarningIcon className="size-3.5" weight="bold" />
+                  {t('artifact.deprecated')}
+                </span>
+              ) : null}
             </div>
-          ) : null}
-          {artifact.stats.installs > 0 ? (
-            <Metric
-              icon={InstallsIcon}
-              label={t('artifact.installs')}
-              value={artifact.stats.installs}
-            />
-          ) : null}
-          {artifact.stats.stars > 0 ? (
-            <Metric icon={StarsIcon} label={t('artifact.stars')} value={artifact.stats.stars} />
-          ) : null}
-          {artifact.stats.downloads > 0 ? (
-            <Metric
-              icon={DownloadsIcon}
-              label={t('artifact.downloads')}
-              value={artifact.stats.downloads}
-            />
-          ) : null}
-          {artifact.license ? (
-            <div className="flex items-center gap-1.5">
-              <dt className="sr-only">{t('artifact.license')}</dt>
-              <dd className="inline-flex items-center gap-1.5">
-                <LicenseIcon className="size-3.5" />
-                {artifact.license}
-              </dd>
-            </div>
-          ) : null}
-          <div className="flex items-center gap-1.5">
-            <dt className="sr-only">{t('artifact.updated')}</dt>
-            <dd className="inline-flex items-center gap-1.5">
-              <UpdatedIcon className="size-3.5" />
-              {t('artifact.updated')}{' '}
-              {/* A machine-readable date beside the human one: "3 days ago" is
-                  unparseable, and freshness is a real ranking input here. */}
-              <time dateTime={artifact.updatedAt}>
-                {relativeTime(artifact.updatedAt, now, locale)}
-              </time>
-            </dd>
+
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight">{artifact.displayName}</h1>
+            <p className="mt-2 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+              {artifact.summary}
+            </p>
+
+            <dl className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+              {artifact.stats.installs > 0 ? (
+                <Metric
+                  icon={InstallsIcon}
+                  label={t('artifact.installs')}
+                  value={artifact.stats.installs}
+                />
+              ) : null}
+              {artifact.stats.stars > 0 ? (
+                <Metric icon={StarsIcon} label={t('artifact.stars')} value={artifact.stats.stars} />
+              ) : null}
+              {artifact.stats.downloads > 0 ? (
+                <Metric
+                  icon={DownloadsIcon}
+                  label={t('artifact.downloads')}
+                  value={artifact.stats.downloads}
+                />
+              ) : null}
+              {artifact.license ? (
+                <div className="flex items-center gap-1.5">
+                  <dt className="sr-only">{t('artifact.license')}</dt>
+                  <dd className="inline-flex items-center gap-1.5">
+                    <LicenseIcon className="size-3.5" />
+                    {artifact.license}
+                  </dd>
+                </div>
+              ) : null}
+              <div className="flex items-center gap-1.5">
+                <dt className="sr-only">{t('artifact.updated')}</dt>
+                <dd className="inline-flex items-center gap-1.5">
+                  <UpdatedIcon className="size-3.5" />
+                  {t('artifact.updated')}{' '}
+                  {/* A machine-readable date beside the human one: "3 days ago" is
+                      unparseable, and freshness is a real ranking input here. */}
+                  <time dateTime={artifact.updatedAt}>
+                    {relativeTime(artifact.updatedAt, now, locale)}
+                  </time>
+                </dd>
+              </div>
+            </dl>
+
+            {artifact.categories.length > 0 ? (
+              <>
+                <h2 className="sr-only">{t('artifact.categories')}</h2>
+                <ul className="mt-4 flex flex-wrap gap-1.5">
+                  {artifact.categories.map((category) => (
+                    <li key={category}>
+                      <LocaleLink
+                        to={`/category/${category}`}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+                      >
+                        <CategoryIcon id={category} className="size-3.5" />
+                        {t(`category.${category}`)}
+                      </LocaleLink>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+
+            {artifact.keywords.length > 0 ? (
+              <>
+                <h2 className="sr-only">{t('artifact.keywords')}</h2>
+                <ul className="mt-2 flex flex-wrap gap-1.5">
+                  {artifact.keywords.slice(0, 12).map((keyword) => (
+                    <li key={keyword}>
+                      <LocaleLink
+                        to={`/browse?q=${encodeURIComponent(keyword)}`}
+                        rel="nofollow"
+                        className="inline-flex rounded-full border border-dashed border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+                      >
+                        {keyword}
+                      </LocaleLink>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
           </div>
-        </dl>
 
-        {artifact.categories.length > 0 ? (
-          <>
-            <h2 className="sr-only">{t('artifact.categories')}</h2>
-            <ul className="mt-4 flex flex-wrap gap-1.5">
-              {artifact.categories.map((category) => (
-                <li key={category}>
-                  <LocaleLink
-                    to={`/category/${category}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
-                  >
-                    <CategoryIcon id={category} className="size-3.5" />
-                    {t(`category.${category}`)}
-                  </LocaleLink>
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : null}
-
-        {artifact.keywords.length > 0 ? (
-          <>
-            <h2 className="sr-only">{t('artifact.keywords')}</h2>
-            <ul className="mt-2 flex flex-wrap gap-1.5">
-              {artifact.keywords.slice(0, 12).map((keyword) => (
-                <li key={keyword}>
-                  <LocaleLink
-                    to={`/browse?q=${encodeURIComponent(keyword)}`}
-                    rel="nofollow"
-                    className="inline-flex rounded-full border border-dashed border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
-                  >
-                    {keyword}
-                  </LocaleLink>
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : null}
+          {artifact.author ? <AuthorCard author={artifact.author} /> : null}
+        </div>
       </header>
 
       {/* `min-w-0` is what lets a wide table or fence scroll inside the

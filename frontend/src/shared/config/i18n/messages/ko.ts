@@ -109,6 +109,7 @@ export const ko: Catalog = {
   'artifact.stars': '스타',
   'artifact.downloads': '주간 다운로드',
   'artifact.source': '소스',
+  'artifact.author': '작성자',
   'artifact.license': '라이선스',
   'artifact.updated': '업데이트',
   'artifact.readme': 'Readme',

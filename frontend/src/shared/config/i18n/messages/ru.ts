@@ -110,6 +110,7 @@ export const ru: Catalog = {
   'artifact.stars': 'звёзд',
   'artifact.downloads': 'загрузок в неделю',
   'artifact.source': 'Источник',
+  'artifact.author': 'Автор',
   'artifact.license': 'Лицензия',
   'artifact.updated': 'Обновлено',
   'artifact.readme': 'Readme',

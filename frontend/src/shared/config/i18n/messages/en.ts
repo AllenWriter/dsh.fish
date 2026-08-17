@@ -118,6 +118,7 @@ export const en = {
   'artifact.stars': 'stars',
   'artifact.downloads': 'weekly downloads',
   'artifact.source': 'Source',
+  'artifact.author': 'Author',
   'artifact.license': 'License',
   'artifact.updated': 'Updated',
   'artifact.readme': 'Readme',

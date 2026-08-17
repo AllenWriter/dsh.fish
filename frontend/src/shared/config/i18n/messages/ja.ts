@@ -109,6 +109,7 @@ export const ja: Catalog = {
   'artifact.stars': 'スター',
   'artifact.downloads': '週間ダウンロード',
   'artifact.source': 'ソース',
+  'artifact.author': '作者',
   'artifact.license': 'ライセンス',
   'artifact.updated': '更新',
   'artifact.readme': 'Readme',

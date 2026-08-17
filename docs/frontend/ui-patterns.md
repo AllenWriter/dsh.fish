@@ -213,6 +213,15 @@ A GitHub Social preview is a texture behind the card, not a second title.
 - Hover may shift opacity only, only under `@media (hover: hover) and (pointer: fine)`, and not under `prefers-reduced-motion`.
 - Animate `opacity` only. Do not animate `blur` or `transform` on hover.
 
+## Author portraits
+
+The plugin-page author card uses beui's `Avatar`, not a second image primitive.
+
+- Construct the portrait from a GitHub *profile* URL as `https://github.com/{login}.png`. Do not store an arbitrary image URL on the author — that is the same tracker risk Social previews already refuse.
+- A URL that is not a single-segment GitHub profile has no portrait. Initials inside the Avatar slot are what the primitive does when `src` is absent, not a second asset.
+- Mark the image decorative: the name next to it is the accessible identity. `Avatar` already sets empty `alt` and `aria-hidden`.
+- The author name belongs in this card. Do not also list it in the metrics row.
+
 ## Animated counts
 
 User-facing counts (stars, downloads, the home total) go through

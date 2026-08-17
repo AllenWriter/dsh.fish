@@ -104,6 +104,7 @@ export const zhTW: Catalog = {
   'artifact.stars': '星號',
   'artifact.downloads': '每週下載量',
   'artifact.source': '來源',
+  'artifact.author': '作者',
   'artifact.license': '授權條款',
   'artifact.updated': '更新於',
   'artifact.readme': '說明文件',

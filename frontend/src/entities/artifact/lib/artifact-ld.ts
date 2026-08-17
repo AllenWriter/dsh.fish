@@ -1,3 +1,4 @@
+import { githubAvatarUrl } from './github-avatar'
 import { localeDefinition, translate, type Locale } from '@/shared/config/i18n'
 import { SCHEMA, absoluteUrl, clampDescription, interactionLd, type Ld } from '@/shared/lib/seo'
 import { kindLabelKey } from '../model/types'
@@ -39,6 +40,8 @@ export function artifactLd(
     ...(artifact.stats.stars > 0 ? [interactionLd('LikeAction', artifact.stats.stars)] : []),
   ]
 
+  const portrait = githubAvatarUrl(artifact.author?.url)
+
   return {
     '@context': SCHEMA,
     '@type': 'SoftwareApplication',
@@ -66,6 +69,7 @@ export function artifactLd(
             '@type': 'Person',
             name: artifact.author.name,
             ...(artifact.author.url === undefined ? {} : { url: artifact.author.url }),
+            ...(portrait === undefined ? {} : { image: portrait }),
           },
         }),
     ...(command === undefined ? {} : { softwareHelp: command }),

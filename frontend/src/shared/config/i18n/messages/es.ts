@@ -110,6 +110,7 @@ export const es: Catalog = {
   'artifact.stars': 'estrellas',
   'artifact.downloads': 'descargas semanales',
   'artifact.source': 'Fuente',
+  'artifact.author': 'Autor',
   'artifact.license': 'Licencia',
   'artifact.updated': 'Actualizado',
   'artifact.readme': 'Readme',
