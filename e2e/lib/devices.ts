@@ -29,7 +29,8 @@ export function mobileProjects(): Project[] {
     }
     return {
       name,
-      testIgnore: /catalog-og\//,
+      // The other suites declare their own viewport, and each needs exactly one.
+      testIgnore: /(catalog-og|icons)\//,
       use: { ...device, defaultBrowserType: 'chromium' },
     }
   })
