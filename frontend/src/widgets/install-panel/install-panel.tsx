@@ -1,7 +1,6 @@
-import { useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
-import { AlertTriangle, Check, Copy } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/motion/tabs'
+import { CopyButton } from '@/shared/ui/copy-button'
 import type { ArtifactDetail, InstallPlanDto } from '@/entities/artifact/model/types'
 import { t } from '@/shared/config/messages'
 import { cn } from '@/shared/lib/utils'
@@ -105,7 +104,6 @@ export function InstallPanel({
  * comment into a shell does nothing and would be a small lie.
  */
 function CopyBlock({ text, muted = false }: { text: string; muted?: boolean }) {
-  const [copied, setCopied] = useState(false)
   const isComment = text.trimStart().startsWith('#')
 
   return (
@@ -117,35 +115,10 @@ function CopyBlock({ text, muted = false }: { text: string; muted?: boolean }) {
     >
       <pre className="overflow-x-auto whitespace-pre [scrollbar-width:thin]">{text}</pre>
       {isComment ? null : (
-        <button
-          type="button"
-          aria-label={t('install.copy')}
-          onClick={() => {
-            void navigator.clipboard.writeText(text).then(() => {
-              setCopied(true)
-              setTimeout(() => setCopied(false), 1600)
-            })
-          }}
-          className="press hit-area absolute right-2 top-2 grid size-7 place-items-center rounded-md border border-border bg-card opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
-        >
-          {/* initial={false} so the icon does not animate in on first paint. */}
-          <AnimatePresence initial={false} mode="wait">
-            <motion.span
-              key={copied ? 'copied' : 'idle'}
-              initial={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
-              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
-              transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
-              className="grid place-items-center"
-            >
-              {copied ? (
-                <Check className="size-3.5 text-primary" aria-hidden />
-              ) : (
-                <Copy className="size-3.5" aria-hidden />
-              )}
-            </motion.span>
-          </AnimatePresence>
-        </button>
+        <CopyButton
+          text={text}
+          className="absolute right-2 top-2 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+        />
       )}
     </div>
   )

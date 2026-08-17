@@ -4,6 +4,7 @@ import type { Route } from './+types/artifact-detail-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { InstallPanel } from '@/widgets/install-panel/install-panel'
 import { KindChip } from '@/entities/artifact/ui/kind-chip'
+import { Markdown } from '@/shared/ui/markdown'
 import { t } from '@/shared/config/messages'
 import { compactNumber, relativeTime } from '@/shared/lib/format'
 
@@ -128,12 +129,16 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
             {t('artifact.readme')}
           </h2>
           {artifact.readmeMarkdown ? (
-            // Rendered as source rather than HTML on purpose: the readme is
-            // third-party text pulled from a crawl, and turning it into markup
-            // would make the catalog an injection vector for every indexed repo.
-            <pre className="mt-4 overflow-x-auto whitespace-pre-wrap rounded-xl border border-border bg-card p-5 font-mono text-[13px] leading-relaxed">
-              {artifact.readmeMarkdown}
-            </pre>
+            // The bases are what a relative path inside the readme resolves
+            // against — the readme was written against its own repository, not
+            // against this page. See `Markdown` for why rendering a crawled
+            // readme is safe.
+            <Markdown
+              source={artifact.readmeMarkdown}
+              docBase={artifact.sourceDocBase}
+              assetBase={artifact.sourceAssetBase}
+              className="mt-5"
+            />
           ) : (
             <p className="mt-4 text-sm text-muted-foreground">{t('artifact.noReadme')}</p>
           )}

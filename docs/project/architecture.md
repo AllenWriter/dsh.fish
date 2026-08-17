@@ -191,6 +191,25 @@ chip already says "MCP server" in words, which is unambiguous, translatable and
 readable without colour vision. Colour is reserved for the primary action and
 the verified badge.
 
+### Readmes are third-party content, rendered structurally
+
+A plugin's readme is a crawl of somebody else's repository, so
+`frontend/src/shared/ui/markdown.tsx` renders it without ever handing markup to
+the DOM: `react-markdown` builds React elements from an AST, `skipHtml` drops
+raw HTML rather than passing it through, every URL goes through
+`defaultUrlTransform`'s protocol allowlist, and only the tags mapped in that
+file can be produced. There is no `dangerouslySetInnerHTML` and no sanitiser
+pass to keep ahead of attackers. `markdown.test.tsx` asserts these properties
+against the emitted markup, so a refactor that re-enables raw HTML fails there.
+
+A readme's *relative* paths were written against its own repository, not against
+this site. `sourceDocBase` and `sourceAssetBase` in
+`backend/src/domain/artifact/source-ref.ts` say what such a path resolves to —
+a browsable page for a document, raw bytes for an image — and reach the page
+through `ArtifactDetailDto`. Both are absent for npm and submission sources,
+where no root is knowable; a relative path then renders as text rather than as a
+confident 404.
+
 ### No hardcoded copy
 
 `frontend/src/shared/config/messages.ts` holds every user-facing string. The

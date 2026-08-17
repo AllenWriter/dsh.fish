@@ -2,7 +2,7 @@ import type { Artifact } from '../../domain/artifact/artifact.js'
 import type { ArtifactKind } from '../../domain/artifact/artifact-kind.js'
 import type { ArtifactPayload } from '../../domain/artifact/artifact-payload.js'
 import type { InstallPlan } from '../../domain/artifact/install-plan.js'
-import { sourceUrl } from '../../domain/artifact/source-ref.js'
+import { sourceAssetBase, sourceDocBase, sourceUrl } from '../../domain/artifact/source-ref.js'
 import type { Page } from '../../domain/shared/pagination.js'
 
 /**
@@ -29,6 +29,10 @@ export interface ArtifactSummaryDto {
 export interface ArtifactDetailDto extends ArtifactSummaryDto {
   readonly payload: ArtifactPayload
   readonly readmeMarkdown?: string
+  /** What a relative link in `readmeMarkdown` points at. Absent when unknowable. */
+  readonly sourceDocBase?: string
+  /** What a relative image in `readmeMarkdown` points at. Absent when unknowable. */
+  readonly sourceAssetBase?: string
   readonly publishedAt: string
 }
 
@@ -68,12 +72,17 @@ export function toSummaryDto(artifact: Artifact): ArtifactSummaryDto {
 }
 
 export function toDetailDto(artifact: Artifact): ArtifactDetailDto {
+  const docBase = sourceDocBase(artifact.source)
+  const assetBase = sourceAssetBase(artifact.source)
+
   return {
     ...toSummaryDto(artifact),
     payload: artifact.payload,
     ...(artifact.readmeMarkdown === undefined
       ? {}
       : { readmeMarkdown: artifact.readmeMarkdown }),
+    ...(docBase === undefined ? {} : { sourceDocBase: docBase }),
+    ...(assetBase === undefined ? {} : { sourceAssetBase: assetBase }),
     publishedAt: artifact.publishedAt.toISOString(),
   }
 }
