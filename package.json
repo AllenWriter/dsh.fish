@@ -2,7 +2,21 @@
   "name": "dsh-fish",
   "version": "0.1.0",
   "private": true,
-  "description": "Plugin hub for DeepSeek Harness: discovery, distribution and one-command install for every dsh artifact type.",
+  "description": "Discover and install DeepSeek Harness plugins, skills, MCP servers, agent presets, bundles, and profiles.",
+  "keywords": [
+    "deepseek",
+    "deepseek-harness",
+    "plugin-registry",
+    "mcp",
+    "model-context-protocol",
+    "ai-agents"
+  ],
+  "homepage": "https://dsh.fish",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stvlynn/dsh.fish.git"
+  },
+  "license": "MIT",
   "scripts": {
     "check": "pnpm -r --parallel run typecheck && pnpm run lint && pnpm run test",
     "typecheck": "pnpm -r --parallel run typecheck && tsc -p e2e/tsconfig.json",

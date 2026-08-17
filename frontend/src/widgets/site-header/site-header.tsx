@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Fish, Menu, Moon, Search, Sun, X } from 'lucide-react'
+import { Menu, Moon, Search, Sun, X } from 'lucide-react'
 import { EASE_OUT } from '@/shared/lib/ease'
 import { CommandPalette } from '@/shared/ui/motion/command-palette'
 import { LocaleLink, LocaleNavLink, useLocalePath } from '@/shared/ui/locale-link'
@@ -48,7 +48,14 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-6">
         <LocaleLink to="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
-          <Fish className="size-5 text-primary" aria-hidden />
+          <img
+            src="/icons/whale-brand.png"
+            alt=""
+            width="24"
+            height="24"
+            className="size-6 object-contain"
+            aria-hidden
+          />
           {t('app.name')}
         </LocaleLink>
 

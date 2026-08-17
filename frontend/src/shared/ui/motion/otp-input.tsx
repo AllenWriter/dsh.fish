@@ -277,29 +277,16 @@ export function OTPInput({
               transition={
                 reduce ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 28 }
               }
-              className="pointer-events-none absolute -right-7 top-1/2 -translate-y-1/2 text-emerald-500"
+              className="pointer-events-none absolute -right-8 top-1/2 -translate-y-1/2"
               aria-hidden
             >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={3}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <title>Verified</title>
-                <motion.path
-                  d="M5 13l4 4L19 7"
-                  initial={reduce ? { pathLength: 1 } : { pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={
-                    reduce ? { duration: 0 } : { duration: 0.35, ease: EASE_OUT, delay: 0.1 }
-                  }
-                />
-              </svg>
+              <img
+                src="/icons/whale-success.png"
+                alt=""
+                width="24"
+                height="24"
+                className="size-6 object-contain"
+              />
             </motion.span>
           ) : null}
         </AnimatePresence>

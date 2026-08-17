@@ -1,41 +1,57 @@
 # dsh.fish
 
-The plugin hub for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) —
-discovery, distribution and one-command install for every kind of artifact the
-harness can load.
+**Discover and install plugins for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).**
 
-The harness is built on "everything is a plugin" but ships no registry: its
-README asks authors to tag repositories with the `dsh-plugin` topic and leaves
-discovery there. This is that registry, plus the install path on both ends.
+[Browse the plugin hub](https://dsh.fish) · [Explore the architecture](docs/project/architecture.md) · [Read the SEO design](docs/seo/README.md)
+
+dsh.fish is the open-source plugin registry and installer for DeepSeek Harness.
+Search bundles, profiles, skills, MCP servers, agent presets, and hook bridges;
+inspect how each artifact changes a harness profile; then install it from the
+web or directly through an AI agent.
+
+DeepSeek Harness is built on “everything is a plugin” but ships no registry.
+Its README asks authors to tag repositories with the `dsh-plugin` topic and
+leaves discovery there. dsh.fish turns that topic into a searchable,
+multilingual catalog with a shared, machine-executable install plan.
+
+## Quick start
+
+Browse the catalog at **[dsh.fish](https://dsh.fish)**, or add the hub plugin to
+your `web` profile:
+
+```sh
+dsh plugin --profile web add github:stvlynn/dsh.fish#main
+```
+
+The plugin registers `hub_search`, `hub_show`, `hub_install`, and `hub_account`,
+so an agent can discover and install artifacts without leaving the harness.
+
+Publishing a compatible project? Add the **`dsh-plugin` GitHub topic**. The hub
+will inspect its `package.json`, `SKILL.md`, or `agent.cordis.yml` and classify
+what the harness can actually load.
 
 ## What it indexes
 
 Six artifact kinds, each taken from something the harness really loads, each
 with its own install mechanism:
 
-| Kind | What it is | How it installs |
-|---|---|---|
-| **Bundle** | npm package declaring `dsh.bundle.patch` | `dsh plugin --profile <p> add <spec>` |
-| **Profile** | ordered `dsh.profile.bundles` stack | one `add` per bundle, in order |
-| **Skill** | `SKILL.md` bundle or flat Markdown | files written under `$DSH_HOME/skills` |
-| **MCP server** | external Model Context Protocol server | a `dsh-mcp-client` row in the profile patch |
-| **Agent preset** | directory holding one `agent.cordis.yml` | written to `$DSH_HOME/.agent-presets/<id>` |
-| **Hook bridge** | Claude Code / Codex hook bridge | a bridge plugin row in the profile patch |
+| Kind             | What it is                               | How it installs                             |
+| ---------------- | ---------------------------------------- | ------------------------------------------- |
+| **Bundle**       | npm package declaring `dsh.bundle.patch` | `dsh plugin --profile <p> add <spec>`       |
+| **Profile**      | ordered `dsh.profile.bundles` stack      | one `add` per bundle, in order              |
+| **Skill**        | `SKILL.md` bundle or flat Markdown       | files written under `$DSH_HOME/skills`      |
+| **MCP server**   | external Model Context Protocol server   | a `dsh-mcp-client` row in the profile patch |
+| **Agent preset** | directory holding one `agent.cordis.yml` | written to `$DSH_HOME/.agent-presets/<id>`  |
+| **Hook bridge**  | Claude Code / Codex hook bridge          | a bridge plugin row in the profile patch    |
 
-## Two ways in
+## How it works
 
 **From a browser** — search, filter by kind and category, read the plan, copy the
 command.
 
-**From inside your agent** — install the hub's own plugin and let the agent do it:
-
-```sh
-dsh plugin --profile web add github:stvlynn/dsh.fish#main
-```
-
-It registers four tools: `hub_search`, `hub_show`, `hub_install` and
-`hub_account`. Signing in uses the OAuth device flow — the plugin prints a code,
-you approve it in a browser, and the harness gets a token.
+**From inside your agent** — use the hub plugin installed in the quick start.
+Signing in uses the OAuth device flow: the plugin prints a code, you approve it
+in a browser, and the harness gets a token.
 
 Both paths resolve the **same** install plan from the same domain code, so the
 command on the website and the one the agent runs cannot drift apart.
@@ -91,11 +107,15 @@ pnpm run test:e2e
 pnpm run build
 ```
 
-The social card is generated, not drawn. Re-run it when the palette changes:
+The social cards are generated, not drawn. Re-run them when the palette,
+wordmark, or repository positioning changes:
 
 ```sh
 pnpm --filter @dsh-fish/frontend run og:build
 ```
+
+This writes the site-wide Open Graph image to `frontend/public/og.png` and the
+GitHub repository Social Preview to `.github/social-preview.png`.
 
 Deployment, bindings and secrets: [`docs/operations/deployment.md`](docs/operations/deployment.md).
 

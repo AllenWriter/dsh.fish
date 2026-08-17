@@ -53,6 +53,30 @@ import { t } from 'shared/i18n';
 - ✅ Prefer: `bg-bg`, `text-text`, `border-border`, `text-muted`.
 - Theme differences must live in one place (global theme file or CSS variables). Do not scatter `dark:` or media queries across components.
 
+## Brand icons
+
+The dsh.fish brand uses the generated, faceless blue-whale assets in
+`frontend/public/icons/`, not handwritten inline SVG:
+
+- Use `whale-brand.png` beside the product name and in generated social cards.
+- Keep the whale itself free of marketplace metaphors. The plugin ecosystem is
+  expressed at social-card scale by the central whale node, five surrounding
+  plugin tiles, and their restrained orbital paths in
+  `.github/assets/social-preview-background.png`.
+- Do not add storefront, shopping, puzzle-piece, package-box, or install-arrow
+  symbols to the whale mark.
+- `whale-success.png` is the same mark at a compact size, used only for
+  celebratory success states; do not introduce a second whale pose.
+- Keep the image decorative when adjacent copy already names the product or
+  state: use an empty `alt` and hide it from assistive technology.
+- Generate PNG favicon derivatives from `whale-brand.png`; do not maintain a
+  second hand-drawn logo in SVG.
+
+This rule is limited to brand artwork. Continue to use Lucide for conventional
+functional controls such as search, menu, theme, copy, and external-link icons.
+Invisible SVG filter definitions and SVG security/layout test fixtures are not
+icons and must remain structural code.
+
 ## Catalog card Social preview
 
 A GitHub Social preview is a texture behind the card, not a second title.

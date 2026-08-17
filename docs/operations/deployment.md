@@ -77,10 +77,20 @@ pnpm run deploy
 
 This builds the client assets and the SSR bundle, then runs `wrangler deploy`.
 
-`public/og.png` — the social card every link preview renders — is committed
-rather than generated at build time, so no browser is needed in CI. Regenerate
-it with `pnpm --filter @dsh-fish/frontend run og:build` whenever the palette or
-the wordmark changes.
+The social cards are committed rather than generated at build time, so no
+browser is needed in CI. Regenerate them with
+`pnpm --filter @dsh-fish/frontend run og:build` whenever the palette, wordmark,
+or repository positioning changes:
+
+- `frontend/public/og.png` is the 1200×630 Open Graph image for site links.
+- `.github/social-preview.png` is the 1280×640 repository Social Preview. Upload
+  it from the repository's **Settings → Social preview** control after it
+  changes; GitHub does not expose this upload through `gh repo edit` or its
+  public repository API.
+
+The GitHub card uses the generated source artwork at
+`.github/assets/social-preview-background.png`; keep both the source and the
+rendered card under version control.
 
 ## Scheduled ingestion
 
