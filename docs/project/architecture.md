@@ -41,7 +41,7 @@ One Worker serves both halves of the product.
                           ▼                   ▼
                     D1 (catalog +        KV (sessions,
                     Better Auth)         rate limiting,
-                                         crawl cursor)
+                                         crawl cursors)
 ```
 
 Sharing an origin is a deliberate choice, not an accident of packaging:
@@ -60,9 +60,9 @@ Sharing an origin is a deliberate choice, not an accident of packaging:
 
 | Layer | Contents |
 |---|---|
-| `domain/` | `Artifact` aggregate, `ArtifactKind`, `ArtifactPayload`, `InstallPlan`, `Submission`, `Account`, `ogImageUrl`, repository ports |
+| `domain/` | `Artifact` aggregate, `ArtifactKind`, `ArtifactPayload`, `InstallPlan`, `Submission`, `Account`, `ogImageUrl`, the `quality-score` value object, repository ports |
 | `application/` | Use cases (`SearchArtifacts`, `ResolveInstallPlan`, `SubmitArtifact`, `IngestCatalog`, …), DTOs, indexer ports |
-| `infrastructure/` | D1 repositories, Better Auth composition, GitHub/npm indexers, the container |
+| `infrastructure/` | D1 repositories, Better Auth composition, GitHub/npm/awesome-list indexers, the container |
 | `interfaces/` | Hono routers, Zod request schemas, the domain-error → HTTP mapping |
 
 The domain has no dependency on Hono, Drizzle, Better Auth or Workers types
@@ -164,12 +164,83 @@ yields nothing — the harness would load nothing from it either.
 
 Those probes run before anything else is fetched, so a repository that is not a
 plugin costs three reads and no API quota — that ordering is what makes it
-affordable to page deep into a topic of several thousand repositories.
+affordable to walk the whole topic. The walk runs in star-range shards, because
+the search API caps any single query at 1000 results and the topic is several
+times that; a shard that saturates the ceiling is split further, by created
+date once its star range cannot be halved.
+
+The probes live in one place, `infrastructure/ingestion/repo-prober.ts`, and
+three discovery channels feed it. The topic crawl is the seed set above.
+`NpmIndexer` searches the registry's conventional keywords and confirms each
+candidate against its published manifest. `AwesomeListIndexer` aggregates the
+community's machine-readable curated lists — the catalog behind
+awesome-dsh-plugin.com and Oh-My-DSH's scan — because the topic tag only
+reaches authors who knew to add it. A list entry is a candidate, not an
+artifact: the repository goes through the same prober, and a listed repository
+with no loadable manifest is skipped exactly like a topic repository is.
+Provenance is kept on the row rather than in a side table — a list-surfaced
+artifact records the list in `source.via` (the `source` column is JSON, so
+this costs no migration), and a later refresh from any channel merges the set
+instead of replacing it. Both GitHub-backed channels persist a resume cursor
+in KV (`crawler:github:shard`, `crawler:awesome-list:list`), so each cron run
+spends only its own slice of the subrequest budget.
 
 Categories are resolved separately, and never block a row: a valid
 `dsh.hub.categories` declaration wins, otherwise `category-inference.ts` reads
 topics, keywords and the description against a fixed token table, and `other` is
 the floor. See ADR-0001 §8.
+
+Every classified repository is also pinned to the exact commit it was scanned
+from: the indexer resolves the default-branch HEAD once per artifact (the same
+lookup that pins `source.commit`), and the sweep stores it on
+`artifacts.source_commit_sha`. That SHA is the scan's provenance — the detail
+DTO exposes it as `sourceCommitSha` with a browsable `sourceCommitUrl`, the
+install plan DTO carries it as `scannedAtCommit`, and the artifact page links
+"Indexed at commit" to the commit on GitHub, so a reader can diff what the
+registry read against what the repository serves now. It is display-only;
+executing installs pinned to the SHA is a separate decision.
+
+## Quality score, maintenance status and star velocity
+
+Every artifact carries a public, reproducible quality score. The formula lives
+in one domain value object, `domain/artifact/quality-score.ts`, and the same
+`SCORING_MODEL` constant is served as JSON by `GET /api/v1/scoring` — so the
+documented formula and the executed formula cannot drift, and anyone can
+recompute what the site shows.
+
+Three dimensions, each 0–100, blended into a 0–100 score:
+
+```
+score = round(0.4 · popularity + 0.3 · maintenance + 0.3 · quality)
+```
+
+| Dimension | Exact rule |
+|---|---|
+| `popularity` | `raw = installs·3 + stars + downloads/10`; `round(100 · log10(1+raw) / log10(1+10000))`, capped at 100. Installs weigh most because they are the only signal the hub observes itself. |
+| `maintenance` | Derived from `maintenanceStatus`: `active` → 100, `slowing` → 60, `stale` → 30, `abandoned` → 0. |
+| `quality` | Additive trust points: verified 50, has readme 25, declares a license 15, names an author 10. |
+
+The grade is a threshold read of the score: `S` ≥ 85, `A` ≥ 70, `B` ≥ 50,
+otherwise `C`.
+
+`maintenanceStatus` buckets the age of `updatedAt`: `active` ≤ 30 days,
+`slowing` ≤ 90, `stale` ≤ 365, `abandoned` beyond that — and a deprecated
+artifact is `abandoned` however fresh its timestamps are.
+
+Star velocity comes from history, not from the current row: every
+`IngestCatalog` sweep appends one `artifact_metrics` row (stars, downloads,
+installs, `captured_at`) per artifact. The 7- or 30-day velocity is the
+current star count minus the most recent snapshot taken *at least* that many
+days ago, and 0 when history does not reach back that far — a young artifact
+is unmeasured, not "rising". The sweep stores both windows on
+`artifacts.star_velocity_7d` / `star_velocity_30d`, so `sort=rising` is a
+column scan (7-day velocity, then the popularity weighting) rather than a
+history join per request. Velocity is hub-derived state kept outside
+`ArtifactStats`, so a velocity tick does not count as a public-page change and
+churn the sitemap `lastmod`.
+
+List and detail DTOs expose `score`, `grade`, `maintenanceStatus`,
+`starVelocity7d` and `starVelocity30d`.
 
 ## Cross-cutting concerns
 

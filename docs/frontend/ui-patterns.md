@@ -82,6 +82,14 @@ its mark, never by a colour.
 Where a state does use the accent, it must also change shape or weight, so the state
 is never carried by hue alone.
 
+Trust signals are the one exception to the no-new-hue rule, and they spend muted
+Tailwind hues, not tokens: a quality grade wears gold/emerald/sky/grey
+(`GRADE_BADGE`) and a maintenance status wears its own muted border and text
+(`MAINTENANCE_CHIP`). Here the hue *is* the information — "S is gold" is
+learnable in a way "bundle is violet" was not — and the letter or word is always
+rendered beside it, so nothing is carried by colour alone. Both maps live in
+`entities/artifact/model/types.ts`; components never pick their own status hue.
+
 ### Every colour must be inside sRGB
 
 `oklch()` accepts a chroma no display can produce, and the browser then gamut-maps

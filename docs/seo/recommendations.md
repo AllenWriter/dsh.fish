@@ -54,18 +54,6 @@ gate.
 
 ## P1 — once there is traffic
 
-### Per-artifact social cards
-
-Today every page shares one static `/og.png`. A link to a specific plugin
-previews as the generic site card, which is a wasted impression in exactly the
-channel where developer tools spread — Slack, GitHub comments, X.
-
-The approach that fits this stack: a resource route at `/a/:artifactId/og.png`
-rendering with `satori` + `resvg-wasm` inside the Worker, cached in KV keyed by
-artifact id and `updatedAt`. Budget roughly 150–300 ms for a cold render and
-~1 MB of Wasm in the bundle; both are acceptable for a route that is only ever
-hit by a link-preview fetcher, and neither touches the HTML path.
-
 ### A `SoftwareApplication` rich result
 
 `offers` and `aggregateRating` are deliberately absent (see
@@ -142,13 +130,16 @@ search page, and is what directories that rank actually do. Only worth it if
 someone will curate them; auto-generating them is how a site earns a thin-content
 penalty.
 
-### `IndexNow`
+### `IndexNow` — done
 
-Bing, Yandex and Seznam accept a push notification when a URL changes. The
-six-hourly crawl already knows exactly which artifacts changed, so wiring
-`IndexNow` into the ingestion report is perhaps thirty lines. Google does not
-participate, so the return is bounded — but for the Russian catalog specifically
-it is the difference between hours and weeks.
+Implemented. The verification file is served at `/indexnow-<key>.txt` from the
+Worker entry (`INDEXNOW_KEY` var), and
+`frontend/scripts/indexnow-submit.mjs` pushes the sitemap URL set to Bing,
+Yandex, Seznam and Naver as a manual post-deploy step. See
+[`crawling.md`](crawling.md#indexnow). Google does not participate, so the
+sitemap remains the discovery channel there. Still open: wiring submission into
+the ingestion report so an hourly sweep pushes exactly the changed URLs
+rather than someone re-submitting the whole set by hand.
 
 ---
 
@@ -166,4 +157,4 @@ it is the difference between hours and weeks.
   those pages rather than add reach.
 - **Prerendering the whole catalog to static files.** The site is already
   server-rendered from D1 in one round trip, and a catalog that re-crawls every
-  six hours would need a rebuild on the same cadence to stay correct.
+  hour would need a rebuild on the same cadence to stay correct.

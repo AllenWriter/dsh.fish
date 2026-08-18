@@ -84,7 +84,7 @@ docs/       architecture, layer conventions, operations, ADRs
 
 Both halves deploy as **one Cloudflare Worker**: Hono at `/api/*`, React Router
 SSR everywhere else, D1 for the catalog and Better Auth's tables, KV for
-sessions and rate limiting, and a Cron Trigger that re-crawls every six hours.
+sessions and rate limiting, and a Cron Trigger that re-crawls every hour.
 
 ## Ten languages
 

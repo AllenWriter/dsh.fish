@@ -98,7 +98,7 @@ blocks it from submitting or claiming artifacts.
 
 ### 7. Ingestion crawls; submission is a fast path
 
-A cron trigger sweeps the GitHub `dsh-plugin` topic and npm every six hours, so
+A cron trigger sweeps the GitHub `dsh-plugin` topic and npm every hour, so
 the registry is populated without anyone submitting anything. A signed-in user
 may also submit a source; if the GitHub account they signed in with owns the
 repository, the row is published immediately, because the row is built by the

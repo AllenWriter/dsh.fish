@@ -58,3 +58,14 @@ export interface OrderRepository {
 ```
 
 Implementations of these ports live in `infrastructure/`.
+
+## Concrete example in this project: catalog scoring
+
+`domain/artifact/quality-score.ts` is the project's reference value object: it
+owns the public quality-score formula (weights, thresholds and windows as the
+`SCORING_MODEL` constant), the `maintenanceStatus` bucketing, and the
+`starVelocity` rule over metrics history. It is pure — no Drizzle, no Hono,
+clock passed in as an argument — so the exact formula is unit-tested and is
+served verbatim by `GET /api/v1/scoring`. See
+[`docs/project/architecture.md`](../project/architecture.md#quality-score-maintenance-status-and-star-velocity)
+for the formula itself.

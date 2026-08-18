@@ -21,6 +21,15 @@ This document describes database conventions. Fill in concrete technology choice
 - Document any intentional denormalization in [`docs/decisions/`](../decisions/README.md).
 - Use explicit foreign keys and constraints at the database level.
 
+### Catalog columns
+
+- `artifacts.source_commit_sha` (nullable text, migration
+  `0004_artifact_source_commit_sha`) — the default-branch HEAD the GitHub
+  indexer scanned. It denormalizes `source.commit` out of the JSON `SourceRef`
+  so scan provenance is a queryable column; both are written from the same
+  resolved ref on every sweep, and the detail DTO / install plan read the
+  column, not the JSON.
+
 ## Migrations
 
 - Store migrations in a dedicated directory (e.g., `infrastructure/persistence/migrations`).

@@ -92,21 +92,56 @@ The GitHub card uses the generated source artwork at
 `.github/assets/social-preview-background.png`; keep both the source and the
 rendered card under version control.
 
+## 5. Notify IndexNow
+
+Bing, Yandex, Seznam and Naver accept pushed URL notifications. The key is the
+`INDEXNOW_KEY` var in `frontend/wrangler.jsonc`; once deployed, the Worker
+serves the verification file at `/indexnow-<key>.txt`. After a deploy — or
+after a sweep that changed a large slice of the catalog — submit the sitemap
+URL set:
+
+```sh
+INDEXNOW_KEY=<the wrangler.jsonc value> pnpm --filter @dsh-fish/frontend run indexnow:submit
+```
+
+The script (`frontend/scripts/indexnow-submit.mjs`) reads `/sitemap.xml`,
+fetches every child sitemap, and posts the URLs to `https://api.indexnow.org`
+in batches of 10,000. Rotating the key means editing the var, redeploying, and
+re-running the submission. See [`../seo/crawling.md`](../seo/crawling.md#indexnow).
+
 ## Scheduled ingestion
 
-`wrangler.jsonc` registers a Cron Trigger (`0 */6 * * *`). Each firing runs the
-`IngestCatalog` use case, which sweeps the GitHub `dsh-plugin` topic and npm and
-folds the results into the catalog. It is deliberately tolerant: one malformed
-package upstream must not abort a sweep.
+`wrangler.jsonc` registers a Cron Trigger (`0 * * * *`, hourly). Each firing runs the
+`IngestCatalog` use case, which sweeps the GitHub `dsh-plugin` topic, npm and
+the curated awesome lists, and folds the results into the catalog. It is
+deliberately tolerant: one malformed
+package upstream must not abort a sweep. Each swept artifact also appends one
+`artifact_metrics` snapshot and has its `star_velocity_7d` / `star_velocity_30d`
+columns recomputed, so star history grows at cron cadence (see
+[`../project/architecture.md`](../project/architecture.md#quality-score-maintenance-status-and-star-velocity)).
 
 One firing reads a slice, not the whole topic. A Worker invocation may make
-1000 subrequests, so the run is budgeted — 200 GitHub repositories and 100 npm
-packages — and the GitHub sweep resumes from the page it stopped at, stored in
-KV under `crawler:github:next-page`. Sorting by stars puts the same well-known
-repositories at the head of every search, so without that cursor the long tail
-of the topic, which is where most installable plugins are, would never be read.
-GitHub's search API returns at most 1000 results, so the cursor wraps after ten
-pages; a full cycle takes five firings, a little over a day.
+1000 subrequests, so the run is budgeted — 200 GitHub repositories, 100 npm
+packages and 50 awesome-list candidates. GitHub's search API never returns more than 1000 results for one
+query, and the topic holds several thousand repositories, so the GitHub sweep
+walks it in star-range shards (`stars:0`, `stars:1`, `stars:2`, …) that each
+fit under the ceiling. A shard that still fills all ten pages is split in
+half — by star count while the range allows, by created date once a single
+star value is too dense — so the partition stays right as the topic grows. The
+sweep resumes from the shard and page it stopped at, stored as JSON in KV
+under `crawler:github:shard`; after the last shard it wraps to the first,
+which is how existing rows get their stars, summary and readme refreshed. A
+rate-limited or failed search page stops the run without moving the cursor,
+so the next firing resumes where this one stalled instead of dropping a slice.
+
+The awesome-list sweep aggregates the machine-readable catalogs behind
+awesome-dsh-plugin.com (`beancookie/awesome-dsh-plugin`, `docs/plugins.json`)
+and Oh-My-DSH (`like-study1/Oh-My-DSH`, `data/plugins.json`). Each listed
+GitHub repository is probed for a loadable manifest through the same pipeline
+the topic crawl uses, so a curated entry that is an application rather than a
+plugin is skipped at the same three-read cost. Its resume cursor — which list,
+how far into it — lives in KV under `crawler:awesome-list:list`, and rows it
+surfaces record the list in `source.via`.
 
 `GITHUB_TOKEN` matters more than the crawl's tolerance suggests: unauthenticated
 API calls are capped at 60/hour, which is well under one firing's commit
@@ -122,7 +157,7 @@ curl -X POST https://dsh.fish/api/v1/admin/ingest \
   -d '{"limitPerSource": 50}'
 ```
 
-## 5. Publish the CLI
+## 6. Publish the CLI
 
 `@dsh-fish/cli` is the copy-pasteable installer (`npx @dsh-fish/cli add <id>`).
 It is a public scoped package on the npm registry; the Worker deploy does not

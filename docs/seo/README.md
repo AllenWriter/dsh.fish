@@ -43,6 +43,7 @@ That produces three requirements the rest of the product does not have:
 | robots.txt, sitemaps | `frontend/src/pages/seo/` |
 | Sitemap read model | `backend/src/application/use-case/list-sitemap-entries.ts` |
 | Social card generator | `frontend/scripts/build-og-image.mjs` |
+| Per-artifact social card, README badge | `frontend/src/pages/artifact-og/`, `frontend/src/pages/artifact-badge/` |
 
 Every page's `meta` export calls `pageMeta`, which emits the complete head set
 in one call. React Router replaces the whole descriptor array per route rather
