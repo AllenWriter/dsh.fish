@@ -101,7 +101,7 @@ ${body}
 /**
  * Cached at the edge for an hour.
  *
- * The catalog re-crawls every six hours, so an hour-old sitemap is never more
+ * The catalog re-crawls every hour, so an hour-old sitemap is never more
  * than one sweep behind, and a crawler pulling every file in the index does not
  * cost one D1 read per file per fetch.
  */

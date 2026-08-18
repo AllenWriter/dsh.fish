@@ -22,6 +22,11 @@ export function mockArtifact(overrides: Partial<Artifact> = {}): Artifact {
     verified: false,
     deprecated: false,
     stats: { stars: 1200, downloads: 0, installs: 0 },
+    score: 80,
+    grade: 'A',
+    maintenanceStatus: 'active',
+    starVelocity7d: 12,
+    starVelocity30d: 40,
     updatedAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   }

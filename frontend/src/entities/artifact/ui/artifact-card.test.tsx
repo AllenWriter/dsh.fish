@@ -42,3 +42,26 @@ describe('ArtifactCard social preview', () => {
     expect(html).not.toContain('<img')
   })
 })
+
+describe('ArtifactCard trust signals', () => {
+  it('renders the grade badge, the maintenance chip and the weekly velocity', () => {
+    const html = render({
+      ...base,
+      grade: 'S',
+      maintenanceStatus: 'slowing',
+      starVelocity7d: 12,
+    })
+
+    expect(html).toContain('title="Quality grade S"')
+    expect(html).toContain('>S</span>')
+    expect(html).toContain('Slowing')
+    expect(html).toContain('+12 this week')
+  })
+
+  it('hides the velocity when the artifact has not gained stars', () => {
+    const html = render({ ...base, starVelocity7d: 0 })
+
+    expect(html).not.toContain('this week')
+    expect(html).not.toContain('this month')
+  })
+})

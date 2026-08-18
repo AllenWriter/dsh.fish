@@ -31,31 +31,38 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
 /**
  * Server-side data for the landing page.
  *
- * Three reads in parallel rather than in sequence: D1 round trips dominate the
- * response, so serializing them would triple the page's time to first byte for
- * no reason.
+ * Four reads in parallel rather than in sequence: D1 round trips dominate the
+ * response, so serializing them would multiply the page's time to first byte
+ * for no reason.
  */
 export async function loader({ context, params }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale)
   const { container } = context.get(hubContext)
   const { searchArtifacts, listCatalogFacets } = container.useCases
 
-  const [trending, recentPool, facets] = await Promise.all([
+  const [trending, risingPool, recentPool, facets] = await Promise.all([
     searchArtifacts.execute({ sort: 'popular', limit: 6 }),
     // Over-fetch, then subtract what the first rail already shows. Two rails
     // listing the same artifacts is the same page twice.
+    searchArtifacts.execute({ sort: 'rising', limit: 12 }),
     searchArtifacts.execute({ sort: 'recent', limit: 12 }),
     listCatalogFacets.execute(),
   ])
 
   const shown = new Set(trending.items.map((item) => item.id))
+  // A zero velocity is an unmeasured artifact, not a rising one, and a rail of
+  // those would only repeat the trending list in a different order.
+  const rising = risingPool.items
+    .filter((item) => item.starVelocity7d > 0 && !shown.has(item.id))
+    .slice(0, 3)
+  for (const item of rising) shown.add(item.id)
   const recent = recentPool.items.filter((item) => !shown.has(item.id)).slice(0, 3)
 
-  return { trending, recent, facets, locale, origin: container.config.baseUrl }
+  return { trending, rising, recent, facets, locale, origin: container.config.baseUrl }
 }
 
 export default function HomePage({ loaderData }: Route.ComponentProps) {
-  const { trending, recent, facets } = loaderData
+  const { trending, rising, recent, facets } = loaderData
   const t = useT()
   const localePath = useLocalePath()
   const total = facets.kinds.reduce((sum, facet) => sum + facet.count, 0)
@@ -131,6 +138,12 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
         <Rail title={t('home.trending')} to="/browse?sort=popular" linkKey="home.browseAll">
           <CatalogGrid artifacts={trending.items} />
         </Rail>
+
+        {rising.length > 0 ? (
+          <Rail title={t('home.rising')} to="/browse?sort=rising" linkKey="home.seeRising">
+            <CatalogGrid artifacts={rising} />
+          </Rail>
+        ) : null}
 
         {recent.length > 0 ? (
           <Rail title={t('home.recentlyUpdated')} to="/browse?sort=recent" linkKey="home.seeRecent">

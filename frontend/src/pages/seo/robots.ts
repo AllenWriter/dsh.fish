@@ -31,6 +31,9 @@ export function robotsText(baseUrl: string): string {
     'Allow: /',
     'Disallow: /api/',
     '',
+    '# Atom feeds live at /feed.xml and /<locale>/feed.xml; the IndexNow key',
+    '# file at /indexnow-<key>.txt. Both are crawlable by design.',
+    '',
     `Sitemap: ${baseUrl}/sitemap.xml`,
     '',
   ].join('\n')

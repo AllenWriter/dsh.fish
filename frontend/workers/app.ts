@@ -28,6 +28,20 @@ export default {
       return api.fetch(request, env, ctx)
     }
 
+    // IndexNow key verification. The filename *is* the key, so this cannot be
+    // a React Router route: route parameters only match whole path segments,
+    // and `indexnow-<key>.txt` has the key inline. Unset key, or a wrong one,
+    // is a plain 404 — the file's existence proves ownership of the host, so
+    // it must exist exactly when the key is configured.
+    if (env.INDEXNOW_KEY !== undefined && url.pathname === `/indexnow-${env.INDEXNOW_KEY}.txt`) {
+      return new Response(`${env.INDEXNOW_KEY}\n`, {
+        headers: {
+          'content-type': 'text/plain; charset=utf-8',
+          'cache-control': 'public, max-age=86400',
+        },
+      })
+    }
+
     // One document, one URL. `/en/browse` duplicates `/browse`, and `/ZH-cn`
     // duplicates `/zh-CN` to a router that matches case-insensitively; both are
     // folded into the canonical form before routing, permanently, so a crawler
@@ -50,21 +64,23 @@ export default {
   },
 
   /**
-   * Cron trigger. Refreshes the catalog from the GitHub `dsh-plugin` topic and
-   * from npm, so the registry stays current without anyone submitting anything.
+   * Cron trigger. Refreshes the catalog from the GitHub `dsh-plugin` topic,
+   * from npm, and from the curated awesome lists, so the registry stays
+   * current without anyone submitting anything.
    *
    * The limits are a subrequest budget, not a taste: a Worker invocation may
    * make 1000 subrequests, and one run costs roughly 200 GitHub repositories ×
    * up to 3 probes (plus 2 search pages and a handful of extra reads per
-   * repository that actually classifies) and 100 npm packages × 2. The GitHub
-   * sweep resumes from a stored page each run rather than re-reading the head
-   * of the topic, so the whole reachable result set is covered across runs.
+   * repository that actually classifies), 100 npm packages × 2, and 50 listed
+   * repositories × (1 metadata read + up to 3 probes). The GitHub sweeps resume
+   * from a stored position each run rather than re-reading the head, so the
+   * whole reachable result set is covered across runs.
    */
   async scheduled(_controller, env, ctx) {
     const container = createContainer(env)
     ctx.waitUntil(
       container.useCases.ingestCatalog
-        .execute({ limitPerSource: 100, limitByOrigin: { github: 200 } })
+        .execute({ limitPerSource: 100, limitByOrigin: { github: 200, 'awesome-list': 50 } })
         .then((report) => {
           console.log('catalog_ingest', report)
         })

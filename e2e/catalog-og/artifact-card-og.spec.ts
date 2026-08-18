@@ -1,9 +1,12 @@
-import { readFileSync } from 'node:fs'
+import { mkdirSync, readFileSync } from 'node:fs'
 import { expect, test, type Page } from '@playwright/test'
 
 const catalogOg = `${process.cwd()}/e2e/catalog-og`
 const stylesheet = `${process.cwd()}/frontend/src/app/styles/app.css`
-const shots = '/opt/cursor/artifacts/screenshots'
+// Review artifacts, not assertions: `OG_SHOTS_DIR` points the hosted runner at
+// its artifact mount, and everywhere else the captures land in the gitignored
+// Playwright output tree.
+const shots = process.env.OG_SHOTS_DIR ?? `${process.cwd()}/test-results/catalog-og`
 
 /**
  * The product's own tokens, lifted out of `app.css` and rewritten onto the
@@ -80,6 +83,7 @@ test.describe('catalog card Social preview', () => {
   })
 
   test('captures light and dark treatments', async ({ page }) => {
+    mkdirSync(shots, { recursive: true })
     await openPreview(page, 'light')
     await page.screenshot({
       path: `${shots}/artifact-card-og-light.png`,

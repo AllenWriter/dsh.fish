@@ -131,6 +131,7 @@ export default function BrowsePage({ loaderData }: Route.ComponentProps) {
             >
               <option value="">{t('browse.sort.relevance')}</option>
               <option value="popular">{t('browse.sort.popular')}</option>
+              <option value="rising">{t('browse.sort.rising')}</option>
               <option value="recent">{t('browse.sort.recent')}</option>
               <option value="name">{t('browse.sort.name')}</option>
             </select>

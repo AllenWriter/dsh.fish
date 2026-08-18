@@ -10,7 +10,10 @@
   },
   "observability": { "enabled": true },
   "vars": {
-    "PUBLIC_BASE_URL": "https://dsh.fish"
+    "PUBLIC_BASE_URL": "https://dsh.fish",
+    // IndexNow verification key. Public by design — the Worker serves it at
+    // /indexnow-<key>.txt. Rotate with: openssl rand -hex 16 (and redeploy).
+    "INDEXNOW_KEY": "8935711bcea6a78530892e1c7684c828"
   },
   "d1_databases": [
     {
@@ -27,7 +30,7 @@
     }
   ],
   "triggers": {
-    // Re-crawl the GitHub `dsh-plugin` topic and npm every six hours.
-    "crons": ["0 */6 * * *"]
+    // Re-crawl the GitHub `dsh-plugin` topic and npm every hour.
+    "crons": ["0 * * * *"]
   }
 }

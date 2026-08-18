@@ -8,7 +8,7 @@ import { urlSetXml, xmlResponse } from './xml'
  * This is the file that does the work: a plugin page has no inbound links from
  * anywhere else on the web until someone finds it, so the sitemap is how it
  * gets discovered at all. `lastmod` is the artifact's own `updatedAt`, which
- * means a crawler re-reads exactly the rows the six-hourly sweep changed
+ * means a crawler re-reads exactly the rows the hourly sweep changed
  * instead of the whole catalog.
  */
 export async function loader({ context, params }: Route.LoaderArgs) {

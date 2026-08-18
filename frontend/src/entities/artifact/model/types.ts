@@ -5,6 +5,10 @@ import type {
   PageDto,
 } from '@dsh-fish/backend/application/dto/artifact-dto.js'
 import type { ArtifactKind } from '@dsh-fish/backend/domain/artifact/artifact-kind.js'
+import type {
+  MaintenanceStatus,
+  QualityGrade,
+} from '@dsh-fish/backend/domain/artifact/quality-score.js'
 import type { FacetsDto } from '@dsh-fish/backend/application/use-case/list-catalog-facets.js'
 
 /**
@@ -18,7 +22,9 @@ export type {
   ArtifactSummaryDto,
   FacetsDto,
   InstallPlanDto,
+  MaintenanceStatus,
   PageDto,
+  QualityGrade,
 }
 
 export type Artifact = ArtifactSummaryDto
@@ -37,6 +43,35 @@ export type ArtifactDetail = ArtifactDetailDto
  */
 export const KIND_CHIP =
   'inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground'
+
+/**
+ * Per-grade presentation.
+ *
+ * A grade earns a hue where a kind does not: the colour *is* the information
+ * (gold is better than grey at a glance), and the letter is always printed too,
+ * so nothing is carried by colour alone. Muted fills and borders keep the set
+ * quieter than the one accent and the destructive state.
+ */
+export const GRADE_BADGE: Readonly<Record<QualityGrade, string>> = {
+  S: 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400',
+  A: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+  B: 'border-sky-500/40 bg-sky-500/10 text-sky-700 dark:text-sky-400',
+  C: 'border-border bg-muted text-muted-foreground',
+}
+
+/**
+ * Per-status presentation for maintenance.
+ *
+ * Same rule as the grade: a status hue, always with the word beside it, each
+ * one distinguishable from the destructive deprecated chip that can sit next
+ * to it (an abandoned artifact is not necessarily deprecated).
+ */
+export const MAINTENANCE_CHIP: Readonly<Record<MaintenanceStatus, string>> = {
+  active: 'border-emerald-500/30 text-emerald-700 dark:text-emerald-400',
+  slowing: 'border-amber-500/30 text-amber-700 dark:text-amber-400',
+  stale: 'border-orange-500/30 text-orange-700 dark:text-orange-400',
+  abandoned: 'border-border text-muted-foreground',
+}
 
 /**
  * The message-key stem for each kind.

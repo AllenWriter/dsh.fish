@@ -71,9 +71,18 @@ describe('pageMeta', () => {
     expect(canonical[0]!.href).toBe(`${ORIGIN}/ja/a/dsh-hello`)
   })
 
-  it('emits one alternate per language plus x-default', () => {
-    const links = find(indexed, (entry) => entry.rel === 'alternate')
+  it('emits one hreflang alternate per language plus x-default', () => {
+    const links = find(indexed, (entry) => entry.rel === 'alternate' && 'hrefLang' in entry)
     expect(links).toHaveLength(LOCALE_CODES.length + 1)
+  })
+
+  it('advertises the page language’s own Atom feed', () => {
+    const feeds = find(
+      indexed,
+      (entry) => entry.rel === 'alternate' && entry.type === 'application/atom+xml',
+    )
+    expect(feeds).toHaveLength(1)
+    expect(feeds[0]!.href).toBe(`${ORIGIN}/ja/feed.xml`)
   })
 
   it('names its own og:locale once and every other as an alternate', () => {
@@ -99,6 +108,20 @@ describe('pageMeta', () => {
     expect(content(indexed, 'property', 'og:image:width')).toBe('1200')
     expect(content(indexed, 'property', 'og:image:height')).toBe('630')
     expect(content(indexed, 'property', 'og:image:alt')).toBe('DeepSeek Harness のプラグインハブ')
+  })
+
+  it('points og:image at a per-page renderer when one is given', () => {
+    const own = pageMeta({
+      origin: ORIGIN,
+      locale: 'en',
+      path: '/a/dsh-hello',
+      title: 'dsh-hello',
+      description: 'A bundle.',
+      imagePath: '/a/dsh-hello/og.png',
+    }) as Descriptor[]
+
+    expect(content(own, 'property', 'og:image')).toBe(`${ORIGIN}/a/dsh-hello/og.png`)
+    expect(content(own, 'name', 'twitter:image')).toBe(`${ORIGIN}/a/dsh-hello/og.png`)
   })
 
   describe('when the page is not for the index', () => {

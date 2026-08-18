@@ -219,9 +219,10 @@ test.describe('facts about a row', () => {
   test('the metrics row marks every fact it lists', async ({ page }) => {
     await page.goto('/a/dsh-postgres-mcp', { waitUntil: 'domcontentloaded' })
     const metrics = page.locator('dl').first()
-    // Installs, stars, licence and last-updated; downloads is zero on this row
-    // and its mark must vanish with its number.
-    await expect(metrics.locator('dd svg')).toHaveCount(4)
+    // Score, installs, stars, licence and last-updated; the score always
+    // renders, while downloads is zero on this row and its mark must vanish
+    // with its number.
+    await expect(metrics.locator('dd svg')).toHaveCount(5)
     await expect(metrics).toContainText('Apache-2.0')
     await expect(metrics).not.toContainText('downloads')
   })

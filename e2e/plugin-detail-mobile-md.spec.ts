@@ -110,6 +110,10 @@ test.describe('plugin detail readme on a phone', () => {
 
     const readme = page.locator('#readme')
     await readme.scrollIntoViewIfNeeded()
+    // Snap to a whole-pixel scroll offset: how far "into view" lands depends on
+    // load timing, and a fractional scrollY shifts text rasterisation across
+    // the whole fold, which flakes the snapshot.
+    await page.evaluate(() => window.scrollTo(0, Math.round(window.scrollY)))
     const clip = await firstFoldClip(page)
     await expect(page).toHaveScreenshot('readme-fold.png', {
       animations: 'disabled',

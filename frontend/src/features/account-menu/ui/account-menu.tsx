@@ -28,10 +28,12 @@ export function AccountMenu() {
     return (
       <LocaleLink
         to="/sign-in"
-        className="press inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground"
+        aria-label={t('nav.signIn')}
+        className="press inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-2.5 py-1.5 text-sm font-medium text-primary-foreground sm:px-4"
       >
         <SignInIcon className="size-4" weight="bold" />
-        {t('nav.signIn')}
+        {/* Icon-only on a phone, where the bar has no room for the word. */}
+        <span className="hidden sm:inline">{t('nav.signIn')}</span>
       </LocaleLink>
     )
   }

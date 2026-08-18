@@ -51,6 +51,9 @@ export {
   DownloadSimpleIcon as InstallsIcon,
   ScalesIcon as LicenseIcon,
   ClockCounterClockwiseIcon as UpdatedIcon,
+  GaugeIcon as ScoreIcon,
+  TrendUpIcon as RisingIcon,
+  GitCommitIcon as CommitIcon,
 
   // Installing.
   TerminalWindowIcon as CliIcon,

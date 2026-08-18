@@ -28,7 +28,7 @@ export function LocaleSwitcher({ className }: { className?: string }) {
           type="button"
           aria-label={t('nav.language')}
           className={cn(
-            'press hit-area grid size-9 place-items-center rounded-lg border border-border hover:border-border-strong',
+            'press hit-area grid size-9 shrink-0 place-items-center rounded-lg border border-border hover:border-border-strong',
             className,
           )}
         >

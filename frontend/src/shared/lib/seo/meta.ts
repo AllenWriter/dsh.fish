@@ -22,6 +22,13 @@ export interface PageMetaInput {
   readonly path: string
   readonly title: string
   readonly description: string
+  /**
+   * Social image path, relative to the origin. Defaults to the site-wide card;
+   * a page with its own renderer (an artifact's `/a/<id>/og.png`) passes its
+   * own. Size and type stay those of OG_IMAGE: per-page renderers must match
+   * them.
+   */
+  readonly imagePath?: string
   /** Default true. False emits `noindex, follow` and drops the alternates. */
   readonly index?: boolean
   readonly type?: 'website' | 'article'
@@ -44,6 +51,7 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
     path,
     title,
     description,
+    imagePath = OG_IMAGE.path,
     index = true,
     type = 'website',
     jsonLd = [],
@@ -51,7 +59,7 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
 
   const url = absoluteUrl(origin, locale, path)
   const summary = clampDescription(description)
-  const image = `${origin.replace(/\/+$/, '')}${OG_IMAGE.path}`
+  const image = `${origin.replace(/\/+$/, '')}${imagePath}`
   const definition = localeDefinition(locale)
 
   const descriptors: MetaDescriptor[] = [
@@ -111,6 +119,16 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
         href: alternate.href,
       })
     }
+    // Feed autodiscovery. Each page advertises its own language's feed: the
+    // feed exists in every language the page does, and a feed-aware client
+    // offers the reader the channel in the language they are already reading.
+    descriptors.push({
+      tagName: 'link',
+      rel: 'alternate',
+      type: 'application/atom+xml',
+      title: translate(locale, 'feed.title'),
+      href: absoluteUrl(origin, locale, '/feed.xml'),
+    })
   } else {
     // `follow` still: a signed-in-only page is not worth indexing, but the links
     // out of it lead to pages that are.

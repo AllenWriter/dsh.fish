@@ -80,7 +80,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-4 sm:px-6">
         <LocaleLink to="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
           <img
             src="/icons/whale-brand.png"
@@ -90,7 +90,9 @@ export function SiteHeader() {
             className="size-6 object-contain"
             aria-hidden
           />
-          {t('app.name')}
+          {/* The wordmark gives its seat to the controls on a phone; the mark
+              alone still says whose site this is. */}
+          <span className="hidden sm:inline">{t('app.name')}</span>
         </LocaleLink>
 
         <nav className="ml-4 hidden items-center gap-1 md:flex">
@@ -120,18 +122,20 @@ export function SiteHeader() {
           ))}
         </nav>
 
+        {/* Icon-only until there is room for the field: below `lg` the full
+            search button would crush its neighbours against the small bar. */}
         <button
           type="button"
           aria-label={t('nav.search')}
           onClick={() => setPaletteOpen(true)}
-          className="press ml-auto grid size-9 place-items-center rounded-lg border border-border text-muted-foreground hover:border-border-strong sm:hidden"
+          className="press ml-auto grid size-9 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground hover:border-border-strong lg:hidden"
         >
           <SearchIcon className="size-4" weight="bold" />
         </button>
         <button
           type="button"
           onClick={() => setPaletteOpen(true)}
-          className="press ml-auto hidden h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm text-muted-foreground hover:border-border-strong sm:flex"
+          className="press ml-auto hidden h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm text-muted-foreground hover:border-border-strong lg:flex"
         >
           <SearchIcon className="size-4" weight="bold" />
           {t('nav.search')}
@@ -147,7 +151,7 @@ export function SiteHeader() {
             aria-label={t(entry.key)}
             rel="noreferrer noopener"
             target="_blank"
-            className="press hit-area hidden size-9 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:grid"
+            className="press hit-area hidden size-9 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground lg:grid"
           >
             <entry.icon className="size-4" weight="bold" />
           </a>
@@ -164,7 +168,7 @@ export function SiteHeader() {
           aria-label={t('nav.menu')}
           aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((open) => !open)}
-          className="press hit-area grid size-9 place-items-center rounded-lg border border-border md:hidden"
+          className="press hit-area grid size-9 shrink-0 place-items-center rounded-lg border border-border md:hidden"
         >
           <IconSwap swapKey={mobileOpen ? 'close' : 'menu'}>
             {mobileOpen ? (
@@ -271,7 +275,7 @@ function ThemeToggle({ className }: { className?: string }) {
         writeThemeCookie(next ? 'dark' : 'light')
       }}
       className={cn(
-        'press hit-area grid size-9 place-items-center rounded-lg border border-border hover:border-border-strong',
+        'press hit-area grid size-9 shrink-0 place-items-center rounded-lg border border-border hover:border-border-strong',
         className,
       )}
     >

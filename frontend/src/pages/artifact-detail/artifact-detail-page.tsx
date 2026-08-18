@@ -2,19 +2,25 @@ import { data } from 'react-router'
 import type { Route } from './+types/artifact-detail-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { InstallPanel } from '@/widgets/install-panel/install-panel'
+import { ReadmeBadge } from '@/widgets/readme-badge/readme-badge'
 import { AuthorCard } from '@/entities/artifact/ui/author-card'
 import { KindChip } from '@/entities/artifact/ui/kind-chip'
 import { KindIcon } from '@/entities/artifact/ui/kind-icon'
 import { CategoryIcon } from '@/entities/artifact/ui/category-icon'
+import { GradeBadge } from '@/entities/artifact/ui/grade-badge'
+import { MaintenanceChip } from '@/entities/artifact/ui/maintenance-chip'
+import { VelocityIndicator } from '@/entities/artifact/ui/velocity-indicator'
 import { artifactLd } from '@/entities/artifact/lib/artifact-ld'
 import { kindLabelKey, kindPluralKey } from '@/entities/artifact/model/types'
 import {
+  CommitIcon,
   DownloadsIcon,
   ExternalLinkIcon,
   HomeIcon,
   InstallsIcon,
   LicenseIcon,
   NextPageIcon,
+  ScoreIcon,
   StarsIcon,
   UpdatedIcon,
   VerifiedIcon,
@@ -51,6 +57,9 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
     // Deliberately without `?profile=`: previewing the plan for another profile
     // is the same document, and every one of them must fold into this URL.
     path: `/a/${artifact.id}`,
+    // A per-artifact social card drawn from the catalog row, served by the
+    // `/a/<id>/og.png` route, instead of the site-wide default card.
+    imagePath: `/a/${artifact.id}/og.png`,
     title: `${artifact.displayName} — ${kindName} · ${translate(locale, 'app.name')}`,
     description: translate(locale, 'seo.artifact.description', {
       summary: artifact.summary,
@@ -92,7 +101,7 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 }
 
 export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps) {
-  const { artifact, plan, now } = loaderData
+  const { artifact, plan, now, origin } = loaderData
   const t = useT()
   const locale = useLocale()
 
@@ -134,6 +143,8 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <KindChip kind={artifact.kind} />
+              <GradeBadge grade={artifact.grade} className="size-6 text-xs" />
+              <MaintenanceChip status={artifact.maintenanceStatus} className="text-xs" />
               {artifact.verified ? (
                 <span
                   title={t('artifact.verifiedTitle')}
@@ -157,6 +168,9 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
             </p>
 
             <dl className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+              {/* The score always renders — unlike the counted stats, there is
+                  no "zero means unknown" case for it. */}
+              <Metric icon={ScoreIcon} label={t('artifact.score')} value={artifact.score} />
               {artifact.stats.installs > 0 ? (
                 <Metric
                   icon={InstallsIcon}
@@ -173,6 +187,21 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
                   label={t('artifact.downloads')}
                   value={artifact.stats.downloads}
                 />
+              ) : null}
+              {artifact.starVelocity7d > 0 ? (
+                <div className="flex items-center gap-1.5">
+                  <dt className="sr-only">{t('artifact.starVelocity')}</dt>
+                  <dd>
+                    <VelocityIndicator count={artifact.starVelocity7d} window="week" />
+                  </dd>
+                </div>
+              ) : artifact.starVelocity30d > 0 ? (
+                <div className="flex items-center gap-1.5">
+                  <dt className="sr-only">{t('artifact.starVelocity')}</dt>
+                  <dd>
+                    <VelocityIndicator count={artifact.starVelocity30d} window="month" />
+                  </dd>
+                </div>
               ) : null}
               {artifact.license ? (
                 <div className="flex items-center gap-1.5">
@@ -195,6 +224,32 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
                   </time>
                 </dd>
               </div>
+              {/* Scan provenance: which exact commit this row describes, so a
+                  reader can diff what the registry indexed against what the
+                  repository serves now. */}
+              {artifact.sourceCommitSha ? (
+                <div className="flex items-center gap-1.5">
+                  <dt className="sr-only">{t('artifact.indexedCommit')}</dt>
+                  <dd className="inline-flex items-center gap-1.5">
+                    <CommitIcon className="size-3.5" />
+                    {t('artifact.indexedCommit')}{' '}
+                    {artifact.sourceCommitUrl ? (
+                      <a
+                        href={artifact.sourceCommitUrl}
+                        target="_blank"
+                        rel="noreferrer noopener ugc"
+                        className="font-mono text-xs underline decoration-border underline-offset-2 transition-colors hover:text-foreground"
+                      >
+                        {artifact.sourceCommitSha.slice(0, 7)}
+                      </a>
+                    ) : (
+                      <code className="font-mono text-xs">
+                        {artifact.sourceCommitSha.slice(0, 7)}
+                      </code>
+                    )}
+                  </dd>
+                </div>
+              ) : null}
             </dl>
 
             {artifact.categories.length > 0 ? (
@@ -276,7 +331,10 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
         </section>
 
         <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-          <InstallPanel artifact={artifact} plan={plan} />
+          <div className="flex flex-col gap-4">
+            <InstallPanel artifact={artifact} plan={plan} />
+            <ReadmeBadge artifact={artifact} origin={origin} />
+          </div>
         </div>
       </div>
     </article>
