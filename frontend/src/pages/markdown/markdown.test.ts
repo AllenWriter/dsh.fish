@@ -4,7 +4,7 @@ import type { ArtifactDetail, InstallPlanDto } from '@/entities/artifact/model/t
 import { mockArtifact } from '@/entities/artifact/model/artifact.fixture'
 import { prefersMarkdown, estimateTokens } from './negotiate'
 import { artifactMarkdown, listingItemMarkdown } from './artifact'
-import { maybeMarkdownResponse } from './handler'
+import { maybeMarkdownResponse, supportsMarkdownNegotiation } from './handler'
 
 const ORIGIN = 'https://dsh.fish'
 
@@ -144,5 +144,24 @@ describe('maybeMarkdownResponse', () => {
       },
     } as unknown as Container
     expect(await maybeMarkdownResponse(request('/a/missing', 'text/markdown'), missing)).toBeNull()
+  })
+})
+
+describe('supportsMarkdownNegotiation', () => {
+  it('covers the home, listing and artifact paths, localized or not', () => {
+    expect(supportsMarkdownNegotiation('/')).toBe(true)
+    expect(supportsMarkdownNegotiation('/ja')).toBe(true)
+    expect(supportsMarkdownNegotiation('/browse')).toBe(true)
+    expect(supportsMarkdownNegotiation('/zh-CN/browse')).toBe(true)
+    expect(supportsMarkdownNegotiation('/kind/bundle')).toBe(true)
+    expect(supportsMarkdownNegotiation('/category/coding')).toBe(true)
+    expect(supportsMarkdownNegotiation('/a/dsh-hello')).toBe(true)
+  })
+
+  it('rejects UI-only pages and unknown taxonomy values', () => {
+    expect(supportsMarkdownNegotiation('/submit')).toBe(false)
+    expect(supportsMarkdownNegotiation('/docs')).toBe(false)
+    expect(supportsMarkdownNegotiation('/kind/nope')).toBe(false)
+    expect(supportsMarkdownNegotiation('/category/nope')).toBe(false)
   })
 })

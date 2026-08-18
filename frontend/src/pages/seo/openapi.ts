@@ -1,0 +1,379 @@
+import type { Route } from './+types/openapi'
+import { hubContext } from '@/shared/api/hub-context'
+
+/**
+ * `/openapi.json` — the OpenAPI description of the public JSON API.
+ *
+ * Covers the anonymous read surface only: catalog search, artifact detail,
+ * install-plan resolution, facets, the scoring model, and the versioned
+ * snapshot. Submissions, admin and auth are reachable by the same router but
+ * are not part of the machine-consumable contract, so they are not listed
+ * here. The api-catalog document at `/.well-known/api-catalog` points agents
+ * at this URL (`rel="service-desc"`), and every HTML page repeats that pointer
+ * in a `Link` header.
+ */
+export function loader({ context }: Route.LoaderArgs) {
+  const { baseUrl } = context.get(hubContext).container.config
+
+  return new Response(JSON.stringify(openApiDocument(baseUrl), null, 2), {
+    headers: {
+      'content-type': 'application/vnd.oai.openapi+json; charset=utf-8',
+      'cache-control': 'public, max-age=86400',
+    },
+  })
+}
+
+const ARTIFACT_KINDS = ['bundle', 'profile', 'skill', 'mcp-server', 'agent-preset', 'hook-bridge']
+
+const artifactSummarySchema = {
+  type: 'object',
+  required: [
+    'id',
+    'kind',
+    'displayName',
+    'summary',
+    'keywords',
+    'categories',
+    'sourceOrigin',
+    'sourceUrl',
+    'verified',
+    'deprecated',
+    'stats',
+    'score',
+    'grade',
+    'maintenanceStatus',
+    'starVelocity7d',
+    'starVelocity30d',
+    'updatedAt',
+  ],
+  properties: {
+    id: { type: 'string', description: 'Stable artifact slug, usable in /a/:id and /api/v1/artifacts/:id.' },
+    kind: { type: 'string', enum: ARTIFACT_KINDS },
+    displayName: { type: 'string' },
+    summary: { type: 'string' },
+    keywords: { type: 'array', items: { type: 'string' } },
+    categories: { type: 'array', items: { type: 'string' } },
+    sourceOrigin: { type: 'string', description: 'Where the indexer read it from: github, npm, awesome-list, or community.' },
+    sourceUrl: { type: 'string', format: 'uri' },
+    author: {
+      type: 'object',
+      required: ['name'],
+      properties: { name: { type: 'string' }, url: { type: 'string', format: 'uri' } },
+    },
+    license: { type: 'string' },
+    verified: { type: 'boolean' },
+    deprecated: { type: 'boolean' },
+    stats: {
+      type: 'object',
+      required: ['stars', 'downloads', 'installs'],
+      properties: {
+        stars: { type: 'integer' },
+        downloads: { type: 'integer' },
+        installs: { type: 'integer', description: 'Installs recorded through resolveInstallPlan(record=true).' },
+      },
+    },
+    score: { type: 'integer', minimum: 0, maximum: 100, description: 'Public quality score; reproducible from GET /api/v1/scoring.' },
+    grade: { type: 'string', enum: ['S', 'A', 'B', 'C'] },
+    maintenanceStatus: { type: 'string', enum: ['active', 'slowing', 'stale', 'abandoned'] },
+    starVelocity7d: { type: 'integer', description: 'Stars gained over the trailing 7 days.' },
+    starVelocity30d: { type: 'integer', description: 'Stars gained over the trailing 30 days.' },
+    updatedAt: { type: 'string', format: 'date-time' },
+    ogImageUrl: { type: 'string', format: 'uri' },
+  },
+} as const
+
+const errorSchema = {
+  type: 'object',
+  required: ['error'],
+  properties: {
+    error: {
+      type: 'object',
+      required: ['code', 'message'],
+      properties: {
+        code: { type: 'string', description: 'Machine-readable error code; switch on this, not the HTTP status.' },
+        message: { type: 'string' },
+        details: { type: 'object' },
+      },
+    },
+  },
+} as const
+
+function jsonResponse(description: string, schema: unknown) {
+  return {
+    description,
+    content: { 'application/json': { schema } },
+  }
+}
+
+export function openApiDocument(baseUrl: string) {
+  return {
+    openapi: '3.1.0',
+    info: {
+      title: 'dsh.fish catalog API',
+      version: '1.0.0',
+      description:
+        'Read-only access to the dsh plugin registry: search, artifact detail, install plans, facets, the public scoring model, and a versioned whole-catalog snapshot. All endpoints listed here are anonymous. Agents can also request any HTML page as markdown via `Accept: text/markdown`.',
+    },
+    servers: [{ url: baseUrl }],
+    paths: {
+      '/api/health': {
+        get: {
+          operationId: 'healthCheck',
+          summary: 'Liveness probe',
+          responses: {
+            '200': jsonResponse('The API is up.', {
+              type: 'object',
+              required: ['status'],
+              properties: { status: { type: 'string', enum: ['ok'] } },
+            }),
+          },
+        },
+      },
+      '/api/v1/artifacts': {
+        get: {
+          operationId: 'searchArtifacts',
+          summary: 'Search the catalog',
+          parameters: [
+            { name: 'q', in: 'query', schema: { type: 'string', maxLength: 200 }, description: 'Free-text query.' },
+            {
+              name: 'kind',
+              in: 'query',
+              schema: { type: 'array', items: { type: 'string', enum: ARTIFACT_KINDS } },
+              style: 'form',
+              explode: true,
+              description: 'Repeatable kind filter.',
+            },
+            {
+              name: 'category',
+              in: 'query',
+              schema: { type: 'array', items: { type: 'string' } },
+              style: 'form',
+              explode: true,
+              description: 'Repeatable category filter.',
+            },
+            {
+              name: 'sort',
+              in: 'query',
+              schema: { type: 'string', enum: ['relevance', 'popular', 'recent', 'name', 'rising'] },
+              description: '`rising` ranks by star velocity and needs about a week of metric history.',
+            },
+            { name: 'verified', in: 'query', schema: { type: 'boolean' } },
+            { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100 } },
+            { name: 'offset', in: 'query', schema: { type: 'integer', minimum: 0 } },
+          ],
+          responses: {
+            '200': jsonResponse('A page of matching artifacts.', {
+              type: 'object',
+              required: ['items', 'total', 'limit', 'offset'],
+              properties: {
+                items: { type: 'array', items: artifactSummarySchema },
+                total: { type: 'integer' },
+                limit: { type: 'integer' },
+                offset: { type: 'integer' },
+              },
+            }),
+            '400': jsonResponse('Invalid query parameters.', errorSchema),
+          },
+        },
+      },
+      '/api/v1/artifacts/{id}': {
+        get: {
+          operationId: 'getArtifactDetail',
+          summary: 'One artifact, with README and provenance',
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+          ],
+          responses: {
+            '200': jsonResponse('The artifact detail.', {
+              ...artifactSummarySchema,
+              required: [...artifactSummarySchema.required, 'payload', 'publishedAt'],
+              properties: {
+                ...artifactSummarySchema.properties,
+                payload: { type: 'object', description: 'Kind-specific installation data.' },
+                readmeMarkdown: { type: 'string' },
+                sourceDocBase: { type: 'string', format: 'uri', description: 'What a relative link in readmeMarkdown points at.' },
+                sourceAssetBase: { type: 'string', format: 'uri' },
+                sourceCommitSha: { type: 'string', description: 'The commit the indexer scanned, for git sources.' },
+                sourceCommitUrl: { type: 'string', format: 'uri' },
+                publishedAt: { type: 'string', format: 'date-time' },
+              },
+            }),
+            '404': jsonResponse('No artifact with that id.', errorSchema),
+          },
+        },
+      },
+      '/api/v1/artifacts/{id}/install-plan': {
+        get: {
+          operationId: 'resolveInstallPlan',
+          summary: 'Concrete steps that install the artifact',
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+            { name: 'profile', in: 'query', schema: { type: 'string', maxLength: 64 } },
+            {
+              name: 'record',
+              in: 'query',
+              schema: { type: 'boolean' },
+              description: 'Only the real installer sets this; it counts the install.',
+            },
+          ],
+          responses: {
+            '200': jsonResponse('The resolved install plan.', {
+              type: 'object',
+              required: ['artifactId', 'kind', 'profile', 'steps', 'manualCommands', 'warningKeys'],
+              properties: {
+                artifactId: { type: 'string' },
+                kind: { type: 'string', enum: ARTIFACT_KINDS },
+                profile: { type: 'string' },
+                steps: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    description: 'One of addPackage, writeFile, patchRow, requireCredential.',
+                  },
+                },
+                manualCommands: { type: 'array', items: { type: 'string' } },
+                warningKeys: { type: 'array', items: { type: 'string' } },
+                scannedAtCommit: { type: 'string' },
+              },
+            }),
+            '404': jsonResponse('No artifact with that id.', errorSchema),
+          },
+        },
+      },
+      '/api/v1/facets': {
+        get: {
+          operationId: 'listCatalogFacets',
+          summary: 'Filter rails: every kind with a count, every category',
+          responses: {
+            '200': jsonResponse('Kinds and categories.', {
+              type: 'object',
+              required: ['kinds', 'categories'],
+              properties: {
+                kinds: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    required: ['kind', 'labelKey', 'descriptionKey', 'packageManaged', 'count'],
+                    properties: {
+                      kind: { type: 'string', enum: ARTIFACT_KINDS },
+                      labelKey: { type: 'string' },
+                      descriptionKey: { type: 'string' },
+                      packageManaged: { type: 'boolean' },
+                      count: { type: 'integer' },
+                    },
+                  },
+                },
+                categories: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    required: ['id', 'labelKey'],
+                    properties: { id: { type: 'string' }, labelKey: { type: 'string' } },
+                  },
+                },
+              },
+            }),
+          },
+        },
+      },
+      '/api/v1/scoring': {
+        get: {
+          operationId: 'describeScoring',
+          summary: 'The public scoring model as data',
+          description:
+            'Weights, windows and thresholds behind the score / grade / maintenanceStatus fields, so anyone can recompute what the site shows.',
+          responses: {
+            '200': jsonResponse('The scoring model.', {
+              type: 'object',
+              required: ['weights', 'popularity', 'maintenance', 'quality', 'grades'],
+              properties: {
+                weights: {
+                  type: 'object',
+                  properties: {
+                    popularity: { type: 'number' },
+                    maintenance: { type: 'number' },
+                    quality: { type: 'number' },
+                  },
+                },
+                popularity: {
+                  type: 'object',
+                  properties: {
+                    raw: { type: 'string' },
+                    scale: { type: 'string' },
+                    saturation: { type: 'integer' },
+                  },
+                },
+                maintenance: {
+                  type: 'object',
+                  properties: {
+                    windowsDays: { type: 'object', properties: { active: { type: 'integer' }, slowing: { type: 'integer' }, stale: { type: 'integer' } } },
+                    dimensionScores: { type: 'object', properties: { active: { type: 'integer' }, slowing: { type: 'integer' }, stale: { type: 'integer' }, abandoned: { type: 'integer' } } },
+                  },
+                },
+                quality: {
+                  type: 'object',
+                  properties: {
+                    points: { type: 'object', properties: { verified: { type: 'integer' }, readme: { type: 'integer' }, license: { type: 'integer' }, author: { type: 'integer' } } },
+                  },
+                },
+                grades: { type: 'object', properties: { S: { type: 'integer' }, A: { type: 'integer' }, B: { type: 'integer' } } },
+              },
+            }),
+          },
+        },
+      },
+      '/api/v1/catalog/version': {
+        get: {
+          operationId: 'getCatalogVersion',
+          summary: 'Cheap poll: has the catalog changed?',
+          description:
+            'Metadata-only read. A sync client compares dataVersion with the one it holds and skips the snapshot download when nothing changed.',
+          responses: { '200': jsonResponse('Current catalog metadata.', catalogMetaSchema()) },
+        },
+      },
+      '/api/v1/catalog/snapshot': {
+        get: {
+          operationId: 'getCatalogSnapshot',
+          summary: 'The whole public catalog as one document',
+          description:
+            'The data version doubles as the ETag, so a conditional request with If-None-Match costs a 304 when nothing changed.',
+          parameters: [
+            { name: 'If-None-Match', in: 'header', schema: { type: 'string' }, description: 'A previously seen ETag.' },
+          ],
+          responses: {
+            '200': {
+              description: 'The catalog snapshot.',
+              headers: {
+                ETag: { schema: { type: 'string' }, description: 'The dataVersion, quoted.' },
+              },
+              content: {
+                'application/json': {
+                  schema: {
+                    ...catalogMetaSchema(),
+                    properties: {
+                      ...catalogMetaSchema().properties,
+                      artifacts: { type: 'array', items: artifactSummarySchema },
+                    },
+                  },
+                },
+              },
+            },
+            '304': { description: 'Unchanged since the presented ETag.' },
+          },
+        },
+      },
+    },
+  }
+}
+
+function catalogMetaSchema() {
+  return {
+    type: 'object',
+    required: ['dataVersion', 'artifactCount', 'generatedAt'],
+    properties: {
+      dataVersion: { type: 'string', pattern: '^[0-9a-f]{64}$' },
+      artifactCount: { type: 'integer' },
+      generatedAt: { type: 'string', format: 'date-time' },
+    },
+  } as const
+}

@@ -54,6 +54,10 @@ export default [
   // Atom feeds are localized: the default language is unprefixed like every
   // other reader-facing route, the other nine live under their prefix.
   route(':locale?/feed.xml', './pages/seo/feed.ts'),
+  // Agent-discovery resources. The api-catalog (RFC 9727) and the OpenAPI
+  // document are what the HTML pages' `Link` headers point at.
+  route('.well-known/api-catalog', './pages/seo/api-catalog.ts'),
+  route('openapi.json', './pages/seo/openapi.ts'),
 
   route('*', './pages/not-found/not-found-page.tsx'),
 ] satisfies RouteConfig

@@ -14,6 +14,24 @@ import { artifactMarkdown, listingItemMarkdown } from './artifact'
 const LISTING_LIMIT = 50
 
 /**
+ * Whether the path serves a markdown representation under
+ * `Accept: text/markdown`. The Worker uses this to decide whether an HTML page
+ * may advertise `rel="alternate"; type="text/markdown"` in its Link headers.
+ * Artifact ids are not checked for existence: a missing artifact answers 404,
+ * and error pages carry no discovery links.
+ */
+export function supportsMarkdownNegotiation(pathname: string): boolean {
+  const { path } = splitLocalePath(pathname)
+  if (path === '/' || path === '/browse') return true
+  if (/^\/a\/[^/]+$/.test(path)) return true
+  const kindMatch = /^\/kind\/([\w-]+)$/.exec(path)
+  if (kindMatch !== null) return isArtifactKind(kindMatch[1]!)
+  const categoryMatch = /^\/category\/([\w-]+)$/.exec(path)
+  if (categoryMatch !== null) return isCategory(categoryMatch[1]!)
+  return false
+}
+
+/**
  * The markdown side of content negotiation.
  *
  * Returns a markdown Response for the catalog's content pages when the client

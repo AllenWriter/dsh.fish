@@ -4,7 +4,8 @@ import { createContainer } from '@dsh-fish/backend/infrastructure/container.js'
 import type { HubEnv } from '@dsh-fish/backend/infrastructure/config/env.js'
 import { hubContext } from '@/shared/api/hub-context'
 import { canonicalLocaleRedirect } from '@/shared/config/i18n'
-import { maybeMarkdownResponse } from '@/pages/markdown'
+import { withDiscoveryLinks } from '@/shared/api/agent-discovery'
+import { maybeMarkdownResponse, supportsMarkdownNegotiation } from '@/pages/markdown'
 
 /**
  * The Worker entry. One deployment serves both halves of the product.
@@ -70,7 +71,17 @@ export default {
       ctx,
     })
 
-    return requestHandler(request, routerContext)
+    const response = await requestHandler(request, routerContext)
+
+    // Agent discovery (RFC 8288 / RFC 9727): HTML documents name their
+    // machine-readable counterparts in Link headers, so an agent never has to
+    // parse markup to find the api-catalog, the OpenAPI document, or the
+    // markdown representation of the page it is already reading.
+    return withDiscoveryLinks(
+      response,
+      request.url,
+      supportsMarkdownNegotiation(url.pathname),
+    )
   },
 
   /**

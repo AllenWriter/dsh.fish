@@ -148,6 +148,45 @@ install commands, the artifact's own readme verbatim (already markdown in the
 catalog — no HTML scrape involved), and the page's JSON-LD as a fenced block,
 matching the layout agents are taught to expect.
 
+## Link headers for agent discovery
+
+Every 200 HTML response carries `Link` headers (RFC 8288) naming the
+machine-readable doors into the catalog, so an agent learns them without
+parsing any markup:
+
+```
+Link: </.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"
+Link: </openapi.json>; rel="service-desc"; type="application/vnd.oai.openapi+json"
+Link: </docs>; rel="service-doc"; type="text/html"
+Link: </api/v1/catalog/snapshot>; rel="describedby"; type="application/json"
+```
+
+Pages that answer `Accept: text/markdown` add a fifth link pointing back at
+themselves: `<url>; rel="alternate"; type="text/markdown"` — the representation
+is negotiated on the same URL, so the href is the page's own. The Worker entry
+decides this through `supportsMarkdownNegotiation`
+(`frontend/src/pages/markdown/handler.ts`), which mirrors the markdown route
+table; error pages and UI-only pages (`/submit`, `/dashboard`, …) carry no
+links, and the decorator itself (`frontend/src/shared/api/agent-discovery.ts`)
+skips non-HTML and non-200 responses.
+
+The two documents those headers point at are resource routes under
+`frontend/src/pages/seo/`:
+
+- `/.well-known/api-catalog` — the RFC 9727 api-catalog linkset
+  (`application/linkset+json`). It anchors the JSON API at `/api/v1` with its
+  `service-desc` (the OpenAPI document), `service-doc` (`/docs`) and `status`
+  (`/api/health`), and anchors the origin with `describedby` pointing at the
+  whole-catalog snapshot.
+- `/openapi.json` — an OpenAPI 3.1 description of the anonymous read surface:
+  search, artifact detail, install-plan resolution, facets, the scoring model
+  and the versioned snapshot with its ETag/304 contract. Submissions, admin
+  and auth routes are deliberately absent — they are not part of the
+  machine-consumable contract. The document is hand-maintained
+  (`openApiDocument`), and its test asserts the path list stays exactly the
+  eight public endpoints, so adding an endpoint without documenting it fails
+  CI.
+
 ## Internal link graph
 
 A page nothing links to is a page nothing ranks. Three deliberate link sources:

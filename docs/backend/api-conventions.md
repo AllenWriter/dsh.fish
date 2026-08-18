@@ -56,6 +56,9 @@ For errors:
 
 - Prefix routes with `/api/v1/` by default.
 - Document breaking changes in [`docs/decisions/`](../decisions/README.md).
+- The anonymous read surface is described by an OpenAPI 3.1 document served at
+  `/openapi.json` (see [`docs/seo/crawling.md`](../seo/crawling.md)); keep it in
+  sync when adding or changing public endpoints.
 
 ## Pagination
 
