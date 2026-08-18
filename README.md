@@ -1,50 +1,82 @@
-# dsh.fish
+<div align="center">
+  <img src="frontend/public/icons/whale-brand.png" alt="dsh.fish logo" width="96" />
+  <h1>dsh.fish</h1>
+  <p><strong>The plugin registry for <a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a>.<br/>Discover, trust, and install plugins — from the web, the terminal, or your agent.</strong></p>
 
-**Discover and install plugins for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).**
+  <p>
+    <a href="https://dsh.fish"><img src="https://img.shields.io/badge/hub-dsh.fish-0b6bcb" alt="dsh.fish hub" /></a>
+    <a href="https://github.com/stvlynn/dsh.fish/actions/workflows/ci.yml"><img src="https://github.com/stvlynn/dsh.fish/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+    <a href="https://www.npmjs.com/package/@dsh-fish/cli"><img src="https://img.shields.io/npm/v/@dsh-fish/cli" alt="npm @dsh-fish/cli" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license" /></a>
+    <a href="https://discord.gg/PwZDHH4mv3"><img src="https://img.shields.io/badge/discord-join-5865F2?logo=discord&logoColor=white" alt="Discord" /></a>
+  </p>
 
-[Browse the plugin hub](https://dsh.fish) · [Join the Discord](https://discord.gg/PwZDHH4mv3) · [Explore the architecture](docs/project/architecture.md) · [Read the SEO design](docs/seo/README.md)
+  <p>
+    <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a>
+  </p>
 
-dsh.fish is the open-source plugin registry and installer for DeepSeek Harness.
-Search bundles, profiles, skills, MCP servers, agent presets, and hook bridges;
-inspect how each artifact changes a harness profile; then install it from the
-web or directly through an AI agent.
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/home-dark.png" />
+    <img src=".github/assets/home-light.png" alt="dsh.fish catalog home page" width="900" />
+  </picture>
+</div>
 
-DeepSeek Harness is built on “everything is a plugin” but ships no registry.
-Its README asks authors to tag repositories with the `dsh-plugin` topic and
-leaves discovery there. dsh.fish turns that topic into a searchable,
-multilingual catalog with a shared, machine-executable install plan.
+---
+
+DeepSeek Harness is built on "everything is a plugin" but ships no registry — its
+README asks authors to tag repositories with the `dsh-plugin` topic and leaves
+discovery there. dsh.fish turns that topic into a searchable, multilingual
+catalog with a shared, machine-executable install plan.
+
+## Features
+
+- **Typed catalog** — bundles, profiles, skills, MCP servers, agent presets and hook bridges, classified by probing what the harness can actually load, not by self-declared tags.
+- **Transparent trust signals** — every artifact carries a public, reproducible quality score (S/A/B/C), a maintenance status, and 7d/30d star velocity. The formula is served at [`GET /api/v1/scoring`](https://dsh.fish/api/v1/scoring), not buried in a blog post.
+- **Rising, not just popular** — per-sweep metrics snapshots power a `rising` sort that surfaces what is gaining stars this week.
+- **One install plan, three surfaces** — the same domain-owned plan renders as a copy-pasteable command on the web, executes in the CLI, and runs inside the harness via the hub plugin. They cannot drift apart.
+- **Commit-pinned provenance** — each artifact shows the exact commit it was indexed at, linked back to GitHub.
+- **A real API** — versioned REST endpoints plus a full-catalog snapshot with an ETag sync contract for mirrors and bots.
+- **Ten languages, first-class** — SSR pages, per-locale Atom feeds, hreflang and structured data on every plugin page, per-plugin OG cards and shields-style README badges.
+
+## Screenshots
+
+<div align="center">
+  <img src=".github/assets/browse-rising-light.png" alt="Browsing the catalog sorted by rising" width="700" />
+  <p><em>Browse by kind, category, popularity — or what is rising right now.</em></p>
+  <img src=".github/assets/plugin-detail-light.png" alt="A plugin detail page with score, install panel and README badge" width="700" />
+  <p><em>Every plugin page: quality score, install panel, commit provenance, and a copyable README badge.</em></p>
+</div>
 
 ## Quick start
 
-Browse the catalog at **[dsh.fish](https://dsh.fish)**, or add the hub plugin to
-your `web` profile:
+**Browse** the catalog at **[dsh.fish](https://dsh.fish)** — search, filter by kind
+and category, read the install plan, copy the command.
 
-```sh
-dsh plugin --profile web add github:stvlynn/dsh.fish#main
-```
-
-The plugin registers `hub_search`, `hub_show`, `hub_install`, `hub_list`,
-`hub_remove`, `hub_update`, and `hub_account`, so an agent can discover and
-install artifacts without leaving the harness.
-
-Prefer a terminal? The same plan is a copy-pasteable command:
+**Terminal** — the CLI applies the plan for you:
 
 ```sh
 npx @dsh-fish/cli add <artifact-id>
 ```
 
 `add` / `find` / `list` / `remove` / `update` match the [skills CLI](https://github.com/vercel-labs/skills)
-vocabulary. Unlike a comment telling you to copy files, this actually writes
-skills, MCP rows, presets and hook bridges into `$DSH_HOME`.
+vocabulary and actually write skills, MCP rows, presets and hook bridges into
+`$DSH_HOME`.
 
-Publishing a compatible project? Add the **`dsh-plugin` GitHub topic**. The hub
-will inspect its `package.json`, `SKILL.md`, or `agent.cordis.yml` and classify
-what the harness can actually load.
+**Inside the harness** — add the hub plugin once:
+
+```sh
+dsh plugin --profile web add github:stvlynn/dsh.fish#main
+```
+
+It registers `hub_search`, `hub_show`, `hub_install`, `hub_list`, `hub_remove`,
+`hub_update` and `hub_account`, so an agent can discover and install artifacts
+without leaving the session. Signing in uses the OAuth device flow.
+
+**Publishing a plugin?** Tag your repository with the **`dsh-plugin`** topic. The
+hourly crawl inspects its `package.json`, `SKILL.md` or `agent.cordis.yml` and
+classifies what the harness can actually load.
 
 ## What it indexes
-
-Six artifact kinds, each taken from something the harness really loads, each
-with its own install mechanism:
 
 | Kind             | What it is                               | How it installs                             |
 | ---------------- | ---------------------------------------- | ------------------------------------------- |
@@ -54,22 +86,6 @@ with its own install mechanism:
 | **MCP server**   | external Model Context Protocol server   | a `dsh-mcp-client` row in the profile patch |
 | **Agent preset** | directory holding one `agent.cordis.yml` | written to `$DSH_HOME/.agent-presets/<id>`  |
 | **Hook bridge**  | Claude Code / Codex hook bridge          | a bridge plugin row in the profile patch    |
-
-## How it works
-
-**From a browser** — search, filter by kind and category, read the plan, copy the
-command (`npx @dsh-fish/cli add <id>`).
-
-**From a terminal** — the hub CLI applies that plan: files under `$DSH_HOME`,
-package-manager adds, and profile patch rows.
-
-**From inside your agent** — use the hub plugin installed in the quick start.
-Signing in uses the OAuth device flow: the plugin prints a code, you approve it
-in a browser, and the harness gets a token.
-
-Both paths resolve the **same** install plan from the same domain code, so the
-command on the website and the one the agent (or the CLI) runs cannot drift
-apart.
 
 ## Repository layout
 
@@ -83,80 +99,26 @@ docs/       architecture, layer conventions, operations, ADRs
 ```
 
 Both halves deploy as **one Cloudflare Worker**: Hono at `/api/*`, React Router
-SSR everywhere else, D1 for the catalog and Better Auth's tables, KV for
-sessions and rate limiting, and a Cron Trigger that re-crawls every hour.
-
-## Ten languages
-
-Every page is served in English, Simplified and Traditional Chinese, Japanese,
-Korean, Spanish, French, German, Brazilian Portuguese and Russian, under a path
-prefix — `/ja/browse`, `/zh-CN/a/<id>` — with English unprefixed at the root.
-
-A directory only ranks if it is found, so the multilingual surface is part of
-the product rather than a translation layer bolted on: reciprocal `hreflang`
-across all ten, canonical URLs that fold filters and profile previews away,
-`schema.org` markup on every plugin page, indexable `/kind/<kind>` and
-`/category/<category>` landing pages instead of query-string filters, and a
-sitemap set that lists every indexed plugin in every language with its real
-`lastmod`.
-
-The catalog itself stays language-neutral: an artifact's summary and readme are
-whatever its author wrote, and the frame around them is what gets translated.
-See [`docs/seo/`](docs/seo/README.md) and
-[`docs/frontend/i18n.md`](docs/frontend/i18n.md).
+SSR everywhere else, D1 for the catalog, KV for sessions, and a Cron Trigger
+that re-crawls every hour.
 
 ## Development
 
 ```sh
 pnpm install
-pnpm --filter @dsh-fish/backend run db:generate   # regenerate migrations
-pnpm run db:migrate:local                          # apply to local D1
-pnpm run dev                                       # http://localhost:5173
+pnpm run dev    # http://localhost:5173
 ```
 
-Quality gates:
-
-```sh
-pnpm run typecheck
-pnpm run test
-pnpm run test:e2e
-pnpm run build
-```
-
-The social cards are generated, not drawn. Re-run them when the palette,
-wordmark, or repository positioning changes:
-
-```sh
-pnpm --filter @dsh-fish/frontend run og:build
-```
-
-This writes the site-wide Open Graph image to `frontend/public/og.png` and the
-GitHub repository Social Preview to `.github/social-preview.png`.
+Quality gates: `pnpm run typecheck && pnpm run test && pnpm run test:e2e && pnpm run build`.
 
 Deployment, bindings and secrets: [`docs/operations/deployment.md`](docs/operations/deployment.md).
+Conventions and architecture: [`AGENTS.md`](AGENTS.md), [`docs/project/architecture.md`](docs/project/architecture.md), [`docs/decisions/`](docs/decisions/README.md).
 
 ## Community
 
 - **Source and issues** — [github.com/stvlynn/dsh.fish](https://github.com/stvlynn/dsh.fish)
-- **Discord** — [discord.gg/PwZDHH4mv3](https://discord.gg/PwZDHH4mv3), for plugin
-  authors, harness questions, and anything that is not yet an issue
-
-Both are linked from the site itself: the header bar carries the two marks, and
-the footer names them. The URLs live in
-[`frontend/src/shared/config/site.ts`](frontend/src/shared/config/site.ts), so
-they are declared once and reused by the pages and by `Organization.sameAs`.
-
-## Documentation
-
-Start with [`AGENTS.md`](AGENTS.md) (same file as `CLAUDE.md`) for the ground
-rules, then:
-
-- [`docs/project/architecture.md`](docs/project/architecture.md) — system architecture and the artifact taxonomy
-- [`docs/decisions/adr-0001-plugin-hub-architecture.md`](docs/decisions/adr-0001-plugin-hub-architecture.md) — why it is built this way
-- [`docs/frontend/`](docs/frontend/README.md) — FSD conventions
-- [`docs/backend/`](docs/backend/README.md) — DDD conventions
-- [`docs/seo/`](docs/seo/README.md) — multilingual URLs, indexation, structured data, crawling
+- **Discord** — [discord.gg/PwZDHH4mv3](https://discord.gg/PwZDHH4mv3)
 
 ## License
 
-MIT
+[MIT](LICENSE)
