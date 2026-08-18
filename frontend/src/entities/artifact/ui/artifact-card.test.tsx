@@ -58,6 +58,13 @@ describe('ArtifactCard trust signals', () => {
     expect(html).toContain('+12 this week')
   })
 
+  it('omits the maintenance chip when the artifact is merely active', () => {
+    const html = render({ ...base, maintenanceStatus: 'active' })
+
+    expect(html).not.toContain('maintenanceTitle')
+    expect(html).not.toContain('>Active</span>')
+  })
+
   it('hides the velocity when the artifact has not gained stars', () => {
     const html = render({ ...base, starVelocity7d: 0 })
 

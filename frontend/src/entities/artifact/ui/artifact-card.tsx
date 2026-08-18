@@ -19,9 +19,10 @@ import { cn } from '@/shared/lib/utils'
  * reader scanning a grid actually needs. Stats sit last and only appear when
  * they are non-zero: an npm bundle has downloads and no stars, a GitHub skill
  * has stars and no downloads, and rendering a dead `0 ★` on every card would
- * add noise to every row to serve neither. The trust signals break that rule
- * on purpose: grade and maintenance are always known, so an absent badge would
- * read as "unknown" rather than "zero".
+ * add noise to every row to serve neither. The grade breaks that rule on
+ * purpose: it is always known, so an absent badge would read as "unknown"
+ * rather than "zero". Maintenance follows the opposite rule — "active" is the
+ * default, so only deviations earn a chip.
  *
  * A GitHub Social preview, when the source has one, is a blurred texture
  * behind the type — never a second copy of the title.
@@ -100,15 +101,17 @@ export function ArtifactCard({ artifact, index = 0 }: { artifact: Artifact; inde
           </span>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <MaintenanceChip status={artifact.maintenanceStatus} />
-          {artifact.deprecated ? (
-            <span className="inline-flex w-fit items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
-              <WarningIcon className="size-3" weight="bold" />
-              {t('artifact.deprecated')}
-            </span>
-          ) : null}
-        </div>
+        {artifact.maintenanceStatus !== 'active' || artifact.deprecated ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <MaintenanceChip status={artifact.maintenanceStatus} />
+            {artifact.deprecated ? (
+              <span className="inline-flex w-fit items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
+                <WarningIcon className="size-3" weight="bold" />
+                {t('artifact.deprecated')}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </motion.article>
   )

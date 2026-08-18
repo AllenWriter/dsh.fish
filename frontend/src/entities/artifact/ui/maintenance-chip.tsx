@@ -5,9 +5,11 @@ import { cn } from '@/shared/lib/utils'
 /**
  * How actively the source is maintained, as a chip.
  *
- * Always rendered, in words: a missing chip would read as "unknown", and the
- * status is one of the facts a reader weighs before installing. The title says
- * what the status means; the word alone is jargon otherwise.
+ * Only deviations render. "Active" is the default state of the catalog — a chip
+ * on every card carries no information and reads as noise, so the component
+ * renders nothing for it and the absence simply means "maintained". Slowing,
+ * stale and abandoned are the facts a reader weighs before installing, so they
+ * always render, in words; the title says what the status means.
  */
 export function MaintenanceChip({
   status,
@@ -17,6 +19,7 @@ export function MaintenanceChip({
   className?: string
 }) {
   const t = useT()
+  if (status === 'active') return null
   return (
     <span
       title={t(`artifact.maintenanceTitle.${status}`)}
