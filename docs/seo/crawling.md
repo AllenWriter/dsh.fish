@@ -125,6 +125,29 @@ child sitemap, and submits the full URL set to `https://api.indexnow.org` in
 batches of 10,000 (the protocol cap). URLs come from the sitemap rather than
 the database so the submitted set is by definition the set we want indexed.
 
+## Markdown for agents
+
+Agents can ask for any content page as markdown instead of HTML:
+
+```sh
+curl https://dsh.fish/a/<artifact-id> -H "Accept: text/markdown"
+```
+
+The negotiation lives in the Worker entry (`frontend/workers/app.ts` →
+`frontend/src/pages/markdown/`). When `Accept` prefers `text/markdown`
+(q-values honoured, wildcard ignored), the handler answers from the same use
+cases the SSR loaders use; anything else — browsers, UI pages like `/submit`,
+unknown paths — falls through to React Router unchanged. Responses carry
+`Content-Type: text/markdown`, `Vary: Accept`, an `x-markdown-tokens` estimate,
+and a `content-signal` header.
+
+Covered paths: `/`, `/browse` (filters included), `/kind/<kind>`,
+`/category/<category>` and `/a/<id>`, in every locale. The plugin page variant
+is the strongest one: frontmatter from the page meta, the metadata row, the
+install commands, the artifact's own readme verbatim (already markdown in the
+catalog — no HTML scrape involved), and the page's JSON-LD as a fenced block,
+matching the layout agents are taught to expect.
+
 ## Internal link graph
 
 A page nothing links to is a page nothing ranks. Three deliberate link sources:

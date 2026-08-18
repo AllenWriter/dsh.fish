@@ -1,0 +1,165 @@
+import type { Container } from '@dsh-fish/backend/infrastructure/container.js'
+import { localizedPath, splitLocalePath, translate, type Locale } from '@/shared/config/i18n'
+import {
+  CATEGORIES,
+  isArtifactKind,
+  isCategory,
+  kindPluralKey,
+} from '@/entities/artifact/model/types'
+import { prefersMarkdown } from './negotiate'
+import { markdownResponse } from './response'
+import { artifactMarkdown, listingItemMarkdown } from './artifact'
+
+/** How many rows a markdown listing carries. Agents page through the API. */
+const LISTING_LIMIT = 50
+
+/**
+ * The markdown side of content negotiation.
+ *
+ * Returns a markdown Response for the catalog's content pages when the client
+ * asks for `text/markdown`, and `null` for everything else — browsers, pages
+ * whose value is their UI (submit, dashboard, auth), and unknown or invalid
+ * paths all fall through to the React Router handler unchanged.
+ */
+export async function maybeMarkdownResponse(
+  request: Request,
+  container: Container,
+): Promise<Response | null> {
+  if (!prefersMarkdown(request.headers.get('accept'))) return null
+
+  const url = new URL(request.url)
+  const { locale, path } = splitLocalePath(url.pathname)
+  const origin = container.config.baseUrl
+
+  const artifactMatch = /^\/a\/([^/]+)$/.exec(path)
+  if (artifactMatch !== null) {
+    return artifactResponse(container, origin, locale, artifactMatch[1]!, url)
+  }
+
+  if (path === '/') return homeResponse(container, origin, locale)
+
+  const kindMatch = /^\/kind\/([\w-]+)$/.exec(path)
+  if (kindMatch !== null) {
+    const raw = kindMatch[1]!
+    if (!isArtifactKind(raw)) return null
+    return listingResponse(container, origin, locale, url, {
+      kinds: [raw],
+      categories: [],
+      title: translate(locale, kindPluralKey(raw)),
+    })
+  }
+
+  const categoryMatch = /^\/category\/([\w-]+)$/.exec(path)
+  if (categoryMatch !== null) {
+    const raw = categoryMatch[1]!
+    if (!isCategory(raw)) return null
+    const labelKey =
+      CATEGORIES.find((entry) => entry.id === raw)?.labelKey ?? `category.${raw}`
+    return listingResponse(container, origin, locale, url, {
+      kinds: [],
+      categories: [raw],
+      title: translate(locale, labelKey),
+    })
+  }
+
+  if (path === '/browse') {
+    return listingResponse(container, origin, locale, url, {
+      kinds: url.searchParams.getAll('kind'),
+      categories: url.searchParams.getAll('category'),
+      title: translate(locale, 'browse.title'),
+    })
+  }
+
+  return null
+}
+
+async function artifactResponse(
+  container: Container,
+  origin: string,
+  locale: Locale,
+  artifactId: string,
+  url: URL,
+): Promise<Response | null> {
+  const artifact = await container.useCases.getArtifactDetail
+    .execute(artifactId)
+    .catch(() => undefined)
+  if (!artifact) return null
+
+  const profile = url.searchParams.get('profile') ?? undefined
+  const plan = await container.useCases.resolveInstallPlan.execute({
+    artifactId: artifact.id,
+    ...(profile === undefined ? {} : { profile }),
+  })
+
+  return markdownResponse(artifactMarkdown(origin, locale, artifact, plan))
+}
+
+async function homeResponse(
+  container: Container,
+  origin: string,
+  locale: Locale,
+): Promise<Response> {
+  const trending = await container.useCases.searchArtifacts.execute({
+    sort: 'popular',
+    limit: 20,
+  })
+
+  const lines: string[] = [
+    '---',
+    `title: ${translate(locale, 'app.name')}`,
+    `description: ${translate(locale, 'app.description')}`,
+    `image: ${origin}/og.png`,
+    '---',
+    '',
+    `# ${translate(locale, 'app.name')}`,
+    '',
+    translate(locale, 'app.description'),
+    '',
+    `- ${translate(locale, 'markdown.browseAll')}: ${origin}${localizedPath(locale, '/browse')}`,
+    `- API: ${origin}/api/v1/artifacts`,
+    `- ${translate(locale, 'markdown.catalogSnapshot')}: ${origin}/api/v1/catalog/snapshot`,
+    '',
+    `## ${translate(locale, 'home.trending')}`,
+    '',
+    ...trending.items.map((item) => listingItemMarkdown(origin, locale, item)),
+    '',
+  ]
+
+  return markdownResponse(lines.join('\n'))
+}
+
+async function listingResponse(
+  container: Container,
+  origin: string,
+  locale: Locale,
+  url: URL,
+  filter: { kinds: readonly string[]; categories: readonly string[]; title: string },
+): Promise<Response> {
+  const query = url.searchParams.get('q') ?? ''
+
+  const results = await container.useCases.searchArtifacts.execute({
+    ...(query === '' ? {} : { text: query }),
+    kinds: [...filter.kinds],
+    categories: [...filter.categories],
+    ...(url.searchParams.get('sort') ? { sort: url.searchParams.get('sort')! } : {}),
+    ...(url.searchParams.get('verified') === 'true' ? { verifiedOnly: true } : {}),
+    limit: LISTING_LIMIT,
+    offset: Number(url.searchParams.get('offset') ?? 0),
+  })
+
+  const lines: string[] = [
+    '---',
+    `title: ${filter.title} — ${translate(locale, 'app.name')}`,
+    `description: ${translate(locale, 'seo.browse.description')}`,
+    '---',
+    '',
+    `# ${filter.title}`,
+    '',
+    translate(locale, 'markdown.resultCount', { count: results.total }),
+    '',
+    ...results.items.map((item) => listingItemMarkdown(origin, locale, item)),
+    '',
+  ]
+
+  return markdownResponse(lines.join('\n'))
+}

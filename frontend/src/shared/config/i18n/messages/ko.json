@@ -217,5 +217,9 @@
   "seo.home.title": "{name} — {tagline}",
   "seo.browse.description": "DeepSeek Harness용으로 수록된 모든 번들, 스킬, MCP 서버, 에이전트 프리셋, 훅 브리지, 프로필을 검색하세요.",
   "seo.artifact.description": "{summary} DeepSeek Harness용 {kind} — 명령 한 줄을 복사해 설치하세요.",
-  "seo.docs.description": "dsh.fish 크롤러가 번들, 스킬, MCP 서버, 에이전트 프리셋, 프로필로 색인하려면 저장소나 npm 패키지가 무엇을 선언해야 하는지 설명합니다."
+  "seo.docs.description": "dsh.fish 크롤러가 번들, 스킬, MCP 서버, 에이전트 프리셋, 프로필로 색인하려면 저장소나 npm 패키지가 무엇을 선언해야 하는지 설명합니다.",
+  "artifact.maintenanceLabel": "유지 관리",
+  "markdown.browseAll": "카탈로그 둘러보기",
+  "markdown.catalogSnapshot": "카탈로그 스냅숏",
+  "markdown.resultCount": "결과 {count}개"
 }

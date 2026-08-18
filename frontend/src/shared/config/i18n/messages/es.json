@@ -217,5 +217,9 @@
   "seo.home.title": "{name} — {tagline}",
   "seo.browse.description": "Busca entre todos los bundles, skills, servidores MCP, presets de agente, puentes de hooks y perfiles indexados para DeepSeek Harness.",
   "seo.artifact.description": "{summary} Un {kind} para DeepSeek Harness: copia un comando para instalarlo.",
-  "seo.docs.description": "Qué debe declarar un repositorio o paquete npm para que el crawler de dsh.fish lo indexe como bundle, skill, servidor MCP, preset de agente o perfil."
+  "seo.docs.description": "Qué debe declarar un repositorio o paquete npm para que el crawler de dsh.fish lo indexe como bundle, skill, servidor MCP, preset de agente o perfil.",
+  "artifact.maintenanceLabel": "Mantenimiento",
+  "markdown.browseAll": "Explorar el catálogo",
+  "markdown.catalogSnapshot": "Instantánea del catálogo",
+  "markdown.resultCount": "{count} resultados"
 }

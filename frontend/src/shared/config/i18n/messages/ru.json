@@ -217,5 +217,9 @@
   "seo.home.title": "{name} — {tagline}",
   "seo.browse.description": "Ищите среди всех бандлов, навыков, MCP-серверов, пресетов агентов, мостов хуков и профилей, собранных для DeepSeek Harness.",
   "seo.artifact.description": "{summary} Это {kind} для DeepSeek Harness — скопируйте одну команду, чтобы установить.",
-  "seo.docs.description": "Что должен объявить репозиторий или npm-пакет, чтобы краулер dsh.fish внёс его в каталог как бандл, навык, MCP-сервер, пресет агента или профиль."
+  "seo.docs.description": "Что должен объявить репозиторий или npm-пакет, чтобы краулер dsh.fish внёс его в каталог как бандл, навык, MCP-сервер, пресет агента или профиль.",
+  "artifact.maintenanceLabel": "Сопровождение",
+  "markdown.browseAll": "Обзор каталога",
+  "markdown.catalogSnapshot": "Снимок каталога",
+  "markdown.resultCount": "Результатов: {count}"
 }

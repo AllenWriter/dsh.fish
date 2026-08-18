@@ -4,6 +4,7 @@ import { createContainer } from '@dsh-fish/backend/infrastructure/container.js'
 import type { HubEnv } from '@dsh-fish/backend/infrastructure/config/env.js'
 import { hubContext } from '@/shared/api/hub-context'
 import { canonicalLocaleRedirect } from '@/shared/config/i18n'
+import { maybeMarkdownResponse } from '@/pages/markdown'
 
 /**
  * The Worker entry. One deployment serves both halves of the product.
@@ -53,9 +54,18 @@ export default {
 
     // Loaders resolve use cases in-process. A server-rendered page therefore
     // costs one D1 round trip, not an HTTP hop back into the same Worker.
+    const container = createContainer(env, request.cf)
+
+    // Agents get the catalog as markdown when they ask for it; browsers never
+    // send `Accept: text/markdown`, so nothing changes for them.
+    const markdown = await maybeMarkdownResponse(request, container)
+    if (markdown !== null) {
+      return markdown
+    }
+
     const routerContext = new RouterContextProvider()
     routerContext.set(hubContext, {
-      container: createContainer(env, request.cf),
+      container,
       env,
       ctx,
     })

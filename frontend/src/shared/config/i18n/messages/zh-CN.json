@@ -217,5 +217,9 @@
   "seo.home.title": "{name} — {tagline}",
   "seo.browse.description": "搜索为 DeepSeek Harness 收录的全部 bundle、技能、MCP 服务器、Agent 预设、Hook 桥接与配置档。",
   "seo.artifact.description": "{summary} 面向 DeepSeek Harness 的{kind}——复制一条命令即可安装。",
-  "seo.docs.description": "一个仓库或 npm 包需要声明什么，dsh.fish 的爬虫才会把它收录为 bundle、技能、MCP 服务器、Agent 预设或配置档。"
+  "seo.docs.description": "一个仓库或 npm 包需要声明什么，dsh.fish 的爬虫才会把它收录为 bundle、技能、MCP 服务器、Agent 预设或配置档。",
+  "artifact.maintenanceLabel": "维护状态",
+  "markdown.browseAll": "浏览目录",
+  "markdown.catalogSnapshot": "目录快照",
+  "markdown.resultCount": "{count} 个结果"
 }

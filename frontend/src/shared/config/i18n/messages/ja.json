@@ -217,5 +217,9 @@
   "seo.home.title": "{name} — {tagline}",
   "seo.browse.description": "DeepSeek Harness 向けに収録されたバンドル、スキル、MCP サーバー、エージェントプリセット、フックブリッジ、プロファイルをまとめて検索できます。",
   "seo.artifact.description": "{summary} DeepSeek Harness 向けの{kind}。コマンドを 1 つコピーするだけで入ります。",
-  "seo.docs.description": "dsh.fish のクローラーがバンドル、スキル、MCP サーバー、エージェントプリセット、プロファイルとして収録するために、リポジトリや npm パッケージが宣言すべき内容。"
+  "seo.docs.description": "dsh.fish のクローラーがバンドル、スキル、MCP サーバー、エージェントプリセット、プロファイルとして収録するために、リポジトリや npm パッケージが宣言すべき内容。",
+  "artifact.maintenanceLabel": "メンテナンス",
+  "markdown.browseAll": "カタログを見る",
+  "markdown.catalogSnapshot": "カタログスナップショット",
+  "markdown.resultCount": "{count} 件の結果"
 }
