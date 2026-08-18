@@ -75,12 +75,15 @@
      * hero: low opacity, desaturated, and blurred so GitHub's generated cards
      * (which contain text) cannot compete with the title. Theme values live
      * here so components never scatter `dark:` overlays.
+     *
+     * Light mode blurs harder and dims further than dark: on a white card the
+     * preview's bright areas otherwise read as stains instead of a wash.
      */
-    --artifact-og-opacity: 0.42;
-    --artifact-og-opacity-hover: 0.52;
+    --artifact-og-opacity: 0.32;
+    --artifact-og-opacity-hover: 0.4;
     --artifact-og-saturate: 0.88;
-    --artifact-og-blur: 6px;
-    --artifact-og-scale: 1.08;
+    --artifact-og-blur: 16px;
+    --artifact-og-scale: 1.15;
     --artifact-og-scrim: linear-gradient(
       180deg,
       color-mix(in oklch, var(--card) 28%, transparent) 0%,

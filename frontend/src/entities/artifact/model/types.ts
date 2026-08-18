@@ -51,11 +51,16 @@ export const KIND_CHIP =
  * (gold is better than grey at a glance), and the letter is always printed too,
  * so nothing is carried by colour alone. Muted fills and borders keep the set
  * quieter than the one accent and the destructive state.
+ *
+ * The fills are colour-mixed over `--card`, not bare `/10` tints: the badge sits
+ * on the card's OG backdrop where the scrim is thinnest, and a translucent fill
+ * smudges the letter into the texture. Mixing over `--card` keeps the same tint
+ * while staying opaque in both themes.
  */
 export const GRADE_BADGE: Readonly<Record<QualityGrade, string>> = {
-  S: 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400',
-  A: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
-  B: 'border-sky-500/40 bg-sky-500/10 text-sky-700 dark:text-sky-400',
+  S: 'border-amber-500/50 bg-[color-mix(in_oklch,var(--card)_85%,#f59e0b)] text-amber-700 dark:text-amber-400',
+  A: 'border-emerald-500/50 bg-[color-mix(in_oklch,var(--card)_85%,#10b981)] text-emerald-700 dark:text-emerald-400',
+  B: 'border-sky-500/50 bg-[color-mix(in_oklch,var(--card)_85%,#0ea5e9)] text-sky-700 dark:text-sky-400',
   C: 'border-border bg-muted text-muted-foreground',
 }
 

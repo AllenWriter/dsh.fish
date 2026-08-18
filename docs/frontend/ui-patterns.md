@@ -220,6 +220,8 @@ A GitHub Social preview is a texture behind the card, not a second title.
 - Drive opacity, blur, saturation and the scrim from `--artifact-og-*` in `app.css`.
 - Hover may shift opacity only, only under `@media (hover: hover) and (pointer: fine)`, and not under `prefers-reduced-motion`.
 - Animate `opacity` only. Do not animate `blur` or `transform` on hover.
+- Light mode blurs harder and dims further than dark; on a white card the preview's bright areas otherwise read as stains.
+- Anything sitting on the texture (grade badge, chips) needs an opaque fill — colour-mix tints over `--card`, never a bare `/10` alpha that smudges into the image.
 
 ## Author portraits
 
