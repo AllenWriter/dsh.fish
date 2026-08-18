@@ -59,3 +59,11 @@ jobs:
 
       - name: End-to-end (plugin readme, mobile viewports)
         run: pnpm run test:e2e
+
+      - name: Upload e2e results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: test-results/
+          retention-days: 7
