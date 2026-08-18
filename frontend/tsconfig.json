@@ -13,6 +13,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "src/shared/config/i18n/messages/*.json",
     ".react-router/types/**/*"
   ]
 }

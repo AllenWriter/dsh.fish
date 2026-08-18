@@ -78,8 +78,8 @@ is built **per request**, because D1 and KV bindings arrive per request.
 | `app/` | `root.tsx`, `routes.ts`, global styles |
 | `pages/` | One slice per route; composes widgets, owns loaders |
 | `widgets/` | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel` |
-| `features/` | `account-menu` — the signed-in identity and the actions on it; `locale-switcher` — the language of the page you are on |
-| `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip`, `artifactLd` |
+| `features/` | `account-menu` — the signed-in identity and the actions on it; `locale-switcher` — the language of the page you are on; `catalog-search` — the header palette's live query against `GET /api/v1/artifacts` |
+| `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip`, `AuthorCard`, `artifactLd` |
 | `shared/` | beui components (`ui/motion/`, `ui/avatar`, `ui/animated-number`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, auth client, `hub-context` |
 
 The account slot in the header is the whole signed-in affordance: signed out it
@@ -87,6 +87,20 @@ is the sign-in call to action; signed in it is the portrait Better Auth cached
 from the OAuth profile — GitHub's, for most accounts — opening a beui popover
 that carries the dashboard link and sign-out. Nothing about the account is
 duplicated in the navigation, at any width.
+
+The plugin page header gives the repository author their own card, in the
+column the install panel occupies below: beui's Avatar, the name the catalog
+stored, and an outbound link to the profile. The source link sits directly
+under that portrait — two facts about where the plugin comes from, stacked,
+rather than a source row parked beside the install commands. A GitHub
+profile URL is also GitHub's `{login}.png`, so the portrait is not a second
+stored image.
+
+The header control labelled "Search plugins" queries `GET /api/v1/artifacts`
+as the reader types — the same `SearchArtifacts` use case the browse page
+loader runs — and Enter takes that query to `/browse?q=`. An empty palette
+is still the destinations the bar already lists; a typed query is catalog
+search, not a fuzzy filter of those four links.
 
 React Router requires every route module to live inside `appDirectory`, so
 `appDirectory` is `src` — the whole FSD tree. `src/root.tsx` and `src/routes.ts`
@@ -299,7 +313,7 @@ tokens that have no break point. Tables and fences keep their own
 
 ### No hardcoded copy
 
-`frontend/src/shared/config/i18n/messages/` holds every user-facing string. The
+`frontend/src/shared/config/i18n/messages/*.json` holds every user-facing string. The
 backend sends message *keys* (`artifactKind.bundle.label`,
 `install.warning.buildAllowance`), never prose, so the catalog stays
 language-neutral in the database.

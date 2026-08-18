@@ -2,10 +2,10 @@ import { useNavigate } from 'react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { EASE_OUT } from '@/shared/lib/ease'
-import { CommandPalette } from '@/shared/ui/motion/command-palette'
 import { IconSwap } from '@/shared/ui/icon-swap'
 import { LocaleLink, LocaleNavLink, useLocalePath } from '@/shared/ui/locale-link'
 import { AccountMenu } from '@/features/account-menu'
+import { CatalogSearchPalette } from '@/features/catalog-search'
 import { LocaleSwitcher } from '@/features/locale-switcher'
 import { useT } from '@/shared/config/i18n'
 import { HUB_DISCORD_URL, HUB_REPO_URL } from '@/shared/config/site'
@@ -122,6 +122,14 @@ export function SiteHeader() {
 
         <button
           type="button"
+          aria-label={t('nav.search')}
+          onClick={() => setPaletteOpen(true)}
+          className="press ml-auto grid size-9 place-items-center rounded-lg border border-border text-muted-foreground hover:border-border-strong sm:hidden"
+        >
+          <SearchIcon className="size-4" weight="bold" />
+        </button>
+        <button
+          type="button"
           onClick={() => setPaletteOpen(true)}
           className="press ml-auto hidden h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm text-muted-foreground hover:border-border-strong sm:flex"
         >
@@ -145,7 +153,7 @@ export function SiteHeader() {
           </a>
         ))}
 
-        <LocaleSwitcher className="ml-auto sm:ml-0" />
+        <LocaleSwitcher />
 
         <ThemeToggle />
 
@@ -220,7 +228,11 @@ export function SiteHeader() {
       ) : null}
       </AnimatePresence>
 
-      <CommandPalette items={commands} open={paletteOpen} onOpenChange={setPaletteOpen} />
+      <CatalogSearchPalette
+        commands={commands}
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+      />
     </header>
   )
 }
