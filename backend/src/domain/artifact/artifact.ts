@@ -6,6 +6,8 @@ import type { ArtifactPayload } from './artifact-payload.js'
 import { assertPayloadMatchesKind } from './artifact-payload.js'
 import { normalizeCategories } from './category.js'
 import { ogImageUrl } from './og-image-url.js'
+import type { QualityScore } from './quality-score.js'
+import { scoreArtifact } from './quality-score.js'
 import type { SourceRef } from './source-ref.js'
 
 export interface ArtifactStats {
@@ -41,7 +43,22 @@ export interface ArtifactProps {
    * Absent when the source has no GitHub repository to read a preview from.
    */
   readonly ogImageUrl?: string
+  /**
+   * The default-branch HEAD the indexer scanned, when the source is a git
+   * repository. It is the same SHA `source.commit` pins installs to, lifted
+   * into its own column so scan provenance ("what exactly did we look at") is
+   * a field, not a JSON dig.
+   */
+  readonly sourceCommitSha?: string
   readonly stats: ArtifactStats
+  /**
+   * Stars gained over the trailing 7 / 30 days. Recomputed from the
+   * `artifact_metrics` snapshots on every ingestion sweep; hub-derived, never
+   * crawled. Kept out of `ArtifactStats` so a velocity change does not count
+   * as a public-page change and churn the sitemap `lastmod`.
+   */
+  readonly starVelocity7d: number
+  readonly starVelocity30d: number
   /** Set once a signed-in account has proven it controls the source. */
   readonly ownerAccountId?: string
   readonly publishedAt: Date
@@ -74,7 +91,10 @@ export class Artifact {
     author?: ArtifactAuthor
     readmeMarkdown?: string
     ogImageUrl?: string
+    sourceCommitSha?: string
     stats?: Partial<ArtifactStats>
+    starVelocity7d?: number
+    starVelocity30d?: number
     ownerAccountId?: string
     publishedAt?: Date
     updatedAt?: Date
@@ -112,11 +132,14 @@ export class Artifact {
       ...(input.author === undefined ? {} : { author: input.author }),
       ...(input.readmeMarkdown === undefined ? {} : { readmeMarkdown: input.readmeMarkdown }),
       ...(input.ogImageUrl === undefined ? {} : { ogImageUrl: ogImageUrl(input.ogImageUrl) }),
+      ...(input.sourceCommitSha === undefined ? {} : { sourceCommitSha: input.sourceCommitSha }),
       stats: {
         stars: input.stats?.stars ?? 0,
         downloads: input.stats?.downloads ?? 0,
         installs: input.stats?.installs ?? 0,
       },
+      starVelocity7d: input.starVelocity7d ?? 0,
+      starVelocity30d: input.starVelocity30d ?? 0,
       ...(input.ownerAccountId === undefined ? {} : { ownerAccountId: input.ownerAccountId }),
       publishedAt: input.publishedAt ?? now,
       updatedAt: input.updatedAt ?? now,
@@ -165,8 +188,17 @@ export class Artifact {
   get ogImageUrl(): string | undefined {
     return this.props.ogImageUrl
   }
+  get sourceCommitSha(): string | undefined {
+    return this.props.sourceCommitSha
+  }
   get stats(): ArtifactStats {
     return this.props.stats
+  }
+  get starVelocity7d(): number {
+    return this.props.starVelocity7d
+  }
+  get starVelocity30d(): number {
+    return this.props.starVelocity30d
   }
   get ownerAccountId(): string | undefined {
     return this.props.ownerAccountId
@@ -203,6 +235,26 @@ export class Artifact {
     return base * trust * decay
   }
 
+  /**
+   * The public, reproducible quality score behind the `score` / `grade` /
+   * `maintenanceStatus` DTO fields. The formula lives in `quality-score.ts`
+   * and is published verbatim by `GET /api/v1/scoring`.
+   */
+  get qualityScore(): QualityScore {
+    return scoreArtifact(
+      {
+        stats: this.props.stats,
+        verified: this.verified,
+        hasReadme: this.props.readmeMarkdown !== undefined,
+        hasLicense: this.props.license !== undefined,
+        hasAuthor: this.props.author !== undefined,
+        deprecated: this.props.deprecated,
+        updatedAt: this.props.updatedAt,
+      },
+      new Date(),
+    )
+  }
+
   claimedBy(accountId: string): Artifact {
     if (this.props.ownerAccountId !== undefined && this.props.ownerAccountId !== accountId) {
       throw DomainError.conflict('This artifact is already claimed by another account.', {
@@ -226,16 +278,27 @@ export class Artifact {
        * has no GitHub repository to read a preview from.
        */
       readonly ogImageUrl?: string | null
+      /**
+       * Same tri-state as `ogImageUrl`: `string` re-pins the scan provenance,
+       * `null` clears it, omitted keeps the stored SHA (a sweep whose commit
+       * resolution failed did not look, so it must not wipe what an earlier
+       * sweep pinned).
+       */
+      readonly sourceCommitSha?: string | null
     } & Partial<Pick<ArtifactProps, 'license' | 'author' | 'readmeMarkdown' | 'deprecated'>>,
   ): Artifact {
     assertPayloadMatchesKind(this.props.kind, snapshot.payload)
-    const { ogImageUrl: previousOg, ...rest } = this.props
+    const { ogImageUrl: previousOg, sourceCommitSha: previousSha, ...rest } = this.props
     const nextOg =
       snapshot.ogImageUrl === undefined
         ? previousOg
         : snapshot.ogImageUrl === null
           ? undefined
           : ogImageUrl(snapshot.ogImageUrl)
+    const nextSha =
+      snapshot.sourceCommitSha === undefined
+        ? previousSha
+        : (snapshot.sourceCommitSha ?? undefined)
     const refreshedAt = new Date()
     const next = {
       ...rest,
@@ -257,6 +320,7 @@ export class Artifact {
         ? {}
         : { readmeMarkdown: snapshot.readmeMarkdown }),
       ...(nextOg === undefined ? {} : { ogImageUrl: nextOg }),
+      ...(nextSha === undefined ? {} : { sourceCommitSha: nextSha }),
       ...(snapshot.deprecated === undefined ? {} : { deprecated: snapshot.deprecated }),
       indexedAt: refreshedAt,
     }

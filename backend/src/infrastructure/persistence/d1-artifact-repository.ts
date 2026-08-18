@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, like, or, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, like, lte, or, sql } from 'drizzle-orm'
 import type { BatchItem } from 'drizzle-orm/batch'
 import type { DrizzleD1Database } from 'drizzle-orm/d1'
 import { Artifact } from '../../domain/artifact/artifact.js'
@@ -8,15 +8,18 @@ import type { ArtifactPayload } from '../../domain/artifact/artifact-payload.js'
 import type {
   ArtifactQuery,
   ArtifactRepository,
+  CatalogStats,
   KindCount,
   SitemapEntry,
 } from '../../domain/artifact/artifact-repository.js'
+import { starVelocity } from '../../domain/artifact/quality-score.js'
+import type { MetricsSnapshot } from '../../domain/artifact/quality-score.js'
 import type { SourceRef } from '../../domain/artifact/source-ref.js'
 import type { Page, PageRequest } from '../../domain/shared/pagination.js'
 import { page } from '../../domain/shared/pagination.js'
 import type { Slug } from '../../domain/shared/slug.js'
 import { slug } from '../../domain/shared/slug.js'
-import { artifactCategories, artifacts, artifactSearch } from './catalog-schema.js'
+import { artifactCategories, artifactMetrics, artifacts, artifactSearch } from './catalog-schema.js'
 import * as schema from './schema.js'
 
 type Db = DrizzleD1Database<typeof schema>
@@ -24,6 +27,8 @@ type ArtifactRow = typeof artifacts.$inferSelect
 /** One statement in a D1 batch. Drizzle types each builder differently, so the
  *  heterogeneous list needs the shared base type to stay assignable. */
 type BatchStatement = BatchItem<'sqlite'>
+
+const DAY_MS = 24 * 60 * 60 * 1000
 
 /**
  * D1 implementation of the catalog port.
@@ -129,6 +134,45 @@ export class D1ArtifactRepository implements ArtifactRepository {
       .where(eq(artifacts.id, id))
   }
 
+  async recordMetricsSnapshot(artifact: Artifact): Promise<void> {
+    const props = artifact.toProps()
+    const now = new Date()
+
+    // The anchor for a window is the most recent snapshot taken at least that
+    // long ago; the rule itself lives in the domain (`starVelocity`) so the
+    // SQL below only fetches candidates.
+    const anchorHistory = async (windowDays: number): Promise<readonly MetricsSnapshot[]> => {
+      const cutoff = new Date(now.getTime() - windowDays * DAY_MS)
+      return this.db
+        .select({ stars: artifactMetrics.stars, capturedAt: artifactMetrics.capturedAt })
+        .from(artifactMetrics)
+        .where(and(eq(artifactMetrics.artifactId, props.id as string), lte(artifactMetrics.capturedAt, cutoff)))
+        .orderBy(desc(artifactMetrics.capturedAt))
+        .limit(1)
+    }
+    const [history7d, history30d] = await Promise.all([anchorHistory(7), anchorHistory(30)])
+
+    const snapshot = this.db
+      .insert(artifactMetrics)
+      .values({
+        artifactId: props.id as string,
+        stars: props.stats.stars,
+        downloads: props.stats.downloads,
+        installs: props.stats.installs,
+        capturedAt: now,
+      })
+      // Two sweeps inside the same millisecond must not fail the second one.
+      .onConflictDoNothing()
+    const velocities = this.db
+      .update(artifacts)
+      .set({
+        starVelocity7d: starVelocity(props.stats.stars, history7d, 7, now),
+        starVelocity30d: starVelocity(props.stats.stars, history30d, 30, now),
+      })
+      .where(eq(artifacts.id, props.id as string))
+    await this.db.batch([snapshot, velocities])
+  }
+
   async listForSitemap(request: PageRequest): Promise<Page<SitemapEntry>> {
     // A deprecated artifact still resolves and is still linked from the pages
     // that reference it, but it is not something to invite a crawler to.
@@ -163,6 +207,37 @@ export class D1ArtifactRepository implements ArtifactRepository {
     return rows.map((row) => slug(row.id))
   }
 
+  async listForSnapshot(): Promise<readonly Artifact[]> {
+    const rows = await this.db
+      .select()
+      .from(artifacts)
+      .where(eq(artifacts.deprecated, false))
+      .orderBy(asc(artifacts.id))
+    return rows.map(toEntity)
+  }
+
+  async catalogStats(): Promise<CatalogStats> {
+    const [row] = await this.db
+      .select({
+        artifactCount: sql<number>`count(*)`,
+        // `updated_at` is a `timestamp_ms` column, so inside a raw aggregate it
+        // is the stored integer milliseconds, not a Date.
+        maxUpdatedAtMs: sql<number>`coalesce(max(${artifacts.updatedAt}), 0)`,
+        installs: sql<number>`coalesce(sum(${artifacts.installs}), 0)`,
+        stars: sql<number>`coalesce(sum(${artifacts.stars}), 0)`,
+        downloads: sql<number>`coalesce(sum(${artifacts.downloads}), 0)`,
+      })
+      .from(artifacts)
+      .where(eq(artifacts.deprecated, false))
+    return {
+      artifactCount: Number(row?.artifactCount ?? 0),
+      maxUpdatedAtMs: Number(row?.maxUpdatedAtMs ?? 0),
+      installs: Number(row?.installs ?? 0),
+      stars: Number(row?.stars ?? 0),
+      downloads: Number(row?.downloads ?? 0),
+    }
+  }
+
   private writeStatements(artifact: Artifact): BatchStatement[] {
     const props = artifact.toProps()
     const values = {
@@ -172,6 +247,7 @@ export class D1ArtifactRepository implements ArtifactRepository {
       summary: props.summary,
       source: props.source,
       sourceOrigin: props.source.origin,
+      sourceCommitSha: props.sourceCommitSha ?? null,
       payload: props.payload,
       keywords: props.keywords,
       categories: props.categories.map(String),
@@ -183,6 +259,8 @@ export class D1ArtifactRepository implements ArtifactRepository {
       stars: props.stats.stars,
       downloads: props.stats.downloads,
       installs: props.stats.installs,
+      starVelocity7d: props.starVelocity7d,
+      starVelocity30d: props.starVelocity30d,
       ownerAccountId: props.ownerAccountId ?? null,
       deprecated: props.deprecated,
       publishedAt: props.publishedAt,
@@ -227,6 +305,10 @@ function orderFor(query: ArtifactQuery) {
       return [asc(artifacts.displayName)]
     case 'recent':
       return [desc(artifacts.updatedAt)]
+    case 'rising':
+      // Star velocity first, then the popularity weighting, so a fast-climbing
+      // new plugin outranks a stagnant incumbent.
+      return [desc(artifacts.starVelocity7d), desc(popularityExpression())]
     case 'relevance':
       // Ranked by how early the query lands, then by the same weighting
       // `Artifact.popularity` uses, so a text search still surfaces the
@@ -252,6 +334,7 @@ function toEntity(row: ArtifactRow): Artifact {
     displayName: row.displayName,
     summary: row.summary,
     source: row.source as SourceRef,
+    ...(row.sourceCommitSha === null ? {} : { sourceCommitSha: row.sourceCommitSha }),
     payload: row.payload as ArtifactPayload,
     keywords: (row.keywords as string[]) ?? [],
     categories: ((row.categories as string[]) ?? []).map((value) => slug(value)),
@@ -262,6 +345,8 @@ function toEntity(row: ArtifactRow): Artifact {
     ...(row.readmeMarkdown === null ? {} : { readmeMarkdown: row.readmeMarkdown }),
     ...(row.ogImageUrl === null ? {} : { ogImageUrl: row.ogImageUrl }),
     stats: { stars: row.stars, downloads: row.downloads, installs: row.installs },
+    starVelocity7d: row.starVelocity7d,
+    starVelocity30d: row.starVelocity30d,
     ...(row.ownerAccountId === null ? {} : { ownerAccountId: row.ownerAccountId }),
     publishedAt: row.publishedAt,
     updatedAt: row.updatedAt,

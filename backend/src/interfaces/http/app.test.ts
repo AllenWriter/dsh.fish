@@ -46,4 +46,18 @@ describe('API routing', () => {
     expect(response.status).not.toBe(404)
     consoleError.mockRestore()
   })
+
+  it('publishes the scoring model without touching the database', async () => {
+    // The formula is a constant, so this endpoint must answer even with no D1
+    // binding — it is the public contract every score on the site cites.
+    const response = await call('/api/v1/scoring')
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as { weights: Record<string, number> }
+    expect(body).toMatchObject({
+      weights: { popularity: 0.4, maintenance: 0.3, quality: 0.3 },
+      grades: { S: 85, A: 70, B: 50 },
+    })
+    const weightSum = Object.values(body.weights).reduce((total, weight) => total + weight, 0)
+    expect(weightSum).toBeCloseTo(1)
+  })
 })

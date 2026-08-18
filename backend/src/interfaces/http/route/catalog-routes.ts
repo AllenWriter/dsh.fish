@@ -7,7 +7,7 @@ const searchQuery = z.object({
   q: z.string().max(200).optional(),
   kind: z.array(z.enum(ARTIFACT_KINDS)).optional(),
   category: z.array(z.string()).optional(),
-  sort: z.enum(['relevance', 'popular', 'recent', 'name']).optional(),
+  sort: z.enum(['relevance', 'popular', 'recent', 'name', 'rising']).optional(),
   verified: z.coerce.boolean().optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
   offset: z.coerce.number().int().min(0).optional(),
@@ -65,6 +65,41 @@ export function catalogRoutes() {
   routes.get('/facets', async (context) => {
     const facets = await context.get('container').useCases.listCatalogFacets.execute()
     return context.json(facets)
+  })
+
+  /**
+   * The scoring model as data: weights, windows and thresholds behind the
+   * `score` / `grade` / `maintenanceStatus` fields, so the site can document
+   * the formula and anyone can reproduce it.
+   */
+  routes.get('/scoring', async (context) => {
+    return context.json(context.get('container').useCases.describeScoring.execute())
+  })
+
+  /**
+   * Cheap poll for sync clients: has the catalog changed since the version a
+   * directory already holds? Metadata-only, so it never reads an artifact row.
+   */
+  routes.get('/catalog/version', async (context) => {
+    const meta = await context.get('container').useCases.getCatalogSnapshot.meta()
+    return context.json(meta)
+  })
+
+  /**
+   * The whole public catalog as one document. The data version doubles as the
+   * ETag, so a sync client that polls `/catalog/version` can skip this download
+   * entirely when nothing changed, and a conditional request costs a 304.
+   */
+  routes.get('/catalog/snapshot', async (context) => {
+    const snapshot = await context.get('container').useCases.getCatalogSnapshot.snapshot()
+    const etag = `"${snapshot.meta.dataVersion}"`
+    context.header('ETag', etag)
+    context.header('Cache-Control', 'public, max-age=300')
+    const held = context.req.header('if-none-match')?.split(',').map((value) => value.trim())
+    if (held !== undefined && (held.includes(etag) || held.includes('*'))) {
+      return context.body(null, 304)
+    }
+    return context.body(snapshot.body, 200, { 'Content-Type': 'application/json; charset=utf-8' })
   })
 
   return routes

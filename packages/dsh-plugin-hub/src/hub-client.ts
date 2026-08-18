@@ -30,6 +30,8 @@ export interface InstallPlan {
   steps: InstallStep[]
   manualCommands: string[]
   warningKeys: string[]
+  /** Commit the registry scanned this artifact from, when the source pins one. */
+  scannedAtCommit?: string
 }
 
 export interface DeviceCodeGrant {

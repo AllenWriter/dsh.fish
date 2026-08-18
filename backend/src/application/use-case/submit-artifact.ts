@@ -103,6 +103,9 @@ export class SubmitArtifact {
               categories: snapshot.categories,
               stats: { ...snapshot.stats, installs: existing.stats.installs },
               ...(snapshot.ogImageUrl === undefined ? {} : { ogImageUrl: snapshot.ogImageUrl }),
+              ...(snapshot.sourceCommitSha === undefined
+                ? {}
+                : { sourceCommitSha: snapshot.sourceCommitSha }),
             })
             .claimedBy(session.account.id)
         : toArtifact(snapshot, session.account.id)

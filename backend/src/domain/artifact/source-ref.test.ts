@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   githubRepoFromUrl,
   githubSource,
+  mergeProvenance,
   npmSource,
   sourceAssetBase,
   sourceDocBase,
@@ -61,5 +62,44 @@ describe('githubRepoFromUrl', () => {
   it('ignores a remote that is not GitHub', () => {
     expect(githubRepoFromUrl('https://gitlab.com/acme/plugin.git')).toBeUndefined()
     expect(githubRepoFromUrl('not a url')).toBeUndefined()
+  })
+})
+
+describe('mergeProvenance', () => {
+  it('keeps the list that surfaced a repository when a later crawl refreshes it', () => {
+    const listed = githubSource({ owner: 'acme', repo: 'thing', via: ['awesome-dsh-plugin'] })
+    const crawled = githubSource({ owner: 'acme', repo: 'thing', commit: 'abc1234' })
+
+    expect(mergeProvenance(listed, crawled)).toEqual({
+      origin: 'github',
+      owner: 'acme',
+      repo: 'thing',
+      commit: 'abc1234',
+      via: ['awesome-dsh-plugin'],
+    })
+  })
+
+  it('accumulates every list that surfaced the repository, once each', () => {
+    const first = githubSource({ owner: 'acme', repo: 'thing', via: ['awesome-dsh-plugin'] })
+    const second = githubSource({
+      owner: 'acme',
+      repo: 'thing',
+      via: ['oh-my-dsh', 'awesome-dsh-plugin'],
+    })
+
+    const merged = mergeProvenance(first, second)
+    expect(merged.origin === 'github' && merged.via).toEqual([
+      'awesome-dsh-plugin',
+      'oh-my-dsh',
+    ])
+  })
+
+  it('passes non-GitHub sources through untouched', () => {
+    const npm = npmSource('thing', '1.0.0')
+    expect(mergeProvenance(npm, npmSource('thing', '1.1.0'))).toEqual({
+      origin: 'npm',
+      packageName: 'thing',
+      latestVersion: '1.1.0',
+    })
   })
 })

@@ -84,6 +84,12 @@ export interface InstallPlan {
   readonly manualCommands: readonly string[]
   /** Things the user should read before running the plan. i18n keys, not prose. */
   readonly warningKeys: readonly string[]
+  /**
+   * The commit the catalog row was scanned from, when the source is a pinned
+   * git repository. Provenance for the install surface: the user can check
+   * that what they are about to run is what the registry read.
+   */
+  readonly scannedAtCommit?: string
 }
 
 /**
@@ -229,6 +235,9 @@ export function buildInstallPlan(artifact: Artifact, target: InstallTarget): Ins
     steps,
     manualCommands,
     warningKeys,
+    ...(artifact.sourceCommitSha === undefined
+      ? {}
+      : { scannedAtCommit: artifact.sourceCommitSha }),
   }
 }
 

@@ -1,6 +1,8 @@
 import { drizzle } from 'drizzle-orm/d1'
 import type { IncomingRequestCfProperties } from '@cloudflare/workers-types'
 import { GetArtifactDetail } from '../application/use-case/get-artifact-detail.js'
+import { GetCatalogSnapshot } from '../application/use-case/get-catalog-snapshot.js'
+import { DescribeScoring } from '../application/use-case/describe-scoring.js'
 import { IngestCatalog } from '../application/use-case/ingest-catalog.js'
 import { ListCatalogFacets } from '../application/use-case/list-catalog-facets.js'
 import { ListSitemapEntries } from '../application/use-case/list-sitemap-entries.js'
@@ -17,10 +19,14 @@ import type { HubAuth } from './auth/auth.js'
 import { GitHubIndexer } from './ingestion/github-indexer.js'
 import { GitHubSocialPreview } from './ingestion/github-social-preview.js'
 import { NpmIndexer } from './ingestion/npm-indexer.js'
+import { AwesomeListIndexer } from './ingestion/awesome-list-indexer.js'
+import { KvListCursor, listCursorKey } from './ingestion/list-cursor.js'
+import { RepoProber } from './ingestion/repo-prober.js'
 import { KvSweepCursor, sweepCursorKey } from './ingestion/sweep-cursor.js'
 import { D1ArtifactRepository } from './persistence/d1-artifact-repository.js'
 import { D1LinkedIdentityReader } from './persistence/d1-linked-identity.js'
 import { D1SubmissionRepository } from './persistence/d1-submission-repository.js'
+import { KvCatalogSnapshotStore } from './persistence/kv-catalog-snapshot-store.js'
 import * as schema from './persistence/schema.js'
 
 export interface Container {
@@ -31,6 +37,8 @@ export interface Container {
   readonly useCases: {
     readonly searchArtifacts: SearchArtifacts
     readonly getArtifactDetail: GetArtifactDetail
+    readonly getCatalogSnapshot: GetCatalogSnapshot
+    readonly describeScoring: DescribeScoring
     readonly listCatalogFacets: ListCatalogFacets
     readonly listSitemapEntries: ListSitemapEntries
     readonly resolveInstallPlan: ResolveInstallPlan
@@ -63,6 +71,10 @@ export function createContainer(env: HubEnv, cf?: IncomingRequestCfProperties): 
       socialPreview,
     ),
     new NpmIndexer(socialPreview),
+    new AwesomeListIndexer(
+      new RepoProber(config.githubToken, socialPreview),
+      new KvListCursor(env.KV, listCursorKey('awesome-list')),
+    ),
   ]
 
   return {
@@ -73,6 +85,8 @@ export function createContainer(env: HubEnv, cf?: IncomingRequestCfProperties): 
     useCases: {
       searchArtifacts: new SearchArtifacts(artifacts),
       getArtifactDetail: new GetArtifactDetail(artifacts),
+      getCatalogSnapshot: new GetCatalogSnapshot(artifacts, new KvCatalogSnapshotStore(env.KV)),
+      describeScoring: new DescribeScoring(),
       listCatalogFacets: new ListCatalogFacets(artifacts),
       listSitemapEntries: new ListSitemapEntries(artifacts),
       resolveInstallPlan: new ResolveInstallPlan(artifacts),

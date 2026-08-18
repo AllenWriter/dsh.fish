@@ -16,6 +16,12 @@ export const artifacts = sqliteTable(
     /** JSON-encoded `SourceRef`. */
     source: text('source', { mode: 'json' }).notNull(),
     sourceOrigin: text('source_origin').notNull(),
+    /**
+     * Default-branch HEAD the indexer last scanned, when the source is a git
+     * repository. Denormalized out of `source.commit` so the install plan and
+     * the detail page can show scan provenance without parsing the JSON.
+     */
+    sourceCommitSha: text('source_commit_sha'),
     /** JSON-encoded `ArtifactPayload`. */
     payload: text('payload', { mode: 'json' }).notNull(),
     keywords: text('keywords', { mode: 'json' }).notNull(),
@@ -29,6 +35,9 @@ export const artifacts = sqliteTable(
     stars: integer('stars').notNull().default(0),
     downloads: integer('downloads').notNull().default(0),
     installs: integer('installs').notNull().default(0),
+    /** Stars gained over the trailing 7 / 30 days, recomputed on each ingestion sweep. */
+    starVelocity7d: integer('star_velocity_7d').notNull().default(0),
+    starVelocity30d: integer('star_velocity_30d').notNull().default(0),
     ownerAccountId: text('owner_account_id'),
     deprecated: integer('deprecated', { mode: 'boolean' }).notNull().default(false),
     publishedAt: integer('published_at', { mode: 'timestamp_ms' }).notNull(),
@@ -97,3 +106,22 @@ export const artifactSearch = sqliteTable('artifact_search', {
   /** Lowercased `displayName + summary + keywords`, searched with LIKE fallbacks. */
   haystack: text('haystack').notNull(),
 })
+
+/**
+ * One row per artifact per ingestion sweep. The history is what star velocity
+ * is computed against: the anchor for a 7- or 30-day window is the most
+ * recent snapshot taken at least that long ago.
+ */
+export const artifactMetrics = sqliteTable(
+  'artifact_metrics',
+  {
+    artifactId: text('artifact_id')
+      .notNull()
+      .references(() => artifacts.id, { onDelete: 'cascade' }),
+    stars: integer('stars').notNull(),
+    downloads: integer('downloads').notNull(),
+    installs: integer('installs').notNull(),
+    capturedAt: integer('captured_at', { mode: 'timestamp_ms' }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.artifactId, table.capturedAt] })],
+)

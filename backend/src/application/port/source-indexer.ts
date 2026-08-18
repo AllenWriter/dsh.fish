@@ -34,6 +34,12 @@ export interface IndexedSnapshot {
    * not look, so a refresh must keep whatever is already stored.
    */
   readonly ogImageUrl?: string | null
+  /**
+   * The default-branch HEAD the indexer read the manifests from, when the
+   * source is a git repository. Omitted when the source has no commit to pin
+   * (npm, submissions) or the ref lookup failed.
+   */
+  readonly sourceCommitSha?: string
   readonly stats: { readonly stars: number; readonly downloads: number }
   readonly deprecated?: boolean
 }
@@ -45,10 +51,10 @@ export interface IndexRequest {
 
 /**
  * Port for a place plugins can be discovered. Implemented in `infrastructure`
- * against the GitHub and npm APIs.
+ * against the GitHub and npm APIs and the curated awesome lists.
  */
 export interface SourceIndexer {
-  readonly origin: 'npm' | 'github'
+  readonly origin: 'npm' | 'github' | 'awesome-list'
   /** Sweep the source for candidates. Yields only rows the harness would load. */
   discover(limit: number): Promise<readonly IndexedSnapshot[]>
   /** Index one known reference, e.g. from a user submission. */

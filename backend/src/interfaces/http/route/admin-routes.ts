@@ -10,7 +10,11 @@ const ingestLimit = z.number().int().min(1).max(250)
 const ingestBody = z.object({
   limitPerSource: ingestLimit.optional(),
   limitByOrigin: z
-    .object({ github: ingestLimit.optional(), npm: ingestLimit.optional() })
+    .object({
+      github: ingestLimit.optional(),
+      npm: ingestLimit.optional(),
+      'awesome-list': ingestLimit.optional(),
+    })
     .optional(),
 })
 

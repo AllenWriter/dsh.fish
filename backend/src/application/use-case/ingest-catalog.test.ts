@@ -9,6 +9,7 @@ import type { IndexedSnapshot, SourceIndexer } from '../port/source-indexer.js'
 /** Only what the sweep touches. The rest of the port is never reached here. */
 function memoryRepository() {
   const rows = new Map<string, Artifact>()
+  const snapshots: string[] = []
   const repository: ArtifactRepository = {
     findById: async (id: Slug) => rows.get(String(id)),
     search: async () => {
@@ -20,12 +21,21 @@ function memoryRepository() {
     },
     saveMany: async () => {},
     incrementInstalls: async () => {},
+    recordMetricsSnapshot: async (artifact: Artifact) => {
+      snapshots.push(String(artifact.id))
+    },
     listIdsByOrigin: async () => [],
     listForSitemap: async () => {
       throw new Error('not used')
     },
+    listForSnapshot: async () => {
+      throw new Error('not used')
+    },
+    catalogStats: async () => {
+      throw new Error('not used')
+    },
   }
-  return { repository, rows }
+  return { repository, rows, snapshots }
 }
 
 function snapshot(overrides: Partial<IndexedSnapshot> = {}): IndexedSnapshot {
@@ -93,6 +103,19 @@ describe('IngestCatalog', () => {
     expect(rows.get('dsh-hello-plugin')?.ogImageUrl).toBe(preview)
   })
 
+  it('pins the scanned commit on create and re-pins it on refresh', async () => {
+    const { repository, rows } = memoryRepository()
+    const first = indexer('github', [snapshot({ sourceCommitSha: 'a'.repeat(40) })])
+    await new IngestCatalog(repository, [first.source]).execute()
+    expect(rows.get('dsh-hello-plugin')?.sourceCommitSha).toBe('a'.repeat(40))
+
+    const second = indexer('github', [snapshot({ sourceCommitSha: 'b'.repeat(40) })])
+    const report = await new IngestCatalog(repository, [second.source]).execute()
+
+    expect(report).toMatchObject({ updated: 1, created: 0 })
+    expect(rows.get('dsh-hello-plugin')?.sourceCommitSha).toBe('b'.repeat(40))
+  })
+
   it('spends a different candidate budget at each origin', async () => {
     const { repository } = memoryRepository()
     const github = indexer('github', [])
@@ -107,4 +130,16 @@ describe('IngestCatalog', () => {
     expect(npm.limits).toEqual([100])
   })
 
+  it('records one metrics snapshot per artifact per sweep', async () => {
+    const { repository, snapshots } = memoryRepository()
+    const first = indexer('github', [snapshot()])
+    await new IngestCatalog(repository, [first.source]).execute()
+    expect(snapshots).toEqual(['dsh-hello-plugin'])
+
+    // A re-sweep of the same row appends another point of history, which is
+    // what star velocity is later computed against.
+    const second = indexer('github', [snapshot()])
+    await new IngestCatalog(repository, [second.source]).execute()
+    expect(snapshots).toEqual(['dsh-hello-plugin', 'dsh-hello-plugin'])
+  })
 })

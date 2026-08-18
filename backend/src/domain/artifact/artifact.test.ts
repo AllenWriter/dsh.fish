@@ -69,6 +69,38 @@ describe('Artifact categories', () => {
     })
     expect(cleared.ogImageUrl).toBeUndefined()
   })
+
+  it('carries the scanned commit through refresh, and keeps it when a sweep did not look', () => {
+    const sha = 'c0ffee'.padEnd(40, '0')
+    const artifact = Artifact.create({ ...base, sourceCommitSha: sha })
+    expect(artifact.sourceCommitSha).toBe(sha)
+
+    // A sweep whose commit resolution failed must not wipe the pinned SHA.
+    const kept = artifact.refreshedWith({
+      displayName: artifact.displayName,
+      summary: artifact.summary,
+      source: artifact.source,
+      payload: artifact.payload,
+      keywords: [],
+      categories: ['other'],
+      stats: artifact.stats,
+    })
+    expect(kept.sourceCommitSha).toBe(sha)
+
+    // The next successful sweep re-pins it.
+    const moved = 'deedbee'.padEnd(40, 'f')
+    const repinned = kept.refreshedWith({
+      displayName: kept.displayName,
+      summary: kept.summary,
+      source: kept.source,
+      payload: kept.payload,
+      keywords: [],
+      categories: ['other'],
+      stats: kept.stats,
+      sourceCommitSha: moved,
+    })
+    expect(repinned.sourceCommitSha).toBe(moved)
+  })
 })
 
 describe('Artifact crawl timestamps', () => {

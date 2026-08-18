@@ -226,6 +226,11 @@ async function runShow(client: HubClient, request: CliRequest): Promise<void> {
   console.log(`${artifact.displayName} (${artifact.id}) — ${artifact.kind}`)
   console.log(artifact.summary)
   console.log(`Source: ${artifact.sourceUrl}`)
+  // Scan provenance: the commit the registry read, so the user can diff what
+  // they are about to install against what was actually indexed.
+  if (plan.scannedAtCommit !== undefined) {
+    console.log(`Indexed at commit: ${plan.scannedAtCommit}`)
+  }
   console.log('')
   console.log('Installing would run:')
   for (const command of plan.manualCommands) {

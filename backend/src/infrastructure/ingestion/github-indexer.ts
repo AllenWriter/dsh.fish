@@ -1,46 +1,45 @@
-import { parse as parseYaml } from 'yaml'
-import { classifyPackage, parseSkillFrontmatter } from '../../domain/artifact/manifest.js'
-import type { PackageManifest } from '../../domain/artifact/manifest.js'
-import type { ArtifactPayload } from '../../domain/artifact/artifact-payload.js'
-import { resolveCategories } from '../../domain/artifact/category-inference.js'
-import { githubSource } from '../../domain/artifact/source-ref.js'
-import type { SourceRef } from '../../domain/artifact/source-ref.js'
-import { slugify } from '../../domain/shared/slug.js'
 import type {
   IndexedSnapshot,
   IndexRequest,
   SourceIndexer,
 } from '../../application/port/source-indexer.js'
-import type { SweepCursor } from './sweep-cursor.js'
+import type { ShardRange, SweepCursor, SweepPosition } from './sweep-cursor.js'
 import { GitHubSocialPreview } from './github-social-preview.js'
+import { DSH_PLUGIN_TOPIC, RepoProber } from './repo-prober.js'
+import type { RepoDescriptor } from './repo-prober.js'
 
-/** The topic the harness README asks plugin authors to tag their repositories with. */
-export const DSH_PLUGIN_TOPIC = 'dsh-plugin'
+export { DSH_PLUGIN_TOPIC }
 
 const API = 'https://api.github.com'
 
-/** GitHub's search API never returns more than this, whatever the paging. */
+/** GitHub's search API never returns more than this for one query, whatever the paging. */
 const MAX_SEARCH_RESULTS = 1000
 const PAGE_SIZE = 100
 const MAX_PAGE = MAX_SEARCH_RESULTS / PAGE_SIZE
 
-/** The three files that make a repository something the harness can load. */
-const MANIFEST_FILE = 'package.json'
-const SKILL_FILE = 'SKILL.md'
-const PRESET_FILE = 'agent.cordis.yml'
+/**
+ * The initial partition of the topic, sized against its real star distribution:
+ * several thousand repositories, most of them barely starred. The fine
+ * single-star shards at the bottom are where the long tail lives. A shard that
+ * still saturates the search ceiling is split where it stands, so the plan
+ * stays right as the topic grows.
+ */
+const DEFAULT_SHARDS: readonly ShardRange[] = [
+  { min: 0, max: 0 },
+  { min: 1, max: 1 },
+  { min: 2, max: 2 },
+  { min: 3, max: 5 },
+  { min: 6, max: 10 },
+  { min: 11, max: 20 },
+  { min: 21, max: 50 },
+  { min: 51, max: 200 },
+  { min: 201, max: 1000 },
+  { min: 1001 },
+]
 
-interface RepoSearchItem {
-  full_name: string
-  name: string
-  owner: { id: number; login: string; html_url: string; avatar_url: string }
-  description: string | null
-  stargazers_count: number
-  license: { spdx_id: string } | null
-  topics?: string[]
-  default_branch: string
-  pushed_at: string
-  archived: boolean
-}
+/** Nothing under the topic predates GitHub itself. */
+const CREATED_EPOCH = '2008-01-01'
+const DAY_MS = 86_400_000
 
 /**
  * Discovers artifacts from GitHub.
@@ -50,316 +49,241 @@ interface RepoSearchItem {
  * closest thing to an authoritative source list, and this indexer treats it as
  * the seed set.
  *
- * A repository is classified by what it actually contains, not by what it
- * claims: a `package.json` with `dsh.bundle` is a bundle, a `SKILL.md` is a
- * skill, an `agent.cordis.yml` is a preset. A repository holding none of those
- * yields nothing, because the harness would load nothing from it either. That
- * is the common case by a wide margin — the topic is popular enough that most
- * of what carries it is an application, not a plugin — so the three probes run
- * before anything else is fetched, and a repository that fails all three costs
- * three reads of `raw.githubusercontent.com` and no API quota at all.
+ * Classification is the `RepoProber`'s job, shared with the curated-list
+ * crawl: a repository is what it contains, not what it claims, so the three
+ * manifest probes run before anything else is fetched, and a repository that
+ * fails all three costs three reads of `raw.githubusercontent.com` and no API
+ * quota at all.
  */
 export class GitHubIndexer implements SourceIndexer {
   readonly origin = 'github' as const
+  private readonly prober: RepoProber
 
   constructor(
-    private readonly token?: string,
+    token?: string,
     private readonly cursor?: SweepCursor,
-    private readonly socialPreview: GitHubSocialPreview = new GitHubSocialPreview(token),
-  ) {}
+    socialPreview: GitHubSocialPreview = new GitHubSocialPreview(token),
+  ) {
+    this.prober = new RepoProber(token, socialPreview)
+  }
 
   /**
    * Read one slice of the topic, resuming where the last run stopped.
    *
-   * Sorting by stars puts the same well-known repositories at the head of every
-   * search, and those are precisely the ones that are not plugins. Paging from
-   * a stored cursor is what lets the crawler reach the rest of the topic across
-   * successive scheduled runs instead of re-reading the head forever.
+   * The search API caps any single query at 1000 results, and the topic is
+   * several times that, so the crawl walks it shard by shard: star ranges that
+   * each fit under the ceiling, split further — by created date once a star
+   * range cannot be halved — the moment one proves too dense. The position is
+   * what lets successive scheduled runs cover the whole topic instead of
+   * re-reading the same well-known head forever; wrapping back to the first
+   * shard is not wasted work, because the sweep is how existing rows get their
+   * stars, summary and readme refreshed.
    */
   async discover(limit: number): Promise<readonly IndexedSnapshot[]> {
     const snapshots: IndexedSnapshot[] = []
-    let page = clampPage(await this.readCursor())
+    // Repositories drift between shards as their stars change mid-sweep; one
+    // run never probes the same repository twice.
+    const seen = new Set<string>()
+    const position = await this.readCursor()
     let scanned = 0
     let pagesRead = 0
 
-    while (scanned < limit && pagesRead < MAX_PAGE) {
-      const items = await this.searchPage(page)
-      pagesRead += 1
-      if (items === undefined || items.length === 0) {
-        page = 1
+    while (scanned < limit) {
+      const shard = position.shards[position.index] ?? position.shards[0]
+      if (shard === undefined) break // An empty shard plan cannot make progress.
+      const items = await this.searchPage(shard, position.page)
+      if (items === undefined) {
+        // Rate-limited or otherwise failed: stop here and leave the cursor
+        // untouched, so the next run resumes this page instead of losing it.
         break
       }
+      pagesRead += 1
 
+      let examined = 0
       for (const item of items) {
         if (scanned >= limit) break
+        examined += 1
+        if (seen.has(item.full_name)) continue
+        seen.add(item.full_name)
         scanned += 1
         try {
-          const snapshot = await this.indexRepository(item)
+          const snapshot = await this.prober.indexRepository(item)
           if (snapshot) snapshots.push(snapshot)
         } catch {
           // One unreadable repository never fails the sweep.
         }
       }
+      if (examined < items.length) {
+        // The budget ran out mid-page: stay on this page so the rest of it is
+        // read next run rather than skipped for a whole cycle.
+        break
+      }
 
-      // A short page is the end of the result set. Wrapping to the front is not
-      // wasted work: the sweep is how existing rows get their stars, summary
-      // and readme refreshed.
-      const exhausted = items.length < PAGE_SIZE
-      page = exhausted ? 1 : (page % MAX_PAGE) + 1
-      if (exhausted) break
+      if (items.length < PAGE_SIZE) {
+        // A short or empty page is the end of this shard, not of the topic.
+        if (!advanceShard(position)) break
+        continue
+      }
+
+      if (position.page >= MAX_PAGE) {
+        // A full tenth page means the shard holds more than the ceiling will
+        // ever show. Split it and reread the first half from page 1 next run.
+        const halves = splitShard(shard, today())
+        if (halves === undefined) {
+          // One day at one star count over the ceiling: accept the loss.
+          if (!advanceShard(position)) break
+          continue
+        }
+        position.shards = [
+          ...position.shards.slice(0, position.index),
+          ...halves,
+          ...position.shards.slice(position.index + 1),
+        ]
+        position.page = 1
+        break
+      }
+
+      position.page += 1
     }
 
-    await this.writeCursor(page)
+    if (pagesRead > 0) await this.writeCursor(position)
     return snapshots
   }
 
   async indexOne(request: IndexRequest): Promise<IndexedSnapshot | undefined> {
     const source = request.source
     if (source.origin !== 'github') return undefined
-    const response = await this.request(`${API}/repos/${source.owner}/${source.repo}`)
+    const repo = await this.prober.fetchRepo(source.owner, source.repo)
+    if (!repo) return undefined
+    return this.prober.indexRepository(repo, source.path)
+  }
+
+  private async searchPage(
+    shard: ShardRange,
+    page: number,
+  ): Promise<RepoDescriptor[] | undefined> {
+    const url = `${API}/search/repositories?q=${encodeURIComponent(shardQuery(shard))}&sort=stars&order=desc&per_page=${PAGE_SIZE}&page=${page}`
+    const response = await this.prober.get(url)
     if (!response) return undefined
-    const repo = (await response.json()) as RepoSearchItem
-    return this.indexRepository(repo, source.path)
-  }
-
-  private async indexRepository(
-    repo: RepoSearchItem,
-    subPath?: string,
-  ): Promise<IndexedSnapshot | undefined> {
-    const ref = repo.default_branch
-    const prefix = subPath === undefined || subPath === '' ? '' : `${subPath}/`
-    const topics = repo.topics?.filter((topic) => topic !== DSH_PLUGIN_TOPIC) ?? []
-
-    const base = {
-      keywords: topics,
-      author: { name: repo.owner.login, url: repo.owner.html_url },
-      // The numeric id, not the login: it is what an OAuth link records, and it
-      // survives the owner renaming themselves.
-      sourceOwnerId: String(repo.owner.id),
-      stats: { stars: repo.stargazers_count, downloads: 0 },
-      deprecated: repo.archived,
-      ...(repo.license?.spdx_id ? { license: repo.license.spdx_id } : {}),
-    }
-
-    // 1. A harness bundle or profile, decided by the package manifest.
-    const manifestText = await this.readFile(repo, `${prefix}${MANIFEST_FILE}`, ref)
-    if (manifestText !== undefined) {
-      const manifest = safeJson<PackageManifest>(manifestText)
-      if (manifest) {
-        const classification = classifyPackage(manifest, true)
-        if (classification) {
-          const context = await this.loadContext(repo, subPath, prefix, ref)
-          const keywords = [...topics, ...(manifest.keywords ?? [])]
-          return {
-            id: slugify(manifest.name),
-            kind: classification.kind,
-            displayName: manifest.name,
-            summary: manifest.description ?? repo.description ?? manifest.name,
-            source: context.source,
-            payload: classification.payload,
-            ...base,
-            keywords,
-            categories: resolveCategories(manifest.dsh?.hub?.categories?.map(String) ?? [], {
-              keywords,
-              text: `${manifest.name} ${manifest.description ?? repo.description ?? ''}`,
-            }),
-            ...(manifest.license ? { license: manifest.license } : {}),
-            ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
-            ogImageUrl: context.ogImageUrl,
-          }
-        }
-      }
-    }
-
-    // 2. A skill: `SKILL.md` at the indexed root.
-    const skillText = await this.readFile(repo, `${prefix}${SKILL_FILE}`, ref)
-    if (skillText !== undefined) {
-      const frontmatter = readFrontmatter(skillText)
-      if (frontmatter) {
-        const parsed = parseSkillFrontmatter(frontmatter)
-        const context = await this.loadContext(repo, subPath, prefix, ref)
-        const payload: ArtifactPayload = {
-          kind: 'skill',
-          skillName: parsed.name,
-          layout: 'directory',
-          files: [
-            {
-              path: SKILL_FILE,
-              downloadUrl: rawUrl(repo, `${prefix}${SKILL_FILE}`, context.head ?? ref),
-            },
-          ],
-        }
-        return {
-          id: slugify(`${repo.owner.login}-${parsed.name}`),
-          kind: 'skill',
-          displayName: parsed.name,
-          summary: parsed.description,
-          source: context.source,
-          payload,
-          ...base,
-          // A skill declares no manifest, so its own name and description are
-          // the whole vocabulary there is to file it by.
-          categories: resolveCategories([], {
-            keywords: topics,
-            text: `${parsed.name} ${parsed.description}`,
-          }),
-          ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
-          ogImageUrl: context.ogImageUrl,
-        }
-      }
-    }
-
-    // 3. An agent preset: a directory holding one `agent.cordis.yml`.
-    const presetText = await this.readFile(repo, `${prefix}${PRESET_FILE}`, ref)
-    if (presetText !== undefined) {
-      const context = await this.loadContext(repo, subPath, prefix, ref)
-      const presetId = slugify(repo.name)
-      const payload: ArtifactPayload = {
-        kind: 'agent-preset',
-        presetId,
-        compositionUrl: rawUrl(repo, `${prefix}${PRESET_FILE}`, context.head ?? ref),
-      }
-      return {
-        id: slugify(`${repo.owner.login}-${repo.name}`),
-        kind: 'agent-preset',
-        displayName: repo.name,
-        summary: repo.description ?? repo.name,
-        source: context.source,
-        payload,
-        ...base,
-        categories: resolveCategories([], {
-          keywords: topics,
-          text: `${repo.name} ${repo.description ?? ''}`,
-        }),
-        ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
-        ogImageUrl: context.ogImageUrl,
-      }
-    }
-
-    return undefined
-  }
-
-  /**
-   * The commit, source reference and readme — everything a row needs that a
-   * repository which turns out not to be a plugin should never be charged for.
-   */
-  private async loadContext(
-    repo: RepoSearchItem,
-    subPath: string | undefined,
-    prefix: string,
-    ref: string,
-  ): Promise<{ source: SourceRef; head?: string; readme?: string; ogImageUrl: string }> {
-    const head = await this.resolveCommit(repo.owner.login, repo.name, ref)
-    const readme = await this.readFile(repo, `${prefix}README.md`, ref)
-    const ogImageUrl = await this.socialPreview.read(repo.owner.login, repo.name, head)
-    return {
-      source: githubSource({
-        owner: repo.owner.login,
-        repo: repo.name,
-        ...(subPath === undefined || subPath === '' ? {} : { path: subPath }),
-        ...(head === undefined ? {} : { commit: head }),
-      }),
-      ...(head === undefined ? {} : { head }),
-      ...(readme === undefined ? {} : { readme }),
-      ogImageUrl,
-    }
-  }
-
-  private async searchPage(page: number): Promise<RepoSearchItem[] | undefined> {
-    const url = `${API}/search/repositories?q=topic:${DSH_PLUGIN_TOPIC}&sort=stars&order=desc&per_page=${PAGE_SIZE}&page=${page}`
-    const response = await this.request(url)
-    if (!response) return undefined
-    const body = (await response.json()) as { items?: RepoSearchItem[] }
+    const body = (await response.json()) as { items?: RepoDescriptor[] }
     return body.items ?? []
   }
 
-  private async readCursor(): Promise<number> {
-    if (!this.cursor) return 1
+  private async readCursor(): Promise<MutablePosition> {
+    const fresh = (): MutablePosition => ({ shards: [...DEFAULT_SHARDS], index: 0, page: 1 })
+    if (!this.cursor) return fresh()
     try {
-      return await this.cursor.read()
+      const stored = await this.cursor.read()
+      if (stored === undefined) return fresh()
+      return {
+        shards: [...stored.shards],
+        index: Math.min(stored.index, stored.shards.length - 1),
+        // A stored page past the search API's ceiling would return nothing forever.
+        page: Math.min(Math.max(1, Math.floor(stored.page)), MAX_PAGE),
+      }
     } catch {
       // A cursor read that fails costs coverage, not correctness.
-      return 1
+      return fresh()
     }
   }
 
-  private async writeCursor(page: number): Promise<void> {
+  private async writeCursor(position: SweepPosition): Promise<void> {
     if (!this.cursor) return
     try {
-      await this.cursor.write(page)
+      await this.cursor.write(position)
     } catch {
       // The next run repeats this slice instead of advancing. Harmless: the
       // crawl is idempotent.
     }
   }
+}
 
-  private async resolveCommit(
-    owner: string,
-    repo: string,
-    ref: string,
-  ): Promise<string | undefined> {
-    const response = await this.request(`${API}/repos/${owner}/${repo}/commits/${ref}`)
-    if (!response) return undefined
-    const body = (await response.json()) as { sha?: string }
-    return typeof body.sha === 'string' ? body.sha : undefined
+/** The working copy of a sweep position; the stored shape stays immutable. */
+interface MutablePosition {
+  shards: ShardRange[]
+  index: number
+  page: number
+}
+
+/** The query one shard issues. */
+export function shardQuery(shard: ShardRange): string {
+  const stars =
+    shard.max === undefined
+      ? `>=${shard.min}`
+      : shard.max === shard.min
+        ? `${shard.min}`
+        : `${shard.min}..${shard.max}`
+  const created =
+    shard.created === undefined
+      ? ''
+      : shard.created.to === undefined
+        ? ` created:>=${shard.created.from}`
+        : ` created:${shard.created.from}..${shard.created.to}`
+  return `topic:${DSH_PLUGIN_TOPIC} stars:${stars}${created}`
+}
+
+/**
+ * Move to the next shard. Returns false when that was the last one: the whole
+ * topic has been swept, and the cursor wraps to the first shard so the next
+ * cycle refreshes the rows this one indexed.
+ */
+function advanceShard(position: MutablePosition): boolean {
+  position.page = 1
+  position.index += 1
+  if (position.index >= position.shards.length) {
+    position.index = 0
+    return false
   }
+  return true
+}
 
-  private async readFile(
-    repo: RepoSearchItem,
-    path: string,
-    ref: string,
-  ): Promise<string | undefined> {
-    const response = await this.request(rawUrl(repo, path, ref), { accept: 'text/plain' })
-    if (!response) return undefined
-    const text = await response.text()
-    return text.length > 200_000 ? text.slice(0, 200_000) : text
-  }
-
-  private async request(
-    url: string,
-    options: { accept?: string } = {},
-  ): Promise<Response | undefined> {
-    const headers: Record<string, string> = {
-      accept: options.accept ?? 'application/vnd.github+json',
-      'user-agent': 'dsh.fish-indexer',
+/**
+ * Halve a shard that returned a full tenth page — proof it holds more than the
+ * search API will ever show. Star ranges halve by stars; a single star value
+ * too dense for the ceiling falls back to created dates. Undefined when there
+ * is nothing left to halve: one day at one star count.
+ */
+export function splitShard(shard: ShardRange, today: string): [ShardRange, ShardRange] | undefined {
+  if (shard.created === undefined) {
+    if (shard.max === undefined) {
+      // Open-ended: guess a ceiling at double the floor.
+      const ceiling = Math.max(shard.min * 2, shard.min + 1)
+      return [{ min: shard.min, max: ceiling }, { min: ceiling + 1 }]
     }
-    if (this.token !== undefined) {
-      headers['authorization'] = `Bearer ${this.token}`
+    if (shard.min < shard.max) {
+      const mid = Math.floor((shard.min + shard.max) / 2)
+      return [{ min: shard.min, max: mid }, { min: mid + 1, max: shard.max }]
     }
-    const response = await fetch(url, { headers })
-    if (!response.ok) return undefined
-    return response
+    // The upper half stays open-ended so repositories created later still land.
+    const mid = midpointDate(CREATED_EPOCH, today)
+    return [
+      { min: shard.min, max: shard.max, created: { from: CREATED_EPOCH, to: mid } },
+      { min: shard.min, max: shard.max, created: { from: dayAfter(mid) } },
+    ]
   }
+  const { from } = shard.created
+  const to = shard.created.to ?? today
+  if (from >= to) return undefined
+  const mid = midpointDate(from, to)
+  return [
+    { min: shard.min, max: shard.max ?? shard.min, created: { from, to: mid } },
+    {
+      min: shard.min,
+      max: shard.max ?? shard.min,
+      created: { from: dayAfter(mid), ...(shard.created.to === undefined ? {} : { to }) },
+    },
+  ]
 }
 
-/** A stored cursor past the search API's ceiling would return nothing forever. */
-function clampPage(page: number): number {
-  return page >= 1 && page <= MAX_PAGE ? Math.floor(page) : 1
+function midpointDate(from: string, to: string): string {
+  const mid = Date.parse(from) + Math.floor((Date.parse(to) - Date.parse(from)) / 2)
+  return new Date(mid).toISOString().slice(0, 10)
 }
 
-function rawUrl(repo: RepoSearchItem, path: string, ref: string): string {
-  return `https://raw.githubusercontent.com/${repo.owner.login}/${repo.name}/${ref}/${path}`
+function dayAfter(date: string): string {
+  return new Date(Date.parse(date) + DAY_MS).toISOString().slice(0, 10)
 }
 
-function safeJson<T>(text: string): T | undefined {
-  try {
-    return JSON.parse(text) as T
-  } catch {
-    return undefined
-  }
-}
-
-/** Read a Markdown file's YAML frontmatter block, if it has one. */
-export function readFrontmatter(text: string): Record<string, unknown> | undefined {
-  if (!text.startsWith('---')) return undefined
-  const end = text.indexOf('\n---', 3)
-  if (end === -1) return undefined
-  try {
-    const parsed = parseYaml(text.slice(3, end))
-    return typeof parsed === 'object' && parsed !== null
-      ? (parsed as Record<string, unknown>)
-      : undefined
-  } catch {
-    return undefined
-  }
+function today(): string {
+  return new Date().toISOString().slice(0, 10)
 }

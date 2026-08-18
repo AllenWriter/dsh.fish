@@ -32,6 +32,26 @@ function artifact(
 const target = installTarget('web')
 
 describe('buildInstallPlan', () => {
+  it('exposes the scanned commit as plan provenance, when the row has one', () => {
+    const sha = 'c0ffee'.padEnd(40, '0')
+    const pinned = Artifact.create({
+      id: 'example',
+      kind: 'bundle',
+      displayName: 'Example',
+      summary: 'An example artifact.',
+      source: githubSource({ owner: 'acme', repo: 'thing', commit: sha }),
+      payload: { kind: 'bundle', requiresBuild: false },
+      sourceCommitSha: sha,
+    })
+
+    expect(buildInstallPlan(pinned, target).scannedAtCommit).toBe(sha)
+    // An npm row has no commit to vouch for; the field stays absent, not null.
+    expect(
+      buildInstallPlan(artifact('bundle', { kind: 'bundle', requiresBuild: false }), target)
+        .scannedAtCommit,
+    ).toBeUndefined()
+  })
+
   it('installs an npm bundle at its pinned version', () => {
     const plan = buildInstallPlan(
       artifact('bundle', { kind: 'bundle', requiresBuild: false }),

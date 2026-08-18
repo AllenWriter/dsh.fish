@@ -86,8 +86,15 @@ function harness(options: {
     },
     saveMany: async () => {},
     incrementInstalls: async () => {},
+    recordMetricsSnapshot: async () => {},
     listIdsByOrigin: async () => [],
     listForSitemap: async () => {
+      throw new Error('not used')
+    },
+    listForSnapshot: async () => {
+      throw new Error('not used')
+    },
+    catalogStats: async () => {
       throw new Error('not used')
     },
   }

@@ -2,7 +2,8 @@ import type { Artifact } from '../../domain/artifact/artifact.js'
 import type { ArtifactKind } from '../../domain/artifact/artifact-kind.js'
 import type { ArtifactPayload } from '../../domain/artifact/artifact-payload.js'
 import type { InstallPlan } from '../../domain/artifact/install-plan.js'
-import { sourceAssetBase, sourceDocBase, sourceUrl } from '../../domain/artifact/source-ref.js'
+import type { MaintenanceStatus, QualityGrade } from '../../domain/artifact/quality-score.js'
+import { sourceAssetBase, sourceCommitUrl, sourceDocBase, sourceUrl } from '../../domain/artifact/source-ref.js'
 import type { Page } from '../../domain/shared/pagination.js'
 
 /**
@@ -23,6 +24,13 @@ export interface ArtifactSummaryDto {
   readonly verified: boolean
   readonly deprecated: boolean
   readonly stats: { stars: number; downloads: number; installs: number }
+  /** Public quality score, 0–100; reproducible from `GET /api/v1/scoring`. */
+  readonly score: number
+  readonly grade: QualityGrade
+  readonly maintenanceStatus: MaintenanceStatus
+  /** Stars gained over the trailing 7 / 30 days, from `artifact_metrics` history. */
+  readonly starVelocity7d: number
+  readonly starVelocity30d: number
   readonly updatedAt: string
   /** GitHub Social preview, when the source repository has one. */
   readonly ogImageUrl?: string
@@ -35,6 +43,14 @@ export interface ArtifactDetailDto extends ArtifactSummaryDto {
   readonly sourceDocBase?: string
   /** What a relative image in `readmeMarkdown` points at. Absent when unknowable. */
   readonly sourceAssetBase?: string
+  /**
+   * The default-branch HEAD the indexer scanned, when the source is a git
+   * repository — scan provenance, so a reader can see exactly which code the
+   * catalog row describes.
+   */
+  readonly sourceCommitSha?: string
+  /** Browsable URL of that commit. Absent when there is no pinned commit. */
+  readonly sourceCommitUrl?: string
   readonly publishedAt: string
 }
 
@@ -52,6 +68,12 @@ export interface InstallPlanDto {
   readonly steps: InstallPlan['steps']
   readonly manualCommands: readonly string[]
   readonly warningKeys: readonly string[]
+  /**
+   * The commit the catalog row was scanned from, when the source is a pinned
+   * git repository. Display-only provenance; the plan's steps already carry
+   * the pin where one exists.
+   */
+  readonly scannedAtCommit?: string
 }
 
 export function toSummaryDto(artifact: Artifact): ArtifactSummaryDto {
@@ -69,6 +91,11 @@ export function toSummaryDto(artifact: Artifact): ArtifactSummaryDto {
     verified: artifact.verified,
     deprecated: artifact.deprecated,
     stats: artifact.stats,
+    score: artifact.qualityScore.score,
+    grade: artifact.qualityScore.grade,
+    maintenanceStatus: artifact.qualityScore.maintenanceStatus,
+    starVelocity7d: artifact.starVelocity7d,
+    starVelocity30d: artifact.starVelocity30d,
     updatedAt: artifact.updatedAt.toISOString(),
     ...(artifact.ogImageUrl === undefined ? {} : { ogImageUrl: artifact.ogImageUrl }),
   }
@@ -77,6 +104,7 @@ export function toSummaryDto(artifact: Artifact): ArtifactSummaryDto {
 export function toDetailDto(artifact: Artifact): ArtifactDetailDto {
   const docBase = sourceDocBase(artifact.source)
   const assetBase = sourceAssetBase(artifact.source)
+  const commitUrl = sourceCommitUrl(artifact.source)
 
   return {
     ...toSummaryDto(artifact),
@@ -86,6 +114,10 @@ export function toDetailDto(artifact: Artifact): ArtifactDetailDto {
       : { readmeMarkdown: artifact.readmeMarkdown }),
     ...(docBase === undefined ? {} : { sourceDocBase: docBase }),
     ...(assetBase === undefined ? {} : { sourceAssetBase: assetBase }),
+    ...(artifact.sourceCommitSha === undefined
+      ? {}
+      : { sourceCommitSha: artifact.sourceCommitSha }),
+    ...(commitUrl === undefined ? {} : { sourceCommitUrl: commitUrl }),
     publishedAt: artifact.publishedAt.toISOString(),
   }
 }
@@ -107,5 +139,6 @@ export function toInstallPlanDto(plan: InstallPlan): InstallPlanDto {
     steps: plan.steps,
     manualCommands: plan.manualCommands,
     warningKeys: plan.warningKeys,
+    ...(plan.scannedAtCommit === undefined ? {} : { scannedAtCommit: plan.scannedAtCommit }),
   }
 }

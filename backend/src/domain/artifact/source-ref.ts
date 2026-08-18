@@ -18,6 +18,13 @@ export interface GitHubSource {
   readonly path?: string
   /** Pinned commit SHA when known. Installing an unpinned git spec is a supply-chain risk. */
   readonly commit?: string
+  /**
+   * The curated lists that surfaced this repository, when discovery did not
+   * come from the `dsh-plugin` topic alone. Accumulated across sweeps: a
+   * crawl that re-reads the repository refreshes the reference but keeps the
+   * provenance earlier crawls recorded.
+   */
+  readonly via?: readonly string[]
 }
 
 export interface SubmissionSource {
@@ -46,6 +53,7 @@ export function githubSource(input: {
   repo: string
   path?: string
   commit?: string
+  via?: readonly string[]
 }): GitHubSource {
   if (!GH_SEGMENT.test(input.owner) || !GH_SEGMENT.test(input.repo)) {
     throw DomainError.invalid('Not a valid GitHub owner/repo.', {
@@ -62,7 +70,23 @@ export function githubSource(input: {
     repo: input.repo,
     ...(input.path === undefined ? {} : { path: input.path.replace(/^\/+|\/+$/g, '') }),
     ...(input.commit === undefined ? {} : { commit: input.commit }),
+    ...(input.via === undefined || input.via.length === 0 ? {} : { via: [...new Set(input.via)] }),
   }
+}
+
+/**
+ * Keep the provenance a refresh would otherwise drop.
+ *
+ * A sweep rewrites the whole source reference from what it just read, so a
+ * repository the topic crawl re-reads after a curated list surfaced it would
+ * silently lose the list's `via`. Provenance is accumulated instead: the new
+ * reference wins on every field, and the two `via` sets merge. Non-GitHub
+ * sources carry no provenance and pass through unchanged.
+ */
+export function mergeProvenance(existing: SourceRef, next: SourceRef): SourceRef {
+  if (existing.origin !== 'github' || next.origin !== 'github') return next
+  const via = [...new Set([...(existing.via ?? []), ...(next.via ?? [])])]
+  return via.length === 0 ? next : { ...next, via }
 }
 
 export function submissionSource(homepageUrl: string): SubmissionSource {
@@ -91,6 +115,16 @@ export function sourceUrl(source: SourceRef): string {
     case 'submission':
       return source.homepageUrl
   }
+}
+
+/**
+ * The exact commit the indexer scanned, as a browsable page. Undefined when
+ * the source has no pinned commit — npm and submission sources never do.
+ */
+export function sourceCommitUrl(source: SourceRef): string | undefined {
+  return source.origin === 'github' && source.commit !== undefined
+    ? `https://github.com/${source.owner}/${source.repo}/commit/${source.commit}`
+    : undefined
 }
 
 /**

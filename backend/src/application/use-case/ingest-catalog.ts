@@ -1,5 +1,6 @@
 import { Artifact } from '../../domain/artifact/artifact.js'
 import type { ArtifactRepository } from '../../domain/artifact/artifact-repository.js'
+import { mergeProvenance } from '../../domain/artifact/source-ref.js'
 import { slug } from '../../domain/shared/slug.js'
 import { isDomainError } from '../../domain/shared/error.js'
 import type { IndexedSnapshot, SourceIndexer } from '../port/source-indexer.js'
@@ -34,6 +35,9 @@ const DEFAULT_LIMIT = 100
  * Runs on a Cron Trigger. It is deliberately tolerant: one malformed package
  * must not abort a sweep, because a single bad publish upstream would otherwise
  * stop the whole registry from refreshing.
+ *
+ * Every artifact swept also appends one `artifact_metrics` row, the history
+ * star velocity and the `rising` sort are computed from.
  */
 export class IngestCatalog {
   constructor(
@@ -67,7 +71,9 @@ export class IngestCatalog {
             const refreshed = existing.refreshedWith({
               displayName: snapshot.displayName,
               summary: snapshot.summary,
-              source: snapshot.source,
+              // The fresh reference wins on every field; curated-list
+              // provenance (`via`) accumulates across sweeps.
+              source: mergeProvenance(existing.source, snapshot.source),
               payload: snapshot.payload,
               keywords: snapshot.keywords,
               categories: snapshot.categories,
@@ -78,12 +84,18 @@ export class IngestCatalog {
                 ? {}
                 : { readmeMarkdown: snapshot.readmeMarkdown }),
               ...(snapshot.ogImageUrl === undefined ? {} : { ogImageUrl: snapshot.ogImageUrl }),
+              ...(snapshot.sourceCommitSha === undefined
+                ? {}
+                : { sourceCommitSha: snapshot.sourceCommitSha }),
               ...(snapshot.deprecated === undefined ? {} : { deprecated: snapshot.deprecated }),
             })
             await this.artifacts.save(refreshed)
+            await this.artifacts.recordMetricsSnapshot(refreshed)
             updated += 1
           } else {
-            await this.artifacts.save(toArtifact(snapshot))
+            const createdArtifact = toArtifact(snapshot)
+            await this.artifacts.save(createdArtifact)
+            await this.artifacts.recordMetricsSnapshot(createdArtifact)
             created += 1
           }
         } catch (error) {
@@ -116,6 +128,9 @@ export function toArtifact(snapshot: IndexedSnapshot, ownerAccountId?: string): 
     ...(snapshot.author === undefined ? {} : { author: snapshot.author }),
     ...(snapshot.readmeMarkdown === undefined ? {} : { readmeMarkdown: snapshot.readmeMarkdown }),
     ...(snapshot.ogImageUrl ? { ogImageUrl: snapshot.ogImageUrl } : {}),
+    ...(snapshot.sourceCommitSha === undefined
+      ? {}
+      : { sourceCommitSha: snapshot.sourceCommitSha }),
     stats: { stars: snapshot.stats.stars, downloads: snapshot.stats.downloads, installs: 0 },
     ...(ownerAccountId === undefined ? {} : { ownerAccountId }),
     ...(snapshot.deprecated === undefined ? {} : { deprecated: snapshot.deprecated }),

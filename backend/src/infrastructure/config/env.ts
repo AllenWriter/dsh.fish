@@ -21,6 +21,13 @@ export interface HubEnv {
   readonly GITHUB_TOKEN?: string
   /** Comma-separated account emails granted administrator rights. */
   readonly ADMIN_EMAILS?: string
+  /**
+   * IndexNow key. Public by design: the Worker serves it verbatim at
+   * `/indexnow-<key>.txt` so engines can verify ownership before accepting
+   * pushed URLs. A plain var in `wrangler.jsonc`, not a secret. When unset,
+   * the verification route answers 404.
+   */
+  readonly INDEXNOW_KEY?: string
 }
 
 export interface HubConfig {

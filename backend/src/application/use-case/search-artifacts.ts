@@ -22,7 +22,7 @@ export interface SearchArtifactsInput {
   readonly offset?: number
 }
 
-const SORTS: readonly ArtifactSort[] = ['relevance', 'popular', 'recent', 'name']
+const SORTS: readonly ArtifactSort[] = ['relevance', 'popular', 'recent', 'name', 'rising']
 
 /**
  * The one read path behind the site's browse page, the home page rails, the
