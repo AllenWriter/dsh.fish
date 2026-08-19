@@ -1,8 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 import { mobileProjects } from './e2e/lib/devices'
+import { E2E_ORIGIN } from './e2e/lib/origin'
 
-const PORT = 5173
-const baseURL = `http://localhost:${PORT}`
+const baseURL = E2E_ORIGIN
 
 /**
  * End-to-end coverage.
@@ -12,10 +12,11 @@ const baseURL = `http://localhost:${PORT}`
  * for the readme: overflow, wrapping and stacking are resolution-dependent, and a
  * single "phone" viewport would miss the 360px Android and 430px iPhone Max cases.
  *
- * The other three suites each need one viewport, not a matrix. The OG-card project
- * is a fixture page. The icon suite is split by pointer rather than by width: most
- * of it needs the desktop bar, which is hidden below `md`, while the menu toggle
- * and the 44px hit areas only exist under a coarse pointer.
+ * The other suites each need one viewport, not a matrix. The OG-card project is a
+ * fixture page. The icon suite is split by pointer rather than by width: most of it
+ * needs the desktop bar, which is hidden below `md`, while the menu toggle and the
+ * 44px hit areas only exist under a coarse pointer. The community stack is fixed to
+ * one corner at one width, so a matrix would assert the same thing six times.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -66,6 +67,14 @@ export default defineConfig({
       name: 'icons-touch',
       testMatch: /icons\/icon-touch\.spec\.ts/,
       use: { ...devices['Pixel 7'], defaultBrowserType: 'chromium' },
+    },
+    {
+      name: 'community-toasts',
+      testMatch: /community-toasts\/.*\.spec\.ts/,
+      use: {
+        viewport: { width: 1280, height: 900 },
+        defaultBrowserType: 'chromium',
+      },
     },
   ],
 })

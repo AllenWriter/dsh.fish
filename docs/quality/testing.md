@@ -43,7 +43,7 @@ deterministic unit test.
 - Keep them stable and fast enough to run in CI.
 - Use deterministic test data.
 
-`pnpm run test:e2e` runs Playwright. Four project groups share one config:
+`pnpm run test:e2e` runs Playwright. Five project groups share one config:
 
 **Plugin-detail markdown** is an exception to "journeys only": a third-party
 readme is the unique content of `/a/:id`, and its layout is resolution-dependent.
@@ -106,6 +106,28 @@ state after an effect. `awaitHydration` uses the account slot, which is blank un
 the session resolves in the browser. The clipboard is stubbed, because headless
 Chromium's is unreliable and the subject is the mark that swaps after a successful
 write.
+
+**Community toasts** (`e2e/community-toasts/`) runs at 1280×900, once. The stack is
+fixed to one corner at one width, so the readme suite's device matrix would assert
+the same thing six times.
+
+The unit test (`widgets/community-toasts/model/dismissal.test.ts`) proves the
+cookie can be read back. What only a browser can show is the rest:
+
+- The three destinations are real anchors — Discord, the maintainer's feed, and a
+  `mailto:` — and the two off-site ones open in their own tab with `noopener`.
+- Dismissing writes the cookie, and a reload comes back as a *smaller* stack,
+  because the loader never offered the retired toast again. A reader who has
+  closed all three gets no live region at all.
+- The stack survives a client-side navigation without replaying its entrance.
+- Copy follows the URL's language, region label included.
+- A reader who asked for reduced motion is never displaced: every row's computed
+  transform stays `none` or the identity matrix across the whole entrance.
+
+That last test emulates the preference with `page.emulateMedia` and asserts the
+media query is in force before reading anything from it. Declaring it as a
+`test.use` fixture is not enough to trust — a preference that silently failed to
+apply would leave the test asserting the unreduced path and passing anyway.
 
 Pagination is covered by a unit test, not here: the seed holds seven rows against a
 page size of twenty-four, so a browser never reaches a second page.
