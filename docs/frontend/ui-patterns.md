@@ -236,8 +236,12 @@ The plugin-page author card uses beui's `Avatar`, not a second image primitive.
 ## The toast stack
 
 Three community invitations sit in one fixed deck at the bottom-right corner
-(`shared/ui/motion/toast-stack.tsx`, vendored from beui's animated toast stack;
-`widgets/community-toasts` owns the content and the dismissal).
+(`shared/ui/motion/toast-stack.tsx`; `widgets/community-toasts` owns the
+content and the dismissal). The deck mechanics are vendored from beui's
+notification-stack — grid stacking, `layout="position"` reflow, and the
+hover/tap/dismiss gesture hooks in `shared/lib/hooks` — and the toast
+features (spring entrance, swipe dismissal, live region) from its animated
+toast stack.
 
 - **It is not a notification system.** There is one caller, no statuses and no
   timers. beui's neutral/info/loading/success/error vocabulary was dropped on
@@ -245,8 +249,12 @@ Three community invitations sit in one fixed deck at the bottom-right corner
   status hues to render it with.
 - **It is a deck, not a list.** Collapsed, the front toast shows in full and
   the rest peek out above it, each a little smaller; a hover or focus anywhere
-  on the stack fans it open. A permanent stack rendered as a flat list — the
-  registry's default — is a third of the viewport spent on invitations.
+  on the stack fans it open. A permanent stack rendered as a flat list is a
+  third of the viewport spent on invitations.
+- **A finger gets the same deck as a pointer.** A tap on the collapsed stack
+  fans it open, and an outside tap or Escape folds it — the registry's
+  hover/tap/dismiss gesture hooks, vendored, are what keeps a tap from being
+  read as a hover that arrives and leaves in the same gesture.
 - **A toast is one line.** The mark, the title, then the action and the
   dismiss control grouped on the right. One glance, one row.
 - **A toast leaves when a reader says so, and never comes back.** Dismissal is
