@@ -1,4 +1,4 @@
-import { githubAvatarUrl } from './github-avatar'
+import { githubAvatarUrl } from '@/shared/lib/github-avatar'
 import { localeDefinition, translate, type Locale } from '@/shared/config/i18n'
 import { SCHEMA, absoluteUrl, clampDescription, interactionLd, type Ld } from '@/shared/lib/seo'
 import { kindLabelKey } from '../model/types'

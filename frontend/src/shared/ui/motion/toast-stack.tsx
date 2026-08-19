@@ -1,31 +1,35 @@
-// beui.dev/components/motion/animated-toast-stack — vendored from the beui
-// registry. Import aliases are remapped onto this project's FSD shared layer,
-// lucide glyphs onto `shared/ui/icon`, and the surface onto the semantic
-// tokens (`bg-card`, `border-border`, `text-muted-foreground`).
+// Two beui components, joined. The card, its dismissal, the swipe and the
+// spring exit come from beui.dev/components/motion/animated-toast-stack; the
+// layered geometry — one grid cell, a per-depth rise, a per-depth shrink and a
+// descending z-order — comes from beui.dev/components/blocks/notification-stack.
 //
-// Three deliberate reductions on top of the registry component:
+// Neither registry component does this on its own: the toast stack lays its
+// toasts out as a list, and the notification stack is a summary that fans open
+// on hover and collapses again, not a deck that is dealt down one card at a
+// time. What is wanted here is the deck, so the geometry was lifted and the
+// hover/expand machinery (four gesture hooks and a text-swap) was not.
+//
+// Import aliases are remapped onto this project's FSD shared layer, lucide
+// glyphs onto `shared/ui/icon`, and the surfaces onto the semantic tokens.
+// Three further reductions on beui's toast:
 //
 // 1. No status vocabulary. beui's toast carries neutral/info/loading/success/
-//    error, each with its own hue and an icon that morphs between them. This
-//    product's palette is one accent and no status hues
-//    (`docs/frontend/ui-patterns.md`), and nothing here reports progress, so
-//    the status machinery — and the emerald/destructive classes that came
-//    with it — is gone rather than left in as unreachable options.
-// 2. No timers. Every toast here stays until it is dismissed, so the
-//    registry's duration bookkeeping (and the `useAnimatedToastStack` hook
-//    that owned it) has no job. The caller owns the list.
+//    error, each with its own hue. This product's palette is one accent and no
+//    status hues (`docs/frontend/ui-patterns.md`), and nothing here reports
+//    progress, so the status machinery is gone rather than left in as
+//    unreachable options.
+// 2. No timers. Every toast stays until it is dismissed. The caller owns the
+//    list, so the registry's duration bookkeeping has no job.
 // 3. The action is a link, not a button. Every action this product puts in a
 //    toast navigates somewhere, and a real anchor is what gives it a middle
 //    click, a context menu, and the right role.
 //
-// The motion keeps the registry's character — spring entrance, `layout`
-// reflow when one leaves, exit toward the edge it can be swiped off — but the
-// physics come from `shared/lib/ease`, so this surface settles like every
+// Physics come from `shared/lib/ease`, so this surface settles like every
 // other panel in the app.
 
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { AnimatePresence, motion, useIsPresent, useReducedMotion } from 'motion/react'
 import type { ReactNode } from 'react'
-import { EASE_OUT, SPRING_LAYOUT, SPRING_PANEL } from '@/shared/lib/ease'
+import { EASE_OUT, SPRING_LAYOUT } from '@/shared/lib/ease'
 import { cn } from '@/shared/lib/utils'
 import { CloseIcon } from '@/shared/ui/icon'
 
@@ -38,15 +42,19 @@ export interface ToastAction {
 
 export interface ToastItem<Id extends string = string> {
   id: Id
-  /** The mark that identifies the destination, in the leading slot. */
-  icon: ReactNode
+  /**
+   * The mark in the leading slot: a glyph in a tinted disc, or a portrait.
+   * Sized by the caller to the 28px slot.
+   */
+  leading: ReactNode
   title: string
   action: ToastAction
 }
 
 export interface ToastStackProps<Id extends string = string> {
+  /** Front of the deck first. Only the front card is readable. */
   toasts: readonly ToastItem<Id>[]
-  /** The close control or a swipe. The toast should leave the list. */
+  /** The close control or a swipe. The toast should leave the deck. */
   onDismiss: (id: Id) => void
   /**
    * The action link was activated.
@@ -57,20 +65,26 @@ export interface ToastStackProps<Id extends string = string> {
    * disappear on the next visit instead.
    */
   onAction: (id: Id) => void
-  /** Accessible name of the live region, and of every dismiss control. */
+  /** Accessible name of the live region, and of the dismiss control. */
   labels: { region: string; dismiss: string }
-  /**
-   * Seconds between one toast's entrance and the next.
-   *
-   * A short cascade reads as a stack arriving rather than a block appearing.
-   * Every item is in the DOM from the first frame, so nothing reflows while
-   * it plays.
-   */
-  stagger?: number
   className?: string
 }
 
-/** Rightward pointer travel, in px, that dismisses on release. */
+/** How far each card behind the front one rises, in px. */
+const PEEK = 12
+
+/** How much narrower each card behind the front one is drawn. */
+const SHRINK = 0.045
+
+/**
+ * How many cards are drawn at all.
+ *
+ * Past the third the slivers are a few pixels apart and read as one thick
+ * edge, so a deeper card is carried in state and simply not painted.
+ */
+const DEPTH = 3
+
+/** Rightward pointer travel, in px, that dismisses the front card on release. */
 const SWIPE_DISTANCE = 72
 
 /**
@@ -84,36 +98,46 @@ const SWIPE_VELOCITY = 110
 /** Exit is faster than entrance: the system answering, not the reader deciding. */
 const EXIT_TRANSITION = { duration: 0.18, ease: EASE_OUT } as const
 
+/**
+ * Reduced motion: the deck is still layered — the offsets below are a
+ * position, not an animation — but nothing travels between seats. Position
+ * lands instantly and only opacity is given time, which is what says a card
+ * is new without moving anything.
+ */
+const REDUCED_TRANSITION = { duration: 0, opacity: { duration: 0.2, ease: EASE_OUT } } as const
+
 export function ToastStack<Id extends string>({
   toasts,
   onDismiss,
   onAction,
   labels,
-  stagger = 0.07,
   className,
 }: ToastStackProps<Id>) {
-  // Asked once here rather than once per row: the preference is a property of
+  // Asked once here rather than once per card: the preference is a property of
   // the reader, not of a toast, and the stack is where the motion policy for
-  // every row it holds belongs.
+  // every card it holds belongs.
   const reduce = useReducedMotion() ?? false
+  const painted = toasts.slice(0, DEPTH)
 
   return (
     <ol
       aria-label={labels.region}
       aria-live="polite"
       className={cn(
-        // Anchored to the corner the toasts also exit toward, and transparent
-        // to the pointer so an empty stack never covers the page under it.
-        'pointer-events-none fixed bottom-4 right-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-2',
+        // One grid cell holds every card, so the deck is exactly as tall as
+        // the card at its front and the ones behind stretch to match. Anchored
+        // to the corner the front card also exits toward, and transparent to
+        // the pointer so an empty deck never covers the page under it.
+        'pointer-events-none fixed bottom-4 right-4 z-50 grid w-[calc(100vw-2rem)] max-w-sm',
         className,
       )}
     >
       <AnimatePresence>
-        {toasts.map((toast, index) => (
-          <ToastRow
+        {painted.map((toast, depth) => (
+          <ToastCard
             key={toast.id}
             toast={toast}
-            delay={index * stagger}
+            depth={depth}
             reduce={reduce}
             dismissLabel={labels.dismiss}
             onDismiss={() => onDismiss(toast.id)}
@@ -125,46 +149,68 @@ export function ToastStack<Id extends string>({
   )
 }
 
-function ToastRow({
+function ToastCard({
   toast,
-  delay,
+  depth,
   reduce,
   dismissLabel,
   onDismiss,
   onAction,
 }: {
   toast: ToastItem
-  delay: number
+  /** 0 is the front card; everything behind it is a blank sliver. */
+  depth: number
   reduce: boolean
   dismissLabel: string
   onDismiss: () => void
   onAction: () => void
 }) {
+  const front = depth === 0
+
+  // A card being dealt away keeps its copy — watching it leave is the point of
+  // the exit — but it is no longer anyone's to act on. Without this there are
+  // two dismiss controls and two links for as long as the exit runs, and both
+  // a keyboard and a screen reader can reach the one that is leaving.
+  const present = useIsPresent()
+  const live = front && present
   const { action } = toast
 
-  // Reduced motion keeps the fade — it is what says the toast is new — and
-  // drops every transform, the swipe included.
-  const enter = reduce ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.96, filter: 'blur(8px)' }
-  const settled = reduce ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }
+  // Where this card sits in the deck. A card moves through these seats as the
+  // ones in front of it are dealt away, and that is the whole animation:
+  // nothing is repositioned, its depth simply changes.
+  const seat = { y: -depth * PEEK, scale: 1 - depth * SHRINK }
+
+  // Reduced motion starts each card already in its seat, so the deck is
+  // layered from the first frame and only its opacity is animated.
+  const enter = reduce
+    ? { opacity: 0, ...seat }
+    : { opacity: 0, y: 20, scale: 0.96, filter: 'blur(8px)' }
+  const settled = reduce ? { opacity: 1, ...seat } : { opacity: 1, ...seat, filter: 'blur(0px)' }
   const leave = reduce
     ? { opacity: 0, transition: EXIT_TRANSITION }
     : { opacity: 0, x: 24, scale: 0.96, filter: 'blur(6px)', transition: EXIT_TRANSITION }
 
   return (
     <motion.li
-      // Reflow when a sibling leaves is motion too, so it goes with the rest
-      // of it: `layout` measures and animates position independently of the
-      // variants below, and left on it would slide a row a reader asked to
-      // keep still.
-      layout={!reduce}
+      // Every card in the same cell, bottom edges together, so a card that
+      // rises does it out of the top of the deck and the front one never moves.
+      className={cn('col-start-1 row-start-1', live ? 'pointer-events-auto' : 'pointer-events-none')}
+      style={{ zIndex: DEPTH - depth, transformOrigin: 'center bottom' }}
+      // The cards behind carry no text, no controls and no name: the deck
+      // shows one toast at a time, and a reader — with eyes or with a screen
+      // reader — is offered exactly the one they can act on.
+      aria-hidden={live ? undefined : true}
+      inert={!live}
       initial={enter}
-      // The cascade delay rides on the entrance alone. Left at the top level
-      // it would be inherited by the reflow below, so dismissing the first
-      // toast would leave the rest hanging before they closed the gap.
-      animate={{ ...settled, transition: { ...SPRING_PANEL, delay } }}
+      animate={settled}
       exit={leave}
-      transition={{ layout: SPRING_LAYOUT }}
-      drag={reduce ? false : 'x'}
+      // One spring for the arrival and for every seat a card is promoted
+      // through afterwards. The glide between seats is the motion this
+      // surface repeats, so it is the glide token that sets the character —
+      // and a single transition is what keeps a card that is dismissed
+      // mid-entrance from fighting two of them.
+      transition={reduce ? REDUCED_TRANSITION : SPRING_LAYOUT}
+      drag={live && !reduce ? 'x' : false}
       dragConstraints={{ left: 0, right: 0 }}
       // Resistance to the left, where there is nothing to dismiss toward; an
       // easy ride to the right, which is the way it leaves.
@@ -174,40 +220,40 @@ function ToastRow({
           onDismiss()
         }
       }}
-      className="pointer-events-auto"
     >
       {/* One step above the popover's elevation, because this layer is the
           only one that floats over content the reader did not summon: on a
           page of cards, the popover's shadow leaves it reading as one more
           card. Opaque rather than translucent — a toast sits over arbitrary
           content and has to stay readable on it. */}
-      <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-3 shadow-xl">
-        <span className="mt-px grid size-7 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">
-          {toast.icon}
-        </span>
+      <div className="flex h-full items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-xl">
+        {front ? (
+          <>
+            <span className="grid size-7 shrink-0 place-items-center">{toast.leading}</span>
 
-        <div className="min-w-0 flex-1">
-          {/* Balanced, not pretty: these are one or two lines, so evening the
-              lines out beats protecting a last-line orphan. */}
-          <p className="text-balance text-sm font-medium leading-5 text-foreground">{toast.title}</p>
-          <a
-            href={action.href}
-            {...(action.external ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
-            onClick={onAction}
-            className="press mt-2 inline-flex h-8 items-center rounded-full bg-primary px-3.5 text-xs font-medium text-primary-foreground"
-          >
-            {action.label}
-          </a>
-        </div>
+            <p className="min-w-0 flex-1 text-pretty text-sm font-medium leading-5 text-foreground">
+              {toast.title}
+            </p>
 
-        <button
-          type="button"
-          onClick={onDismiss}
-          aria-label={dismissLabel}
-          className="press hit-area grid size-7 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <CloseIcon className="size-3.5" weight="bold" />
-        </button>
+            <a
+              href={action.href}
+              {...(action.external ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
+              onClick={onAction}
+              className="press inline-flex h-8 shrink-0 items-center rounded-full bg-primary px-3.5 text-xs font-medium text-primary-foreground"
+            >
+              {action.label}
+            </a>
+
+            <button
+              type="button"
+              onClick={onDismiss}
+              aria-label={dismissLabel}
+              className="press hit-area grid size-7 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <CloseIcon className="size-3.5" weight="bold" />
+            </button>
+          </>
+        ) : null}
       </div>
     </motion.li>
   )

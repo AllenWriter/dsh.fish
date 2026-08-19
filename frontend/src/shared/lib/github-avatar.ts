@@ -1,13 +1,16 @@
 /**
- * A GitHub identity's portrait, derived from the profile URL the catalog
- * already stores.
+ * A GitHub identity's portrait, derived from a profile URL.
  *
  * GitHub documents `https://github.com/{login}.png` as the public avatar for
- * a user or organisation. The catalog does not persist a second image URL —
- * an arbitrary `https:` portrait would let a submission paint a tracker onto
+ * a user or organisation. Nothing here stores a second image URL — an
+ * arbitrary `https:` portrait would let a submission paint a tracker onto
  * every plugin page, the same reason Social previews are host-allowlisted.
- * Constructing this from a profile we already link to keeps the portrait and
- * the outbound link the same fact.
+ * Constructing this from a profile that is already linked keeps the portrait
+ * and the outbound link the same fact.
+ *
+ * Shared rather than owned by the artifact entity, because two surfaces show
+ * a GitHub face now: a plugin's author card, and the maintainer in the
+ * community stack.
  */
 
 const GITHUB_LOGIN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/

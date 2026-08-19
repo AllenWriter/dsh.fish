@@ -32,8 +32,14 @@ export const HUB_REPO_URL = 'https://github.com/stvlynn/dsh.fish'
 /** Where the people who build and publish plugins talk to each other. */
 export const HUB_DISCORD_URL = 'https://discord.gg/PwZDHH4mv3'
 
+/** Who maintains the registry. One definition: catalogs interpolate it. */
+export const MAINTAINER_NAME = 'Steven Lynn'
+
 /** The maintainer's feed, where what lands in the catalog gets announced. */
 export const MAINTAINER_X_URL = 'https://x.com/stv_lynn'
+
+/** The maintainer's GitHub profile, which is also where his portrait is. */
+export const MAINTAINER_GITHUB_URL = 'https://github.com/stvlynn'
 
 /** Where a bug report, a correction or a plugin nomination is read. */
 export const FEEDBACK_EMAIL = 'i@stv.pm'
