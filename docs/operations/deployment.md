@@ -55,6 +55,7 @@ pnpm dlx wrangler secret put GITHUB_CLIENT_SECRET
 pnpm dlx wrangler secret put GITHUB_TOKEN           # crawler, read-only
 pnpm dlx wrangler secret put ADMIN_EMAILS
 pnpm dlx wrangler secret put OPENCODE_GO_API_KEY     # README localization
+pnpm dlx wrangler secret put DEEPSEEK_API_KEY        # README localization, off-peak leg
 ```
 
 `PUBLIC_BASE_URL` must be the real origin. It is read by `readConfig`, which
@@ -71,13 +72,22 @@ environment, and keep preview deployments out of the index — see
 The GitHub OAuth app's callback URL is
 `<PUBLIC_BASE_URL>/api/auth/callback/github`.
 
-README localization calls OpenCode Go's OpenAI-compatible
-`/zen/go/v1/chat/completions` endpoint with an ordered fallback chain
+README localization calls DeepSeek's official API first
+(`api.deepseek.com/chat/completions`, `deepseek-v4-flash` with thinking
+disabled) while its off-peak pricing applies; during the peak windows
+(Beijing 09:00-12:00 and 14:00-18:00) that leg suspends itself and the free
+fallback chain takes over. The user payload leads with the Markdown so the
+per-artifact locale calls share one prefix under DeepSeek's automatic context
+caching. Any DeepSeek failure also falls through to the fallback chain.
+That chain is OpenCode Go's OpenAI-compatible
+`/zen/go/v1/chat/completions` endpoint with an ordered model list
 (`deepseek-v4-flash`, then `hy3`, then `mimo-v2.5`) because the Go tier
 enforces a rolling per-model usage window: a 429 or provider-side 5xx falls
 through to the next model, while request or auth errors fail immediately.
-`OPENCODE_GO_API_KEY` is a Wrangler secret; it must never appear in
-`wrangler.jsonc`, `.dev.vars` committed to Git, or logs.
+`OPENCODE_GO_API_KEY` and `DEEPSEEK_API_KEY` are Wrangler secrets; they must
+never appear in `wrangler.jsonc`, `.dev.vars` committed to Git, or logs.
+Each successful translation logs a `readme_i18n_usage` line with the billed
+token counts (including reasoning and prompt cache hits) for spend tracking.
 `README_I18N_AGENT` is the Durable Object namespace in `frontend/wrangler.jsonc`.
 The Agent class is declared under Wrangler's `exports` map with SQLite storage.
 After changing a binding, regenerate the local environment declaration used to

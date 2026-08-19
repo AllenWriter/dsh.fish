@@ -98,13 +98,16 @@ export function usageSummary(result: unknown): Record<string, number> {
   const details = isRecord(usage.completion_tokens_details)
     ? usage.completion_tokens_details
     : {}
-  const summary: Record<string, number> = {}
-  for (const [key, value] of [
+  const fields: Array<readonly [string, unknown]> = [
     ['promptTokens', usage.prompt_tokens],
     ['completionTokens', usage.completion_tokens],
     ['totalTokens', usage.total_tokens],
     ['reasoningTokens', details.reasoning_tokens],
-  ]) {
+    ['promptCacheHitTokens', usage.prompt_cache_hit_tokens],
+    ['promptCacheMissTokens', usage.prompt_cache_miss_tokens],
+  ]
+  const summary: Record<string, number> = {}
+  for (const [key, value] of fields) {
     if (typeof value === 'number' && Number.isFinite(value)) summary[key] = value
   }
   return summary

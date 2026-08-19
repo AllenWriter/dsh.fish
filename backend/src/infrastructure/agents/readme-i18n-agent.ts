@@ -9,6 +9,7 @@ import type { HubEnv } from '../config/env.js'
 import { D1ArtifactRepository } from '../persistence/d1-artifact-repository.js'
 import { D1ReadmeTranslationRepository } from '../persistence/d1-readme-translation-repository.js'
 import * as schema from '../persistence/schema.js'
+import { translateReadmeWithDeepSeek } from './deepseek-readme-translator.js'
 import { translateReadmeWithOpenCodeGo } from './opencode-go-readme-translator.js'
 
 export interface EnqueueReadmeInput extends ScheduleReadmeLocalizationInput {
@@ -75,15 +76,34 @@ export class ReadmeI18nAgent extends Agent<HubEnv> {
     if (markdown === undefined || (await readmeDigest(markdown)) !== task.sourceHash) return
 
     try {
-      const translated = await this.retry(
-        () => translateReadmeWithOpenCodeGo(this.env.OPENCODE_GO_API_KEY, markdown, task.locale),
-        { maxAttempts: 3, baseDelayMs: 1_000, maxDelayMs: 8_000 },
-      )
+      const translated = await this.retry(() => this.translate(markdown, task.locale), {
+        maxAttempts: 3,
+        baseDelayMs: 1_000,
+        maxDelayMs: 8_000,
+      })
       await translations.save(record(task, 'completed', { markdown: translated }))
     } catch (error) {
       await translations.save(record(task, 'failed', { error: describe(error) }))
       throw error
     }
+  }
+
+  /**
+   * Off-peak the paid DeepSeek leg runs first (thinking disabled, cached
+   * prefix); during its peak pricing hours it suspends itself and the free
+   * OpenCode Go chain carries the load. Any DeepSeek failure likewise falls
+   * through to Go.
+   */
+  private async translate(markdown: string, locale: string): Promise<string> {
+    const deepseekKey = this.env.DEEPSEEK_API_KEY
+    if (deepseekKey !== undefined && deepseekKey.trim() !== '') {
+      try {
+        return await translateReadmeWithDeepSeek(deepseekKey, markdown, locale)
+      } catch (error) {
+        console.warn('readme_i18n_deepseek_fallback', describe(error))
+      }
+    }
+    return translateReadmeWithOpenCodeGo(this.env.OPENCODE_GO_API_KEY, markdown, locale)
   }
 
   private artifactRepository(): D1ArtifactRepository {

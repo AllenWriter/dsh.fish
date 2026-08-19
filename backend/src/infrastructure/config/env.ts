@@ -16,6 +16,11 @@ export interface HubEnv {
   readonly README_I18N_AGENT: DurableObjectNamespace<ReadmeI18nAgent>
   /** OpenCode Go bearer token, stored as a Wrangler secret. */
   readonly OPENCODE_GO_API_KEY: string
+  /**
+   * DeepSeek official API key, stored as a Wrangler secret. Optional: without
+   * it README localization runs on the free OpenCode Go chain only.
+   */
+  readonly DEEPSEEK_API_KEY?: string
   /** Absolute origin the site is served from, e.g. `https://dsh.fish`. */
   readonly PUBLIC_BASE_URL: string
   readonly BETTER_AUTH_SECRET: string
