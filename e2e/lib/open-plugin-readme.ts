@@ -1,5 +1,7 @@
 import type { Page } from '@playwright/test'
 import { KITCHEN_SINK_ARTIFACT_ID } from './kitchen-sink-readme'
+import { COMMUNITY_TOAST_IDS } from '../../frontend/src/widgets/community-toasts/model/dismissal.ts'
+import { E2E_ORIGIN } from './origin'
 
 /** A wide screenshot, served locally so the test does not depend on GitHub. */
 const WIDE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="400">
@@ -15,8 +17,17 @@ const BADGE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="20
 /**
  * Open the plugin page the kitchen-sink readme is seeded onto, with source
  * images stubbed so layout is deterministic and does not touch the network.
+ *
+ * The community stack arrives on a timer at the corner this suite photographs,
+ * so it is dismissed up front. The subject here is the readme's own layout; an
+ * overlay drifting into the frame would decide a stored baseline by how long
+ * the page took to load. Its own suite is `e2e/community-toasts/`.
  */
 export async function openPluginReadme(page: Page): Promise<void> {
+  await page.context().addCookies([
+    { name: 'community', value: COMMUNITY_TOAST_IDS.join('.'), url: E2E_ORIGIN },
+  ])
+
   await page.route('https://github.com/**', async (route) => {
     const url = route.request().url()
     if (route.request().resourceType() !== 'image' && !/\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(url)) {

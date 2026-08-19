@@ -2,11 +2,11 @@ import { spawn } from 'node:child_process'
 import { resolve } from 'node:path'
 import { seedLocalCatalog } from './lib/seed-local-catalog.ts'
 import { KITCHEN_SINK_ARTIFACT_ID } from './lib/kitchen-sink-readme.ts'
+import { E2E_ORIGIN, E2E_PORT as port } from './lib/origin.ts'
 
 const root = process.cwd()
 const frontend = resolve(root, 'frontend')
-const port = process.env.E2E_PORT ?? '5173'
-const origin = `http://localhost:${port}`
+const origin = E2E_ORIGIN
 
 void main()
 

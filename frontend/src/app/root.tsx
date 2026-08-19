@@ -11,6 +11,7 @@ import type { Route } from '../+types/root'
 import { readThemeCookie, type ThemePreference } from '@/shared/lib/theme'
 import { SiteHeader } from '@/widgets/site-header/site-header'
 import { SiteFooter } from '@/widgets/site-footer/site-footer'
+import { CommunityToasts, readDismissedToasts } from '@/widgets/community-toasts'
 import {
   DEFAULT_LOCALE,
   LocaleProvider,
@@ -48,12 +49,18 @@ export const links: Route.LinksFunction = () => [
  * The URL is the only signal a crawler shares with a reader: a page whose
  * language depends on a request header is one page to an engine and ten to a
  * human, and the nine it cannot see never get indexed.
+ *
+ * The dismissed community toasts come from a cookie for the theme's reason
+ * again: deciding here is what keeps a toast a reader has already closed out
+ * of the markup entirely, rather than rendered and then hidden.
  */
 export function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url)
+  const cookie = request.headers.get('cookie')
   return {
-    theme: readThemeCookie(request.headers.get('cookie')),
+    theme: readThemeCookie(cookie),
     locale: splitLocalePath(url.pathname).locale,
+    dismissedToasts: readDismissedToasts(cookie),
   }
 }
 
@@ -92,6 +99,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const data = useRouteLoaderData<typeof loader>('root')
+
   return (
     <div className="flex min-h-screen min-w-0 flex-col">
       <SiteHeader />
@@ -99,6 +108,7 @@ export default function App() {
         <Outlet />
       </main>
       <SiteFooter />
+      <CommunityToasts dismissed={data?.dismissedToasts ?? []} />
     </div>
   )
 }

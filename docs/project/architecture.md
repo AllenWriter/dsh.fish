@@ -75,7 +75,7 @@ is built **per request**, because D1 and KV bindings arrive per request.
 |---|---|
 | `app/` | `root.tsx`, `routes.ts`, global styles |
 | `pages/` | One slice per route; composes widgets, owns loaders |
-| `widgets/` | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel` |
+| `widgets/` | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel`, `community-toasts` |
 | `features/` | `account-menu` — the signed-in identity and the actions on it; `locale-switcher` — the language of the page you are on; `catalog-search` — the header palette's live query against `GET /api/v1/artifacts` |
 | `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip`, `AuthorCard`, `artifactLd` |
 | `shared/` | beui components (`ui/motion/`, `ui/avatar`, `ui/animated-number`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, auth client, `hub-context` |
@@ -93,6 +93,15 @@ under that portrait — two facts about where the plugin comes from, stacked,
 rather than a source row parked beside the install commands. A GitHub
 profile URL is also GitHub's `{login}.png`, so the portrait is not a second
 stored image.
+
+`community-toasts` is the only widget mounted outside `<Outlet>`: three
+invitations — the Discord room, the maintainer's feed, and the feedback inbox —
+that arrive once, after the page has had a moment to itself, and are dismissed
+for good one at a time. Which of them a reader still has is decided in the root
+loader from a cookie, for the reason the theme uses one: a client-side store
+would render the surface and then hide it, and only a cookie can keep a retired
+toast out of the response. Living outside the route outlet is what keeps a
+navigation from replaying the entrance or resurrecting a dismissal.
 
 The header control labelled "Search plugins" queries `GET /api/v1/artifacts`
 as the reader types — the same `SearchArtifacts` use case the browse page
