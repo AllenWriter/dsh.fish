@@ -44,6 +44,18 @@ export type Locale = (typeof LOCALES)[number]['code']
  */
 export const DEFAULT_LOCALE: Locale = 'en'
 
+/**
+ * Languages the site once served and no longer does. A retired prefix folds
+ * onto the default-language URL of the same page (a 301), so existing links
+ * and crawlers follow through instead of dying on a 404.
+ */
+const RETIRED = new Set(['de', 'es', 'fr', 'pt-br'])
+
+/** Case-insensitive match for a language the site no longer serves. */
+export function isRetiredLocale(raw: string): boolean {
+  return RETIRED.has(raw.toLowerCase())
+}
+
 const BY_CODE = new Map<string, LocaleDefinition>(LOCALES.map((entry) => [entry.code, entry]))
 
 /** Lower-cased index, so `/ZH-cn/browse` resolves rather than 404s. */

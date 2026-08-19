@@ -23,10 +23,11 @@ Sub-directories, not sub-domains and not a `?lang=` parameter:
 301 to it. Publishing both is the single most common way a multilingual site
 splits its own ranking signal across two URLs for one document.
 
-**Retired languages 404.** German, French, Spanish and Brazilian Portuguese
-were served once and are no longer declared, so `/de/*`, `/fr/*`, `/es/*` and
-`/pt-BR/*` fail `requireLocale` like any other unknown prefix. Their stored
-README translations are left in the database; they are simply not routed.
+**Retired languages redirect.** German, French, Spanish and Brazilian
+Portuguese were served once and are no longer declared, so `/de/*`, `/fr/*`,
+`/es/*` and `/pt-BR/*` 301 onto the same path in the default language —
+`/de/browse` lands on `/browse`. Their stored README translations are left in
+the database; they are simply not routed.
 
 ## Routing
 

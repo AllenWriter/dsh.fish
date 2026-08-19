@@ -150,7 +150,9 @@ export default {
             console.error('catalog_ingest_failed', String(error))
           }),
         container.useCases.backfillReadmeLocalization
-          .execute()
+          // The off-peak DeepSeek leg is paid but cheap and unconstrained by
+          // the Go quota, so the stale-failure scan can run a large batch.
+          .execute(100)
           .then((report) => {
             console.log('readme_i18n_backfill', report)
           })

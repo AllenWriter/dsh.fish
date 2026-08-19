@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, matchLocale, type Locale } from './locales'
+import { DEFAULT_LOCALE, matchLocale, isRetiredLocale, type Locale } from './locales'
 
 /**
  * URL strategy: one path prefix per language, and none for the default one.
@@ -49,13 +49,18 @@ export function localizedPath(locale: Locale, path: string): string {
  *   multilingual site splits its own ranking signal between two URLs.
  * - `/ZH-cn/browse` is the same document as `/zh-CN/browse` to a router that
  *   matches languages case-insensitively, and a different one to a crawler.
+ * - `/de/browse` names a retired language; it folds onto `/browse`, the
+ *   default-language URL of the same page, so old links keep working.
  *
  * Returns `undefined` when the URL is already canonical. A path whose first
  * segment is not a language at all is left alone: that is a page path, and
  * whether it exists is the router's question, not this function's.
  */
 export function canonicalLocaleRedirect(pathname: string, search = ''): string | undefined {
-  const [, head = ''] = pathname.split('/')
+  const [, head = '', ...rest] = pathname.split('/')
+  if (isRetiredLocale(head)) {
+    return `${normalize(`/${rest.join('/')}`)}${search}`
+  }
   const locale = matchLocale(head)
   if (locale === undefined) return undefined
   if (locale !== DEFAULT_LOCALE && head === locale) return undefined

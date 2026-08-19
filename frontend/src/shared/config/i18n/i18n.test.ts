@@ -244,6 +244,14 @@ describe('canonical redirects', () => {
     expect(canonicalLocaleRedirect('/')).toBeUndefined()
   })
 
+  it('folds a retired language onto the same page in the default language', () => {
+    expect(canonicalLocaleRedirect('/de/browse')).toBe('/browse')
+    expect(canonicalLocaleRedirect('/fr')).toBe('/')
+    expect(canonicalLocaleRedirect('/PT-br/a/dsh-hello', '?q=postgres')).toBe(
+      '/a/dsh-hello?q=postgres',
+    )
+  })
+
   it('leaves a page path that is not a language alone', () => {
     expect(canonicalLocaleRedirect('/robots.txt')).toBeUndefined()
     expect(canonicalLocaleRedirect('/a/dsh-hello')).toBeUndefined()
