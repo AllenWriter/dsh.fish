@@ -187,8 +187,8 @@ describe('locale paths', () => {
   })
 
   it('carries the query string through a language switch', () => {
-    expect(localizedPath('de', '/browse?q=postgres&kind=skill')).toBe(
-      '/de/browse?q=postgres&kind=skill',
+    expect(localizedPath('ko', '/browse?q=postgres&kind=skill')).toBe(
+      '/ko/browse?q=postgres&kind=skill',
     )
   })
 
@@ -220,7 +220,7 @@ describe('locale paths', () => {
 
   it('normalises a trailing slash away, so one page has one URL', () => {
     expect(splitLocalePath('/browse/').path).toBe('/browse')
-    expect(localizedPath('fr', '/browse/')).toBe('/fr/browse')
+    expect(localizedPath('ru', '/browse/')).toBe('/ru/browse')
   })
 })
 

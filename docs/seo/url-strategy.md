@@ -1,6 +1,6 @@
 # URL strategy
 
-One document, one URL, in ten languages.
+One document, one URL, in six languages.
 
 ## Language lives in the path
 
@@ -22,6 +22,11 @@ Sub-directories, not sub-domains and not a `?lang=` parameter:
 **The default language has no prefix.** `/browse` is English; `/en/browse` is a
 301 to it. Publishing both is the single most common way a multilingual site
 splits its own ranking signal across two URLs for one document.
+
+**Retired languages 404.** German, French, Spanish and Brazilian Portuguese
+were served once and are no longer declared, so `/de/*`, `/fr/*`, `/es/*` and
+`/pt-BR/*` fail `requireLocale` like any other unknown prefix. Their stored
+README translations are left in the database; they are simply not routed.
 
 ## Routing
 
@@ -59,7 +64,7 @@ path, and whether it exists is the router's question.
 `pageMeta` emits, for every indexable page:
 
 - `<link rel="canonical">` pointing at this page in **this** language.
-- `<link rel="alternate" hreflang="…">` for all ten languages **plus**
+- `<link rel="alternate" hreflang="…">` for all six languages **plus**
   `x-default` pointing at the unprefixed default.
 
 The set is reciprocal — every language lists every other, including itself — so

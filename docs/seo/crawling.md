@@ -25,7 +25,7 @@ names are exactly the paths anyone can read in it.
 
 An index rather than one flat file. Every non-deprecated artifact in the catalog
 is included, not only the popular or recently updated rows, and every URL is
-emitted once **per language**. At the current ten locales, production XML uses
+emitted once **per language**. At the current six locales, production XML uses
 about 12.7 KB per artifact after its alternate links are expanded; 2,500 rows
 per file stays below the 50 MB uncompressed limit with room for longer ids and
 future locales. A Worker also has to hold the whole document in memory to send
@@ -41,8 +41,8 @@ form of `hreflang`. Both forms are emitted, here and in the page head, because
 they are read at different times: the head only after a page is fetched, the
 sitemap before anything is.
 
-For ten languages that is 10 entries × 11 links per path. `pages.xml` is
-therefore 220 `<url>` elements for 22 paths, which is correct, not a bug.
+For six languages that is 6 entries × 7 links per path. `pages.xml` is
+therefore 132 `<url>` elements for 22 paths, which is correct, not a bug.
 
 ### `lastmod`
 

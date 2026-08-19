@@ -15,10 +15,6 @@ import zhCNJson from './zh-CN.json'
 import zhTWJson from './zh-TW.json'
 import jaJson from './ja.json'
 import koJson from './ko.json'
-import esJson from './es.json'
-import frJson from './fr.json'
-import deJson from './de.json'
-import ptBRJson from './pt-BR.json'
 import ruJson from './ru.json'
 
 export type MessageKey = keyof typeof enJson
@@ -31,8 +27,4 @@ export const zhCN: Catalog = zhCNJson
 export const zhTW: Catalog = zhTWJson
 export const ja: Catalog = jaJson
 export const ko: Catalog = koJson
-export const es: Catalog = esJson
-export const fr: Catalog = frJson
-export const de: Catalog = deJson
-export const ptBR: Catalog = ptBRJson
 export const ru: Catalog = ruJson

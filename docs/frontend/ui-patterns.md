@@ -75,7 +75,7 @@ not give a taxonomy entry a hue — six kind colours encode nothing a reader can
 and compete with the one accent.
 
 A glyph is the opposite trade and is encouraged: it is one mark per entry, it
-survives translation into ten languages where the word does not, and it stays
+survives translation into six languages where the word does not, and it stays
 legible without colour vision. So a kind or a category is told apart by its word and
 its mark, never by a colour.
 

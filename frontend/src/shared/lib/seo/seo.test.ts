@@ -32,10 +32,10 @@ describe('alternates', () => {
 
   it('is reciprocal: each language points at the same page in every other', () => {
     const fromJapanese = alternates(ORIGIN, '/a/dsh-hello').map((entry) => entry.href)
-    const fromGerman = alternates(ORIGIN, '/a/dsh-hello').map((entry) => entry.href)
-    expect(fromJapanese).toEqual(fromGerman)
+    const fromRussian = alternates(ORIGIN, '/a/dsh-hello').map((entry) => entry.href)
+    expect(fromJapanese).toEqual(fromRussian)
     expect(fromJapanese).toContain(`${ORIGIN}/ja/a/dsh-hello`)
-    expect(fromJapanese).toContain(`${ORIGIN}/de/a/dsh-hello`)
+    expect(fromJapanese).toContain(`${ORIGIN}/ru/a/dsh-hello`)
   })
 })
 

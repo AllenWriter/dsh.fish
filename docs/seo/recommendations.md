@@ -146,7 +146,7 @@ rather than someone re-submitting the whole set by hand.
 ## Explicitly not recommended
 
 - **Redirecting on `Accept-Language`.** Reasoned through in
-  [`url-strategy.md`](url-strategy.md). It hides nine of ten languages from
+  [`url-strategy.md`](url-strategy.md). It hides five of six languages from
   every crawler.
 - **Machine-translating crawled readmes.** Thousands of pages of text nobody
   wrote, nobody reviewed and nobody can correct, in a context where being wrong

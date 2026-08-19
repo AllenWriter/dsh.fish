@@ -29,10 +29,6 @@ export const LOCALES = [
   { code: 'zh-TW', tag: 'zh-Hant', ogLocale: 'zh_TW', dir: 'ltr', nativeName: '繁體中文' },
   { code: 'ja', tag: 'ja', ogLocale: 'ja_JP', dir: 'ltr', nativeName: '日本語' },
   { code: 'ko', tag: 'ko', ogLocale: 'ko_KR', dir: 'ltr', nativeName: '한국어' },
-  { code: 'es', tag: 'es', ogLocale: 'es_ES', dir: 'ltr', nativeName: 'Español' },
-  { code: 'fr', tag: 'fr', ogLocale: 'fr_FR', dir: 'ltr', nativeName: 'Français' },
-  { code: 'de', tag: 'de', ogLocale: 'de_DE', dir: 'ltr', nativeName: 'Deutsch' },
-  { code: 'pt-BR', tag: 'pt-BR', ogLocale: 'pt_BR', dir: 'ltr', nativeName: 'Português (Brasil)' },
   { code: 'ru', tag: 'ru', ogLocale: 'ru_RU', dir: 'ltr', nativeName: 'Русский' },
 ] as const satisfies readonly LocaleDefinition[]
 
