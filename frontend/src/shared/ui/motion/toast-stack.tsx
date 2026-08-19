@@ -26,7 +26,7 @@
 // the edge it can be swiped off — with physics from `shared/lib/ease`, so
 // this surface settles like every other panel in the app.
 
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { AnimatePresence, motion, useIsPresent, useReducedMotion } from 'motion/react'
 import { useCallback, useRef, useState, type ReactNode } from 'react'
 import { EASE_OUT, SPRING_PANEL } from '@/shared/lib/ease'
 import { useDismiss } from '@/shared/lib/hooks/use-dismiss'
@@ -235,6 +235,12 @@ function ToastRow<Id extends string>({
 }) {
   const { action } = toast
 
+  // A card being dealt away keeps its copy — watching it leave is the point
+  // of the exit — but it is no longer anyone's to act on. Without this there
+  // are two dismiss controls and two links for as long as the exit runs, and
+  // both a keyboard and a screen reader can reach the one that is leaving.
+  const present = useIsPresent()
+
   // Reduced motion keeps the fade — it is what says the toast is new — and
   // drops every transform on the row itself, the swipe included. The deck's
   // own positioning is layout, not motion, so it stays but lands instantly.
@@ -253,6 +259,8 @@ function ToastRow<Id extends string>({
       layout={!reduce ? 'position' : false}
       initial={false}
       exit={leave}
+      aria-hidden={present ? undefined : true}
+      inert={!present}
       className={cn('col-start-1', !expanded && index > 0 && 'pointer-events-none')}
       style={{ zIndex: count - index, gridRow: expanded ? index + 1 : 1 }}
     >
@@ -265,7 +273,7 @@ function ToastRow<Id extends string>({
         <motion.div
           initial={enter}
           animate={{ ...settled, transition: { ...(reduce ? {} : SPRING_PANEL), delay } }}
-          drag={reduce ? false : 'x'}
+          drag={reduce || !present ? false : 'x'}
           dragConstraints={{ left: 0, right: 0 }}
           // Resistance to the left, where there is nothing to dismiss toward;
           // an easy ride to the right, which is the way it leaves.

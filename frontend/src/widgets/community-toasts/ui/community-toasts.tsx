@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { githubAvatarUrl } from '@/entities/artifact/lib/github-avatar'
 import { useT } from '@/shared/config/i18n'
 import {
   HUB_DISCORD_URL,
   HUB_ISSUES_URL,
   MAINTAINER_GITHUB_URL,
+  MAINTAINER_NAME,
   MAINTAINER_X_URL,
 } from '@/shared/config/site'
+import { githubAvatarUrl } from '@/shared/lib/github-avatar'
 import { Avatar } from '@/shared/ui/avatar'
 import { DiscordIcon, GithubIcon, type Icon } from '@/shared/ui/icon'
 import { ToastStack, type ToastItem } from '@/shared/ui/motion/toast-stack'
@@ -114,7 +115,7 @@ export function CommunityToasts({ dismissed }: CommunityToastsProps) {
         .map((toast) => ({
           id: toast.id,
           icon: toast.portrait ? (
-            <Avatar src={toast.portrait} name="Steven Lynn" size="sm" />
+            <Avatar src={toast.portrait} name={MAINTAINER_NAME} size="sm" />
           ) : (
             toast.icon && <toast.icon className="size-4" weight="bold" />
           ),

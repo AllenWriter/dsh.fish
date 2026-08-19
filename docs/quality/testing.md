@@ -107,22 +107,29 @@ the session resolves in the browser. The clipboard is stubbed, because headless
 Chromium's is unreliable and the subject is the mark that swaps after a successful
 write.
 
-**Community toasts** (`e2e/community-toasts/`) runs at 1280×900, once. The stack is
+**Community toasts** (`e2e/community-toasts/`) runs at 1280×900, once. The deck is
 fixed to one corner at one width, so the readme suite's device matrix would assert
 the same thing six times.
 
 The unit test (`widgets/community-toasts/model/dismissal.test.ts`) proves the
 cookie can be read back. What only a browser can show is the rest:
 
-- The three destinations are real anchors — Discord, the maintainer's feed, and a
-  `mailto:` — and the two off-site ones open in their own tab with `noopener`.
-- Dismissing writes the cookie, and a reload comes back as a *smaller* stack,
-  because the loader never offered the retired toast again. A reader who has
+- Three cards are painted but only one is readable: one link, one dismiss
+  control, and the two behind hidden from assistive technology.
+- Peeling the deck offers each destination in turn — Discord, the maintainer's
+  feed, then a `mailto:` — and the two off-site ones open in their own tab with
+  `noopener`.
+- The maintainer's card asks for his GitHub portrait, stubbed so the suite stays
+  off the network.
+- Dismissing writes the cookie, and a reload comes back as a *shorter* deck,
+  because the loader never offered the retired card again. A reader who has
   closed all three gets no live region at all.
-- The stack survives a client-side navigation without replaying its entrance.
+- The deck survives a client-side navigation without replaying its entrance.
 - Copy follows the URL's language, region label included.
-- A reader who asked for reduced motion is never displaced: every row's computed
-  transform stays `none` or the identity matrix across the whole entrance.
+- A reader who asked for reduced motion is never displaced: every card's computed
+  transform is identical at every sample across the entrance, the front card sits
+  at the identity, and the cards behind still hold their own depth — the layering
+  is a position, not an animation.
 
 That last test emulates the preference with `page.emulateMedia` and asserts the
 media query is in force before reading anything from it. Declaring it as a
