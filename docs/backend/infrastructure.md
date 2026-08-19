@@ -7,6 +7,9 @@ The infrastructure layer implements the abstractions that the domain layer defin
 - **Repository implementations** — concrete persistence for domain aggregates.
 - **External service clients** — HTTP clients, SDK wrappers, message publishers.
 - **Messaging adapters** — event bus, queue producers/consumers.
+- **Agent adapters** — Cloudflare Agent classes, durable task queues, the
+  OpenCode Go HTTP client, and scheduler/backfill adapters behind application
+  ports.
 - **Configuration and environment access** — reading env vars, config files.
 - **Framework-specific code** — ORM mappings, database migrations, cache integrations.
 

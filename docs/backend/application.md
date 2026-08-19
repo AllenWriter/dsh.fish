@@ -8,6 +8,12 @@ The application layer orchestrates use cases. It depends on the domain layer and
 - **DTOs** — data-transfer objects for inputs and outputs at the application boundary.
 - **Commands and queries** — lightweight objects representing incoming requests.
 - **Transaction boundaries** — a unit of work that spans multiple domain operations.
+- **Background-work ports** — durable work is requested through an application
+  interface such as `ReadmeLocalizationScheduler`; use cases never import a
+  queue, Worker binding or Agent SDK.
+- **Backfill orchestration** — `BackfillReadmeLocalization` pages over a small
+  README projection and advances a durable cursor only after every item on the
+  page has been accepted by the scheduler.
 
 ## Rules
 

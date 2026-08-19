@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/d1'
 import type { IncomingRequestCfProperties } from '@cloudflare/workers-types'
 import { GetArtifactDetail } from '../application/use-case/get-artifact-detail.js'
+import { BackfillReadmeLocalization } from '../application/use-case/backfill-readme-localization.js'
 import { GetCatalogSnapshot } from '../application/use-case/get-catalog-snapshot.js'
 import { DescribeScoring } from '../application/use-case/describe-scoring.js'
 import { IngestCatalog } from '../application/use-case/ingest-catalog.js'
@@ -10,6 +11,7 @@ import { ResolveInstallPlan } from '../application/use-case/resolve-install-plan
 import { SearchArtifacts } from '../application/use-case/search-artifacts.js'
 import { SubmitArtifact } from '../application/use-case/submit-artifact.js'
 import type { IdGenerator, SourceIndexer } from '../application/port/source-indexer.js'
+import type { ReadmeLocalizationScheduler } from '../application/port/readme-localization.js'
 import type { ArtifactRepository } from '../domain/artifact/artifact-repository.js'
 import type { SubmissionRepository } from '../domain/submission/submission.js'
 import { readConfig } from './config/env.js'
@@ -24,9 +26,12 @@ import { KvListCursor, listCursorKey } from './ingestion/list-cursor.js'
 import { RepoProber } from './ingestion/repo-prober.js'
 import { KvSweepCursor, sweepCursorKey } from './ingestion/sweep-cursor.js'
 import { D1ArtifactRepository } from './persistence/d1-artifact-repository.js'
+import { D1ReadmeTranslationRepository } from './persistence/d1-readme-translation-repository.js'
+import { D1ReadmeLocalizationBackfillSource } from './persistence/d1-readme-localization-backfill-source.js'
 import { D1LinkedIdentityReader } from './persistence/d1-linked-identity.js'
 import { D1SubmissionRepository } from './persistence/d1-submission-repository.js'
 import { KvCatalogSnapshotStore } from './persistence/kv-catalog-snapshot-store.js'
+import { KvReadmeLocalizationBackfillProgress } from './agents/kv-readme-localization-backfill-progress.js'
 import * as schema from './persistence/schema.js'
 
 export interface Container {
@@ -44,10 +49,16 @@ export interface Container {
     readonly resolveInstallPlan: ResolveInstallPlan
     readonly submitArtifact: SubmitArtifact
     readonly ingestCatalog: IngestCatalog
+    readonly backfillReadmeLocalization: BackfillReadmeLocalization
   }
 }
 
 const ids: IdGenerator = { next: () => crypto.randomUUID() }
+
+export interface ContainerOptions {
+  readonly cf?: IncomingRequestCfProperties
+  readonly readmeLocalization: ReadmeLocalizationScheduler
+}
 
 /**
  * Composition root.
@@ -56,11 +67,13 @@ const ids: IdGenerator = { next: () => crypto.randomUUID() }
  * request, so the container is built per request rather than cached at module
  * scope. Everything it builds is cheap: no connection pools, no warm-up.
  */
-export function createContainer(env: HubEnv, cf?: IncomingRequestCfProperties): Container {
+export function createContainer(env: HubEnv, options: ContainerOptions): Container {
   const config = readConfig(env)
   const db = drizzle(env.DB, { schema })
 
   const artifacts = new D1ArtifactRepository(db)
+  const readmeTranslations = new D1ReadmeTranslationRepository(db)
+  const readmeBackfillSource = new D1ReadmeLocalizationBackfillSource(db)
   const submissions = new D1SubmissionRepository(db)
   const identities = new D1LinkedIdentityReader(db)
   const socialPreview = new GitHubSocialPreview(config.githubToken)
@@ -79,19 +92,31 @@ export function createContainer(env: HubEnv, cf?: IncomingRequestCfProperties): 
 
   return {
     config,
-    auth: createAuth(env, cf, config.baseUrl),
+    auth: createAuth(env, options.cf, config.baseUrl),
     artifacts,
     submissions,
     useCases: {
       searchArtifacts: new SearchArtifacts(artifacts),
-      getArtifactDetail: new GetArtifactDetail(artifacts),
+      getArtifactDetail: new GetArtifactDetail(artifacts, readmeTranslations),
       getCatalogSnapshot: new GetCatalogSnapshot(artifacts, new KvCatalogSnapshotStore(env.KV)),
       describeScoring: new DescribeScoring(),
       listCatalogFacets: new ListCatalogFacets(artifacts),
       listSitemapEntries: new ListSitemapEntries(artifacts),
       resolveInstallPlan: new ResolveInstallPlan(artifacts),
-      submitArtifact: new SubmitArtifact(submissions, artifacts, indexers, ids, identities),
-      ingestCatalog: new IngestCatalog(artifacts, indexers),
+      submitArtifact: new SubmitArtifact(
+        submissions,
+        artifacts,
+        indexers,
+        ids,
+        identities,
+        options.readmeLocalization,
+      ),
+      ingestCatalog: new IngestCatalog(artifacts, indexers, options.readmeLocalization),
+      backfillReadmeLocalization: new BackfillReadmeLocalization(
+        readmeBackfillSource,
+        new KvReadmeLocalizationBackfillProgress(env.KV),
+        options.readmeLocalization,
+      ),
     },
   }
 }

@@ -100,6 +100,7 @@
   "artifact.updated": "更新于",
   "artifact.indexedCommit": "索引于提交",
   "artifact.readme": "说明文档",
+  "artifact.readmeMachineTranslated": "AI 翻译",
   "artifact.install": "安装",
   "artifact.noReadme": "该条目没有提供说明文档。",
   "artifact.categories": "分类",

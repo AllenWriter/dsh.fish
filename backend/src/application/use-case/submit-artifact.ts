@@ -10,6 +10,7 @@ import { DomainError } from '../../domain/shared/error.js'
 import { slug } from '../../domain/shared/slug.js'
 import type { LinkedIdentityReader } from '../port/linked-identity.js'
 import type { IdGenerator, IndexedSnapshot, SourceIndexer } from '../port/source-indexer.js'
+import type { ReadmeLocalizationScheduler } from '../port/readme-localization.js'
 import { toArtifact } from './ingest-catalog.js'
 
 export interface SubmitArtifactInput {
@@ -40,9 +41,13 @@ export class SubmitArtifact {
     private readonly indexers: readonly SourceIndexer[],
     private readonly ids: IdGenerator,
     private readonly identities: LinkedIdentityReader,
+    private readonly readmeLocalization: ReadmeLocalizationScheduler,
   ) {}
 
-  async execute(actor: Actor | undefined, input: SubmitArtifactInput): Promise<SubmitArtifactResult> {
+  async execute(
+    actor: Actor | undefined,
+    input: SubmitArtifactInput,
+  ): Promise<SubmitArtifactResult> {
     const session = requireInteractiveSession(actor)
     const kind = artifactKind(input.kind)
     const source = parseSourceSpec(input.sourceSpec)
@@ -84,7 +89,11 @@ export class SubmitArtifact {
     }
 
     const existing = await this.artifacts.findById(slug(snapshot.id))
-    if (existing && existing.ownerAccountId !== undefined && existing.ownerAccountId !== session.account.id) {
+    if (
+      existing &&
+      existing.ownerAccountId !== undefined &&
+      existing.ownerAccountId !== session.account.id
+    ) {
       throw DomainError.conflict('That artifact is already claimed by another account.', {
         artifactId: snapshot.id,
       })
@@ -103,6 +112,11 @@ export class SubmitArtifact {
               categories: snapshot.categories,
               stats: { ...snapshot.stats, installs: existing.stats.installs },
               ...(snapshot.ogImageUrl === undefined ? {} : { ogImageUrl: snapshot.ogImageUrl }),
+              ...(snapshot.license === undefined ? {} : { license: snapshot.license }),
+              ...(snapshot.author === undefined ? {} : { author: snapshot.author }),
+              ...(snapshot.readmeMarkdown === undefined
+                ? {}
+                : { readmeMarkdown: snapshot.readmeMarkdown }),
               ...(snapshot.sourceCommitSha === undefined
                 ? {}
                 : { sourceCommitSha: snapshot.sourceCommitSha }),
@@ -112,7 +126,17 @@ export class SubmitArtifact {
       await this.artifacts.save(artifact)
       submission = submission.approve(artifact.id)
       await this.submissions.save(submission)
-      return { submissionId: submission.id, status: 'approved', artifactId: artifact.id }
+      if (artifact.readmeMarkdown !== undefined && artifact.readmeMarkdown.trim() !== '') {
+        await this.readmeLocalization.schedule({
+          artifactId: artifact.id,
+          markdown: artifact.readmeMarkdown,
+        })
+      }
+      return {
+        submissionId: submission.id,
+        status: 'approved',
+        artifactId: artifact.id,
+      }
     }
 
     await this.submissions.save(submission)

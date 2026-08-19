@@ -4,6 +4,8 @@ import type { Actor } from '../../domain/account/account.js'
 import { createContainer } from '../../infrastructure/container.js'
 import type { Container } from '../../infrastructure/container.js'
 import type { HubEnv } from '../../infrastructure/config/env.js'
+import type { ContainerOptions } from '../../infrastructure/container.js'
+import type { ReadmeLocalizationScheduler } from '../../application/port/readme-localization.js'
 import { toApiError } from './error-mapper.js'
 import { catalogRoutes } from './route/catalog-routes.js'
 import { submissionRoutes } from './route/submission-routes.js'
@@ -25,7 +27,9 @@ export interface HubBindings {
  * `domain`, which is what lets the `dsh-hub` plugin and the website share
  * behavior rather than each re-implementing it against raw rows.
  */
-export function createApiApp() {
+export function createApiApp(options: {
+  readonly readmeLocalization: (env: HubEnv) => ReadmeLocalizationScheduler
+}) {
   // The Worker forwards the request with its original path, so the router is
   // mounted at the same prefix the client calls. Better Auth also defaults to
   // `/api/auth`, so its routes line up without extra rewriting.
@@ -37,7 +41,10 @@ export function createApiApp() {
   app.get('/health', (context) => context.json({ status: 'ok' }))
 
   app.use('*', async (context, next) => {
-    const container = createContainer(context.env, context.req.raw.cf as IncomingRequestCfProperties)
+    const container = createContainer(context.env, {
+      cf: context.req.raw.cf as IncomingRequestCfProperties,
+      readmeLocalization: options.readmeLocalization(context.env),
+    })
     context.set('container', container)
     context.set('actor', await resolveActor(container, context.req.raw))
     await next()

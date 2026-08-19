@@ -5,6 +5,7 @@ import type { ArtifactRepository } from '../../domain/artifact/artifact-reposito
 import type { Slug } from '../../domain/shared/slug.js'
 import { npmSource } from '../../domain/artifact/source-ref.js'
 import type { IndexedSnapshot, SourceIndexer } from '../port/source-indexer.js'
+import type { ScheduleReadmeLocalizationInput } from '../port/readme-localization.js'
 
 /** Only what the sweep touches. The rest of the port is never reached here. */
 function memoryRepository() {
@@ -66,6 +67,18 @@ function indexer(origin: 'github' | 'npm', snapshots: readonly IndexedSnapshot[]
   return { source, limits }
 }
 
+function ingest(
+  repository: ArtifactRepository,
+  indexers: readonly SourceIndexer[],
+  scheduled: ScheduleReadmeLocalizationInput[] = [],
+) {
+  return new IngestCatalog(repository, indexers, {
+    schedule: async (input) => {
+      scheduled.push(input)
+    },
+  })
+}
+
 describe('IngestCatalog', () => {
   it('lands a row whose declared category is not in the taxonomy', async () => {
     // The sweep used to count this as `skipped`: the artifact was dropped
@@ -73,7 +86,7 @@ describe('IngestCatalog', () => {
     const { repository, rows } = memoryRepository()
     const github = indexer('github', [snapshot({ categories: ['AI Coding'] })])
 
-    const report = await new IngestCatalog(repository, [github.source]).execute()
+    const report = await ingest(repository, [github.source]).execute()
 
     expect(report).toMatchObject({ scanned: 1, created: 1, skipped: 0 })
     expect(rows.get('dsh-hello-plugin')?.categories).toEqual(['other'])
@@ -82,12 +95,12 @@ describe('IngestCatalog', () => {
   it('re-applies categories to a row it already has', async () => {
     const { repository, rows } = memoryRepository()
     const first = indexer('github', [snapshot({ categories: [] })])
-    await new IngestCatalog(repository, [first.source]).execute()
+    await ingest(repository, [first.source]).execute()
     expect(rows.get('dsh-hello-plugin')?.categories).toEqual(['other'])
 
     // The author adds `dsh.hub.categories` and the next sweep picks it up.
     const second = indexer('github', [snapshot({ categories: ['devops'] })])
-    const report = await new IngestCatalog(repository, [second.source]).execute()
+    const report = await ingest(repository, [second.source]).execute()
 
     expect(report).toMatchObject({ updated: 1, created: 0 })
     expect(rows.get('dsh-hello-plugin')?.categories).toEqual(['devops'])
@@ -98,7 +111,7 @@ describe('IngestCatalog', () => {
     const preview = 'https://opengraph.githubassets.com/preview/acme/hello'
     const github = indexer('github', [snapshot({ ogImageUrl: preview })])
 
-    await new IngestCatalog(repository, [github.source]).execute()
+    await ingest(repository, [github.source]).execute()
 
     expect(rows.get('dsh-hello-plugin')?.ogImageUrl).toBe(preview)
   })
@@ -106,11 +119,11 @@ describe('IngestCatalog', () => {
   it('pins the scanned commit on create and re-pins it on refresh', async () => {
     const { repository, rows } = memoryRepository()
     const first = indexer('github', [snapshot({ sourceCommitSha: 'a'.repeat(40) })])
-    await new IngestCatalog(repository, [first.source]).execute()
+    await ingest(repository, [first.source]).execute()
     expect(rows.get('dsh-hello-plugin')?.sourceCommitSha).toBe('a'.repeat(40))
 
     const second = indexer('github', [snapshot({ sourceCommitSha: 'b'.repeat(40) })])
-    const report = await new IngestCatalog(repository, [second.source]).execute()
+    const report = await ingest(repository, [second.source]).execute()
 
     expect(report).toMatchObject({ updated: 1, created: 0 })
     expect(rows.get('dsh-hello-plugin')?.sourceCommitSha).toBe('b'.repeat(40))
@@ -121,7 +134,7 @@ describe('IngestCatalog', () => {
     const github = indexer('github', [])
     const npm = indexer('npm', [])
 
-    await new IngestCatalog(repository, [github.source, npm.source]).execute({
+    await ingest(repository, [github.source, npm.source]).execute({
       limitPerSource: 100,
       limitByOrigin: { github: 200 },
     })
@@ -133,13 +146,34 @@ describe('IngestCatalog', () => {
   it('records one metrics snapshot per artifact per sweep', async () => {
     const { repository, snapshots } = memoryRepository()
     const first = indexer('github', [snapshot()])
-    await new IngestCatalog(repository, [first.source]).execute()
+    await ingest(repository, [first.source]).execute()
     expect(snapshots).toEqual(['dsh-hello-plugin'])
 
     // A re-sweep of the same row appends another point of history, which is
     // what star velocity is later computed against.
     const second = indexer('github', [snapshot()])
-    await new IngestCatalog(repository, [second.source]).execute()
+    await ingest(repository, [second.source]).execute()
     expect(snapshots).toEqual(['dsh-hello-plugin', 'dsh-hello-plugin'])
+  })
+
+  it('durably schedules README localization after a catalog write', async () => {
+    const { repository, rows } = memoryRepository()
+    const scheduled: ScheduleReadmeLocalizationInput[] = []
+    const github = indexer('github', [snapshot({ readmeMarkdown: '# Hello' })])
+
+    const report = await ingest(repository, [github.source], scheduled).execute()
+
+    expect(report).toMatchObject({ created: 1, errors: [] })
+    expect(rows.has('dsh-hello-plugin')).toBe(true)
+    expect(scheduled).toEqual([{ artifactId: 'dsh-hello-plugin', markdown: '# Hello' }])
+  })
+
+  it('does not schedule localization for a plugin with no README', async () => {
+    const { repository } = memoryRepository()
+    const scheduled: ScheduleReadmeLocalizationInput[] = []
+
+    await ingest(repository, [indexer('npm', [snapshot()]).source], scheduled).execute()
+
+    expect(scheduled).toEqual([])
   })
 })

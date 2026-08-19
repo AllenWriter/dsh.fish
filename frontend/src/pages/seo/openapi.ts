@@ -1,5 +1,6 @@
 import type { Route } from './+types/openapi'
 import { hubContext } from '@/shared/api/hub-context'
+import { LOCALE_CODES } from '@/shared/config/i18n'
 
 /**
  * `/openapi.json` — the OpenAPI description of the public JSON API.
@@ -22,7 +23,6 @@ export function loader({ context }: Route.LoaderArgs) {
     },
   })
 }
-
 const ARTIFACT_KINDS = ['bundle', 'profile', 'skill', 'mcp-server', 'agent-preset', 'hook-bridge']
 
 const artifactSummarySchema = {
@@ -182,6 +182,12 @@ export function openApiDocument(baseUrl: string) {
           summary: 'One artifact, with README and provenance',
           parameters: [
             { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+            {
+              name: 'locale',
+              in: 'query',
+              schema: { type: 'string', enum: LOCALE_CODES },
+              description: 'Returns a current generated README translation when available.',
+            },
           ],
           responses: {
             '200': jsonResponse('The artifact detail.', {
@@ -191,6 +197,8 @@ export function openApiDocument(baseUrl: string) {
                 ...artifactSummarySchema.properties,
                 payload: { type: 'object', description: 'Kind-specific installation data.' },
                 readmeMarkdown: { type: 'string' },
+                readmeLocale: { type: 'string', enum: LOCALE_CODES },
+                readmeMachineTranslated: { type: 'boolean' },
                 sourceDocBase: { type: 'string', format: 'uri', description: 'What a relative link in readmeMarkdown points at.' },
                 sourceAssetBase: { type: 'string', format: 'uri' },
                 sourceCommitSha: { type: 'string', description: 'The commit the indexer scanned, for git sources.' },

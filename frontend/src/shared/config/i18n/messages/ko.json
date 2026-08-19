@@ -100,6 +100,7 @@
   "artifact.updated": "업데이트",
   "artifact.indexedCommit": "인덱싱된 커밋",
   "artifact.readme": "Readme",
+  "artifact.readmeMachineTranslated": "AI 번역",
   "artifact.install": "설치",
   "artifact.noReadme": "이 항목에는 readme가 없습니다.",
   "artifact.categories": "분류",

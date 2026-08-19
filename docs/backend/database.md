@@ -29,6 +29,13 @@ This document describes database conventions. Fill in concrete technology choice
   so scan provenance is a queryable column; both are written from the same
   resolved ref on every sweep, and the detail DTO / install plan read the
   column, not the JSON.
+- `artifact_readme_translations` (migration `0005_minor_ultimo`) — one row per
+  artifact and locale with a SHA-256 of the upstream README plus translation
+  policy version, lifecycle status,
+  generated Markdown, bounded error text and update timestamp. The composite
+  primary key makes repeated ingestion idempotent; the source hash prevents a
+  completed translation from surviving an upstream README or model-policy
+  change.
 
 ## Migrations
 

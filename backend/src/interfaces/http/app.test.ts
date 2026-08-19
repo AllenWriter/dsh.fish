@@ -16,12 +16,17 @@ import type { HubEnv } from '../../infrastructure/config/env.js'
 const env = {
   DB: {} as never,
   KV: {} as never,
+  ASSETS: {} as never,
+  README_I18N_AGENT: {} as never,
+  OPENCODE_GO_API_KEY: 'test-key',
   PUBLIC_BASE_URL: 'https://dsh.fish',
   BETTER_AUTH_SECRET: 'test-secret',
 } satisfies HubEnv
 
 function call(path: string) {
-  return createApiApp().fetch(new Request(`https://dsh.fish${path}`), env)
+  return createApiApp({
+    readmeLocalization: () => ({ schedule: async () => {} }),
+  }).fetch(new Request(`https://dsh.fish${path}`), env)
 }
 
 describe('API routing', () => {

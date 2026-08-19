@@ -37,12 +37,10 @@ import { AnimatedNumber } from '@/shared/ui/animated-number'
 /**
  * A plugin page, which is the page this whole site exists to get indexed.
  *
- * The catalog row is language-neutral — the summary and readme are whatever the
- * author wrote upstream, and translating a third party's prose is not this
- * registry's to do. What *is* localized is the frame around it: the title
- * pattern, the type, the description sentence, the breadcrumb trail and the
- * `inLanguage` on the structured data. That is enough for one crawled artifact
- * to be a legitimate result in ten languages without inventing content for it.
+ * The catalog row keeps the upstream README as its source of truth. A completed
+ * Agent-generated translation is selected for this route's locale; while it is
+ * pending or failed, the original remains visible. The rest of the page frame
+ * is localized from the checked-in message catalogs.
  */
 export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
   // A 404 renders the error boundary, so loaderData is absent there.
@@ -70,7 +68,10 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
       artifactLd(origin, locale, artifact, plan.manualCommands),
       breadcrumbLd(origin, locale, [
         { name: translate(locale, 'app.name'), path: '/' },
-        { name: translate(locale, kindPluralKey(artifact.kind)), path: `/kind/${artifact.kind}` },
+        {
+          name: translate(locale, kindPluralKey(artifact.kind)),
+          path: `/kind/${artifact.kind}`,
+        },
         { name: artifact.displayName, path: `/a/${artifact.id}` },
       ]),
     ],
@@ -83,7 +84,7 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
   const profile = new URL(request.url).searchParams.get('profile') ?? undefined
 
   const artifact = await container.useCases.getArtifactDetail
-    .execute(params.artifactId)
+    .execute(params.artifactId, locale)
     .catch(() => undefined)
 
   if (!artifact) {
@@ -97,7 +98,13 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
     ...(profile === undefined ? {} : { profile }),
   })
 
-  return { artifact, plan, locale, now: Date.now(), origin: container.config.baseUrl }
+  return {
+    artifact,
+    plan,
+    locale,
+    now: Date.now(),
+    origin: container.config.baseUrl,
+  }
 }
 
 export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps) {
@@ -313,7 +320,14 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
           `min-width: auto`, which is the content's intrinsic width. */}
       <div className="grid min-w-0 gap-10 pt-8 lg:grid-cols-[1fr_22rem]">
         <section id="readme" className="min-w-0">
-          <h2 className="text-base font-semibold tracking-tight">{t('artifact.readme')}</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-base font-semibold tracking-tight">{t('artifact.readme')}</h2>
+            {artifact.readmeMachineTranslated ? (
+              <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                {t('artifact.readmeMachineTranslated')}
+              </span>
+            ) : null}
+          </div>
           {artifact.readmeMarkdown ? (
             // The bases are what a relative path inside the readme resolves
             // against — the readme was written against its own repository, not

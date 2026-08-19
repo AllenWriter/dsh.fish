@@ -59,12 +59,10 @@ describe('ownsSource', () => {
   })
 })
 
-function harness(options: {
-  linkedGitHubId?: string
-  snapshot?: IndexedSnapshot
-}) {
+function harness(options: { linkedGitHubId?: string; snapshot?: IndexedSnapshot }) {
   const saved: Submission[] = []
   const artifacts: Artifact[] = []
+  const localized: string[] = []
 
   const submissions: SubmissionRepository = {
     findById: async () => undefined,
@@ -113,25 +111,49 @@ function harness(options: {
     [indexer],
     { next: () => 'submission-1' },
     identities,
+    {
+      schedule: async (input) => {
+        localized.push(String(input.artifactId))
+      },
+    },
   )
   const actor: Actor = {
     account: { id: 'account-1', displayName: 'Ada', isAdmin: false },
     channel: 'session',
   }
-  return { useCase, actor, saved, artifacts }
+  return { useCase, actor, saved, artifacts, localized }
 }
 
 describe('SubmitArtifact', () => {
   it('publishes immediately for the account that owns the repository', async () => {
-    const { useCase, actor, artifacts } = harness({ linkedGitHubId: GITHUB_USER_ID })
+    const { useCase, actor, artifacts } = harness({
+      linkedGitHubId: GITHUB_USER_ID,
+    })
 
     const result = await useCase.execute(actor, {
       kind: 'bundle',
       sourceSpec: 'github:ada/dsh-hello-plugin',
     })
 
-    expect(result).toMatchObject({ status: 'approved', artifactId: 'dsh-hello-plugin' })
+    expect(result).toMatchObject({
+      status: 'approved',
+      artifactId: 'dsh-hello-plugin',
+    })
     expect(artifacts[0]?.ownerAccountId).toBe('account-1')
+  })
+
+  it('schedules localization when an owned plugin is admitted with a README', async () => {
+    const { useCase, actor, localized } = harness({
+      linkedGitHubId: GITHUB_USER_ID,
+      snapshot: snapshot({ readmeMarkdown: '# Hello' }),
+    })
+
+    await useCase.execute(actor, {
+      kind: 'bundle',
+      sourceSpec: 'github:ada/dsh-hello-plugin',
+    })
+
+    expect(localized).toEqual(['dsh-hello-plugin'])
   })
 
   it('queues a repository the submitter cannot prove they own', async () => {

@@ -6,31 +6,49 @@
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./build/client",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
   },
   "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "README_I18N_AGENT",
+        "class_name": "ReadmeI18nAgent",
+      },
+    ],
+  },
+  // Declarative Durable Object lifecycle is the current Wrangler form. The
+  // Agent SDK stores its queue and retry state in per-instance SQLite.
+  "exports": {
+    "ReadmeI18nAgent": {
+      "type": "durable-object",
+      "storage": "sqlite",
+    },
+  },
   "vars": {
     "PUBLIC_BASE_URL": "https://dsh.fish",
     // IndexNow verification key. Public by design — the Worker serves it at
     // /indexnow-<key>.txt. Rotate with: openssl rand -hex 16 (and redeploy).
-    "INDEXNOW_KEY": "8935711bcea6a78530892e1c7684c828"
+    "INDEXNOW_KEY": "8935711bcea6a78530892e1c7684c828",
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "dsh-fish-db",
       "database_id": "be324981-52bb-4f2d-ae81-bd1583ec146a",
-      "migrations_dir": "../backend/migrations"
-    }
+      "migrations_dir": "../backend/migrations",
+    },
   ],
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "1baebac2338049c0a8294779adde73a7"
-    }
+      "id": "1baebac2338049c0a8294779adde73a7",
+    },
   ],
   "triggers": {
     // Re-crawl the GitHub `dsh-plugin` topic and npm every hour.
-    "crons": ["0 * * * *"]
-  }
+    // The minutely trigger advances the versioned README backfill immediately
+    // after deployment; the hourly trigger keeps the remote catalog fresh.
+    "crons": ["* * * * *", "0 * * * *"],
+  },
 }

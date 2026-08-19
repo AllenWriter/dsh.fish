@@ -11,8 +11,9 @@ import { artifactLd } from '@/entities/artifact/lib/artifact-ld'
  *
  * Layout follows the Markdown-for-Agents contract: YAML frontmatter from the
  * page's meta, the content body, then the page's JSON-LD as a fenced block.
- * The body is the artifact's own readme — already markdown in the catalog, so
- * an agent gets the author's words rather than a scrape of our markup.
+ * The body is the locale-selected README Markdown from the catalog — either a
+ * current generated translation or the untouched upstream source while that
+ * translation is unavailable.
  */
 export function artifactMarkdown(
   origin: string,
@@ -45,8 +46,7 @@ export function artifactMarkdown(
   }
   lines.push(`- **${t('artifact.source')}:** ${artifact.sourceUrl}`)
   if (artifact.license) lines.push(`- **${t('artifact.license')}:** ${artifact.license}`)
-  if (artifact.stats.stars > 0)
-    lines.push(`- **${t('artifact.stars')}:** ${artifact.stats.stars}`)
+  if (artifact.stats.stars > 0) lines.push(`- **${t('artifact.stars')}:** ${artifact.stats.stars}`)
   if (artifact.stats.downloads > 0)
     lines.push(`- **${t('artifact.downloads')}:** ${artifact.stats.downloads}`)
   lines.push(
@@ -74,7 +74,11 @@ export function artifactMarkdown(
   }
 
   if (artifact.readmeMarkdown !== undefined && artifact.readmeMarkdown.trim() !== '') {
-    lines.push('', `## ${t('artifact.readme')}`, '', artifact.readmeMarkdown.trim())
+    lines.push('', `## ${t('artifact.readme')}`)
+    if (artifact.readmeMachineTranslated) {
+      lines.push('', `_${t('artifact.readmeMachineTranslated')}_`)
+    }
+    lines.push('', artifact.readmeMarkdown.trim())
   }
 
   lines.push(

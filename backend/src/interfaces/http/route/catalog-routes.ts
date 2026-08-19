@@ -19,6 +19,14 @@ const installQuery = z.object({
   record: z.coerce.boolean().optional(),
 })
 
+const detailQuery = z.object({
+  /** Optional BCP 47 locale for the generated README projection. */
+  locale: z
+    .string()
+    .regex(/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/)
+    .optional(),
+})
+
 /**
  * Read-only catalog endpoints. Anonymous by design: browsing and resolving an
  * install plan never require an account, so a first-time user can copy a
@@ -46,9 +54,10 @@ export function catalogRoutes() {
   })
 
   routes.get('/artifacts/:id', async (context) => {
+    const parsed = detailQuery.parse(context.req.query())
     const detail = await context
       .get('container')
-      .useCases.getArtifactDetail.execute(context.req.param('id'))
+      .useCases.getArtifactDetail.execute(context.req.param('id'), parsed.locale)
     return context.json(detail)
   })
 
@@ -95,11 +104,16 @@ export function catalogRoutes() {
     const etag = `"${snapshot.meta.dataVersion}"`
     context.header('ETag', etag)
     context.header('Cache-Control', 'public, max-age=300')
-    const held = context.req.header('if-none-match')?.split(',').map((value) => value.trim())
+    const held = context.req
+      .header('if-none-match')
+      ?.split(',')
+      .map((value) => value.trim())
     if (held !== undefined && (held.includes(etag) || held.includes('*'))) {
       return context.body(null, 304)
     }
-    return context.body(snapshot.body, 200, { 'Content-Type': 'application/json; charset=utf-8' })
+    return context.body(snapshot.body, 200, {
+      'Content-Type': 'application/json; charset=utf-8',
+    })
   })
 
   return routes

@@ -3,7 +3,12 @@ import type { ArtifactKind } from '../../domain/artifact/artifact-kind.js'
 import type { ArtifactPayload } from '../../domain/artifact/artifact-payload.js'
 import type { InstallPlan } from '../../domain/artifact/install-plan.js'
 import type { MaintenanceStatus, QualityGrade } from '../../domain/artifact/quality-score.js'
-import { sourceAssetBase, sourceCommitUrl, sourceDocBase, sourceUrl } from '../../domain/artifact/source-ref.js'
+import {
+  sourceAssetBase,
+  sourceCommitUrl,
+  sourceDocBase,
+  sourceUrl,
+} from '../../domain/artifact/source-ref.js'
 import type { Page } from '../../domain/shared/pagination.js'
 
 /**
@@ -39,6 +44,10 @@ export interface ArtifactSummaryDto {
 export interface ArtifactDetailDto extends ArtifactSummaryDto {
   readonly payload: ArtifactPayload
   readonly readmeMarkdown?: string
+  /** Locale of the generated README returned for this request. */
+  readonly readmeLocale?: string
+  /** True only when `readmeMarkdown` is a machine-generated translation. */
+  readonly readmeMachineTranslated?: boolean
   /** What a relative link in `readmeMarkdown` points at. Absent when unknowable. */
   readonly sourceDocBase?: string
   /** What a relative image in `readmeMarkdown` points at. Absent when unknowable. */
@@ -101,7 +110,10 @@ export function toSummaryDto(artifact: Artifact): ArtifactSummaryDto {
   }
 }
 
-export function toDetailDto(artifact: Artifact): ArtifactDetailDto {
+export function toDetailDto(
+  artifact: Artifact,
+  localizedReadme?: { readonly markdown: string; readonly locale: string },
+): ArtifactDetailDto {
   const docBase = sourceDocBase(artifact.source)
   const assetBase = sourceAssetBase(artifact.source)
   const commitUrl = sourceCommitUrl(artifact.source)
@@ -109,9 +121,15 @@ export function toDetailDto(artifact: Artifact): ArtifactDetailDto {
   return {
     ...toSummaryDto(artifact),
     payload: artifact.payload,
-    ...(artifact.readmeMarkdown === undefined
-      ? {}
-      : { readmeMarkdown: artifact.readmeMarkdown }),
+    ...(localizedReadme !== undefined
+      ? {
+          readmeMarkdown: localizedReadme.markdown,
+          readmeLocale: localizedReadme.locale,
+          readmeMachineTranslated: true,
+        }
+      : artifact.readmeMarkdown === undefined
+        ? {}
+        : { readmeMarkdown: artifact.readmeMarkdown }),
     ...(docBase === undefined ? {} : { sourceDocBase: docBase }),
     ...(assetBase === undefined ? {} : { sourceAssetBase: assetBase }),
     ...(artifact.sourceCommitSha === undefined

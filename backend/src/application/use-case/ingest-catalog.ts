@@ -4,6 +4,7 @@ import { mergeProvenance } from '../../domain/artifact/source-ref.js'
 import { slug } from '../../domain/shared/slug.js'
 import { isDomainError } from '../../domain/shared/error.js'
 import type { IndexedSnapshot, SourceIndexer } from '../port/source-indexer.js'
+import type { ReadmeLocalizationScheduler } from '../port/readme-localization.js'
 
 export interface IngestReport {
   readonly scanned: number
@@ -43,6 +44,7 @@ export class IngestCatalog {
   constructor(
     private readonly artifacts: ArtifactRepository,
     private readonly indexers: readonly SourceIndexer[],
+    private readonly readmeLocalization: ReadmeLocalizationScheduler,
   ) {}
 
   async execute(input: IngestCatalogInput = {}): Promise<IngestReport> {
@@ -53,8 +55,7 @@ export class IngestCatalog {
     const errors: { id: string; reason: string }[] = []
 
     for (const indexer of this.indexers) {
-      const limit =
-        input.limitByOrigin?.[indexer.origin] ?? input.limitPerSource ?? DEFAULT_LIMIT
+      const limit = input.limitByOrigin?.[indexer.origin] ?? input.limitPerSource ?? DEFAULT_LIMIT
       let snapshots: readonly IndexedSnapshot[]
       try {
         snapshots = await indexer.discover(limit)
@@ -92,11 +93,13 @@ export class IngestCatalog {
             await this.artifacts.save(refreshed)
             await this.artifacts.recordMetricsSnapshot(refreshed)
             updated += 1
+            await scheduleReadmeLocalization(this.readmeLocalization, refreshed)
           } else {
             const createdArtifact = toArtifact(snapshot)
             await this.artifacts.save(createdArtifact)
             await this.artifacts.recordMetricsSnapshot(createdArtifact)
             created += 1
+            await scheduleReadmeLocalization(this.readmeLocalization, createdArtifact)
           }
         } catch (error) {
           if (isDomainError(error) && error.code === 'INVALID_ARGUMENT') {
@@ -112,6 +115,15 @@ export class IngestCatalog {
 
     return { scanned, created, updated, skipped, errors }
   }
+}
+
+async function scheduleReadmeLocalization(
+  scheduler: ReadmeLocalizationScheduler,
+  artifact: Artifact,
+): Promise<void> {
+  const markdown = artifact.readmeMarkdown
+  if (markdown === undefined || markdown.trim() === '') return
+  await scheduler.schedule({ artifactId: artifact.id, markdown })
 }
 
 export function toArtifact(snapshot: IndexedSnapshot, ownerAccountId?: string): Artifact {
@@ -131,7 +143,11 @@ export function toArtifact(snapshot: IndexedSnapshot, ownerAccountId?: string): 
     ...(snapshot.sourceCommitSha === undefined
       ? {}
       : { sourceCommitSha: snapshot.sourceCommitSha }),
-    stats: { stars: snapshot.stats.stars, downloads: snapshot.stats.downloads, installs: 0 },
+    stats: {
+      stars: snapshot.stats.stars,
+      downloads: snapshot.stats.downloads,
+      installs: 0,
+    },
     ...(ownerAccountId === undefined ? {} : { ownerAccountId }),
     ...(snapshot.deprecated === undefined ? {} : { deprecated: snapshot.deprecated }),
   })

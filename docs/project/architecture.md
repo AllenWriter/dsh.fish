@@ -21,6 +21,7 @@ an agent drives.
 | Backend | Hono, layered DDD |
 | Database | Cloudflare D1 (SQLite) via Drizzle ORM |
 | Cache / secondary storage | Cloudflare KV |
+| README localization | Cloudflare Agents SDK + OpenCode Go (`deepseek-v4-flash`) |
 | Auth | Better Auth (`better-auth-cloudflare`), GitHub OAuth + email/password + OAuth device grant |
 | Scheduled work | Workers Cron Triggers |
 
@@ -35,13 +36,10 @@ One Worker serves both halves of the product.
                     │   /api/*  → Hono app (interfaces layer)  │
                     │   /*      → React Router SSR handler     │
                     │   cron    → IngestCatalog use case       │
-                    └───────────────┬──────────────────────────┘
-                                    │
-                          ┌─────────┴─────────┐
-                          ▼                   ▼
-                    D1 (catalog +        KV (sessions,
-                    Better Auth)         rate limiting,
-                                         crawl cursors)
+                    └───────┬───────────┬───────────┬──────────┘
+                            ▼           ▼           ▼
+                     D1 (catalog +   KV (sessions,  README i18n Agent
+                     translations)   crawl state)  → OpenCode Go
 ```
 
 Sharing an origin is a deliberate choice, not an accident of packaging:
@@ -199,6 +197,31 @@ install plan DTO carries it as `scannedAtCommit`, and the artifact page links
 "Indexed at commit" to the commit on GitHub, so a reader can diff what the
 registry read against what the repository serves now. It is display-only;
 executing installs pinned to the SHA is a separate decision.
+
+After an artifact with a README is saved, both ingestion paths — scheduled
+discovery and an ownership-verified submission — call the same application
+port to durably accept localization work. Its Cloudflare Agents SDK adapter
+addresses one `ReadmeI18nAgent` instance per artifact, then queues one task per
+site locale. Per-artifact sharding prevents one failing README from blocking
+the rest of the catalog. The task reads the current source Markdown from D1,
+uses OpenCode Go's `deepseek-v4-flash` chat-completions endpoint to translate
+human prose while preserving Markdown, code, links and identifiers, and stores the result in
+`artifact_readme_translations`.
+
+Every translation carries a SHA-256 hash of its upstream README plus an opaque
+translation-policy version. The detail
+use case serves generated Markdown only when that hash still matches the
+current catalog row; pending, failed and stale translations expose the original
+README instead. Queue acceptance is deduplicated by artifact, locale and hash.
+The Agent performs bounded retries itself and records terminal failures in D1,
+because the Agents SDK queue has no dead-letter queue.
+
+A separate minutely Cron advances a versioned KV cursor over every stored,
+non-empty README in bounded pages. Therefore a deployment that changes the
+translation policy starts a complete stock backfill on its next trigger while
+the existing hourly ingestion Cron remains unchanged. Cursor writes happen
+only after a page is accepted; repeating a page after a failure is safe because
+the per-artifact Agents deduplicate it.
 
 ## Quality score, maintenance status and star velocity
 

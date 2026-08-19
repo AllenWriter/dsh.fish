@@ -100,6 +100,7 @@
   "artifact.updated": "更新",
   "artifact.indexedCommit": "インデックス対象のコミット",
   "artifact.readme": "Readme",
+  "artifact.readmeMachineTranslated": "AI 翻訳",
   "artifact.install": "インストール",
   "artifact.noReadme": "この項目には readme がありません。",
   "artifact.categories": "カテゴリ",

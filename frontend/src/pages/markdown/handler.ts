@@ -71,8 +71,7 @@ export async function maybeMarkdownResponse(
   if (categoryMatch !== null) {
     const raw = categoryMatch[1]!
     if (!isCategory(raw)) return null
-    const labelKey =
-      CATEGORIES.find((entry) => entry.id === raw)?.labelKey ?? `category.${raw}`
+    const labelKey = CATEGORIES.find((entry) => entry.id === raw)?.labelKey ?? `category.${raw}`
     return listingResponse(container, origin, locale, url, {
       kinds: [],
       categories: [raw],
@@ -99,7 +98,7 @@ async function artifactResponse(
   url: URL,
 ): Promise<Response | null> {
   const artifact = await container.useCases.getArtifactDetail
-    .execute(artifactId)
+    .execute(artifactId, locale)
     .catch(() => undefined)
   if (!artifact) return null
 
@@ -151,7 +150,11 @@ async function listingResponse(
   origin: string,
   locale: Locale,
   url: URL,
-  filter: { kinds: readonly string[]; categories: readonly string[]; title: string },
+  filter: {
+    kinds: readonly string[]
+    categories: readonly string[]
+    title: string
+  },
 ): Promise<Response> {
   const query = url.searchParams.get('q') ?? ''
 

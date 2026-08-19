@@ -100,6 +100,7 @@
   "artifact.updated": "Actualizado",
   "artifact.indexedCommit": "Indexado en el commit",
   "artifact.readme": "Readme",
+  "artifact.readmeMachineTranslated": "Traducido por IA",
   "artifact.install": "Instalar",
   "artifact.noReadme": "Este artefacto no incluye readme.",
   "artifact.categories": "Categorías",

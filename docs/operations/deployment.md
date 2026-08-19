@@ -6,7 +6,8 @@ for why the two share one origin.
 
 ## Prerequisites
 
-- A Cloudflare account with Workers, D1 and KV enabled.
+- A Cloudflare account with Workers, D1, KV and Durable Objects enabled.
+- An OpenCode Go subscription and API key.
 - `wrangler` authenticated (`pnpm dlx wrangler login`).
 - A GitHub OAuth app, if GitHub sign-in is wanted.
 
@@ -53,6 +54,7 @@ pnpm dlx wrangler secret put GITHUB_CLIENT_ID
 pnpm dlx wrangler secret put GITHUB_CLIENT_SECRET
 pnpm dlx wrangler secret put GITHUB_TOKEN           # crawler, read-only
 pnpm dlx wrangler secret put ADMIN_EMAILS
+pnpm dlx wrangler secret put OPENCODE_GO_API_KEY     # README localization
 ```
 
 `PUBLIC_BASE_URL` must be the real origin. It is read by `readConfig`, which
@@ -69,6 +71,19 @@ environment, and keep preview deployments out of the index — see
 The GitHub OAuth app's callback URL is
 `<PUBLIC_BASE_URL>/api/auth/callback/github`.
 
+README localization calls OpenCode Go's OpenAI-compatible
+`/zen/go/v1/chat/completions` endpoint with model `deepseek-v4-flash`.
+`OPENCODE_GO_API_KEY` is a Wrangler secret; it must never appear in
+`wrangler.jsonc`, `.dev.vars` committed to Git, or logs.
+`README_I18N_AGENT` is the Durable Object namespace in `frontend/wrangler.jsonc`.
+The Agent class is declared under Wrangler's `exports` map with SQLite storage.
+After changing a binding, regenerate the local environment declaration used to
+validate the configuration:
+
+```sh
+pnpm --filter @dsh-fish/frontend run cf-typegen
+```
+
 ## 4. Deploy
 
 ```sh
@@ -76,6 +91,13 @@ pnpm run deploy
 ```
 
 This builds the client assets and the SSR bundle, then runs `wrangler deploy`.
+
+The checked-in GitHub Actions workflow runs validation only; it does not deploy
+and has no Cloudflare credential. A push starts production deployment only when
+the repository is connected through Cloudflare Workers Builds (configured
+outside this repository). Without that integration, run `pnpm run deploy`
+after the push. The README stock backfill begins on the first minutely Cron
+invocation after the new Worker and its trigger configuration are active.
 
 The social cards are committed rather than generated at build time, so no
 browser is needed in CI. Regenerate them with
@@ -111,7 +133,7 @@ re-running the submission. See [`../seo/crawling.md`](../seo/crawling.md#indexno
 
 ## Scheduled ingestion
 
-`wrangler.jsonc` registers a Cron Trigger (`0 * * * *`, hourly). Each firing runs the
+`wrangler.jsonc` registers two Cron Triggers. The hourly `0 * * * *` trigger runs the
 `IngestCatalog` use case, which sweeps the GitHub `dsh-plugin` topic, npm and
 the curated awesome lists, and folds the results into the catalog. It is
 deliberately tolerant: one malformed
@@ -119,6 +141,13 @@ package upstream must not abort a sweep. Each swept artifact also appends one
 `artifact_metrics` snapshot and has its `star_velocity_7d` / `star_velocity_30d`
 columns recomputed, so star history grows at cron cadence (see
 [`../project/architecture.md`](../project/architecture.md#quality-score-maintenance-status-and-star-velocity)).
+
+The minutely `* * * * *` trigger advances a versioned README-localization
+backfill by ten artifacts. A new translation-policy version therefore begins
+stock translation on the first trigger after deployment without flooding the
+provider with every locale for every artifact at once. The cursor is stored in
+KV and is written only after the page is durably queued. Once complete, the
+trigger performs only the cheap completion-marker read.
 
 One firing reads a slice, not the whole topic. A Worker invocation may make
 1000 subrequests, so the run is budgeted — 200 GitHub repositories, 100 npm
@@ -147,6 +176,14 @@ surfaces record the list in `source.via`.
 API calls are capped at 60/hour, which is well under one firing's commit
 resolutions. Without it, rows still land — they are simply not pinned to a
 commit. File reads go to `raw.githubusercontent.com` and never spend API quota.
+
+Every saved artifact with a non-empty README is also handed to its durable
+`ReadmeI18nAgent`. Repeated hourly sweeps are cheap at this boundary: the Agent
+deduplicates completed or pending work by README hash and locale. A changed
+README queues replacements; until each replacement completes, readers see the
+new upstream source rather than a stale translation. OpenCode Go failures are
+retried three times with bounded exponential backoff, then persisted as
+`failed`; a later ingestion pass requeues failed work.
 
 Trigger a sweep manually as an administrator:
 

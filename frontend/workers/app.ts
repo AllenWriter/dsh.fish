@@ -1,9 +1,10 @@
 import { createRequestHandler, RouterContextProvider } from 'react-router'
 import { createApiApp } from '@dsh-fish/backend'
 import { createContainer } from '@dsh-fish/backend/infrastructure/container.js'
+import { AgentsReadmeLocalizationScheduler } from '@dsh-fish/backend/infrastructure/agents/agents-readme-localization-scheduler.js'
 import type { HubEnv } from '@dsh-fish/backend/infrastructure/config/env.js'
 import { hubContext } from '@/shared/api/hub-context'
-import { canonicalLocaleRedirect } from '@/shared/config/i18n'
+import { canonicalLocaleRedirect, LOCALE_CODES } from '@/shared/config/i18n'
 import { withDiscoveryLinks } from '@/shared/api/agent-discovery'
 import { maybeMarkdownResponse, supportsMarkdownNegotiation } from '@/pages/markdown'
 
@@ -15,7 +16,15 @@ import { maybeMarkdownResponse, supportsMarkdownNegotiation } from '@/pages/mark
  * request before a search, and a plugin page is server-rendered by code that
  * can call the use cases directly instead of round-tripping through HTTP.
  */
-const api = createApiApp()
+function readmeLocalization(env: HubEnv) {
+  return new AgentsReadmeLocalizationScheduler(env.README_I18N_AGENT, LOCALE_CODES)
+}
+
+const api = createApiApp({ readmeLocalization })
+
+// Wrangler discovers Durable Object classes from the Worker entry module. The
+// exact export name must match `class_name` in wrangler.jsonc.
+export { ReadmeI18nAgent } from '@dsh-fish/backend/infrastructure/agents/readme-i18n-agent.js'
 
 const requestHandler = createRequestHandler(
   () => import('virtual:react-router/server-build'),
@@ -55,7 +64,10 @@ export default {
 
     // Loaders resolve use cases in-process. A server-rendered page therefore
     // costs one D1 round trip, not an HTTP hop back into the same Worker.
-    const container = createContainer(env, request.cf)
+    const container = createContainer(env, {
+      cf: request.cf,
+      readmeLocalization: readmeLocalization(env),
+    })
 
     // Agents get the catalog as markdown when they ask for it; browsers never
     // send `Accept: text/markdown`, so nothing changes for them.
@@ -77,17 +89,13 @@ export default {
     // machine-readable counterparts in Link headers, so an agent never has to
     // parse markup to find the api-catalog, the OpenAPI document, or the
     // markdown representation of the page it is already reading.
-    return withDiscoveryLinks(
-      response,
-      request.url,
-      supportsMarkdownNegotiation(url.pathname),
-    )
+    return withDiscoveryLinks(response, request.url, supportsMarkdownNegotiation(url.pathname))
   },
 
   /**
-   * Cron trigger. Refreshes the catalog from the GitHub `dsh-plugin` topic,
-   * from npm, and from the curated awesome lists, so the registry stays
-   * current without anyone submitting anything.
+   * Cron triggers. The minutely event advances a bounded stock-README
+   * backfill; the hourly event refreshes the remote catalog from GitHub, npm
+   * and the curated awesome lists.
    *
    * The limits are a subrequest budget, not a taste: a Worker invocation may
    * make 1000 subrequests, and one run costs roughly 200 GitHub repositories ×
@@ -97,11 +105,31 @@ export default {
    * from a stored position each run rather than re-reading the head, so the
    * whole reachable result set is covered across runs.
    */
-  async scheduled(_controller, env, ctx) {
-    const container = createContainer(env)
+  async scheduled(controller, env, ctx) {
+    const container = createContainer(env, {
+      readmeLocalization: readmeLocalization(env),
+    })
+
+    if (controller.cron === '* * * * *') {
+      ctx.waitUntil(
+        container.useCases.backfillReadmeLocalization
+          .execute()
+          .then((report) => {
+            console.log('readme_i18n_backfill', report)
+          })
+          .catch((error: unknown) => {
+            console.error('readme_i18n_backfill_failed', String(error))
+          }),
+      )
+      return
+    }
+
     ctx.waitUntil(
       container.useCases.ingestCatalog
-        .execute({ limitPerSource: 100, limitByOrigin: { github: 200, 'awesome-list': 50 } })
+        .execute({
+          limitPerSource: 100,
+          limitByOrigin: { github: 200, 'awesome-list': 50 },
+        })
         .then((report) => {
           console.log('catalog_ingest', report)
         })

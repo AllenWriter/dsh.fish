@@ -1,4 +1,5 @@
 import type { D1Database, KVNamespace } from '@cloudflare/workers-types'
+import type { ReadmeI18nAgent } from '../agents/readme-i18n-agent.js'
 
 /**
  * The Worker's binding surface. One declaration shared by the API, the
@@ -9,6 +10,12 @@ export interface HubEnv {
   readonly DB: D1Database
   /** KV namespace used as Better Auth secondary storage and for rate limiting. */
   readonly KV: KVNamespace
+  /** React Router client assets served by the same Worker. */
+  readonly ASSETS: Fetcher
+  /** One durable Agent instance per artifact, addressed by catalog slug. */
+  readonly README_I18N_AGENT: DurableObjectNamespace<ReadmeI18nAgent>
+  /** OpenCode Go bearer token, stored as a Wrangler secret. */
+  readonly OPENCODE_GO_API_KEY: string
   /** Absolute origin the site is served from, e.g. `https://dsh.fish`. */
   readonly PUBLIC_BASE_URL: string
   readonly BETTER_AUTH_SECRET: string

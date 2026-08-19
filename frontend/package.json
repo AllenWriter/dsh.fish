@@ -13,7 +13,7 @@
     "typecheck": "react-router typegen && tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests",
     "deploy": "pnpm run build && wrangler deploy",
-    "cf-typegen": "wrangler types",
+    "cf-typegen": "wrangler types ./.wrangler/worker-configuration.d.ts --include-runtime false",
     "db:migrate:local": "wrangler d1 migrations apply dsh-fish-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply dsh-fish-db --remote",
     "db:seed:local": "wrangler d1 execute dsh-fish-db --local --file ../backend/scripts/seed-local.sql"

@@ -18,6 +18,23 @@
 - Reset state between tests.
 - Test the boundary between layers (e.g., repository mapping).
 
+README localization tests cover three boundaries without calling a paid model:
+
+- ingestion and ownership-verified submission schedule localization only after
+  a catalog write with a non-empty README;
+- the detail use case serves only a completed translation whose source hash
+  matches the current README;
+- the OpenCode Go client pins the endpoint/model/auth request and rejects
+  malformed, empty or failed chat-completions responses;
+- the stock backfill advances durable pages, becomes a no-op when complete and
+  never advances its cursor after a scheduling failure;
+- the schema test pins the D1 table to its migration and journal entry.
+
+`wrangler types` and `wrangler deploy --dry-run` validate the real Agent
+binding and Cron configuration. A bounded live request verifies production-key
+and model availability; model quality remains an operational evaluation, not a
+deterministic unit test.
+
 ## End-to-end tests
 
 - Cover the most important user journeys only.

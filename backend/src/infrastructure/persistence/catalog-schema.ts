@@ -125,3 +125,29 @@ export const artifactMetrics = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.artifactId, table.capturedAt] })],
 )
+
+/**
+ * Generated README translations, one current result per artifact and locale.
+ *
+ * The source hash makes stale generated prose unservable as soon as the
+ * upstream README or translation policy changes. Status and error stay in D1
+ * because the Agents SDK queue has no dead-letter queue after retries exhaust.
+ */
+export const artifactReadmeTranslations = sqliteTable(
+  'artifact_readme_translations',
+  {
+    artifactId: text('artifact_id')
+      .notNull()
+      .references(() => artifacts.id, { onDelete: 'cascade' }),
+    locale: text('locale').notNull(),
+    sourceHash: text('source_hash').notNull(),
+    status: text('status').notNull(),
+    markdown: text('markdown'),
+    error: text('error'),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.artifactId, table.locale] }),
+    index('artifact_readme_translations_status_idx').on(table.status),
+  ],
+)

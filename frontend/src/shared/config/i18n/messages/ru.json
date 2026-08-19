@@ -100,6 +100,7 @@
   "artifact.updated": "Обновлено",
   "artifact.indexedCommit": "Проиндексировано на коммите",
   "artifact.readme": "Readme",
+  "artifact.readmeMachineTranslated": "Переведено ИИ",
   "artifact.install": "Установить",
   "artifact.noReadme": "У этого артефакта нет readme.",
   "artifact.categories": "Категории",
