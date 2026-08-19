@@ -13,7 +13,9 @@ The application layer orchestrates use cases. It depends on the domain layer and
   queue, Worker binding or Agent SDK.
 - **Backfill orchestration** — `BackfillReadmeLocalization` pages over a small
   README projection and advances a durable cursor only after every item on the
-  page has been accepted by the scheduler.
+  page has been accepted by the scheduler. Each run also reschedules a bounded
+  batch of stale terminal failures, which the forward-only cursor would never
+  revisit on its own.
 
 ## Rules
 

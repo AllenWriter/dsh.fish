@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   extractTranslatedMarkdown,
   OPENCODE_GO_CHAT_COMPLETIONS_URL,
+  OPENCODE_GO_MODELS,
   translateReadmeWithOpenCodeGo,
 } from './opencode-go-readme-translator.js'
 
@@ -27,6 +28,44 @@ describe('OpenCode Go README translation', () => {
     })
   })
 
+  it('falls through to the next model when the usage limit is reached', async () => {
+    const models: string[] = []
+    const fetcher = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const model = String(JSON.parse(String(init?.body)).model)
+      models.push(model)
+      if (models.length === 1) {
+        return new Response('rate limited', { status: 429 })
+      }
+      return Response.json({ choices: [{ message: { content: '# Bonjour' } }] })
+    })
+
+    await expect(
+      translateReadmeWithOpenCodeGo('test-key', '# Hello', 'fr', fetcher),
+    ).resolves.toBe('# Bonjour')
+
+    expect(models).toEqual([OPENCODE_GO_MODELS[0], OPENCODE_GO_MODELS[1]])
+  })
+
+  it('reports every model once the whole fallback chain is exhausted', async () => {
+    const fetcher = vi.fn(async () => new Response('rate limited', { status: 429 }))
+
+    await expect(
+      translateReadmeWithOpenCodeGo('test-key', '# Hello', 'fr', fetcher),
+    ).rejects.toThrow(
+      'OpenCode Go translation failed: deepseek-v4-flash responded HTTP 429: rate limited',
+    )
+    expect(fetcher).toHaveBeenCalledTimes(OPENCODE_GO_MODELS.length)
+  })
+
+  it('does not fall back on request or auth errors no model can heal', async () => {
+    const fetcher = vi.fn(async () => new Response('unauthorized', { status: 401 }))
+
+    await expect(
+      translateReadmeWithOpenCodeGo('test-key', '# Hello', 'fr', fetcher),
+    ).rejects.toThrow('deepseek-v4-flash responded HTTP 401: unauthorized')
+    expect(fetcher).toHaveBeenCalledOnce()
+  })
+
   it('rejects malformed or empty model output', () => {
     expect(() => extractTranslatedMarkdown({})).toThrow(
       'OpenCode Go returned an invalid chat-completions response.',
@@ -41,6 +80,9 @@ describe('OpenCode Go README translation', () => {
 
     await expect(
       translateReadmeWithOpenCodeGo('test-key', '# Hello', 'fr', fetcher),
-    ).rejects.toThrow('OpenCode Go translation failed with HTTP 429: rate limited')
+    ).rejects.toThrow(/HTTP 429: rate limited/)
+    await expect(
+      translateReadmeWithOpenCodeGo('test-key', '# Hello', 'fr', fetcher),
+    ).rejects.not.toThrow(/test-key/)
   })
 })

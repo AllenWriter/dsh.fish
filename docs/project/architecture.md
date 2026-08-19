@@ -21,7 +21,7 @@ an agent drives.
 | Backend | Hono, layered DDD |
 | Database | Cloudflare D1 (SQLite) via Drizzle ORM |
 | Cache / secondary storage | Cloudflare KV |
-| README localization | Cloudflare Agents SDK + OpenCode Go (`deepseek-v4-flash`) |
+| README localization | Cloudflare Agents SDK + OpenCode Go (`deepseek-v4-flash` → `hy3` → `mimo-v2.5`) |
 | Auth | Better Auth (`better-auth-cloudflare`), GitHub OAuth + email/password + OAuth device grant |
 | Scheduled work | Workers Cron Triggers |
 
@@ -204,9 +204,11 @@ port to durably accept localization work. Its Cloudflare Agents SDK adapter
 addresses one `ReadmeI18nAgent` instance per artifact, then queues one task per
 site locale. Per-artifact sharding prevents one failing README from blocking
 the rest of the catalog. The task reads the current source Markdown from D1,
-uses OpenCode Go's `deepseek-v4-flash` chat-completions endpoint to translate
+uses OpenCode Go's chat-completions endpoint to translate
 human prose while preserving Markdown, code, links and identifiers, and stores the result in
-`artifact_readme_translations`.
+`artifact_readme_translations`. Requests walk an ordered model fallback chain
+(`deepseek-v4-flash`, `hy3`, `mimo-v2.5`) so one model's exhausted usage
+window does not stall the catalog.
 
 Every translation carries a SHA-256 hash of its upstream README plus an opaque
 translation-policy version. The detail
@@ -221,7 +223,10 @@ non-empty README in bounded pages. Therefore a deployment that changes the
 translation policy starts a complete stock backfill on its next trigger while
 the existing hourly ingestion Cron remains unchanged. Cursor writes happen
 only after a page is accepted; repeating a page after a failure is safe because
-the per-artifact Agents deduplicate it.
+the per-artifact Agents deduplicate it. The same Cron also reschedules
+artifacts whose `failed` rows have been stale for six hours, since the
+forward-only cursor never revisits them and the provider's usage window has
+reset by then.
 
 ## Quality score, maintenance status and star velocity
 

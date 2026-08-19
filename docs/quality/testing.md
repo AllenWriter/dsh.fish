@@ -24,10 +24,12 @@ README localization tests cover three boundaries without calling a paid model:
   a catalog write with a non-empty README;
 - the detail use case serves only a completed translation whose source hash
   matches the current README;
-- the OpenCode Go client pins the endpoint/model/auth request and rejects
-  malformed, empty or failed chat-completions responses;
-- the stock backfill advances durable pages, becomes a no-op when complete and
-  never advances its cursor after a scheduling failure;
+- the OpenCode Go client pins the endpoint/model/auth request, walks the model
+  fallback chain on 429/5xx, and rejects malformed, empty or failed
+  chat-completions responses;
+- the stock backfill advances durable pages, becomes a no-op when complete,
+  never advances its cursor after a scheduling failure, and reschedules stale
+  terminal failures on every run;
 - the schema test pins the D1 table to its migration and journal entry.
 
 `wrangler types` and `wrangler deploy --dry-run` validate the real Agent

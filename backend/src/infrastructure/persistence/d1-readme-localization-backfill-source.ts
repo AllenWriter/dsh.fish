@@ -1,9 +1,9 @@
-import { and, asc, gt, isNotNull, sql } from 'drizzle-orm'
+import { and, asc, eq, exists, gt, isNotNull, lt, sql } from 'drizzle-orm'
 import type { DrizzleD1Database } from 'drizzle-orm/d1'
 import type { ReadmeLocalizationBackfillSource } from '../../application/port/readme-localization.js'
 import type { Slug } from '../../domain/shared/slug.js'
 import { slug } from '../../domain/shared/slug.js'
-import { artifacts } from './catalog-schema.js'
+import { artifactReadmeTranslations, artifacts } from './catalog-schema.js'
 import * as schema from './schema.js'
 
 type Db = DrizzleD1Database<typeof schema>
@@ -26,11 +26,41 @@ export class D1ReadmeLocalizationBackfillSource implements ReadmeLocalizationBac
       .orderBy(asc(artifacts.id))
       .limit(limit)
 
-    return rows.map((row) => {
-      if (row.markdown === null) {
-        throw new Error('README backfill projection returned a null README.')
-      }
-      return { artifactId: slug(row.artifactId), markdown: row.markdown }
-    })
+    return rows.map(readmeRow)
   }
+
+  async listStaleFailures(olderThan: Date, limit: number) {
+    const failed = this.db
+      .select({ one: sql`1` })
+      .from(artifactReadmeTranslations)
+      .where(
+        and(
+          eq(artifactReadmeTranslations.artifactId, artifacts.id),
+          eq(artifactReadmeTranslations.status, 'failed'),
+          lt(artifactReadmeTranslations.updatedAt, olderThan),
+        ),
+      )
+
+    const rows = await this.db
+      .select({ artifactId: artifacts.id, markdown: artifacts.readmeMarkdown })
+      .from(artifacts)
+      .where(
+        and(
+          isNotNull(artifacts.readmeMarkdown),
+          sql`trim(${artifacts.readmeMarkdown}) <> ''`,
+          exists(failed),
+        ),
+      )
+      .orderBy(asc(artifacts.id))
+      .limit(limit)
+
+    return rows.map(readmeRow)
+  }
+}
+
+function readmeRow(row: { artifactId: string; markdown: string | null }) {
+  if (row.markdown === null) {
+    throw new Error('README backfill projection returned a null README.')
+  }
+  return { artifactId: slug(row.artifactId), markdown: row.markdown }
 }

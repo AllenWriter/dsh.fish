@@ -72,7 +72,10 @@ The GitHub OAuth app's callback URL is
 `<PUBLIC_BASE_URL>/api/auth/callback/github`.
 
 README localization calls OpenCode Go's OpenAI-compatible
-`/zen/go/v1/chat/completions` endpoint with model `deepseek-v4-flash`.
+`/zen/go/v1/chat/completions` endpoint with an ordered fallback chain
+(`deepseek-v4-flash`, then `hy3`, then `mimo-v2.5`) because the Go tier
+enforces a rolling per-model usage window: a 429 or provider-side 5xx falls
+through to the next model, while request or auth errors fail immediately.
 `OPENCODE_GO_API_KEY` is a Wrangler secret; it must never appear in
 `wrangler.jsonc`, `.dev.vars` committed to Git, or logs.
 `README_I18N_AGENT` is the Durable Object namespace in `frontend/wrangler.jsonc`.
@@ -146,8 +149,12 @@ The minutely `* * * * *` trigger advances a versioned README-localization
 backfill by ten artifacts. A new translation-policy version therefore begins
 stock translation on the first trigger after deployment without flooding the
 provider with every locale for every artifact at once. The cursor is stored in
-KV and is written only after the page is durably queued. Once complete, the
-trigger performs only the cheap completion-marker read.
+KV and is written only after the page is durably queued. The forward-only
+cursor never revisits an artifact, so the same trigger also reschedules up to
+ten artifacts whose terminal `failed` rows are older than six hours — long
+enough for the provider's rolling usage window to reset. Each new attempt
+restamps `updated_at`, which bounds a permanently failing README to one batch
+per interval.
 
 One firing reads a slice, not the whole topic. A Worker invocation may make
 1000 subrequests, so the run is budgeted — 200 GitHub repositories, 100 npm
@@ -183,7 +190,7 @@ deduplicates completed or pending work by README hash and locale. A changed
 README queues replacements; until each replacement completes, readers see the
 new upstream source rather than a stale translation. OpenCode Go failures are
 retried three times with bounded exponential backoff, then persisted as
-`failed`; a later ingestion pass requeues failed work.
+`failed`; the minutely backfill requeues them once they are six hours stale.
 
 Trigger a sweep manually as an administrator:
 

@@ -27,6 +27,16 @@ export interface ReadmeLocalizationBackfillSource {
     afterArtifactId: Slug | undefined,
     limit: number,
   ): Promise<readonly ReadmeLocalizationBackfillItem[]>
+
+  /**
+   * Artifacts whose latest translation attempt failed before `olderThan`.
+   * The backfill reschedules them because the forward-only cursor never
+   * revisits a failed artifact on its own.
+   */
+  listStaleFailures(
+    olderThan: Date,
+    limit: number,
+  ): Promise<readonly ReadmeLocalizationBackfillItem[]>
 }
 
 export interface ReadmeLocalizationBackfillState {
