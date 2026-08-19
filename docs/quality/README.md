@@ -14,6 +14,14 @@ This section defines testing strategy, code-review expectations, and quality gat
 - Code review is required before merging to the main branch.
 - Static analysis (lint, type check, formatting) must pass before merge.
 
+## Local gates
+
+- `pnpm run check` — workspace type checks, ESLint (flat config in
+  `eslint.config.mjs`), and all unit tests in one pass.
+- `pnpm run docs:check` — every relative Markdown link in `docs/` and the
+  top-level READMEs must resolve.
+- `pnpm run format` — Prettier over the whole repository.
+
 ## Definition of done
 
 - Feature is implemented according to the documented architecture.

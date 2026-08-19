@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Route } from './+types/dashboard-page'
 import { hubContext } from '@/shared/api/hub-context'
-import { CatalogGrid } from '@/widgets/catalog-grid/catalog-grid'
 import { useSession } from '@/shared/api/auth-client'
 import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { LocaleLink } from '@/shared/ui/locale-link'
