@@ -7,6 +7,7 @@ import { hubContext } from '@/shared/api/hub-context'
 import { canonicalLocaleRedirect, LOCALE_CODES } from '@/shared/config/i18n'
 import { withDiscoveryLinks } from '@/shared/api/agent-discovery'
 import { maybeMarkdownResponse, supportsMarkdownNegotiation } from '@/pages/markdown'
+import { withEdgeCache } from './edge-cache'
 
 /**
  * The Worker entry. One deployment serves both halves of the product.
@@ -31,71 +32,80 @@ const requestHandler = createRequestHandler(
   import.meta.env.MODE,
 )
 
+async function handleRequest(
+  request: Request<unknown, IncomingRequestCfProperties<unknown>>,
+  env: HubEnv,
+  ctx: ExecutionContext,
+): Promise<Response> {
+  const url = new URL(request.url)
+
+  if (url.pathname.startsWith('/api/')) {
+    return api.fetch(request, env, ctx)
+  }
+
+  // IndexNow key verification. The filename *is* the key, so this cannot be
+  // a React Router route: route parameters only match whole path segments,
+  // and `indexnow-<key>.txt` has the key inline. Unset key, or a wrong one,
+  // is a plain 404 — the file's existence proves ownership of the host, so
+  // it must exist exactly when the key is configured.
+  if (env.INDEXNOW_KEY !== undefined && url.pathname === `/indexnow-${env.INDEXNOW_KEY}.txt`) {
+    return new Response(`${env.INDEXNOW_KEY}\n`, {
+      headers: {
+        'content-type': 'text/plain; charset=utf-8',
+        'cache-control': 'public, max-age=86400',
+      },
+    })
+  }
+
+  // One document, one URL. `/en/browse` duplicates `/browse`, and `/ZH-cn`
+  // duplicates `/zh-CN` to a router that matches case-insensitively; both are
+  // folded into the canonical form before routing, permanently, so a crawler
+  // that ever saw the other form drops it.
+  const canonical = canonicalLocaleRedirect(url.pathname, url.search)
+  if (canonical !== undefined) {
+    return Response.redirect(new URL(canonical, url.origin).toString(), 301)
+  }
+
+  // Loaders resolve use cases in-process. A server-rendered page therefore
+  // costs one D1 round trip, not an HTTP hop back into the same Worker.
+  const container = createContainer(env, {
+    cf: request.cf,
+    readmeLocalization: readmeLocalization(env),
+  })
+
+  // Agents get the catalog as markdown when they ask for it; browsers never
+  // send `Accept: text/markdown`, so nothing changes for them.
+  const markdown = await maybeMarkdownResponse(request, container)
+  if (markdown !== null) {
+    return markdown
+  }
+
+  const routerContext = new RouterContextProvider()
+  routerContext.set(hubContext, {
+    container,
+    env,
+    ctx,
+  })
+
+  const response = await requestHandler(request, routerContext)
+
+  // Agent discovery (RFC 8288 / RFC 9727): HTML documents name their
+  // machine-readable counterparts in Link headers, so an agent never has to
+  // parse markup to find the api-catalog, the OpenAPI document, or the
+  // markdown representation of the page it is already reading.
+  return withDiscoveryLinks(response, request.url, supportsMarkdownNegotiation(url.pathname))
+}
+
 export default {
   async fetch(request, env, ctx) {
-    const url = new URL(request.url)
-
-    if (url.pathname.startsWith('/api/')) {
-      return api.fetch(request, env, ctx)
-    }
-
-    // IndexNow key verification. The filename *is* the key, so this cannot be
-    // a React Router route: route parameters only match whole path segments,
-    // and `indexnow-<key>.txt` has the key inline. Unset key, or a wrong one,
-    // is a plain 404 — the file's existence proves ownership of the host, so
-    // it must exist exactly when the key is configured.
-    if (env.INDEXNOW_KEY !== undefined && url.pathname === `/indexnow-${env.INDEXNOW_KEY}.txt`) {
-      return new Response(`${env.INDEXNOW_KEY}\n`, {
-        headers: {
-          'content-type': 'text/plain; charset=utf-8',
-          'cache-control': 'public, max-age=86400',
-        },
-      })
-    }
-
-    // One document, one URL. `/en/browse` duplicates `/browse`, and `/ZH-cn`
-    // duplicates `/zh-CN` to a router that matches case-insensitively; both are
-    // folded into the canonical form before routing, permanently, so a crawler
-    // that ever saw the other form drops it.
-    const canonical = canonicalLocaleRedirect(url.pathname, url.search)
-    if (canonical !== undefined) {
-      return Response.redirect(new URL(canonical, url.origin).toString(), 301)
-    }
-
-    // Loaders resolve use cases in-process. A server-rendered page therefore
-    // costs one D1 round trip, not an HTTP hop back into the same Worker.
-    const container = createContainer(env, {
-      cf: request.cf,
-      readmeLocalization: readmeLocalization(env),
-    })
-
-    // Agents get the catalog as markdown when they ask for it; browsers never
-    // send `Accept: text/markdown`, so nothing changes for them.
-    const markdown = await maybeMarkdownResponse(request, container)
-    if (markdown !== null) {
-      return markdown
-    }
-
-    const routerContext = new RouterContextProvider()
-    routerContext.set(hubContext, {
-      container,
-      env,
-      ctx,
-    })
-
-    const response = await requestHandler(request, routerContext)
-
-    // Agent discovery (RFC 8288 / RFC 9727): HTML documents name their
-    // machine-readable counterparts in Link headers, so an agent never has to
-    // parse markup to find the api-catalog, the OpenAPI document, or the
-    // markdown representation of the page it is already reading.
-    return withDiscoveryLinks(response, request.url, supportsMarkdownNegotiation(url.pathname))
+    return withEdgeCache(request, ctx, () => handleRequest(request, env, ctx))
   },
 
   /**
    * Cron triggers. The minutely event advances a bounded stock-README
    * backfill; the hourly event refreshes the remote catalog from GitHub, npm
-   * and the curated awesome lists.
+   * and the curated awesome lists, and carries the backfill's stale-failure
+   * retry scan so the minutely event does not pay for a full-table read.
    *
    * The limits are a subrequest budget, not a taste: a Worker invocation may
    * make 1000 subrequests, and one run costs roughly 200 GitHub repositories ×
@@ -113,7 +123,9 @@ export default {
     if (controller.cron === '* * * * *') {
       ctx.waitUntil(
         container.useCases.backfillReadmeLocalization
-          .execute()
+          // The stale-failure rescan reads every README-bearing row; the
+          // hourly branch below pays for it once an hour instead.
+          .execute(undefined, { retryStaleFailures: false })
           .then((report) => {
             console.log('readme_i18n_backfill', report)
           })
@@ -125,17 +137,27 @@ export default {
     }
 
     ctx.waitUntil(
-      container.useCases.ingestCatalog
-        .execute({
-          limitPerSource: 100,
-          limitByOrigin: { github: 200, 'awesome-list': 50 },
-        })
-        .then((report) => {
-          console.log('catalog_ingest', report)
-        })
-        .catch((error: unknown) => {
-          console.error('catalog_ingest_failed', String(error))
-        }),
+      Promise.all([
+        container.useCases.ingestCatalog
+          .execute({
+            limitPerSource: 100,
+            limitByOrigin: { github: 200, 'awesome-list': 50 },
+          })
+          .then((report) => {
+            console.log('catalog_ingest', report)
+          })
+          .catch((error: unknown) => {
+            console.error('catalog_ingest_failed', String(error))
+          }),
+        container.useCases.backfillReadmeLocalization
+          .execute()
+          .then((report) => {
+            console.log('readme_i18n_backfill', report)
+          })
+          .catch((error: unknown) => {
+            console.error('readme_i18n_backfill_failed', String(error))
+          }),
+      ]),
     )
   },
 } satisfies ExportedHandler<HubEnv>

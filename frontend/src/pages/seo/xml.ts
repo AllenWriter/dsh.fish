@@ -99,7 +99,9 @@ ${body}
 }
 
 /**
- * Cached at the edge for an hour.
+ * Cached at the edge for an hour via the Cache API in the Worker entry
+ * (`workers/edge-cache.ts`); without a cacheable file extension the CDN
+ * default would not store these URLs.
  *
  * The catalog re-crawls every hour, so an hour-old sitemap is never more
  * than one sweep behind, and a crawler pulling every file in the index does not

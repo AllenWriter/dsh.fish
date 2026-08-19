@@ -75,8 +75,9 @@ ${entries}
 }
 
 /**
- * Same cache contract as the sitemap set: the catalog re-crawls every six
- * hours, so an hour-old feed is never more than one sweep behind.
+ * Same cache contract as the sitemap set, applied at the edge via the Cache
+ * API in the Worker entry (`workers/edge-cache.ts`): the catalog re-crawls
+ * every six hours, so an hour-old feed is never more than one sweep behind.
  */
 export function atomResponse(body: string): Response {
   return new Response(body, {
