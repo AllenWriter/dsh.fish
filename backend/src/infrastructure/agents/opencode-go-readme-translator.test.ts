@@ -4,6 +4,7 @@ import {
   OPENCODE_GO_CHAT_COMPLETIONS_URL,
   OPENCODE_GO_MODELS,
   translateReadmeWithOpenCodeGo,
+  usageSummary,
 } from './opencode-go-readme-translator.js'
 
 describe('OpenCode Go README translation', () => {
@@ -84,5 +85,44 @@ describe('OpenCode Go README translation', () => {
     await expect(
       translateReadmeWithOpenCodeGo('test-key', '# Hello', 'fr', fetcher),
     ).rejects.not.toThrow(/test-key/)
+  })
+
+  it('logs the billed token usage, including hidden reasoning tokens', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const fetcher = vi.fn(async () =>
+      Response.json({
+        choices: [{ message: { content: '# 你好' } }],
+        usage: {
+          prompt_tokens: 1_400,
+          completion_tokens: 9_000,
+          total_tokens: 10_400,
+          completion_tokens_details: { reasoning_tokens: 7_500 },
+        },
+      }),
+    )
+
+    await expect(
+      translateReadmeWithOpenCodeGo('test-key', '# Hello', 'zh-CN', fetcher),
+    ).resolves.toBe('# 你好')
+
+    expect(log).toHaveBeenCalledWith(
+      'readme_i18n_usage',
+      JSON.stringify({
+        model: 'deepseek-v4-flash',
+        locale: 'zh-CN',
+        promptTokens: 1_400,
+        completionTokens: 9_000,
+        totalTokens: 10_400,
+        reasoningTokens: 7_500,
+      }),
+    )
+    log.mockRestore()
+  })
+
+  it('projects only the numeric fields of a usage object', () => {
+    expect(usageSummary({})).toEqual({})
+    expect(usageSummary({ usage: { prompt_tokens: 5, model: 'hy3' } })).toEqual({
+      promptTokens: 5,
+    })
   })
 })

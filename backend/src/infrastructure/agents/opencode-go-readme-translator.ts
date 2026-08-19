@@ -56,7 +56,14 @@ export async function translateReadmeWithOpenCodeGo(
 
     if (response.ok) {
       const result: unknown = await response.json()
-      return extractTranslatedMarkdown(result)
+      const markdown = extractTranslatedMarkdown(result)
+      // Reasoning models bill their hidden chain-of-thought as output tokens;
+      // without this line that spend is invisible until the quota is gone.
+      console.log(
+        'readme_i18n_usage',
+        JSON.stringify({ model, locale: targetLocale, ...usageSummary(result) }),
+      )
+      return markdown
     }
 
     const detail = (await response.text()).slice(0, 1_000).trim()
@@ -82,6 +89,25 @@ export function extractTranslatedMarkdown(result: unknown): string {
     throw new Error('OpenCode Go returned no translated Markdown.')
   }
   return content
+}
+
+/** Project the OpenAI-compatible `usage` object into a flat log-friendly shape. */
+export function usageSummary(result: unknown): Record<string, number> {
+  if (!isRecord(result) || !isRecord(result.usage)) return {}
+  const usage = result.usage
+  const details = isRecord(usage.completion_tokens_details)
+    ? usage.completion_tokens_details
+    : {}
+  const summary: Record<string, number> = {}
+  for (const [key, value] of [
+    ['promptTokens', usage.prompt_tokens],
+    ['completionTokens', usage.completion_tokens],
+    ['totalTokens', usage.total_tokens],
+    ['reasoningTokens', details.reasoning_tokens],
+  ]) {
+    if (typeof value === 'number' && Number.isFinite(value)) summary[key] = value
+  }
+  return summary
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
