@@ -341,26 +341,42 @@ export class Artifact {
   }
 }
 
+type PublicProps = Omit<ArtifactProps, 'updatedAt'> | ArtifactProps
+
+const publicFields = (value: PublicProps) => ({
+  displayName: value.displayName,
+  summary: value.summary,
+  source: value.source,
+  payload: value.payload,
+  keywords: value.keywords,
+  categories: value.categories,
+  license: value.license,
+  author: value.author,
+  readmeMarkdown: value.readmeMarkdown,
+  ogImageUrl: value.ogImageUrl,
+  deprecated: value.deprecated,
+})
+
 function publicArtifactChanged(
   previous: ArtifactProps,
   next: Omit<ArtifactProps, 'updatedAt'>,
 ): boolean {
-  const publicFields = (value: Omit<ArtifactProps, 'updatedAt'> | ArtifactProps) => ({
-    displayName: value.displayName,
-    summary: value.summary,
-    source: value.source,
-    payload: value.payload,
-    keywords: value.keywords,
-    categories: value.categories,
-    license: value.license,
-    author: value.author,
-    readmeMarkdown: value.readmeMarkdown,
-    ogImageUrl: value.ogImageUrl,
-    stats: value.stats,
-    deprecated: value.deprecated,
-  })
+  const withStats = (value: PublicProps) => ({ ...publicFields(value), stats: value.stats })
+  return JSON.stringify(withStats(previous)) !== JSON.stringify(withStats(next))
+}
 
-  return JSON.stringify(publicFields(previous)) !== JSON.stringify(publicFields(next))
+/**
+ * Whether a refresh changed the stored catalog content, ignoring popularity
+ * stats. `sourceCommitSha` counts as content because it pins scan provenance;
+ * `stats` does not, because stars and downloads move on nearly every sweep and
+ * are kept fresh by the metrics snapshot alone.
+ */
+export function artifactContentChanged(previous: ArtifactProps, next: ArtifactProps): boolean {
+  const withProvenance = (value: ArtifactProps) => ({
+    ...publicFields(value),
+    sourceCommitSha: value.sourceCommitSha,
+  })
+  return JSON.stringify(withProvenance(previous)) !== JSON.stringify(withProvenance(next))
 }
 
 function normalizeKeywords(raw: readonly string[]): readonly string[] {

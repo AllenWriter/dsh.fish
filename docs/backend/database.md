@@ -27,8 +27,10 @@ This document describes database conventions. Fill in concrete technology choice
   `0004_artifact_source_commit_sha`) — the default-branch HEAD the GitHub
   indexer scanned. It denormalizes `source.commit` out of the JSON `SourceRef`
   so scan provenance is a queryable column; both are written from the same
-  resolved ref on every sweep, and the detail DTO / install plan read the
-  column, not the JSON.
+  resolved ref whenever a sweep rewrites the row, and the detail DTO / install
+  plan read the column, not the JSON. A sweep that re-finds the stored row
+  unchanged writes nothing: content moves go through the full catalog write,
+  stats-only moves go through the metrics snapshot alone.
 - `artifact_readme_translations` (migration `0005_minor_ultimo`) — one row per
   artifact and locale with a SHA-256 of the upstream README plus translation
   policy version, lifecycle status,

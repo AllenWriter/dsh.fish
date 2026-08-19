@@ -21,6 +21,17 @@ export interface BackfillReadmeLocalizationReport {
   readonly afterArtifactId?: string
 }
 
+export interface BackfillReadmeLocalizationOptions {
+  /**
+   * Whether to also rescan for stale terminal failures. The scan exists to
+   * requeue failures after the provider's rolling usage window resets; it reads
+   * every README-bearing artifact, so a caller that fires every minute should
+   * leave it off and let a slower cadence (the hourly sweep) pay for it.
+   * Defaults to `true` so the use case stays self-contained.
+   */
+  readonly retryStaleFailures?: boolean
+}
+
 /**
  * Incrementally schedules every stored README for the current translation
  * policy. A small batch limits provider concurrency while the minutely trigger
@@ -30,10 +41,13 @@ export interface BackfillReadmeLocalizationReport {
  * RPC or KV write fails, the next invocation safely repeats the page because
  * each per-artifact Agent deduplicates locale + policy hash.
  *
- * The forward-only cursor never revisits an artifact, so each run also
- * reschedules a bounded batch of stale terminal failures. The per-artifact
+ * The forward-only cursor never revisits an artifact, so a run can also
+ * reschedule a bounded batch of stale terminal failures. The per-artifact
  * Agent re-queues only locales whose stored row is still `failed`; `pending`
- * and `completed` rows with a matching hash are skipped there.
+ * and `completed` rows with a matching hash are skipped there. That scan reads
+ * the whole README-bearing table, so running it every minute forever — long
+ * after the backfill completed — is pure waste; callers on a fast cadence
+ * disable it via `options.retryStaleFailures`.
  */
 export class BackfillReadmeLocalization {
   constructor(
@@ -42,7 +56,10 @@ export class BackfillReadmeLocalization {
     private readonly scheduler: ReadmeLocalizationScheduler,
   ) {}
 
-  async execute(limit = DEFAULT_BATCH_SIZE): Promise<BackfillReadmeLocalizationReport> {
+  async execute(
+    limit = DEFAULT_BATCH_SIZE,
+    options: BackfillReadmeLocalizationOptions = {},
+  ): Promise<BackfillReadmeLocalizationReport> {
     if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
       throw new Error('README localization backfill limit must be between 1 and 100.')
     }
@@ -58,14 +75,20 @@ export class BackfillReadmeLocalization {
 
       const last = items.at(-1)
       const afterArtifactId = last?.artifactId ?? state.afterArtifactId
-      state = {
+      const next: ReadmeLocalizationBackfillState = {
         ...(afterArtifactId === undefined ? {} : { afterArtifactId }),
         complete: items.length < limit,
       }
-      await this.progress.save(state)
+      // KV bills per write; an invocation that moved nothing must not pay for
+      // rewriting the same cursor.
+      if (next.complete !== state.complete || next.afterArtifactId !== state.afterArtifactId) {
+        state = next
+        await this.progress.save(state)
+      }
     }
 
-    const retriedArtifacts = await this.retryStaleFailures(limit)
+    const retriedArtifacts =
+      options.retryStaleFailures === false ? 0 : await this.retryStaleFailures(limit)
     return report(scheduled, retriedArtifacts, state)
   }
 

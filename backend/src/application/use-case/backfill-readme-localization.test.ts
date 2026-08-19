@@ -99,4 +99,54 @@ describe('BackfillReadmeLocalization', () => {
 
     expect(scheduled).toEqual([fresh, failed, failed])
   })
+
+  it('never scans for stale failures when the caller disables retries', async () => {
+    let staleScans = 0
+    const useCase = new BackfillReadmeLocalization(
+      {
+        listAfter: async () => [],
+        listStaleFailures: async () => {
+          staleScans += 1
+          return []
+        },
+      },
+      {
+        load: async () => ({ complete: true }),
+        save: async () => {},
+      },
+      { schedule: async () => {} },
+    )
+
+    await expect(useCase.execute(10, { retryStaleFailures: false })).resolves.toMatchObject({
+      retriedArtifacts: 0,
+      complete: true,
+    })
+    expect(staleScans).toBe(0)
+  })
+
+  it('does not rewrite the cursor when a page leaves the state untouched', async () => {
+    let saves = 0
+    const useCase = new BackfillReadmeLocalization(
+      {
+        // Returns the cursor position itself, so neither the cursor nor the
+        // complete flag moves.
+        listAfter: async () => [{ artifactId: slug('alpha'), markdown: '# Alpha' }],
+        listStaleFailures: async () => [],
+      },
+      {
+        load: async () => ({ afterArtifactId: slug('alpha'), complete: false }),
+        save: async () => {
+          saves += 1
+        },
+      },
+      { schedule: async () => {} },
+    )
+
+    await expect(useCase.execute(1)).resolves.toMatchObject({
+      scheduledArtifacts: 1,
+      complete: false,
+      afterArtifactId: 'alpha',
+    })
+    expect(saves).toBe(0)
+  })
 })

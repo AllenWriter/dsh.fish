@@ -166,6 +166,11 @@ export class D1ArtifactRepository implements ArtifactRepository {
     const velocities = this.db
       .update(artifacts)
       .set({
+        // Also refreshes the displayed counters: a sweep that changed only
+        // stats skips the full catalog write, so this one UPDATE is what keeps
+        // the stored stars/downloads from going stale.
+        stars: props.stats.stars,
+        downloads: props.stats.downloads,
         starVelocity7d: starVelocity(props.stats.stars, history7d, 7, now),
         starVelocity30d: starVelocity(props.stats.stars, history30d, 30, now),
       })

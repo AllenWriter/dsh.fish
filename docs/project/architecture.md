@@ -253,7 +253,8 @@ install plan DTO carries it as `scannedAtCommit`, and the artifact page links
 registry read against what the repository serves now. It is display-only;
 executing installs pinned to the SHA is a separate decision.
 
-After an artifact with a README is saved, both ingestion paths — scheduled
+When an artifact is created or its README Markdown changes, both ingestion
+paths — scheduled
 discovery and an ownership-verified submission — call the same application
 port to durably accept localization work. Its Cloudflare Agents SDK adapter
 addresses one `ReadmeI18nAgent` instance per artifact, then queues one task per
@@ -277,11 +278,13 @@ A separate minutely Cron advances a versioned KV cursor over every stored,
 non-empty README in bounded pages. Therefore a deployment that changes the
 translation policy starts a complete stock backfill on its next trigger while
 the existing hourly ingestion Cron remains unchanged. Cursor writes happen
-only after a page is accepted; repeating a page after a failure is safe because
-the per-artifact Agents deduplicate it. The same Cron also reschedules
+only after a page is accepted, and only when the page actually moved the
+cursor; repeating a page after a failure is safe because
+the per-artifact Agents deduplicate it. The hourly Cron also reschedules
 artifacts whose `failed` rows have been stale for six hours, since the
 forward-only cursor never revisits them and the provider's usage window has
-reset by then.
+reset by then. That retry scan reads every README-bearing row, so the minutely
+Cron skips it — once an hour is often enough for a six-hour staleness window.
 
 ## Quality score, maintenance status and star velocity
 
@@ -310,13 +313,18 @@ otherwise `C`.
 `slowing` ≤ 90, `stale` ≤ 365, `abandoned` beyond that — and a deprecated
 artifact is `abandoned` however fresh its timestamps are.
 
-Star velocity comes from history, not from the current row: every
+Star velocity comes from history, not from the current row: an
 `IngestCatalog` sweep appends one `artifact_metrics` row (stars, downloads,
-installs, `captured_at`) per artifact. The 7- or 30-day velocity is the
+installs, `captured_at`) per artifact whose content or stats moved, and writes
+nothing at all for an artifact the sweep re-found unchanged — D1 bills per row
+written, and most of a sweep re-finds what the last sweep stored. The 7- or
+30-day velocity is the
 current star count minus the most recent snapshot taken *at least* that many
 days ago, and 0 when history does not reach back that far — a young artifact
 is unmeasured, not "rising". The sweep stores both windows on
-`artifacts.star_velocity_7d` / `star_velocity_30d`, so `sort=rising` is a
+`artifacts.star_velocity_7d` / `star_velocity_30d` — and, in the same UPDATE,
+the fresh stars/downloads counters, so a stats-only sweep needs no catalog
+rewrite — so `sort=rising` is a
 column scan (7-day velocity, then the popularity weighting) rather than a
 history join per request. Velocity is hub-derived state kept outside
 `ArtifactStats`, so a velocity tick does not count as a public-page change and

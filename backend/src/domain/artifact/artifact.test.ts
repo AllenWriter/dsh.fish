@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Artifact } from './artifact.js'
+import { Artifact, artifactContentChanged } from './artifact.js'
 import { FALLBACK_CATEGORY } from './category.js'
 import { githubSource, npmSource } from './source-ref.js'
 
@@ -135,5 +135,38 @@ describe('Artifact crawl timestamps', () => {
     })
 
     expect(refreshed.updatedAt.getTime()).toBeGreaterThan(earlier.getTime())
+  })
+})
+
+describe('artifactContentChanged', () => {
+  const artifact = Artifact.create({ ...base, sourceCommitSha: 'a'.repeat(40) })
+
+  const refreshed = (overrides: { stats?: Artifact['stats']; sourceCommitSha?: string | null }) =>
+    artifact.refreshedWith({
+      displayName: artifact.displayName,
+      summary: artifact.summary,
+      source: artifact.source,
+      payload: artifact.payload,
+      keywords: artifact.keywords,
+      categories: artifact.categories.map(String),
+      stats: overrides.stats ?? artifact.stats,
+      ...(overrides.sourceCommitSha === undefined
+        ? {}
+        : { sourceCommitSha: overrides.sourceCommitSha }),
+    })
+
+  it('ignores a stats-only move, which the metrics snapshot covers on its own', () => {
+    const next = refreshed({ stats: { stars: 100, downloads: 50, installs: 0 } })
+    expect(artifactContentChanged(artifact.toProps(), next.toProps())).toBe(false)
+  })
+
+  it('treats a re-pinned scan commit as content', () => {
+    const next = refreshed({ sourceCommitSha: 'b'.repeat(40) })
+    expect(artifactContentChanged(artifact.toProps(), next.toProps())).toBe(true)
+  })
+
+  it('sees no change when a sweep re-finds the stored row', () => {
+    const next = refreshed({})
+    expect(artifactContentChanged(artifact.toProps(), next.toProps())).toBe(false)
   })
 })

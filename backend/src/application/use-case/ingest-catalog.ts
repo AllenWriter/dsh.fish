@@ -1,4 +1,4 @@
-import { Artifact } from '../../domain/artifact/artifact.js'
+import { Artifact, artifactContentChanged } from '../../domain/artifact/artifact.js'
 import type { ArtifactRepository } from '../../domain/artifact/artifact-repository.js'
 import { mergeProvenance } from '../../domain/artifact/source-ref.js'
 import { slug } from '../../domain/shared/slug.js'
@@ -10,6 +10,8 @@ export interface IngestReport {
   readonly scanned: number
   readonly created: number
   readonly updated: number
+  /** Swept rows whose content and stats were both identical to the stored row. */
+  readonly unchanged: number
   readonly skipped: number
   readonly errors: readonly { readonly id: string; readonly reason: string }[]
 }
@@ -37,8 +39,11 @@ const DEFAULT_LIMIT = 100
  * must not abort a sweep, because a single bad publish upstream would otherwise
  * stop the whole registry from refreshing.
  *
- * Every artifact swept also appends one `artifact_metrics` row, the history
- * star velocity and the `rising` sort are computed from.
+ * An artifact whose content changed is rewritten and gets a fresh
+ * `artifact_metrics` row; one where only stars/downloads moved gets the metrics
+ * row alone, which also refreshes the counters stored on the catalog row; one
+ * where nothing moved is not written at all. D1 bills per row written, and the
+ * vast majority of a sweep re-finds what the last sweep already stored.
  */
 export class IngestCatalog {
   constructor(
@@ -51,6 +56,7 @@ export class IngestCatalog {
     let scanned = 0
     let created = 0
     let updated = 0
+    let unchanged = 0
     let skipped = 0
     const errors: { id: string; reason: string }[] = []
 
@@ -90,10 +96,28 @@ export class IngestCatalog {
                 : { sourceCommitSha: snapshot.sourceCommitSha }),
               ...(snapshot.deprecated === undefined ? {} : { deprecated: snapshot.deprecated }),
             })
-            await this.artifacts.save(refreshed)
+            const previousProps = existing.toProps()
+            const refreshedProps = refreshed.toProps()
+            const contentChanged = artifactContentChanged(previousProps, refreshedProps)
+            const statsChanged =
+              refreshedProps.stats.stars !== previousProps.stats.stars ||
+              refreshedProps.stats.downloads !== previousProps.stats.downloads
+
+            if (!contentChanged && !statsChanged) {
+              unchanged += 1
+              continue
+            }
+
+            if (contentChanged) {
+              await this.artifacts.save(refreshed)
+            }
             await this.artifacts.recordMetricsSnapshot(refreshed)
             updated += 1
-            await scheduleReadmeLocalization(this.readmeLocalization, refreshed)
+            // A README is re-localized only when the Markdown itself changed;
+            // the per-locale dedup reads are too expensive to pay per sweep.
+            if (contentChanged && refreshedProps.readmeMarkdown !== previousProps.readmeMarkdown) {
+              await scheduleReadmeLocalization(this.readmeLocalization, refreshed)
+            }
           } else {
             const createdArtifact = toArtifact(snapshot)
             await this.artifacts.save(createdArtifact)
@@ -113,7 +137,7 @@ export class IngestCatalog {
       }
     }
 
-    return { scanned, created, updated, skipped, errors }
+    return { scanned, created, updated, unchanged, skipped, errors }
   }
 }
 
