@@ -36,15 +36,17 @@ test.describe('the community stack', () => {
 
     await expect(links.nth(0)).toHaveAttribute('href', 'https://discord.gg/PwZDHH4mv3')
     await expect(links.nth(1)).toHaveAttribute('href', 'https://x.com/stv_lynn')
-    await expect(links.nth(2)).toHaveAttribute('href', 'mailto:i@stv.pm')
+    await expect(links.nth(2)).toHaveAttribute(
+      'href',
+      'https://github.com/stvlynn/dsh.fish/issues',
+    )
 
-    // A destination off this site opens in its own tab, and never hands the
-    // opener over; a mail client is not a tab.
-    for (const index of [0, 1]) {
+    // Every destination is off this site: each opens in its own tab, and none
+    // hands the opener over.
+    for (const index of [0, 1, 2]) {
       await expect(links.nth(index)).toHaveAttribute('target', '_blank')
       await expect(links.nth(index)).toHaveAttribute('rel', /noopener/)
     }
-    await expect(links.nth(2)).not.toHaveAttribute('target', '_blank')
   })
 
   test('names its region and every dismiss control', async ({ page }) => {
@@ -94,7 +96,10 @@ test.describe('dismissal', () => {
     await expect(page.locator(ROW)).toHaveCount(2)
     // The retired one is gone, and the two that remain kept their order.
     await expect(page.locator(`${ROW} a`).nth(0)).toHaveAttribute('href', 'https://x.com/stv_lynn')
-    await expect(page.locator(`${ROW} a`).nth(1)).toHaveAttribute('href', 'mailto:i@stv.pm')
+    await expect(page.locator(`${ROW} a`).nth(1)).toHaveAttribute(
+      'href',
+      'https://github.com/stvlynn/dsh.fish/issues',
+    )
   })
 
   test('leaves nothing behind once every toast is retired', async ({ page, context }) => {

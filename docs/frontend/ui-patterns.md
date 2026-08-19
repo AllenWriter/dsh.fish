@@ -235,7 +235,7 @@ The plugin-page author card uses beui's `Avatar`, not a second image primitive.
 
 ## The toast stack
 
-Three community invitations sit in one fixed stack at the bottom-right corner
+Three community invitations sit in one fixed deck at the bottom-right corner
 (`shared/ui/motion/toast-stack.tsx`, vendored from beui's animated toast stack;
 `widgets/community-toasts` owns the content and the dismissal).
 
@@ -243,6 +243,12 @@ Three community invitations sit in one fixed stack at the bottom-right corner
   timers. beui's neutral/info/loading/success/error vocabulary was dropped on
   the way in rather than left as unreachable options — this palette has no
   status hues to render it with.
+- **It is a deck, not a list.** Collapsed, the front toast shows in full and
+  the rest peek out above it, each a little smaller; a hover or focus anywhere
+  on the stack fans it open. A permanent stack rendered as a flat list — the
+  registry's default — is a third of the viewport spent on invitations.
+- **A toast is one line.** The mark, the title, then the action and the
+  dismiss control grouped on the right. One glance, one row.
 - **A toast leaves when a reader says so, and never comes back.** Dismissal is
   per toast and permanent, recorded in the `community` cookie so the root loader
   can decide the surface before it is rendered. Nothing auto-expires; an
@@ -256,15 +262,15 @@ Three community invitations sit in one fixed stack at the bottom-right corner
   real link is what gives it a middle click, a context menu and the right role.
 - **It arrives late and leaves fast.** The stack waits ~900ms so the page has
   the first frame to itself, then the rows cascade in 70ms apart; the exit is
-  180ms. Entrance is `SPRING_PANEL`, reflow is `SPRING_LAYOUT` — the same
-  physics every other panel in the app settles on.
+  180ms. Entrance is `SPRING_PANEL`, the deck's reflow is `SPRING_LAYOUT` —
+  the same physics every other panel in the app settles on.
 - **It exits the way it can be swiped.** A row leaves toward the right edge,
   which is the direction a swipe dismisses it (72px, or Sonner's 0.11px/ms
   flick). Enter is upward from the edge the stack is anchored to.
 - **Reduced motion removes displacement, not the toast.** The fade stays,
-  because it is what says the toast is new. The transforms, the swipe and the
-  `layout` reflow all come off — reflow is motion too, and leaving it on would
-  slide a row a reader asked to keep still.
+  because it is what says the toast is new. The row transforms and the swipe
+  come off; the deck's positioning is layout rather than motion, so it stays
+  but lands instantly.
 - **Elevation is one step above the popover's.** This is the only layer that
   floats over content the reader did not summon; at the popover's shadow, on a
   page of cards, it reads as one more card.

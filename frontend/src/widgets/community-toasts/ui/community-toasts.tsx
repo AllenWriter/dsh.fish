@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
+import { githubAvatarUrl } from '@/entities/artifact/lib/github-avatar'
 import { useT } from '@/shared/config/i18n'
-import { FEEDBACK_EMAIL, HUB_DISCORD_URL, MAINTAINER_X_URL } from '@/shared/config/site'
-import { DiscordIcon, EmailIcon, XIcon, type Icon } from '@/shared/ui/icon'
+import {
+  HUB_DISCORD_URL,
+  HUB_ISSUES_URL,
+  MAINTAINER_GITHUB_URL,
+  MAINTAINER_X_URL,
+} from '@/shared/config/site'
+import { Avatar } from '@/shared/ui/avatar'
+import { DiscordIcon, GithubIcon, type Icon } from '@/shared/ui/icon'
 import { ToastStack, type ToastItem } from '@/shared/ui/motion/toast-stack'
 import { writeDismissedToasts, type CommunityToastId } from '../model/dismissal'
 
@@ -16,21 +23,32 @@ const REVEAL_DELAY_MS = 900
 
 interface CommunityToast {
   id: CommunityToastId
-  icon: Icon
+  /** The mark of the place the toast leads to, unless a portrait speaks instead. */
+  icon?: Icon
+  /**
+   * A person, where the destination is one.
+   *
+   * The feed toast invites the reader to follow the maintainer, not a brand,
+   * so its leading slot is their portrait — the same GitHub-derived avatar the
+   * catalog draws for every author — rather than the platform's glyph.
+   */
+  portrait?: string
   titleKey: string
   actionKey: string
-  actionParams?: Record<string, string>
   href: string
   /** A destination off this site opens in its own tab. */
   external: boolean
 }
 
+/** The maintainer's portrait, at 2× the size of the slot it fills. */
+const MAINTAINER_PORTRAIT = githubAvatarUrl(MAINTAINER_GITHUB_URL, 56)
+
 /**
  * The three invitations, each identified by the mark of the place it leads to.
  *
  * Order is the order they arrive in, and it goes from the widest audience to
- * the narrowest: a room anyone can join, one person to follow, then an inbox
- * for the reader who has something specific to say.
+ * the narrowest: a room anyone can join, one person to follow, then the issue
+ * tracker for the reader who has something specific to say.
  */
 const TOASTS: readonly CommunityToast[] = [
   {
@@ -43,7 +61,7 @@ const TOASTS: readonly CommunityToast[] = [
   },
   {
     id: 'x',
-    icon: XIcon,
+    portrait: MAINTAINER_PORTRAIT,
     titleKey: 'community.x.title',
     actionKey: 'community.x.action',
     href: MAINTAINER_X_URL,
@@ -51,12 +69,11 @@ const TOASTS: readonly CommunityToast[] = [
   },
   {
     id: 'feedback',
-    icon: EmailIcon,
+    icon: GithubIcon,
     titleKey: 'community.feedback.title',
     actionKey: 'community.feedback.action',
-    actionParams: { email: FEEDBACK_EMAIL },
-    href: `mailto:${FEEDBACK_EMAIL}`,
-    external: false,
+    href: HUB_ISSUES_URL,
+    external: true,
   },
 ]
 
@@ -67,7 +84,7 @@ export interface CommunityToastsProps {
 
 /**
  * Site-wide invitations to the project's community, its author's feed and its
- * inbox.
+ * issue tracker.
  *
  * Dismissal is per toast and permanent, so the whole surface is something a
  * reader can end for good with three clicks and never see again. It lives
@@ -96,10 +113,14 @@ export function CommunityToasts({ dismissed }: CommunityToastsProps) {
         .filter((toast) => !retired.includes(toast.id))
         .map((toast) => ({
           id: toast.id,
-          icon: <toast.icon className="size-4" weight="bold" />,
+          icon: toast.portrait ? (
+            <Avatar src={toast.portrait} name="Steven Lynn" size="sm" />
+          ) : (
+            toast.icon && <toast.icon className="size-4" weight="bold" />
+          ),
           title: t(toast.titleKey),
           action: {
-            label: t(toast.actionKey, toast.actionParams),
+            label: t(toast.actionKey),
             href: toast.href,
             external: toast.external,
           },

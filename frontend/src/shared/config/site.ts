@@ -35,8 +35,11 @@ export const HUB_DISCORD_URL = 'https://discord.gg/PwZDHH4mv3'
 /** The maintainer's feed, where what lands in the catalog gets announced. */
 export const MAINTAINER_X_URL = 'https://x.com/stv_lynn'
 
+/** The maintainer's GitHub profile, also the source of their public portrait. */
+export const MAINTAINER_GITHUB_URL = 'https://github.com/stvlynn'
+
 /** Where a bug report, a correction or a plugin nomination is read. */
-export const FEEDBACK_EMAIL = 'i@stv.pm'
+export const HUB_ISSUES_URL = `${HUB_REPO_URL}/issues`
 
 /** The spec a reader copies to install the hub's plugin into their harness. */
 export const HUB_PLUGIN_SPEC = 'github:stvlynn/dsh.fish#main'
