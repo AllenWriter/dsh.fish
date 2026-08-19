@@ -1,4 +1,4 @@
-import { githubAvatarUrl, githubLogin } from '../lib/github-avatar'
+import { githubAvatarUrl, githubLogin } from '@/shared/lib/github-avatar'
 import { useT } from '@/shared/config/i18n'
 import { Avatar } from '@/shared/ui/avatar'
 import { ExternalLinkIcon, GithubIcon } from '@/shared/ui/icon'
