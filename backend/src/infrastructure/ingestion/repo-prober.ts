@@ -1,6 +1,7 @@
 import { parse as parseYaml } from 'yaml'
 import { classifyPackage, parseSkillFrontmatter } from '../../domain/artifact/manifest.js'
 import type { PackageManifest } from '../../domain/artifact/manifest.js'
+import type { ArtifactKind } from '../../domain/artifact/artifact-kind.js'
 import type { ArtifactPayload } from '../../domain/artifact/artifact-payload.js'
 import { resolveCategories } from '../../domain/artifact/category-inference.js'
 import { githubSource } from '../../domain/artifact/source-ref.js'
@@ -38,11 +39,39 @@ export interface RepoDescriptor {
   archived: boolean
 }
 
+/** Facts every snapshot shares, whatever probe proved the repository. */
+interface RepoFacts {
+  readonly keywords: readonly string[]
+  readonly author: { readonly name: string; readonly url: string }
+  readonly sourceOwnerId: string
+  readonly stats: { readonly stars: number; readonly downloads: number }
+  readonly deprecated: boolean
+  readonly license?: string
+}
+
+/** The probes, named so a kind hint can reorder them. */
+type ProbeName = 'manifest' | 'skill' | 'preset'
+
+/**
+ * The default probe order, rotated when a submission carries a kind hint. A
+ * hint only changes what is read first — every kind still needs its content
+ * proof, so a hinted probe that finds nothing falls through to the rest. Hints
+ * for the package-manifest kinds (bundle, profile, mcp-server, hook-bridge)
+ * change nothing: those are all decided by the same package.json read.
+ */
+function orderProbes(kindHint: ArtifactKind | undefined): readonly ProbeName[] {
+  if (kindHint === 'skill') return ['skill', 'manifest', 'preset']
+  if (kindHint === 'agent-preset') return ['preset', 'manifest', 'skill']
+  return ['manifest', 'skill', 'preset']
+}
+
 /**
  * Classifies a GitHub repository by what it actually contains, not by what it
  * claims: a `package.json` with `dsh.bundle` is a bundle, a `SKILL.md` is a
- * skill, an `agent.cordis.yml` is a preset. A repository holding none of those
- * yields nothing, because the harness would load nothing from it either.
+ * skill, an `agent.cordis.yml` is a preset, and a `dsh.hub.kind` declaration
+ * with its `dsh.hub.mcp` / `dsh.hub.hook` block is an MCP server or hook
+ * bridge. A repository holding none of those yields nothing, because the
+ * harness would load nothing from it either.
  *
  * The probes run before anything else is fetched, and a repository that fails
  * all three costs three reads of `raw.githubusercontent.com` and no API quota
@@ -65,12 +94,13 @@ export class RepoProber {
   async indexRepository(
     repo: RepoDescriptor,
     subPath?: string,
+    kindHint?: ArtifactKind,
   ): Promise<IndexedSnapshot | undefined> {
     const ref = repo.default_branch
     const prefix = subPath === undefined || subPath === '' ? '' : `${subPath}/`
     const topics = repo.topics?.filter((topic) => topic !== DSH_PLUGIN_TOPIC) ?? []
 
-    const base = {
+    const base: RepoFacts = {
       keywords: topics,
       author: { name: repo.owner.login, url: repo.owner.html_url },
       // The numeric id, not the login: it is what an OAuth link records, and it
@@ -81,105 +111,135 @@ export class RepoProber {
       ...(repo.license?.spdx_id ? { license: repo.license.spdx_id } : {}),
     }
 
-    // 1. A harness bundle or profile, decided by the package manifest.
-    const manifestText = await this.readFile(repo, `${prefix}${MANIFEST_FILE}`, ref)
-    if (manifestText !== undefined) {
-      const manifest = safeJson<PackageManifest>(manifestText)
-      if (manifest) {
-        const classification = classifyPackage(manifest, true)
-        if (classification) {
-          const context = await this.loadContext(repo, subPath, prefix, ref)
-          const keywords = [...topics, ...(manifest.keywords ?? [])]
-          return {
-            id: slugify(manifest.name),
-            kind: classification.kind,
-            displayName: manifest.name,
-            summary: manifest.description ?? repo.description ?? manifest.name,
-            source: context.source,
-            payload: classification.payload,
-            ...base,
-            keywords,
-            categories: resolveCategories(manifest.dsh?.hub?.categories?.map(String) ?? [], {
-              keywords,
-              text: `${manifest.name} ${manifest.description ?? repo.description ?? ''}`,
-            }),
-            ...(manifest.license ? { license: manifest.license } : {}),
-            ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
-            ogImageUrl: context.ogImageUrl,
-            ...(context.head === undefined ? {} : { sourceCommitSha: context.head }),
-          }
-        }
-      }
+    for (const probe of orderProbes(kindHint)) {
+      const snapshot =
+        probe === 'manifest'
+          ? await this.probeManifest(repo, prefix, ref, subPath, base, topics)
+          : probe === 'skill'
+            ? await this.probeSkill(repo, prefix, ref, subPath, base, topics)
+            : await this.probePreset(repo, prefix, ref, subPath, base)
+      if (snapshot) return snapshot
     }
-
-    // 2. A skill: `SKILL.md` at the indexed root.
-    const skillText = await this.readFile(repo, `${prefix}${SKILL_FILE}`, ref)
-    if (skillText !== undefined) {
-      const frontmatter = readFrontmatter(skillText)
-      if (frontmatter) {
-        const parsed = parseSkillFrontmatter(frontmatter)
-        const context = await this.loadContext(repo, subPath, prefix, ref)
-        const payload: ArtifactPayload = {
-          kind: 'skill',
-          skillName: parsed.name,
-          layout: 'directory',
-          files: [
-            {
-              path: SKILL_FILE,
-              downloadUrl: rawUrl(repo, `${prefix}${SKILL_FILE}`, context.head ?? ref),
-            },
-          ],
-        }
-        return {
-          id: slugify(`${repo.owner.login}-${parsed.name}`),
-          kind: 'skill',
-          displayName: parsed.name,
-          summary: parsed.description,
-          source: context.source,
-          payload,
-          ...base,
-          // A skill declares no manifest, so its own name and description are
-          // the whole vocabulary there is to file it by.
-          categories: resolveCategories([], {
-            keywords: topics,
-            text: `${parsed.name} ${parsed.description}`,
-          }),
-          ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
-          ogImageUrl: context.ogImageUrl,
-          ...(context.head === undefined ? {} : { sourceCommitSha: context.head }),
-        }
-      }
-    }
-
-    // 3. An agent preset: a directory holding one `agent.cordis.yml`.
-    const presetText = await this.readFile(repo, `${prefix}${PRESET_FILE}`, ref)
-    if (presetText !== undefined) {
-      const context = await this.loadContext(repo, subPath, prefix, ref)
-      const presetId = slugify(repo.name)
-      const payload: ArtifactPayload = {
-        kind: 'agent-preset',
-        presetId,
-        compositionUrl: rawUrl(repo, `${prefix}${PRESET_FILE}`, context.head ?? ref),
-      }
-      return {
-        id: slugify(`${repo.owner.login}-${repo.name}`),
-        kind: 'agent-preset',
-        displayName: repo.name,
-        summary: repo.description ?? repo.name,
-        source: context.source,
-        payload,
-        ...base,
-        categories: resolveCategories([], {
-          keywords: topics,
-          text: `${repo.name} ${repo.description ?? ''}`,
-        }),
-        ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
-        ogImageUrl: context.ogImageUrl,
-        ...(context.head === undefined ? {} : { sourceCommitSha: context.head }),
-      }
-    }
-
     return undefined
+  }
+
+  /** The package manifest: bundle, profile, or a declared mcp-server / hook-bridge. */
+  private async probeManifest(
+    repo: RepoDescriptor,
+    prefix: string,
+    ref: string,
+    subPath: string | undefined,
+    base: RepoFacts,
+    topics: readonly string[],
+  ): Promise<IndexedSnapshot | undefined> {
+    const manifestText = await this.readFile(repo, `${prefix}${MANIFEST_FILE}`, ref)
+    if (manifestText === undefined) return undefined
+    const manifest = safeJson<PackageManifest>(manifestText)
+    if (!manifest) return undefined
+    const classification = classifyPackage(manifest, true)
+    if (!classification) return undefined
+
+    const context = await this.loadContext(repo, subPath, prefix, ref)
+    const keywords = [...topics, ...(manifest.keywords ?? [])]
+    return {
+      id: slugify(manifest.name),
+      kind: classification.kind,
+      displayName: manifest.name,
+      summary: manifest.description ?? repo.description ?? manifest.name,
+      source: context.source,
+      payload: classification.payload,
+      ...base,
+      keywords,
+      categories: resolveCategories(manifest.dsh?.hub?.categories?.map(String) ?? [], {
+        keywords,
+        text: `${manifest.name} ${manifest.description ?? repo.description ?? ''}`,
+      }),
+      ...(manifest.license ? { license: manifest.license } : {}),
+      ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
+      ogImageUrl: context.ogImageUrl,
+      ...(context.head === undefined ? {} : { sourceCommitSha: context.head }),
+    }
+  }
+
+  /** A skill: `SKILL.md` at the indexed root. */
+  private async probeSkill(
+    repo: RepoDescriptor,
+    prefix: string,
+    ref: string,
+    subPath: string | undefined,
+    base: RepoFacts,
+    topics: readonly string[],
+  ): Promise<IndexedSnapshot | undefined> {
+    const skillText = await this.readFile(repo, `${prefix}${SKILL_FILE}`, ref)
+    if (skillText === undefined) return undefined
+    const frontmatter = readFrontmatter(skillText)
+    if (!frontmatter) return undefined
+    const parsed = parseSkillFrontmatter(frontmatter)
+    const context = await this.loadContext(repo, subPath, prefix, ref)
+    const payload: ArtifactPayload = {
+      kind: 'skill',
+      skillName: parsed.name,
+      layout: 'directory',
+      files: [
+        {
+          path: SKILL_FILE,
+          downloadUrl: rawUrl(repo, `${prefix}${SKILL_FILE}`, context.head ?? ref),
+        },
+      ],
+    }
+    return {
+      id: slugify(`${repo.owner.login}-${parsed.name}`),
+      kind: 'skill',
+      displayName: parsed.name,
+      summary: parsed.description,
+      source: context.source,
+      payload,
+      ...base,
+      // A skill declares no manifest, so its own name and description are
+      // the whole vocabulary there is to file it by.
+      categories: resolveCategories([], {
+        keywords: topics,
+        text: `${parsed.name} ${parsed.description}`,
+      }),
+      ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
+      ogImageUrl: context.ogImageUrl,
+      ...(context.head === undefined ? {} : { sourceCommitSha: context.head }),
+    }
+  }
+
+  /** An agent preset: a directory holding one `agent.cordis.yml`. */
+  private async probePreset(
+    repo: RepoDescriptor,
+    prefix: string,
+    ref: string,
+    subPath: string | undefined,
+    base: RepoFacts,
+  ): Promise<IndexedSnapshot | undefined> {
+    const presetText = await this.readFile(repo, `${prefix}${PRESET_FILE}`, ref)
+    if (presetText === undefined) return undefined
+    const context = await this.loadContext(repo, subPath, prefix, ref)
+    const presetId = slugify(repo.name)
+    const payload: ArtifactPayload = {
+      kind: 'agent-preset',
+      presetId,
+      compositionUrl: rawUrl(repo, `${prefix}${PRESET_FILE}`, context.head ?? ref),
+    }
+    return {
+      id: slugify(`${repo.owner.login}-${repo.name}`),
+      kind: 'agent-preset',
+      displayName: repo.name,
+      summary: repo.description ?? repo.name,
+      source: context.source,
+      payload,
+      ...base,
+      categories: resolveCategories([], {
+        keywords: base.keywords,
+        text: `${repo.name} ${repo.description ?? ''}`,
+      }),
+      ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
+      ogImageUrl: context.ogImageUrl,
+      ...(context.head === undefined ? {} : { sourceCommitSha: context.head }),
+    }
   }
 
   /**

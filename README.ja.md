@@ -76,7 +76,11 @@ dsh plugin --profile web add github:stvlynn/dsh.fish#main
 
 **プラグインを公開したい場合は？** リポジトリに **`dsh-plugin`** トピックを付けてください。
 毎時実行されるクロールが `package.json`、`SKILL.md`、`agent.cordis.yml` を調べ、
-ハーネスが実際にロードできるものを分類します。
+ハーネスが実際にロードできるものを分類します。MCP サーバーとフックブリッジは
+`package.json` の `dsh.hub.kind` と `dsh.hub.mcp` / `dsh.hub.hook` ブロックで宣言します。
+マニフェストの形式は
+[docs/project/architecture.md](docs/project/architecture.md#how-a-repository-becomes-a-row)
+を参照してください。
 
 ## インデックス対象
 
@@ -85,9 +89,9 @@ dsh plugin --profile web add github:stvlynn/dsh.fish#main
 | **Bundle**            | `dsh.bundle.patch` を宣言する npm パッケージ  | `dsh plugin --profile <p> add <spec>`         |
 | **Profile**           | 順序付きの `dsh.profile.bundles` スタック     | バンドルごとに 1 回の `add` を順番に実行      |
 | **Skill**             | `SKILL.md` バンドルまたはフラットな Markdown  | `$DSH_HOME/skills` 配下にファイルを書き込む   |
-| **MCP server**        | 外部の Model Context Protocol サーバー        | プロファイルパッチに `dsh-mcp-client` の行    |
+| **MCP server**        | `dsh.hub.mcp` で宣言する外部 MCP サーバー     | プロファイルパッチに `dsh-mcp-client` の行    |
 | **Agent preset**      | 1 つの `agent.cordis.yml` を保持するディレクトリ | `$DSH_HOME/.agent-presets/<id>` へ書き込む |
-| **Hook bridge**       | Claude Code / Codex フックブリッジ            | プロファイルパッチにブリッジプラグインの行    |
+| **Hook bridge**       | `dsh.hub.hook` で宣言する Claude Code / Codex ブリッジ | プロファイルパッチにブリッジプラグインの行 |
 
 ## リポジトリ構成
 

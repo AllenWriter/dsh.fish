@@ -150,22 +150,68 @@ how each reaches a machine.
 
 The `dsh-plugin` topic is a seed list, not a manifest: most of what carries it
 is an application that mentions the harness. So a repository is classified by
-what it holds, in this order, and a repository that answers none of the three
+what it holds, in this order, and a repository that answers none of the probes
 yields nothing — the harness would load nothing from it either.
 
 | Probe | Row |
 |---|---|
 | `package.json` with `dsh.profile.bundles` | `profile` |
 | `package.json` with `dsh.bundle` | `bundle` |
+| `package.json` with `dsh.hub.kind` + `dsh.hub.mcp` | `mcp-server` |
+| `package.json` with `dsh.hub.kind` + `dsh.hub.hook` | `hook-bridge` |
 | `SKILL.md` with `name` + `description` frontmatter | `skill` |
 | `agent.cordis.yml` | `agent-preset` |
 
+The MCP server and hook bridge kinds have no manifest convention in the harness
+— they install as files and rows under `$DSH_HOME`, not as a package layer —
+so their `dsh.hub` declaration in package.json is the source of truth rather
+than advisory metadata. A declaration is a claim the package must back: the
+kind needs its block, and the block must satisfy the payload rules of
+`artifact-payload.ts` (`assertPayloadMatchesKind`). A declared-but-malformed
+manifest — a kind without its block, a stdio server without a command, a
+`settingsPath` escaping the repository, a `hub.kind` outside the six kinds or
+naming a content-proven kind whose proof is absent — is a `DomainError`, which
+the sweep records as skipped and the submission endpoint returns to the
+submitter. Minimal declarations:
+
+```jsonc
+// mcp-server
+{
+  "dsh": {
+    "hub": {
+      "kind": "mcp-server",
+      "mcp": {
+        "serverName": "github",
+        "transport": "stdio", // or "streamable-http" with "url"
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-github"],
+        "credentials": [{ "envName": "GITHUB_TOKEN", "required": true }]
+      }
+    }
+  }
+}
+
+// hook-bridge
+{
+  "dsh": {
+    "hub": {
+      "kind": "hook-bridge",
+      "hook": { "dialect": "claude-code", "settingsPath": "hooks/settings.json" } // or "codex"
+    }
+  }
+}
+```
+
 Those probes run before anything else is fetched, so a repository that is not a
 plugin costs three reads and no API quota — that ordering is what makes it
-affordable to walk the whole topic. The walk runs in star-range shards, because
-the search API caps any single query at 1000 results and the topic is several
-times that; a shard that saturates the ceiling is split further, by created
-date once its star range cannot be halved.
+affordable to walk the whole topic. A submission may carry a `kindHint`; it
+rotates the probe order so the hinted file probe reads first (`skill` reads
+`SKILL.md` before package.json), but it never substitutes for proof — a hinted
+probe that finds nothing falls through to the rest, and a snapshot whose
+detected kind differs from the submitted kind is still rejected. The walk runs
+in star-range shards, because the search API caps any single query at 1000
+results and the topic is several times that; a shard that saturates the
+ceiling is split further, by created date once its star range cannot be halved.
 
 The probes live in one place, `infrastructure/ingestion/repo-prober.ts`, and
 three discovery channels feed it. The topic crawl is the seed set above.

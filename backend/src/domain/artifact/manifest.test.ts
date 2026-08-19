@@ -54,6 +54,193 @@ describe('classifyPackage', () => {
 
     expect(result?.kind).toBe('profile')
   })
+
+  it('reads an mcp-server from dsh.hub.kind and dsh.hub.mcp', () => {
+    const result = classifyPackage(
+      {
+        name: 'dsh-github-mcp',
+        version: '0.1.0',
+        dsh: {
+          hub: {
+            kind: 'mcp-server',
+            mcp: {
+              serverName: 'github',
+              transport: 'stdio',
+              command: 'npx',
+              args: ['-y', '@modelcontextprotocol/server-github'],
+              credentials: [
+                { envName: 'GITHUB_TOKEN', required: true, descriptionKey: 'cred.githubToken' },
+              ],
+            },
+          },
+        },
+      },
+      false,
+    )
+
+    expect(result).toEqual({
+      kind: 'mcp-server',
+      payload: {
+        kind: 'mcp-server',
+        serverName: 'github',
+        transport: 'stdio',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-github'],
+        credentials: [
+          { envName: 'GITHUB_TOKEN', required: true, descriptionKey: 'cred.githubToken' },
+        ],
+      },
+    })
+  })
+
+  it('reads a streamable-http mcp-server from dsh.hub.mcp alone', () => {
+    // The block implies the kind; hub.kind is the explicit spelling of it.
+    const result = classifyPackage(
+      {
+        name: 'dsh-remote-mcp',
+        version: '0.1.0',
+        dsh: {
+          hub: { mcp: { serverName: 'search', transport: 'streamable-http', url: 'https://mcp.example.com' } },
+        },
+      },
+      false,
+    )
+
+    expect(result?.kind).toBe('mcp-server')
+    expect(result?.payload).toMatchObject({ transport: 'streamable-http', credentials: [] })
+  })
+
+  it.each(['claude-code', 'codex'] as const)('reads a %s hook-bridge from dsh.hub.hook', (dialect) => {
+    const result = classifyPackage(
+      {
+        name: 'dsh-hooks',
+        version: '0.1.0',
+        dsh: {
+          hub: { kind: 'hook-bridge', hook: { dialect, settingsPath: 'hooks/settings.json' } },
+        },
+      },
+      false,
+    )
+
+    expect(result).toEqual({
+      kind: 'hook-bridge',
+      payload: { kind: 'hook-bridge', dialect, settingsPath: 'hooks/settings.json' },
+    })
+  })
+
+  it('rejects an mcp-server declaration whose block fails the payload rules', () => {
+    const malformed = [
+      // A kind claim without its block.
+      { kind: 'mcp-server' },
+      // Server names feed model-facing tool names, so the shape is enforced.
+      { kind: 'mcp-server', mcp: { serverName: 'not a name!', transport: 'stdio', command: 'x' } },
+      // stdio spawns a process; without a command there is nothing to spawn.
+      { kind: 'mcp-server', mcp: { serverName: 'github', transport: 'stdio' } },
+      // An unknown transport cannot be written into a dsh-mcp-client row.
+      { kind: 'mcp-server', mcp: { serverName: 'github', transport: 'sse' } },
+      // A credential reference must be a POSIX shell identifier.
+      {
+        kind: 'mcp-server',
+        mcp: {
+          serverName: 'github',
+          transport: 'streamable-http',
+          url: 'https://mcp.example.com',
+          credentials: [{ envName: '1TOKEN', required: true }],
+        },
+      },
+    ]
+
+    for (const hub of malformed) {
+      expect(() =>
+        classifyPackage({ name: 'dsh-bad-mcp', version: '0.1.0', dsh: { hub } }, false),
+      ).toThrow(DomainError)
+    }
+  })
+
+  it('rejects a hook-bridge declaration with a bad dialect or escaping path', () => {
+    const malformed = [
+      { kind: 'hook-bridge' },
+      { kind: 'hook-bridge', hook: { dialect: 'gemini', settingsPath: 'settings.json' } },
+      // The path is read from disk at install time; it must stay inside the repository.
+      { kind: 'hook-bridge', hook: { dialect: 'codex', settingsPath: '/etc/hooks.json' } },
+      { kind: 'hook-bridge', hook: { dialect: 'codex', settingsPath: '../outside.json' } },
+      { kind: 'hook-bridge', hook: { dialect: 'codex', settingsPath: ' ' } },
+    ]
+
+    for (const hub of malformed) {
+      expect(() =>
+        classifyPackage({ name: 'dsh-bad-hooks', version: '0.1.0', dsh: { hub } }, false),
+      ).toThrow(DomainError)
+    }
+  })
+
+  it('rejects a hub.kind outside the six artifact kinds', () => {
+    expect(() =>
+      classifyPackage(
+        { name: 'dsh-bad-kind', version: '0.1.0', dsh: { hub: { kind: 'widget' } } },
+        false,
+      ),
+    ).toThrow(DomainError)
+  })
+
+  it('rejects a kind claim that contradicts the declaration block present', () => {
+    expect(() =>
+      classifyPackage(
+        {
+          name: 'dsh-contradiction',
+          version: '0.1.0',
+          dsh: {
+            hub: { kind: 'mcp-server', hook: { dialect: 'codex', settingsPath: 'settings.json' } },
+          },
+        },
+        false,
+      ),
+    ).toThrow(DomainError)
+  })
+
+  it('rejects a hub.kind naming a content-proven kind whose proof is absent', () => {
+    // `dsh.bundle` is missing, so the declaration is wrong, not just unproven.
+    expect(() =>
+      classifyPackage(
+        { name: 'dsh-wrong-kind', version: '0.1.0', dsh: { hub: { kind: 'bundle' } } },
+        false,
+      ),
+    ).toThrow(DomainError)
+  })
+
+  it('does not classify skill or agent-preset from hub.kind alone', () => {
+    // Those kinds are proven by file probes the manifest cannot see.
+    expect(
+      classifyPackage(
+        { name: 'dsh-hinted-skill', version: '0.1.0', dsh: { hub: { kind: 'skill' } } },
+        false,
+      ),
+    ).toBeUndefined()
+  })
+
+  it('keeps advisory hub metadata from classifying anything', () => {
+    expect(
+      classifyPackage(
+        { name: 'dsh-categories-only', version: '0.1.0', dsh: { hub: { categories: ['data'] } } },
+        false,
+      ),
+    ).toBeUndefined()
+  })
+
+  it('lets content proof win over a contradicting hub declaration', () => {
+    // A bundle with hub.kind 'mcp-server' is still a bundle: the harness would
+    // load the dsh.bundle layer, and the row must match what installs.
+    const result = classifyPackage(
+      {
+        name: 'dsh-bundle-with-hub',
+        version: '0.1.0',
+        dsh: { bundle: {}, hub: { kind: 'mcp-server', mcp: { serverName: 'x', transport: 'stdio', command: 'x' } } },
+      },
+      false,
+    )
+
+    expect(result?.kind).toBe('bundle')
+  })
 })
 
 describe('parseSkillFrontmatter', () => {

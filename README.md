@@ -74,18 +74,22 @@ without leaving the session. Signing in uses the OAuth device flow.
 
 **Publishing a plugin?** Tag your repository with the **`dsh-plugin`** topic. The
 hourly crawl inspects its `package.json`, `SKILL.md` or `agent.cordis.yml` and
-classifies what the harness can actually load.
+classifies what the harness can actually load. MCP servers and hook bridges are
+declared in `package.json` as `dsh.hub.kind` with a `dsh.hub.mcp` or
+`dsh.hub.hook` block — see
+[docs/project/architecture.md](docs/project/architecture.md#how-a-repository-becomes-a-row)
+for the manifest shape.
 
 ## What it indexes
 
-| Kind             | What it is                               | How it installs                             |
-| ---------------- | ---------------------------------------- | ------------------------------------------- |
-| **Bundle**       | npm package declaring `dsh.bundle.patch` | `dsh plugin --profile <p> add <spec>`       |
-| **Profile**      | ordered `dsh.profile.bundles` stack      | one `add` per bundle, in order              |
-| **Skill**        | `SKILL.md` bundle or flat Markdown       | files written under `$DSH_HOME/skills`      |
-| **MCP server**   | external Model Context Protocol server   | a `dsh-mcp-client` row in the profile patch |
-| **Agent preset** | directory holding one `agent.cordis.yml` | written to `$DSH_HOME/.agent-presets/<id>`  |
-| **Hook bridge**  | Claude Code / Codex hook bridge          | a bridge plugin row in the profile patch    |
+| Kind             | What it is                                        | How it installs                             |
+| ---------------- | ------------------------------------------------- | ------------------------------------------- |
+| **Bundle**       | npm package declaring `dsh.bundle.patch`          | `dsh plugin --profile <p> add <spec>`       |
+| **Profile**      | ordered `dsh.profile.bundles` stack               | one `add` per bundle, in order              |
+| **Skill**        | `SKILL.md` bundle or flat Markdown                | files written under `$DSH_HOME/skills`      |
+| **MCP server**   | external server declared via `dsh.hub.mcp`        | a `dsh-mcp-client` row in the profile patch |
+| **Agent preset** | directory holding one `agent.cordis.yml`          | written to `$DSH_HOME/.agent-presets/<id>`  |
+| **Hook bridge**  | Claude Code / Codex bridge declared via `dsh.hub.hook` | a bridge plugin row in the profile patch |
 
 ## Repository layout
 

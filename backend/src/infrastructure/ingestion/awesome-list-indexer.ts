@@ -138,7 +138,7 @@ export class AwesomeListIndexer implements SourceIndexer {
     if (source.origin !== 'github') return undefined
     const repo = await this.prober.fetchRepo(source.owner, source.repo)
     if (!repo) return undefined
-    return this.prober.indexRepository(repo, source.path)
+    return this.prober.indexRepository(repo, source.path, request.kindHint)
   }
 
   private async indexCandidate(
