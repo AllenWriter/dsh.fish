@@ -233,56 +233,52 @@ The plugin-page author card uses beui's `Avatar`, not a second image primitive.
 - The author name belongs in this card. Do not also list it in the metrics row.
 - The source link belongs under the portrait, in the same header column. Do not park it beside the install panel — that column is for installing, not for saying where the plugin came from.
 
-## The community deck
+## The toast stack
 
-Three invitations sit as one layered deck in the bottom-right corner
+Three community invitations sit in one fixed deck at the bottom-right corner
 (`shared/ui/motion/toast-stack.tsx`; `widgets/community-toasts` owns the
-content and the dismissal). It joins two beui components: the card, its
-dismissal, the swipe and the exit come from the animated toast stack, and the
-layered geometry — one grid cell, a per-depth rise, a per-depth shrink, a
-descending z-order — from the notification stack. Neither does this on its
-own: one lays its toasts out as a list, the other fans open on hover and
-collapses again.
+content and the dismissal). The deck mechanics are vendored from beui's
+notification-stack — grid stacking, `layout="position"` reflow, and the
+hover/tap/dismiss gesture hooks in `shared/lib/hooks` — and the toast
+features (spring entrance, swipe dismissal, live region) from its animated
+toast stack.
 
-- **One card at a time.** Only the card at the front carries copy, a link and
-  a control; the two behind it are blank slivers, `aria-hidden` and `inert`.
-  Dismissing the front card brings the next one forward. A card on its way out
-  keeps its copy — watching it leave is the point — but goes inert the moment
-  it starts leaving, so there are never two live dismiss controls.
-- **The action sits in the row, not under it.** Leading mark, title, action,
-  close: one line, vertically centred. The title is what wraps.
-- **A place gets a glyph; a person gets a face.** Discord and the inbox lead
-  with a Phosphor mark in a tinted disc. The maintainer's card leads with his
-  GitHub portrait, built by `shared/lib/github-avatar` from the profile URL —
-  the same rule the plugin author card follows, and the same reason: a
-  portrait derived from a profile we already link to is not a second stored
-  image.
-- **It is not a notification system.** One caller, no statuses, no timers.
-  beui's neutral/info/loading/success/error vocabulary was dropped on the way
-  in rather than left as unreachable options — this palette has no status hues
-  to render it with.
-- **A card leaves when a reader says so, and never comes back.** Dismissal is
-  per card and permanent, recorded in the `community` cookie so the root
-  loader can decide the surface before it is rendered. Nothing auto-expires;
-  an invitation that vanished while a reader was reaching for it would be
-  worse than one they have to close.
-- **Acting on a card records the same dismissal but leaves it on screen.**
+- **It is not a notification system.** There is one caller, no statuses and no
+  timers. beui's neutral/info/loading/success/error vocabulary was dropped on
+  the way in rather than left as unreachable options — this palette has no
+  status hues to render it with.
+- **It is a deck, not a list.** Collapsed, the front toast shows in full and
+  the rest peek out above it, each a little smaller; a hover or focus anywhere
+  on the stack fans it open. A permanent stack rendered as a flat list is a
+  third of the viewport spent on invitations.
+- **A finger gets the same deck as a pointer.** A tap on the collapsed stack
+  fans it open, and an outside tap or Escape folds it — the registry's
+  hover/tap/dismiss gesture hooks, vendored, are what keeps a tap from being
+  read as a hover that arrives and leaves in the same gesture.
+- **A toast is one line.** The mark, the title, then the action and the
+  dismiss control grouped on the right. One glance, one row.
+- **A toast leaves when a reader says so, and never comes back.** Dismissal is
+  per toast and permanent, recorded in the `community` cookie so the root loader
+  can decide the surface before it is rendered. Nothing auto-expires; an
+  invitation that vanished while a reader was reaching for it would be worse
+  than one they have to close.
+- **Acting on a toast records the same dismissal but leaves it on screen.**
   Removing the anchor while the browser is still dispatching its click cancels
-  the navigation it was clicked for, so the card disappears on the next visit
+  the navigation it was clicked for, so the toast disappears on the next visit
   instead.
-- **The action is an anchor.** Every destination a card offers is a URL, and a
+- **The action is an anchor.** Every destination a toast offers is a URL, and a
   real link is what gives it a middle click, a context menu and the right role.
-- **It arrives late and leaves fast.** The deck waits ~900ms so the page has
-  the first frame to itself. One spring — `SPRING_LAYOUT` — carries both the
-  arrival and every seat a card is promoted through, so a card dismissed
-  mid-entrance never fights two transitions. The exit is 180ms.
-- **It exits the way it can be swiped.** The front card leaves toward the
-  right edge, which is the direction a swipe dismisses it (72px, or Sonner's
-  0.11px/ms flick).
-- **Reduced motion keeps the layers and removes the travel.** The rise and
-  shrink are a position, not an animation, so the deck still reads as a deck;
-  each card simply starts in its seat, moves between seats instantly, and only
-  its opacity is given time.
+- **It arrives late and leaves fast.** The stack waits ~900ms so the page has
+  the first frame to itself, then the rows cascade in 70ms apart; the exit is
+  180ms. Entrance is `SPRING_PANEL`, the deck's reflow is `SPRING_LAYOUT` —
+  the same physics every other panel in the app settles on.
+- **It exits the way it can be swiped.** A row leaves toward the right edge,
+  which is the direction a swipe dismisses it (72px, or Sonner's 0.11px/ms
+  flick). Enter is upward from the edge the stack is anchored to.
+- **Reduced motion removes displacement, not the toast.** The fade stays,
+  because it is what says the toast is new. The row transforms and the swipe
+  come off; the deck's positioning is layout rather than motion, so it stays
+  but lands instantly.
 - **Elevation is one step above the popover's.** This is the only layer that
   floats over content the reader did not summon; at the popover's shadow, on a
   page of cards, it reads as one more card.

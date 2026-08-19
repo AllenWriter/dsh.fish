@@ -1,20 +1,20 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useT } from '@/shared/config/i18n'
 import {
-  FEEDBACK_EMAIL,
   HUB_DISCORD_URL,
+  HUB_ISSUES_URL,
   MAINTAINER_GITHUB_URL,
   MAINTAINER_NAME,
   MAINTAINER_X_URL,
 } from '@/shared/config/site'
 import { githubAvatarUrl } from '@/shared/lib/github-avatar'
 import { Avatar } from '@/shared/ui/avatar'
-import { DiscordIcon, EmailIcon, type Icon } from '@/shared/ui/icon'
+import { DiscordIcon, GithubIcon, type Icon } from '@/shared/ui/icon'
 import { ToastStack, type ToastItem } from '@/shared/ui/motion/toast-stack'
 import { writeDismissedToasts, type CommunityToastId } from '../model/dismissal'
 
 /**
- * How long the page has to itself before the deck arrives, in ms.
+ * How long the page has to itself before the stack arrives, in ms.
  *
  * These toasts are an aside, not the reason anyone opened the page. Letting
  * the content paint and settle first is what keeps them an invitation rather
@@ -22,43 +22,39 @@ import { writeDismissedToasts, type CommunityToastId } from '../model/dismissal'
  */
 const REVEAL_DELAY_MS = 900
 
-/** A glyph in a tinted disc — the leading mark for a place, not a person. */
-function Mark({ glyph: Glyph }: { glyph: Icon }) {
-  return (
-    <span className="grid size-7 place-items-center rounded-full bg-muted text-muted-foreground">
-      <Glyph className="size-4" weight="bold" />
-    </span>
-  )
-}
-
 interface CommunityToast {
   id: CommunityToastId
-  leading: ReactNode
+  /** The mark of the place the toast leads to, unless a portrait speaks instead. */
+  icon?: Icon
+  /**
+   * A person, where the destination is one.
+   *
+   * The feed toast invites the reader to follow the maintainer, not a brand,
+   * so its leading slot is their portrait — the same GitHub-derived avatar the
+   * catalog draws for every author — rather than the platform's glyph.
+   */
+  portrait?: string
   titleKey: string
-  titleParams?: Record<string, string>
   actionKey: string
-  actionParams?: Record<string, string>
   href: string
   /** A destination off this site opens in its own tab. */
   external: boolean
 }
 
+/** The maintainer's portrait, at 2× the size of the slot it fills. */
+const MAINTAINER_PORTRAIT = githubAvatarUrl(MAINTAINER_GITHUB_URL, 56)
+
 /**
- * The deck, front card first.
+ * The three invitations, each identified by the mark of the place it leads to.
  *
- * Order runs from the widest audience to the narrowest: a room anyone can
- * join, one person to follow, then an inbox for the reader who has something
- * specific to say. Only the front card is readable, so this is also the order
- * a reader meets them in.
- *
- * The maintainer's card carries his GitHub portrait rather than a logo. The
- * other two lead to a place; this one leads to a person, and a face is what
- * says so.
+ * Order is the order they arrive in, and it goes from the widest audience to
+ * the narrowest: a room anyone can join, one person to follow, then the issue
+ * tracker for the reader who has something specific to say.
  */
 const TOASTS: readonly CommunityToast[] = [
   {
     id: 'discord',
-    leading: <Mark glyph={DiscordIcon} />,
+    icon: DiscordIcon,
     titleKey: 'community.discord.title',
     actionKey: 'community.discord.action',
     href: HUB_DISCORD_URL,
@@ -66,23 +62,19 @@ const TOASTS: readonly CommunityToast[] = [
   },
   {
     id: 'x',
-    leading: (
-      <Avatar src={githubAvatarUrl(MAINTAINER_GITHUB_URL)} name={MAINTAINER_NAME} size="sm" />
-    ),
+    portrait: MAINTAINER_PORTRAIT,
     titleKey: 'community.x.title',
-    titleParams: { name: MAINTAINER_NAME },
     actionKey: 'community.x.action',
     href: MAINTAINER_X_URL,
     external: true,
   },
   {
     id: 'feedback',
-    leading: <Mark glyph={EmailIcon} />,
+    icon: GithubIcon,
     titleKey: 'community.feedback.title',
     actionKey: 'community.feedback.action',
-    actionParams: { email: FEEDBACK_EMAIL },
-    href: `mailto:${FEEDBACK_EMAIL}`,
-    external: false,
+    href: HUB_ISSUES_URL,
+    external: true,
   },
 ]
 
@@ -93,9 +85,9 @@ export interface CommunityToastsProps {
 
 /**
  * Site-wide invitations to the project's community, its author's feed and its
- * inbox, stacked as one deck in the corner.
+ * issue tracker.
  *
- * Dismissal is per card and permanent, so the whole surface is something a
+ * Dismissal is per toast and permanent, so the whole surface is something a
  * reader can end for good with three clicks and never see again. It lives
  * outside `<Outlet>` in `app/root.tsx`, so navigating the catalog neither
  * re-plays the entrance nor resurrects a dismissed toast.
@@ -122,10 +114,14 @@ export function CommunityToasts({ dismissed }: CommunityToastsProps) {
         .filter((toast) => !retired.includes(toast.id))
         .map((toast) => ({
           id: toast.id,
-          leading: toast.leading,
-          title: t(toast.titleKey, toast.titleParams),
+          icon: toast.portrait ? (
+            <Avatar src={toast.portrait} name={MAINTAINER_NAME} size="sm" />
+          ) : (
+            toast.icon && <toast.icon className="size-4" weight="bold" />
+          ),
+          title: t(toast.titleKey),
           action: {
-            label: t(toast.actionKey, toast.actionParams),
+            label: t(toast.actionKey),
             href: toast.href,
             external: toast.external,
           },

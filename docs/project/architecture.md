@@ -95,10 +95,9 @@ profile URL is also GitHub's `{login}.png`, so the portrait is not a second
 stored image.
 
 `community-toasts` is the only widget mounted outside `<Outlet>`: three
-invitations — the Discord room, the maintainer's feed, and the feedback inbox —
-stacked as one layered deck that arrives after the page has had a moment to
-itself. Only the front card is readable; dismissing it brings the next
-forward, and each is dismissed for good. Which of them a reader still has is decided in the root
+invitations — the Discord room, the maintainer's feed, and the issue tracker —
+that arrive once, after the page has had a moment to itself, and are dismissed
+for good one at a time. Which of them a reader still has is decided in the root
 loader from a cookie, for the reason the theme uses one: a client-side store
 would render the surface and then hide it, and only a cookie can keep a retired
 toast out of the response. Living outside the route outlet is what keeps a
