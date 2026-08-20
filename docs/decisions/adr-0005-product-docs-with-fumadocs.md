@@ -2,11 +2,12 @@
 
 ## Status
 
-- Proposed
+- Accepted
 
 This record is the evaluation of whether dsh.fish can grow its reader-facing
 documentation, and whether [Fumadocs](https://github.com/fuma-nama/fumadocs)
-is the right way to host it. It is not an implementation plan with dates.
+is the right way to host it. The constraints below still apply to every later
+change.
 
 ## Context
 
@@ -50,17 +51,21 @@ owning `/api/*`.
    FSD/DDD prose.
 2. **Keep `docs/` as agent Markdown.** Do not publish the convention tree
    through Fumadocs. Agents read files; a docs UI does not help them.
-3. **Adopt Fumadocs for the product section only**, behind `/docs/*`, when
-   the section is more than a handful of pages. Use `fumadocs-core` plus
-   `fumadocs-ui`, with MDX compiled at **build time**. Do not wrap the catalog,
-   auth pages, or the site chrome in `DocsLayout`.
+3. **Adopt Fumadocs for the product section only**, behind `/docs/*`. Use
+   `fumadocs-core` plus `fumadocs-mdx`, with MDX compiled at **build time**.
+   Do not wrap the catalog, auth pages, or the site chrome in `DocsLayout`.
+   Do not take `fumadocs-ui`: a second theme store and `neutral.css` would
+   fight the cookie-backed `.light` / `.dark` class and the hue-263 palette.
+   Sidebar, TOC, and MDX tags are first-party widgets that consume the
+   Fumadocs page tree.
 4. **Do not start from the stock Fumadocs app layout.** The integration has
    hard constraints (below). Treat Fumadocs as a docs engine inside the
    existing Worker, not as a second origin or a second framework.
 
-Until the content exists, the current single page remains acceptable. A
-Fumadocs shell around five tabs is the stale-guide failure mode the SEO
-backlog already rejects.
+The first content to ship is the missing product surface (hook bridges, CLI,
+hub plugin, per-kind publishing, submit/claim, scoring), not more FSD/DDD
+prose. A shell around five tabs with no new documents would have been the
+stale-guide failure mode the SEO backlog already rejects.
 
 ## What the product docs should cover
 
@@ -92,11 +97,10 @@ frontmatter — not both for the same string.
 | SSR on Cloudflare Workers, `nodejs_compat` | `@fumadocs/local-md` documents a no-`eval` Markdown path for Workers; build-time MDX avoids the issue entirely |
 | Existing `/docs` in the header, footer, sitemap, and `service-doc` Link | Nested routes under the same path keep those contracts |
 
-Headless `fumadocs-core` (page tree, source loader, search indexes) is the
-load-bearing part. `fumadocs-ui` is optional chrome: sidebar, TOC, and MDX
-components. The UI package is worth taking if its tokens can be remapped onto
-the existing palette. It is not worth taking if that means a second visual
-system next to beui.
+Headless `fumadocs-core` (page tree, source loader) is the load-bearing part.
+`fumadocs-ui` is optional chrome and was not taken: remapping it onto hue 263
+and a cookie theme is more work than a small in-column shell, and a second
+visual system next to beui is the failure mode this site already rejected.
 
 ## Hard constraints
 
@@ -179,24 +183,27 @@ domain already owns.
 A page orchestrates; it does not become a second app.
 
 ```
-frontend/content/docs/     MDX source (outside the FSD tree, like public/)
-frontend/src/pages/docs/   route, loader, meta, Fumadocs page module
-frontend/src/widgets/docs-shell/   sidebar + TOC composition if it is reused
+frontend/content/docs/          MDX source (outside the FSD tree, like public/)
+frontend/src/pages/docs/        route, loader, meta, Fumadocs source module
+frontend/src/widgets/docs-shell/     sidebar + TOC; lives beside SiteHeader
+frontend/src/widgets/docs-scoring/   live DescribeScoring tables
 ```
 
-`lib/source.ts` lives next to the docs page, not in `shared/`. Nothing
-outside the docs slice imports Fumadocs.
+`source.ts` lives next to the docs page, not in `shared/`. Nothing outside
+the docs slice imports Fumadocs. `pages/seo` and `pages/markdown` may import
+docs helpers so the sitemap and `Accept: text/markdown` stay generated from
+the same tree — see [`../frontend/import-rules.md`](../frontend/import-rules.md).
 
 ### Indexation
 
-Today `/sitemaps/pages.xml` lists one `/docs` URL. A section needs every
-indexable slug, per locale, with the same `xhtml:link` alternate set as
-every other page. Generate that list from the Fumadocs source, not a second
-hand-written array.
+`/sitemaps/pages.xml` lists every indexable slug, per locale, with the same
+`xhtml:link` alternate set as every other page. Generate that list from the
+Fumadocs source, not a second hand-written array.
 
-`/docs` itself should 301 to `/docs/` or to the intro page so there is one
-canonical home. Nested guides are new documents; they get their own
-canonical, hreflang, and breadcrumb JSON-LD.
+`/docs` is the intro page (Fumadocs `index.mdx`). There is no nested home
+and no trailing-slash twin. Nested guides are new documents; they get their
+own canonical, hreflang, and breadcrumb JSON-LD. `/docs/search` is JSON and
+is not in the sitemap.
 
 Cloudflare's React Router guide does not support prerendering. Docs pages
 SSR like the rest of the site. That is fine: they are static content with
@@ -252,7 +259,7 @@ Easier:
   paragraphs.
 - Sidebar, TOC, and docs search come with the framework instead of being
   invented against FSD.
-- `/docs/cli`, `/docs/hooks`, `/ja/docs/cli` become real, indexable URLs.
+- `/docs/cli`, `/docs/publish/hook-bridge`, `/ja/docs/cli` become real, indexable URLs.
 
 Harder:
 
@@ -264,6 +271,22 @@ Harder:
 - `service-doc` currently points at `/docs`; it should keep pointing at
   the section home, not at a random guide.
 
+## What shipped
+
+| Piece | Where |
+|---|---|
+| MDX (English) | `frontend/content/docs/` — intro, six publish kinds, CLI, hub plugin, scoring, submit |
+| Source loader | `frontend/src/pages/docs/source.ts` — `defineDocs` rewritten by Vite; never `getText('raw')` |
+| Routes | `:locale?/docs`, `:locale?/docs/*`, `:locale?/docs/search` (search **before** the splat) |
+| Shell | `widgets/docs-shell` — in-column sidebar + TOC; mobile sheet uses `SPRING_PANEL` |
+| Scoring | `widgets/docs-scoring` — `DescribeScoring` via the page loader |
+| Markdown | `import.meta.glob('…mdx?raw')` in `pages/docs/raw.ts`; Worker has no `content/docs` |
+| Search JSON | `/docs/search` — titles and descriptions only; Orama and Shiki stay out of the Worker |
+
+Still open, in the same order as before: per-locale MDX files, a REST walkthrough,
+and longer "how to write a …" guides. English fallback is the current locale
+story, not a blank folder.
+
 ## Implementation order
 
 No dates. Each step is a gate for the next:
@@ -272,13 +295,15 @@ No dates. Each step is a gate for the next:
    a thin React Router splat route **without** Fumadocs UI if needed.
 2. Add the Vite MDX source loader, `:locale?/docs/*`, `requireLocale`, and
    sitemap enumeration. Scoring stays a React island.
-3. Scope `fumadocs-ui` to that splat: sidebar, TOC, remapped tokens, no
-   global `RootProvider` on the catalog.
+3. Scope docs chrome to that splat: first-party sidebar and TOC, no
+   global Fumadocs `RootProvider` on the catalog.
 4. Wire docs search at `/docs/search`, not `/api/search`.
 5. Translate MDX for the locales that already have catalog copy. Fallback
    to English is allowed; a blank locale folder is not.
 6. Turn on markdown negotiation for `/docs/*` so agents that already fetch
    plugin pages as Markdown can fetch the human docs the same way.
+
+Steps 1–4 and 6 are done. Step 5 is not.
 
 ## References
 

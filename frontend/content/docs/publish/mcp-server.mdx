@@ -1,0 +1,27 @@
+---
+title: MCP servers
+description: The registry stores credential references, never values. Declare environment variable names; the harness resolves them through ctx.credentials.
+---
+
+An MCP server is an external server mounted as native tools. The harness has no manifest convention for this kind — it installs as a `dsh-mcp-client` row in the profile patch — so `dsh.hub` in package.json is the source of truth.
+
+```json
+{
+  "dsh": {
+    "hub": {
+      "kind": "mcp-server",
+      "mcp": {
+        "serverName": "github",
+        "transport": "stdio",
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-github"],
+        "credentials": [{ "envName": "GITHUB_TOKEN", "required": true }]
+      }
+    }
+  }
+}
+```
+
+`transport` may be `stdio` (with `command`) or `streamable-http` (with `url`). A stdio server without a command is rejected.
+
+The registry stores credential *references* — POSIX environment variable names — never values. The harness resolves them through `ctx.credentials`. That is what makes a catalog row safe to serve publicly.

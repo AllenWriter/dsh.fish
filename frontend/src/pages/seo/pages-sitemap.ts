@@ -1,6 +1,7 @@
 import type { Route } from './+types/pages-sitemap'
 import { hubContext } from '@/shared/api/hub-context'
 import { ARTIFACT_KINDS, CATEGORIES } from '@/entities/artifact/model/types'
+import { docsSitemapPaths } from '@/pages/docs/source'
 import { urlSetXml, xmlResponse, type SitemapUrl } from './xml'
 
 /**
@@ -31,7 +32,11 @@ export function loader({ context }: Route.LoaderArgs) {
       changeFrequency: 'daily' as const,
       priority: 0.7,
     })),
-    { path: '/docs', changeFrequency: 'monthly', priority: 0.6 },
+    ...docsSitemapPaths().map((path) => ({
+      path,
+      changeFrequency: 'monthly' as const,
+      priority: path === '/docs' ? 0.6 : 0.55,
+    })),
     { path: '/submit', changeFrequency: 'monthly', priority: 0.5 },
   ]
 

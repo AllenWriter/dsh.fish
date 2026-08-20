@@ -1,0 +1,27 @@
+---
+title: Publishing to dsh.fish
+description: Tag a repository with dsh-plugin, or submit it. The registry lists what the harness would actually load.
+---
+
+Tag your repository with the `dsh-plugin` topic, or [submit it](/docs/submit). The registry reads the real manifest — what it lists is what the harness would load.
+
+A topic is a seed, not a claim. Most repositories that carry it are applications that mention the harness. Classification is a probe of files, in this order, and a repository that answers none of them yields no row.
+
+| Probe | Kind |
+| --- | --- |
+| `package.json` with `dsh.profile.bundles` | [Profile](/docs/publish/profile) |
+| `package.json` with `dsh.bundle` | [Bundle](/docs/publish/bundle) |
+| `package.json` with `dsh.hub.kind` + `dsh.hub.mcp` | [MCP server](/docs/publish/mcp-server) |
+| `package.json` with `dsh.hub.kind` + `dsh.hub.hook` | [Hook bridge](/docs/publish/hook-bridge) |
+| `SKILL.md` with `name` + `description` frontmatter | [Skill](/docs/publish/skill) |
+| `agent.cordis.yml` | [Agent preset](/docs/publish/agent-preset) |
+
+JSON keys are identifiers. They stay in English in every language of this site — a translated key is a broken instruction.
+
+## Install from three surfaces
+
+The install plan is one domain object. The website renders copy-paste commands; [`@dsh-fish/cli`](/docs/cli) and the [`dsh-hub` plugin](/docs/hub) execute the same steps. They cannot drift apart.
+
+## How a listing is trusted
+
+Every artifact carries a public [quality score](/docs/scoring). The formula on that page is the constant `GET /api/v1/scoring` serves, not a paraphrase.

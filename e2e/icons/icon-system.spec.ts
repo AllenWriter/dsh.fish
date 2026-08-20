@@ -249,21 +249,18 @@ test.describe('controls', () => {
     expect(await markOf(cli)).not.toEqual(cliSelected)
   })
 
-  test('the docs tabs carry the kind marks the catalog uses', async ({ page }) => {
+  test('the docs nav carries the kind marks the catalog uses', async ({ page }) => {
     await page.goto('/docs', { waitUntil: 'domcontentloaded' })
-    const tabs = page.getByRole('tab')
-    await expect(tabs).toHaveCount(5)
-    for (let index = 0; index < 5; index += 1) {
-      await expect(tabs.nth(index).locator('svg')).toHaveCount(1)
-    }
+    const docsNav = page.getByRole('navigation', { name: 'Documentation menu' })
+    const skill = docsNav.getByRole('link', { name: 'Skills' })
+    await expect(skill.locator('svg')).toHaveCount(1)
 
-    const skillTab = page.getByRole('tab', { name: 'Skill' })
     const footerSkill = page
       .getByRole('navigation', { name: 'Type' })
       .getByRole('link', { name: 'Skills' })
     // Same kind, so the page explaining how to publish it and the link to the
     // collection of it must be recognisably about the same thing.
-    expect(await markOf(skillTab)).not.toHaveLength(0)
+    expect(await markOf(skill)).not.toHaveLength(0)
     expect(await markOf(footerSkill)).not.toHaveLength(0)
   })
 

@@ -43,7 +43,9 @@ export default [
   // The device grant's verification page. `verification_uri_complete` links
   // straight here with the code prefilled.
   route(':locale?/device', './pages/device/device-page.tsx'),
+  route(':locale?/docs/search', './pages/docs/search.ts'),
   route(':locale?/docs', './pages/docs/docs-page.tsx'),
+  route(':locale?/docs/*', './pages/docs/docs-page.tsx', { id: 'docs-splat' }),
 
   // Crawler-facing resources. No locale prefix: there is one robots.txt per
   // origin, and one sitemap set that lists every language of every URL.

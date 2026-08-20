@@ -3,7 +3,7 @@
 This directory is the single source of truth for how this project is built, organized, and evolved by agents. It is **not** the public documentation on dsh.fish.
 
 - **This tree (`docs/`)** — conventions, architecture, operations, ADRs. Agents read these files in the repository. Do not turn them into a website.
-- **The site (`/docs`)** — how to publish a plugin, use the CLI, and read the score. That surface is a product page (today one route; the proposed shape is a Fumadocs section). See [`decisions/adr-0005-product-docs-with-fumadocs.md`](decisions/adr-0005-product-docs-with-fumadocs.md).
+- **The site (`/docs`)** — how to publish a plugin, use the CLI, and read the score. That surface is a Fumadocs section under `/docs/*`, compiled at build time for the Worker. See [`decisions/adr-0005-product-docs-with-fumadocs.md`](decisions/adr-0005-product-docs-with-fumadocs.md).
 
 ## Domain map
 

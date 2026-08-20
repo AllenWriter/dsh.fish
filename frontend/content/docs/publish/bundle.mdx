@@ -1,0 +1,20 @@
+---
+title: Bundles
+description: A package without dsh.bundle still installs, but the harness activates no layer — so the registry does not list it as a plugin either.
+---
+
+A bundle is an npm package that declares `dsh.bundle.patch`. That is the unit `dsh plugin add` installs.
+
+```json
+{
+  "name": "dsh-hello-plugin",
+  "version": "0.1.0",
+  "type": "module",
+  "files": ["index.js", "cordis.patch.yml"],
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}
+```
+
+A package without that declaration still installs, but the harness activates no layer for it — so the registry does not list it as a plugin either.
+
+Publishing to npm ships prebuilt code, so users need no build allowance. A git install fetches sources: add a self-contained `prepare` script, and expect users to allowlist it.

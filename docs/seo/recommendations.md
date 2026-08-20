@@ -111,14 +111,15 @@ Measure first. Neither is worth doing on suspicion.
 A registry ranks for `<plugin name>` queries almost by default and for
 `how do I …` queries almost never. Guides — "writing a dsh skill", "bridging
 Claude Code hooks into dsh" — are what rank for the second kind, and they are
-also what earns inbound links. `/docs` is one page today; it could be a section.
+also what earns inbound links.
 
-This is a content commitment, not a code change, which is why it is P2: a stale
-guide is worse than no guide. The proposed hosting for that section is Fumadocs
-under `/docs/*`, with the catalog chrome left alone — see
+The hosting is in place: Fumadocs under `/docs/*`, catalog chrome left
+alone — see
 [`../decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md).
-Do not stand up the shell before the P0 pages (hook bridges, CLI, hub plugin)
-exist as documents.
+P0 pages (hook bridges, CLI, hub plugin) and the per-kind publish notes
+exist as English MDX. Remaining work is still a content commitment: a REST
+walkthrough, longer how-to guides, and per-locale MDX. A stale guide is
+worse than no guide.
 
 ### Author pages
 

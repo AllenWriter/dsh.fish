@@ -1,0 +1,19 @@
+{
+  "title": "Docs",
+  "pages": [
+    "index",
+    "---publish---",
+    "publish/bundle",
+    "publish/skill",
+    "publish/mcp-server",
+    "publish/agent-preset",
+    "publish/profile",
+    "publish/hook-bridge",
+    "---install---",
+    "cli",
+    "hub",
+    "---reference---",
+    "scoring",
+    "submit"
+  ]
+}

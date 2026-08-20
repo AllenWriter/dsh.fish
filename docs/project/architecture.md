@@ -80,7 +80,7 @@ is built **per request**, because D1 and KV bindings arrive per request.
 |---|---|
 | `app/` | `root.tsx`, `routes.ts`, global styles |
 | `pages/` | One slice per route; composes widgets, owns loaders |
-| `widgets/` | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel`, `readme-badge`, `artifact-reviews`, `artifact-ask`, `community-toasts` |
+| `widgets/` | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel`, `readme-badge`, `artifact-reviews`, `artifact-ask`, `community-toasts`, `docs-shell`, `docs-scoring` |
 | `features/` | `account-menu` — the signed-in identity and the actions on it; `locale-switcher` — the language of the page you are on; `catalog-search` — the header palette's live query against `GET /api/v1/artifacts`; `ask-artifact` — POST `/api/v1/artifacts/:id/ask` and the streaming thread |
 | `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip`, `AuthorCard`, `artifactLd` |
 | `shared/` | beui components (`ui/motion/`, `ui/avatar`, `ui/animated-number`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, `lib/analytics`, auth client, `hub-context` |
@@ -127,6 +127,29 @@ as the reader types — the same `SearchArtifacts` use case the browse page
 loader runs — and Enter takes that query to `/browse?q=`. An empty palette
 is still the destinations the bar already lists; a typed query is catalog
 search, not a fuzzy filter of those four links.
+
+### Product documentation
+
+Reader-facing guides live under `/docs/*`, not in the repo `docs/` tree.
+MDX is compiled at **build time** (`fumadocs-mdx` Vite plugin +
+`fumadocs-core` loader) so the Worker never `eval`s compiled output and
+never reads `content/docs` from disk. Search JSON is
+`:locale?/docs/search` because `/api/*` is Hono.
+
+`pages/docs` owns the routes and the source module. `widgets/docs-shell`
+is in-column chrome beside `SiteHeader`. `widgets/docs-scoring` renders
+`DescribeScoring` so the documented formula cannot drift from
+`GET /api/v1/scoring`. `fumadocs-ui` is not a dependency: theme is the
+existing cookie on `<html>`, and the palette stays hue 263.
+
+Two same-layer imports are allowed so the slug list exists once:
+
+- `pages/markdown` → `pages/docs` public API (`productDocsMarkdown`)
+- `pages/seo` → `pages/docs/source` (`docsSitemapPaths`) — that helper
+  cannot sit on the public API, because `defineDocs` is a Vite macro and
+  the markdown unit tests import `@/pages/docs` without the plugin
+
+See [`../decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md).
 
 React Router requires every route module to live inside `appDirectory`, so
 `appDirectory` is `src` — the whole FSD tree. `src/root.tsx` and `src/routes.ts`
@@ -514,6 +537,6 @@ language-neutral in the database.
 ## Related documents
 
 - [`decisions/adr-0001-plugin-hub-architecture.md`](../decisions/adr-0001-plugin-hub-architecture.md)
-- [`decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md) — reader-facing `/docs`, proposed
+- [`decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md) — reader-facing `/docs` as a Fumadocs section
 - [`operations/deployment.md`](../operations/deployment.md)
 - [`frontend/README.md`](../frontend/README.md), [`backend/README.md`](../backend/README.md)

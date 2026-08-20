@@ -1,0 +1,17 @@
+---
+title: Agent presets
+description: An agent preset is one agent.cordis.yml. Put it at the repository root; the directory name becomes the preset id.
+---
+
+An agent preset is a directory holding one `agent.cordis.yml`. The indexer writes it to `$DSH_HOME/.agent-presets/<id>`. The directory name becomes the preset id.
+
+```yaml
+- id: tools
+  name: 'dsh-tools'
+- id: prompt
+  name: 'dsh-system-prompt'
+  config:
+    persona: ./persona.md
+```
+
+Put the file at the repository root (or in the submitted subdirectory). A repository that also looks like a bundle or a skill is classified by the earlier probe; an `agent.cordis.yml` is the last file probe, for repositories that hold nothing else the harness can load.

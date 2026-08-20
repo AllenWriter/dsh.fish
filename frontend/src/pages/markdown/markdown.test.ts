@@ -130,6 +130,10 @@ describe('maybeMarkdownResponse', () => {
 
     const kind = await maybeMarkdownResponse(request('/kind/bundle', 'text/markdown'), stubContainer())
     expect(kind).not.toBeNull()
+
+    const docs = await maybeMarkdownResponse(request('/docs/cli', 'text/markdown'), stubContainer())
+    expect(docs).not.toBeNull()
+    expect(await docs!.text()).toContain('npx @dsh-fish/cli')
   })
 
   it('falls through for unknown paths and unknown artifacts', async () => {
@@ -161,8 +165,15 @@ describe('supportsMarkdownNegotiation', () => {
 
   it('rejects UI-only pages and unknown taxonomy values', () => {
     expect(supportsMarkdownNegotiation('/submit')).toBe(false)
-    expect(supportsMarkdownNegotiation('/docs')).toBe(false)
+    expect(supportsMarkdownNegotiation('/docs/search')).toBe(false)
     expect(supportsMarkdownNegotiation('/kind/nope')).toBe(false)
     expect(supportsMarkdownNegotiation('/category/nope')).toBe(false)
+  })
+
+  it('covers product docs, localized or not', () => {
+    expect(supportsMarkdownNegotiation('/docs')).toBe(true)
+    expect(supportsMarkdownNegotiation('/ja/docs')).toBe(true)
+    expect(supportsMarkdownNegotiation('/docs/cli')).toBe(true)
+    expect(supportsMarkdownNegotiation('/zh-CN/docs/publish/hook-bridge')).toBe(true)
   })
 })

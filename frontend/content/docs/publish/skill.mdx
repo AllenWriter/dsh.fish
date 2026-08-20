@@ -1,0 +1,21 @@
+---
+title: Skills
+description: A skill is a SKILL.md with kebab-case name and a required description. The provider drops a skill missing either.
+---
+
+A skill is a `SKILL.md` bundle or a flat Markdown file with frontmatter. Files are written under `$DSH_HOME/skills`.
+
+```md
+---
+name: release-notes
+description: Draft release notes from a commit range.
+---
+
+# Release notes
+
+Steps the agent should follow…
+```
+
+`name` must be kebab-case and `description` is required — the provider drops a skill missing either.
+
+The indexer probes `SKILL.md` after package.json kinds unless a submission carries a `kindHint` of `skill`, which rotates that probe first. A hint never substitutes for proof: a file that is not a skill falls through to the rest of the probes.
