@@ -29,6 +29,8 @@ This document defines logging, tracing, and observability conventions.
 
 - Passwords, tokens, API keys, credit card numbers, or personal identifiers.
 - Full request/response bodies that contain user data.
+- Artifact-ask questions, Ada file bodies, or streamed answer text. Log
+  `queryId`, duration, and HTTP status only.
 - Stack traces in production error responses (log them internally instead).
 
 ## Masking

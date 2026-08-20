@@ -16,6 +16,10 @@ The application layer orchestrates use cases. It depends on the domain layer and
   page has been accepted by the scheduler. Each run also reschedules a bounded
   batch of stale terminal failures, which the forward-only cursor would never
   revisit on its own.
+- **Artifact ask** — `AskArtifact` loads a GitHub-sourced artifact, enforces
+  the feature flag and KV budgets, then delegates to `ArtifactAskPort`. It
+  returns a `queryId` plus an `AsyncIterable` of mapped events (`file`,
+  `delta`, `cite`, `done`, `error`). No transcript is persisted.
 
 ## Rules
 

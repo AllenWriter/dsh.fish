@@ -1,4 +1,5 @@
 import type {
+  ArtifactAskDto,
   ArtifactDetailDto,
   ArtifactSummaryDto,
   InstallPlanDto,
@@ -22,6 +23,7 @@ import type { FacetsDto } from '@dsh-fish/backend/application/use-case/list-cata
  * instead of rendering `undefined` in production.
  */
 export type {
+  ArtifactAskDto,
   ArtifactDetailDto,
   ArtifactKind,
   ArtifactReviewsDto,

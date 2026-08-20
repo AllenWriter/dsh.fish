@@ -10,6 +10,8 @@ export type DomainErrorCode =
   | 'FORBIDDEN'
   | 'UNAUTHENTICATED'
   | 'UNSUPPORTED'
+  | 'RATE_LIMITED'
+  | 'UNAVAILABLE'
 
 export class DomainError extends Error {
   readonly code: DomainErrorCode
@@ -48,6 +50,14 @@ export class DomainError extends Error {
 
   static unsupported(message: string, details?: Record<string, unknown>): DomainError {
     return new DomainError('UNSUPPORTED', message, details)
+  }
+
+  static rateLimited(message: string, details?: Record<string, unknown>): DomainError {
+    return new DomainError('RATE_LIMITED', message, details)
+  }
+
+  static unavailable(message: string, details?: Record<string, unknown>): DomainError {
+    return new DomainError('UNAVAILABLE', message, details)
   }
 }
 

@@ -79,6 +79,20 @@ script. Local `react-router dev` and Playwright do not send hits even when the
 var is set — only `import.meta.env.PROD` builds do. Leave it unset on a preview
 that should not appear in the production reports.
 
+### Artifact ask (`ARTIFACT_ASK_ENABLED`)
+
+Ada-backed Q&A on GitHub artifact pages. A Wrangler var, default `"false"` in
+`frontend/wrangler.jsonc` until a live probe has a result. Local e2e writes
+`ARTIFACT_ASK_ENABLED=true` into `.dev.vars`. Optional
+`ARTIFACT_ASK_MAX_PER_IP` overrides the per-IP budget (default 12 / 10 minutes).
+
+After one successful `LIVE_ADA_PROBE=1 node --experimental-strip-types scripts/ada-live-probe.ts`
+run, set production `ARTIFACT_ASK_ENABLED` to `"true"` and tighten KV numbers
+to sit below whatever Ada showed — or keep the conservative v1 caps if Ada
+never 429’d. The probe is ops-only: hard cap 20 Fast requests, abort on 429/403,
+not a GitHub Actions job. Completing 20 requests does not prove Ada has no
+limiter. See [`adr-0004-artifact-ask-via-ada.md`](../decisions/adr-0004-artifact-ask-via-ada.md).
+
 README localization calls DeepSeek's official API first
 (`api.deepseek.com/chat/completions`, `deepseek-v4-flash` with thinking
 disabled) while its off-peak pricing applies; during the peak windows

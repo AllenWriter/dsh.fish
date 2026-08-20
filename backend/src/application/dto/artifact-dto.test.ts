@@ -51,3 +51,23 @@ describe('scan provenance in DTOs', () => {
     ).toBeUndefined()
   })
 })
+
+describe('ask availability on the detail DTO', () => {
+  it('offers ask for a GitHub source when the flag is on', () => {
+    expect(toDetailDto(artifact(SHA), undefined, undefined, true).ask).toEqual({
+      available: true,
+      repoName: 'acme/hello',
+    })
+  })
+
+  it('hides ask when the flag is off, even for GitHub', () => {
+    expect(toDetailDto(artifact(SHA)).ask).toEqual({ available: false, reason: 'disabled' })
+  })
+
+  it('hides ask for an npm source', () => {
+    expect(toDetailDto(artifact(), undefined, undefined, true).ask).toEqual({
+      available: false,
+      reason: 'not_github',
+    })
+  })
+})

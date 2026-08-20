@@ -21,6 +21,10 @@ This section defines how the frontend is organized using **Feature-Sliced Design
 4. Read [`ui-patterns.md`](ui-patterns.md) before writing UI code.
 5. Read [`i18n.md`](i18n.md) before writing any user-facing string or internal link.
 
+The artifact page composes `widgets/artifact-ask` around `features/ask-artifact`.
+beUI drawer / bottom-sheet / message / prompt-input / streaming-response /
+agent-activity / citations are vendored under `shared/ui/`.
+
 ## Core principle
 
 Code is organized by **scope of change**, not by technical type. A feature contains everything it needs — UI, state, API, and utilities — so that changes to one feature do not leak into unrelated files.

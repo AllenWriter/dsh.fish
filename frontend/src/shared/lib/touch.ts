@@ -18,3 +18,11 @@
  */
 export const isHoveringPointer = (event: { pointerType: string; buttons: number }) =>
   event.pointerType !== 'touch' && event.buttons === 0
+
+/**
+ * Opt-out for a gesture surface that wraps content the consumer owns: a sheet
+ * header, a scroller, a list row. Selection is suppressed only on a coarse
+ * pointer so a mouse user can still copy that content.
+ */
+export const TOUCH_GESTURE_CONTENT_CLASS =
+  '[-webkit-touch-callout:none] pointer-coarse:select-none'

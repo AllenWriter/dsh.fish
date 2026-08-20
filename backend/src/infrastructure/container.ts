@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/d1'
 import type { IncomingRequestCfProperties } from '@cloudflare/workers-types'
 import { GetArtifactDetail } from '../application/use-case/get-artifact-detail.js'
+import { AskArtifact } from '../application/use-case/ask-artifact.js'
 import { BackfillReadmeLocalization } from '../application/use-case/backfill-readme-localization.js'
 import { GetArtifactReviews } from '../application/use-case/get-artifact-reviews.js'
 import { GetCatalogSnapshot } from '../application/use-case/get-catalog-snapshot.js'
@@ -37,6 +38,8 @@ import { D1ReviewRepository } from './persistence/d1-review-repository.js'
 import { D1SubmissionRepository } from './persistence/d1-submission-repository.js'
 import { KvCatalogSnapshotStore } from './persistence/kv-catalog-snapshot-store.js'
 import { KvReadmeLocalizationBackfillProgress } from './agents/kv-readme-localization-backfill-progress.js'
+import { AdaClient } from './ada/ada-client.js'
+import { KvAskRateLimiter } from './ask/kv-ask-rate-limiter.js'
 import * as schema from './persistence/schema.js'
 
 export interface Container {
@@ -58,6 +61,7 @@ export interface Container {
     readonly submitArtifact: SubmitArtifact
     readonly ingestCatalog: IngestCatalog
     readonly backfillReadmeLocalization: BackfillReadmeLocalization
+    readonly askArtifact: AskArtifact
   }
 }
 
@@ -108,7 +112,12 @@ export function createContainer(env: HubEnv, options: ContainerOptions): Contain
     reviews,
     useCases: {
       searchArtifacts: new SearchArtifacts(artifacts, summaryTranslations),
-      getArtifactDetail: new GetArtifactDetail(artifacts, readmeTranslations, summaryTranslations),
+      getArtifactDetail: new GetArtifactDetail(
+        artifacts,
+        readmeTranslations,
+        summaryTranslations,
+        config.artifactAskEnabled,
+      ),
       getArtifactReviews: new GetArtifactReviews(reviews, artifacts),
       getCatalogSnapshot: new GetCatalogSnapshot(artifacts, new KvCatalogSnapshotStore(env.KV)),
       describeScoring: new DescribeScoring(),
@@ -129,6 +138,16 @@ export function createContainer(env: HubEnv, options: ContainerOptions): Contain
         readmeBackfillSource,
         new KvReadmeLocalizationBackfillProgress(env.KV),
         options.readmeLocalization,
+      ),
+      askArtifact: new AskArtifact(
+        artifacts,
+        new AdaClient(),
+        new KvAskRateLimiter(env.KV, {
+          ...(config.artifactAskMaxPerIp === undefined
+            ? {}
+            : { maxPerIp: config.artifactAskMaxPerIp }),
+        }),
+        config.artifactAskEnabled,
       ),
     },
   }

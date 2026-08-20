@@ -15,6 +15,7 @@ export class GetArtifactDetail {
     private readonly artifacts: ArtifactRepository,
     private readonly readmeTranslations: ReadmeTranslationRepository,
     private readonly summaryTranslations: SummaryTranslationRepository,
+    private readonly askEnabled = false,
   ) {}
 
   async execute(artifactId: string, locale?: string): Promise<ArtifactDetailDto> {
@@ -23,7 +24,7 @@ export class GetArtifactDetail {
       throw DomainError.notFound('No such artifact.', { artifactId })
     }
 
-    if (locale === undefined) return toDetailDto(artifact)
+    if (locale === undefined) return toDetailDto(artifact, undefined, undefined, this.askEnabled)
 
     const source = artifact.readmeMarkdown
     const [translation, summaryTranslation] = await Promise.all([
@@ -39,7 +40,7 @@ export class GetArtifactDetail {
         ? { markdown: translation.markdown, locale: translation.locale }
         : undefined
     const localizedSummary = await this.currentSummaryText(summaryTranslation, artifact.summary)
-    return toDetailDto(artifact, localized, localizedSummary)
+    return toDetailDto(artifact, localized, localizedSummary, this.askEnabled)
   }
 
   private async currentSummaryText(

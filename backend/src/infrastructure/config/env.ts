@@ -50,12 +50,21 @@ export interface HubEnv {
    * the site ships no analytics.
    */
   readonly GA_MEASUREMENT_ID?: string
+  /**
+   * Artifact ask via Ada. `"true"` enables the panel and the POST stream.
+   * Default off: unset or any other value keeps ask unavailable.
+   */
+  readonly ARTIFACT_ASK_ENABLED?: string
+  /** Override the per-IP ask budget (default 12 / 10 minutes). */
+  readonly ARTIFACT_ASK_MAX_PER_IP?: string
 }
 
 export interface HubConfig {
   readonly baseUrl: string
   readonly adminEmails: readonly string[]
   readonly githubToken?: string
+  readonly artifactAskEnabled: boolean
+  readonly artifactAskMaxPerIp?: number
 }
 
 export function readConfig(env: HubEnv): HubConfig {
@@ -65,6 +74,7 @@ export function readConfig(env: HubEnv): HubConfig {
     // callbacks and cookie scoping, which is far harder to diagnose later.
     throw new Error('PUBLIC_BASE_URL is required.')
   }
+  const maxPerIp = parsePositiveInt(env.ARTIFACT_ASK_MAX_PER_IP)
   return {
     baseUrl,
     adminEmails: (env.ADMIN_EMAILS ?? '')
@@ -72,5 +82,16 @@ export function readConfig(env: HubEnv): HubConfig {
       .map((entry) => entry.trim().toLowerCase())
       .filter((entry) => entry !== ''),
     ...(env.GITHUB_TOKEN === undefined ? {} : { githubToken: env.GITHUB_TOKEN }),
+    artifactAskEnabled: env.ARTIFACT_ASK_ENABLED === 'true',
+    ...(maxPerIp === undefined ? {} : { artifactAskMaxPerIp: maxPerIp }),
   }
+}
+
+function parsePositiveInt(value: string | undefined): number | undefined {
+  if (value === undefined || value.trim() === '') return undefined
+  const parsed = Number(value)
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error('ARTIFACT_ASK_MAX_PER_IP must be a positive integer.')
+  }
+  return parsed
 }

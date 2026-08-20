@@ -13,6 +13,7 @@ const DETAIL: ArtifactDetail = {
   payload: { kind: 'bundle', patch: {} } as never,
   readmeMarkdown: '# Hello\n\nUse it well.',
   publishedAt: '2026-01-01T00:00:00.000Z',
+  ask: { available: true, repoName: 'acme/dsh-hello' },
 }
 
 const PLAN: InstallPlanDto = {

@@ -38,8 +38,13 @@ One Worker serves both halves of the product.
                     │   cron    → IngestCatalog use case       │
                     └───────┬───────────┬───────────┬──────────┘
                             ▼           ▼           ▼
-                     D1 (catalog +   KV (sessions,  README i18n Agent
-                     translations)   crawl state)  → OpenCode Go
+                     D1 (catalog)    KV (sessions,   README i18n Agent
+                                     crawl state,    → OpenCode Go
+                                     ask limiter)
+                                          │
+                                          ▼
+                                    Ada Fast query
+                                    (GitHub ask)
 ```
 
 Sharing an origin is a deliberate choice, not an accident of packaging:
@@ -75,8 +80,8 @@ is built **per request**, because D1 and KV bindings arrive per request.
 |---|---|
 | `app/` | `root.tsx`, `routes.ts`, global styles |
 | `pages/` | One slice per route; composes widgets, owns loaders |
-| `widgets/` | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel`, `readme-badge`, `artifact-reviews`, `community-toasts` |
-| `features/` | `account-menu` — the signed-in identity and the actions on it; `locale-switcher` — the language of the page you are on; `catalog-search` — the header palette's live query against `GET /api/v1/artifacts` |
+| `widgets/` | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel`, `readme-badge`, `artifact-reviews`, `artifact-ask`, `community-toasts` |
+| `features/` | `account-menu` — the signed-in identity and the actions on it; `locale-switcher` — the language of the page you are on; `catalog-search` — the header palette's live query against `GET /api/v1/artifacts`; `ask-artifact` — POST `/api/v1/artifacts/:id/ask` and the streaming thread |
 | `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip`, `AuthorCard`, `artifactLd` |
 | `shared/` | beui components (`ui/motion/`, `ui/avatar`, `ui/animated-number`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, `lib/analytics`, auth client, `hub-context` |
 
@@ -94,8 +99,14 @@ rather than a source row parked beside the install commands. A GitHub
 profile URL is also GitHub's `{login}.png`, so the portrait is not a second
 stored image.
 
-That same column, beside the readme, stacks three rail cards: the install
-panel, the README badge snippet, then community reviews. Reviews are a
+That same column, beside the readme, stacks four rail cards when ask is
+available: the install panel, **Ask this project**, the README badge snippet,
+then community reviews. Ask is a GitHub-only, feature-flagged panel
+(`ARTIFACT_ASK_ENABLED`); npm and flagged-off Workers omit the control
+entirely. The Worker proxies DeepWiki Ada (Fast) as SSE — the browser never
+calls `api.devin.ai`. See [`../decisions/adr-0004-artifact-ask-via-ada.md`](../decisions/adr-0004-artifact-ask-via-ada.md).
+
+Reviews are a
 permanent card in that rail — empty or not — so a long readme cannot bury
 the comments below the fold of the document.
 

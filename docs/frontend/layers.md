@@ -26,6 +26,10 @@ FSD uses six layers. Each layer has a single responsibility and a strict downwar
 - Examples: header, sidebar, dashboard card, order summary panel.
 - Can compose features and entities, but should remain focused on one visual block.
 
+The artifact page rail includes `artifact-ask` (GitHub-sourced plugins only): a
+card that opens a desktop drawer or a mobile bottom sheet around the
+`ask-artifact` feature.
+
 **Does not contain:** application-wide state or routing logic.
 
 ## `features`
@@ -33,6 +37,7 @@ FSD uses six layers. Each layer has a single responsibility and a strict downwar
 - Complete user scenarios.
 - Examples: authentication, search, add to cart, submit feedback.
 - Contains UI, state, API calls, and utilities that belong to that scenario.
+- `ask-artifact` owns the Ada-backed Q&A thread: SSE reader, `queryId`, messages.
 
 **Does not contain:** generic primitives (those go in `shared`) or domain rules that belong to `entities`.
 

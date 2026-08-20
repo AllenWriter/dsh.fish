@@ -24,6 +24,8 @@ const STATUS_BY_CODE: Readonly<Record<DomainErrorCode, ContentfulStatusCode>> = 
   CONFLICT: 409,
   ALREADY_EXISTS: 409,
   UNSUPPORTED: 422,
+  RATE_LIMITED: 429,
+  UNAVAILABLE: 503,
 }
 
 export function toApiError(error: unknown): {
