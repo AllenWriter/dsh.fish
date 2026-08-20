@@ -30,6 +30,9 @@
     // IndexNow verification key. Public by design — the Worker serves it at
     // /indexnow-<key>.txt. Rotate with: openssl rand -hex 16 (and redeploy).
     "INDEXNOW_KEY": "8935711bcea6a78530892e1c7684c828",
+    // GA4 measurement ID. Public by design — it appears in every page's gtag
+    // snippet. Production HTML loads it; local/e2e builds do not send hits.
+    "GA_MEASUREMENT_ID": "G-Q5QS4DS9F5",
   },
   "d1_databases": [
     {

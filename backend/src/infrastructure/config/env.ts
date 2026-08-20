@@ -40,6 +40,12 @@ export interface HubEnv {
    * the verification route answers 404.
    */
   readonly INDEXNOW_KEY?: string
+  /**
+   * GA4 measurement ID. Public by design: the gtag snippet prints it in every
+   * HTML document. A plain var in `wrangler.jsonc`, not a secret. When unset,
+   * the site ships no analytics.
+   */
+  readonly GA_MEASUREMENT_ID?: string
 }
 
 export interface HubConfig {

@@ -44,8 +44,8 @@ pnpm dlx @better-auth/cli generate \
 
 ## 3. Set secrets
 
-Secrets are never committed. `PUBLIC_BASE_URL` is a plain var in
-`wrangler.jsonc`; the rest are secrets:
+Secrets are never committed. `PUBLIC_BASE_URL`, `INDEXNOW_KEY` and
+`GA_MEASUREMENT_ID` are plain vars in `wrangler.jsonc`; the rest are secrets:
 
 ```sh
 cd frontend
@@ -71,6 +71,13 @@ environment, and keep preview deployments out of the index — see
 
 The GitHub OAuth app's callback URL is
 `<PUBLIC_BASE_URL>/api/auth/callback/github`.
+
+`GA_MEASUREMENT_ID` is the GA4 property (`G-…`). It is public by design: the
+gtag snippet prints it in every production HTML document. A malformed value
+fails the request rather than shipping an interpolatable string into an inline
+script. Local `react-router dev` and Playwright do not send hits even when the
+var is set — only `import.meta.env.PROD` builds do. Leave it unset on a preview
+that should not appear in the production reports.
 
 README localization calls DeepSeek's official API first
 (`api.deepseek.com/chat/completions`, `deepseek-v4-flash` with thinking

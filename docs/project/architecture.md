@@ -78,7 +78,7 @@ is built **per request**, because D1 and KV bindings arrive per request.
 | `widgets/` | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel`, `artifact-reviews`, `community-toasts` |
 | `features/` | `account-menu` — the signed-in identity and the actions on it; `locale-switcher` — the language of the page you are on; `catalog-search` — the header palette's live query against `GET /api/v1/artifacts` |
 | `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip`, `AuthorCard`, `artifactLd` |
-| `shared/` | beui components (`ui/motion/`, `ui/avatar`, `ui/animated-number`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, auth client, `hub-context` |
+| `shared/` | beui components (`ui/motion/`, `ui/avatar`, `ui/animated-number`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, `lib/analytics`, auth client, `hub-context` |
 
 The account slot in the header is the whole signed-in affordance: signed out it
 is the sign-in call to action; signed in it is the portrait Better Auth cached
@@ -370,6 +370,19 @@ The domain throws `DomainError` with a code; `interfaces/http/error-mapper.ts`
 maps codes to HTTP statuses and emits the one envelope described in
 [`backend/api-conventions.md`](../backend/api-conventions.md). Unexpected
 failures never leak their message — it may carry a binding name or a token.
+
+### Analytics is gtag, from a Worker var
+
+Production HTML loads GA4 via the official gtag snippet. The measurement ID is
+the `GA_MEASUREMENT_ID` var in `frontend/wrangler.jsonc` — public, like
+`INDEXNOW_KEY`, because it appears in every page source. The root loader reads
+it from the Worker env and the Layout emits the snippet; React Router
+navigations then send `page_view` themselves, with automatic first-view
+disabled so a client-side transition is not counted twice.
+
+Local and e2e builds do not load gtag even when the var is present. The
+anonymous HTML cache does not vary on User-Agent, so a crawler and a reader of
+the same URL see the same snippet.
 
 ### Theming is server-rendered from a cookie
 

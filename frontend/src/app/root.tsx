@@ -21,6 +21,8 @@ import {
   type Locale,
 } from '@/shared/config/i18n'
 import { documentLanguage } from '@/shared/lib/seo'
+import { analyticsIdForDocument, GoogleAnalytics } from '@/shared/lib/analytics'
+import { hubContext } from '@/shared/api/hub-context'
 import { HomeIcon, IconDefaults } from '@/shared/ui/icon'
 import './styles/app.css'
 
@@ -53,8 +55,14 @@ export const links: Route.LinksFunction = () => [
  * The dismissed community toasts come from a cookie for the theme's reason
  * again: deciding here is what keeps a toast a reader has already closed out
  * of the markup entirely, rather than rendered and then hidden.
+ *
+ * The GA4 measurement ID is a Worker var, public by design. It is read here
+ * rather than baked into the client bundle so a preview without the var ships
+ * no gtag, and so local/e2e (`import.meta.env.PROD === false`) cannot pollute
+ * production reports. The HTML that carries it is edge-cached anonymously, so
+ * the snippet is the same for every visitor of a URL — including crawlers.
  */
-export function loader({ request }: Route.LoaderArgs) {
+export function loader({ request, context }: Route.LoaderArgs) {
   const url = new URL(request.url)
   const cookie = request.headers.get('cookie')
   // Client-side navigations fetch this loader at `<path>.data`; the suffix
@@ -65,6 +73,10 @@ export function loader({ request }: Route.LoaderArgs) {
     theme: readThemeCookie(cookie),
     locale: splitLocalePath(pathname).locale,
     dismissedToasts: readDismissedToasts(cookie),
+    gaMeasurementId: analyticsIdForDocument(
+      context.get(hubContext).env.GA_MEASUREMENT_ID,
+      import.meta.env.PROD,
+    ),
   }
 }
 
@@ -72,6 +84,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData<typeof loader>('root')
   const theme: ThemePreference = data?.theme ?? 'system'
   const locale: Locale = data?.locale ?? DEFAULT_LOCALE
+  const gaMeasurementId = data?.gaMeasurementId
   const { lang, dir } = documentLanguage(locale)
 
   return (
@@ -82,6 +95,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="color-scheme" content="light dark" />
         <Meta />
         <Links />
+        {gaMeasurementId ? <GoogleAnalytics measurementId={gaMeasurementId} /> : null}
       </head>
       <body className="min-h-screen">
         <IconDefaults>
