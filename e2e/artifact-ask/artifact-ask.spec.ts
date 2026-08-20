@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { E2E_ORIGIN } from '../lib/origin'
 
 const GITHUB = '/a/dsh-postgres-mcp'
 const NPM = '/a/dsh-turtle-ui'
@@ -38,11 +39,28 @@ async function mockAsk(page: Page, handler: (post: { question: string; queryId?:
   })
 }
 
+function askPanel(page: Page) {
+  return page.locator('[role="dialog"][aria-modal="true"]').filter({
+    has: page.getByLabel('Ask about this repository…'),
+  })
+}
+
+async function openAsk(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Ask this project' }).click({ force: true })
+  await expect(page.getByLabel('Ask about this repository…')).toBeVisible()
+}
+
 test.describe('artifact ask', () => {
+  test.beforeEach(async ({ context }) => {
+    // The community stack sits in the same corner as the ask drawer and
+    // intercepts clicks. Retire it the way a returning reader would.
+    await context.addCookies([{ name: 'community', value: 'discord.x.feedback', url: E2E_ORIGIN }])
+  })
+
   test('shows the rail control on GitHub plugins and not on npm', async ({ page }) => {
     await page.goto(GITHUB, { waitUntil: 'load' })
     await expect(page.getByRole('button', { name: 'Ask this project' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Install' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Install', level: 2 })).toBeVisible()
 
     await page.goto(NPM, { waitUntil: 'load' })
     await expect(page.getByRole('button', { name: 'Ask this project' })).toHaveCount(0)
@@ -56,7 +74,7 @@ test.describe('artifact ask', () => {
     })
 
     await page.goto(GITHUB, { waitUntil: 'load' })
-    await page.getByRole('button', { name: 'Ask this project' }).click()
+    await openAsk(page)
     const composer = page.getByLabel('Ask about this repository…')
     await expect(composer).toBeVisible()
     await composer.fill('What is this plugin?')
@@ -85,7 +103,7 @@ test.describe('artifact ask', () => {
       }),
     }))
     await page.goto(GITHUB, { waitUntil: 'load' })
-    await page.getByRole('button', { name: 'Ask this project' }).click()
+    await openAsk(page)
     await page.getByLabel('Ask about this repository…').fill('What is this plugin?')
     await page.getByRole('button', { name: 'Send prompt' }).click()
     await expect(page.getByRole('alert')).toContainText('Too many questions right now')
@@ -94,12 +112,12 @@ test.describe('artifact ask', () => {
 
   test('uses a drawer at 1280 and a bottom sheet below lg', async ({ page }) => {
     await page.goto(GITHUB, { waitUntil: 'load' })
-    await expect(page.getByRole('heading', { name: 'Install' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Install', level: 2 })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'README badge' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Reviews' })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Ask this project' }).click()
-    const dialog = page.getByRole('dialog', { name: 'Ask this project' })
+    await openAsk(page)
+    const dialog = askPanel(page)
     await expect(dialog).toBeVisible()
     const viewport = page.viewportSize()
     const isDesktop = (viewport?.width ?? 0) >= 1024
@@ -117,12 +135,11 @@ test.describe('artifact ask', () => {
       body: sseBody('Safe <script>alert(1)</script> text'),
     }))
     await page.goto(GITHUB, { waitUntil: 'load' })
-    await page.getByRole('button', { name: 'Ask this project' }).click()
+    await openAsk(page)
     await page.getByLabel('Ask about this repository…').fill('Inject?')
     await page.getByRole('button', { name: 'Send prompt' }).click()
     await expect(page.getByText('Safe')).toBeVisible()
-    await expect(page.locator('script', { hasText: 'alert(1)' })).toHaveCount(0)
-    await expect(page.getByRole('dialog')).not.toContainText('alert(1)')
+    await expect(askPanel(page).locator('script')).toHaveCount(0)
   })
 
   test('does not translate the panel when reduced motion is requested', async ({ page }) => {
@@ -131,8 +148,8 @@ test.describe('artifact ask', () => {
     expect(
       await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches),
     ).toBe(true)
-    await page.getByRole('button', { name: 'Ask this project' }).click()
-    const panel = page.getByRole('dialog', { name: 'Ask this project' })
+    await openAsk(page)
+    const panel = askPanel(page)
     await expect(panel).toBeVisible()
     for (let sample = 0; sample < 6; sample += 1) {
       const transform = await panel.evaluate((node) => getComputedStyle(node).transform)

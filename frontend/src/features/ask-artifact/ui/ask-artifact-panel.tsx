@@ -64,6 +64,7 @@ export function AskArtifactPanel({
               ? t('ask.unavailable')
               : t('ask.error')
         setBanner(copy)
+        setDraft(trimmed)
         setSession((current) =>
           applyAskEvent(current, { type: 'error', message: copy }, current.queryId),
         )

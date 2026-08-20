@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process'
 import { resolve } from 'node:path'
-import { seedLocalCatalog } from './lib/seed-local-catalog.ts'
+import { prepareE2eDevVars, seedLocalCatalog } from './lib/seed-local-catalog.ts'
 import { KITCHEN_SINK_ARTIFACT_ID } from './lib/kitchen-sink-readme.ts'
 import { E2E_ORIGIN, E2E_PORT as port } from './lib/origin.ts'
 
@@ -18,13 +18,14 @@ void main()
  * to a file Vite then replaces with an empty one.
  */
 async function main(): Promise<void> {
+  prepareE2eDevVars(root)
   const child = spawn(
     'pnpm',
     ['exec', 'react-router', 'dev', '--port', port, '--strictPort'],
     {
       cwd: frontend,
       stdio: 'inherit',
-      env: { ...process.env, CI: '1' },
+      env: { ...process.env, CI: '1', ARTIFACT_ASK_ENABLED: 'true' },
     },
   )
 

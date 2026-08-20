@@ -27,6 +27,15 @@ export function seedLocalCatalog(root: string): void {
   wrangler(frontend, `d1 execute dsh-fish-db --local --file ${sqlPath}`)
 }
 
+/**
+ * Write local Worker vars the e2e server must see at boot — notably
+ * `ARTIFACT_ASK_ENABLED=true`. Call this *before* spawning Vite; Wrangler
+ * reads `.dev.vars` once when the isolate starts.
+ */
+export function prepareE2eDevVars(root: string): void {
+  ensureDevVars(resolve(root, 'frontend'))
+}
+
 function ensureDevVars(frontend: string): void {
   const path = resolve(frontend, '.dev.vars')
   const required: Record<string, string> = {

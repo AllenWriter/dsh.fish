@@ -140,7 +140,8 @@ apply would leave the test asserting the unreduced path and passing anyway.
 
 **Artifact ask** (`e2e/artifact-ask/`) is 1280×900 plus Pixel 7 — the same split
 as community-toasts / icons-touch, not the six-width readme matrix. The Worker
-under test has `ARTIFACT_ASK_ENABLED=true`; Playwright fulfills
+under test has `ARTIFACT_ASK_ENABLED=true` (written into `.dev.vars` **before**
+the Worker boots); Playwright fulfills
 `**/api/v1/artifacts/*/ask` with an SSE fixture so **CI never hits Ada**
 (`api.devin.ai`). Assertions: GitHub rail control vs npm absence; stream then
 DeepWiki link; follow-up reuses `queryId`; 429 copy; drawer vs bottom sheet;
