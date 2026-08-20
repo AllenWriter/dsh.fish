@@ -29,9 +29,47 @@ export function escapeXml(value: string): string {
 export interface SitemapUrl {
   /** Unlocalized path. One entry is emitted per language, cross-linked. */
   readonly path: string
+  /**
+   * Page modification time. Callers may pass `Date#toISOString()`; emission
+   * goes through `w3cDatetime` so the XML matches sitemaps.org.
+   */
   readonly lastModified?: string
   readonly changeFrequency?: 'daily' | 'weekly' | 'monthly'
   readonly priority?: number
+}
+
+/**
+ * W3C Datetime as sitemaps.org and Google document it.
+ *
+ * Date-only (`YYYY-MM-DD`) is valid. If a time is present it must include a
+ * timezone. Fractional seconds are legal W3C but Google Search Console has
+ * rejected `Date#toISOString()` values (`…32.946Z`) as an unreadable sitemap,
+ * so they are stripped. Google's own examples are `2005-02-21` and
+ * `2005-02-21T18:00:15+00:00`.
+ */
+export function w3cDatetime(value: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value
+  return value.replace(/\.\d+(?=Z|[+-]\d{2}:\d{2}$)/, '')
+}
+
+/** Canonical path of one artifact sitemap page. Always ends in `.xml`. */
+export function artifactSitemapPath(page: number): string {
+  return `/sitemaps/artifacts/${page}.xml`
+}
+
+/**
+ * `/sitemaps/artifacts/:page` captures both `0.xml` (the file to serve) and
+ * the extensionless `0` Google already fetched from the previous index.
+ */
+export function resolveArtifactSitemapPage(
+  raw: string | undefined,
+): { type: 'xml'; page: number } | { type: 'redirect'; page: number } | { type: 'missing' } {
+  if (raw === undefined || raw === '') return { type: 'missing' }
+  const xml = /^(\d+)\.xml$/.exec(raw)
+  if (xml) return { type: 'xml', page: Number(xml[1]) }
+  const bare = /^(\d+)$/.exec(raw)
+  if (bare) return { type: 'redirect', page: Number(bare[1]) }
+  return { type: 'missing' }
 }
 
 /**
@@ -65,7 +103,9 @@ function urlEntry(origin: string, locale: Locale, url: SitemapUrl): string {
   return [
     '  <url>',
     `    <loc>${escapeXml(absoluteUrl(origin, locale, url.path))}</loc>`,
-    ...(url.lastModified === undefined ? [] : [`    <lastmod>${url.lastModified}</lastmod>`]),
+    ...(url.lastModified === undefined
+      ? []
+      : [`    <lastmod>${w3cDatetime(url.lastModified)}</lastmod>`]),
     ...(url.changeFrequency === undefined
       ? []
       : [`    <changefreq>${url.changeFrequency}</changefreq>`]),
@@ -86,7 +126,7 @@ export function sitemapIndexXml(
         `    <loc>${escapeXml(entry.loc)}</loc>`,
         ...(entry.lastModified === undefined
           ? []
-          : [`    <lastmod>${entry.lastModified}</lastmod>`]),
+          : [`    <lastmod>${w3cDatetime(entry.lastModified)}</lastmod>`]),
         '  </sitemap>',
       ].join('\n'),
     )

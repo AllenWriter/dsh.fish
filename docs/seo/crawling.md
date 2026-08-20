@@ -18,18 +18,25 @@ names are exactly the paths anyone can read in it.
 ## The sitemap set
 
 ```
-/sitemap.xml                  sitemapindex
-├── /sitemaps/pages.xml       home, browse, 6 kinds, 12 categories, docs, submit
-└── /sitemaps/artifacts/:page one page of the catalog, 2,500 artifacts each
+/sitemap.xml                       sitemapindex
+├── /sitemaps/pages.xml            home, browse, 6 kinds, 12 categories, docs, submit
+└── /sitemaps/artifacts/:n.xml     one page of the catalog, 1,000 artifacts each
 ```
 
 An index rather than one flat file. Every non-deprecated artifact in the catalog
 is included, not only the popular or recently updated rows, and every URL is
-emitted once **per language**. At the current six locales, production XML uses
-about 12.7 KB per artifact after its alternate links are expanded; 2,500 rows
-per file stays below the 50 MB uncompressed limit with room for longer ids and
-future locales. A Worker also has to hold the whole document in memory to send
-it. The index costs one extra fetch and never has to be restructured later.
+emitted once **per language**. Child files end in `.xml`, matching `pages.xml`
+and the filename convention the protocol examples and Search Console expect.
+`/sitemaps/artifacts/0` (no extension) 301s onto `/sitemaps/artifacts/0.xml`.
+
+sitemaps.org and Google cap a file at 50,000 URLs or 50 MB uncompressed. At
+six locales, production XML is about 5.3 KB per artifact after its alternate
+links are expanded; 1,000 rows is ~5 MB / 6,000 URLs. That stays inside the
+cap with room for longer ids and future locales, and is small enough that
+Search Console's fetcher can finish the document — a 2,500-row / 13 MB file
+at the extensionless URL was reported unreadable. A Worker also has to hold
+the whole document in memory to send it. The index costs one extra fetch and
+never has to be restructured later.
 
 Static pages get their own file so a crawler re-reading the catalog does not
 re-read them, and vice versa.
@@ -50,6 +57,15 @@ Artifact entries carry the artifact's own `updatedAt`, so a crawler re-reads
 exactly the rows whose public page changed. A routine source check advances
 `indexedAt` but leaves `updatedAt` alone; otherwise every hourly sweep would
 falsely mark the whole catalog as modified and make `lastmod` meaningless.
+
+The value is W3C Datetime as sitemaps.org requires it: `YYYY-MM-DD` or a
+full timestamp with a timezone. Fractional seconds from `Date#toISOString()`
+(`…32.946Z`) are stripped on emission — Google's examples never include them,
+and Search Console has treated that form as an unreadable sitemap.
+
+Google ignores `changefreq` and `priority`. Artifact sitemaps omit both so
+the document stays smaller; `pages.xml` still carries them as relative hints
+inside that file.
 
 ### The read model
 

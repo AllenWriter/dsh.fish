@@ -71,6 +71,8 @@ Then, against `http://localhost:5173`:
 ```sh
 curl -s /robots.txt
 curl -s /sitemap.xml
+curl -s /sitemaps/artifacts/0.xml | head
+curl -sI /sitemaps/artifacts/0   # expect 301 → /sitemaps/artifacts/0.xml
 curl -sI /en/browse            # expect 301 → /browse
 curl -s /ja/kind/skill | grep -E 'canonical|hreflang|<html'
 ```

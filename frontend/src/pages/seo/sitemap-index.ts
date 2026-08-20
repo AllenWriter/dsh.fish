@@ -1,6 +1,6 @@
 import type { Route } from './+types/sitemap-index'
 import { hubContext } from '@/shared/api/hub-context'
-import { sitemapIndexXml, xmlResponse } from './xml'
+import { artifactSitemapPath, sitemapIndexXml, xmlResponse } from './xml'
 
 /**
  * `/sitemap.xml` — an index, not a list of URLs.
@@ -21,7 +21,7 @@ export async function loader({ context }: Route.LoaderArgs) {
     sitemapIndexXml([
       { loc: `${baseUrl}/sitemaps/pages.xml` },
       ...Array.from({ length: pageCount }, (_, index) => ({
-        loc: `${baseUrl}/sitemaps/artifacts/${index}`,
+        loc: `${baseUrl}${artifactSitemapPath(index)}`,
       })),
     ]),
   )

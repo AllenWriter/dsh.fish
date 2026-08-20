@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { LOCALE_CODES } from '@/shared/config/i18n'
-import { escapeXml, sitemapIndexXml, urlSetXml } from './xml'
+import {
+  artifactSitemapPath,
+  escapeXml,
+  resolveArtifactSitemapPage,
+  sitemapIndexXml,
+  urlSetXml,
+  w3cDatetime,
+} from './xml'
 
 const ORIGIN = 'https://dsh.fish'
 
@@ -11,10 +18,40 @@ describe('escapeXml', () => {
 
   it('escapes an ampersand in an artifact id, which would void the whole file', () => {
     // Ids come from third-party package names; one bad character must not take
-    // the other 4,999 URLs in the file down with it.
+    // the rest of the file down with it.
     const xml = urlSetXml(ORIGIN, [{ path: '/a/a&b' }])
     expect(xml).not.toMatch(/a&b/)
     expect(xml).toContain('/a/a&amp;b')
+  })
+})
+
+describe('w3cDatetime', () => {
+  it('keeps a date-only value', () => {
+    expect(w3cDatetime('2026-01-01')).toBe('2026-01-01')
+  })
+
+  it('strips the milliseconds Date#toISOString emits', () => {
+    expect(w3cDatetime('2026-08-20T07:07:32.946Z')).toBe('2026-08-20T07:07:32Z')
+  })
+
+  it('strips fractional seconds before an explicit offset', () => {
+    expect(w3cDatetime('2005-02-21T18:00:15.120+00:00')).toBe('2005-02-21T18:00:15+00:00')
+  })
+})
+
+describe('artifact sitemap paths', () => {
+  it('names each page with a .xml suffix', () => {
+    expect(artifactSitemapPath(0)).toBe('/sitemaps/artifacts/0.xml')
+    expect(artifactSitemapPath(2)).toBe('/sitemaps/artifacts/2.xml')
+  })
+
+  it('serves the .xml form, redirects the extensionless form, 404s the rest', () => {
+    expect(resolveArtifactSitemapPage('0.xml')).toEqual({ type: 'xml', page: 0 })
+    expect(resolveArtifactSitemapPage('12.xml')).toEqual({ type: 'xml', page: 12 })
+    expect(resolveArtifactSitemapPage('0')).toEqual({ type: 'redirect', page: 0 })
+    expect(resolveArtifactSitemapPage('0.xml.bak')).toEqual({ type: 'missing' })
+    expect(resolveArtifactSitemapPage('latest.xml')).toEqual({ type: 'missing' })
+    expect(resolveArtifactSitemapPage(undefined)).toEqual({ type: 'missing' })
   })
 })
 
@@ -40,8 +77,9 @@ describe('urlSetXml', () => {
     expect(xml).toContain('xmlns:xhtml="http://www.w3.org/1999/xhtml"')
   })
 
-  it('carries lastmod through', () => {
-    expect(xml).toContain('<lastmod>2026-01-01T00:00:00.000Z</lastmod>')
+  it('emits lastmod as W3C Datetime without fractional seconds', () => {
+    expect(xml).toContain('<lastmod>2026-01-01T00:00:00Z</lastmod>')
+    expect(xml).not.toContain('00.000Z')
   })
 
   it('omits optional elements rather than emitting empty ones', () => {
@@ -55,9 +93,10 @@ describe('sitemapIndexXml', () => {
   it('lists each file once', () => {
     const xml = sitemapIndexXml([
       { loc: `${ORIGIN}/sitemaps/pages.xml` },
-      { loc: `${ORIGIN}/sitemaps/artifacts/0` },
+      { loc: `${ORIGIN}${artifactSitemapPath(0)}` },
     ])
     expect(xml.match(/<sitemap>/g)).toHaveLength(2)
     expect(xml).toContain('<sitemapindex')
+    expect(xml).toContain(`${ORIGIN}/sitemaps/artifacts/0.xml`)
   })
 })

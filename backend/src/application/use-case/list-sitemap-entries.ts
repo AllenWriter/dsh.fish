@@ -3,7 +3,7 @@ import { DomainError } from '../../domain/shared/error.js'
 
 export interface SitemapEntryDto {
   readonly id: string
-  /** ISO 8601, which is what `<lastmod>` takes. */
+  /** ISO 8601. `xml.ts` emits this as W3C Datetime `<lastmod>`. */
   readonly updatedAt: string
 }
 
@@ -15,17 +15,18 @@ export interface SitemapPageDto {
 }
 
 /**
- * How many artifact URLs go in one sitemap file.
+ * How many artifacts go in one sitemap file.
  *
- * The protocol allows 50,000 URLs or 50 MB uncompressed per file, whichever
- * comes first. Every entry here carries ten `xhtml:link` alternates, so the
- * byte limit binds long before the URL limit — and a Worker has to hold the
- * whole document in memory to send it. Production data is currently about
- * 12.7 KB per artifact after all language alternates are expanded, so 5,000
- * rows would exceed 50 MB. 2,500 leaves headroom for longer ids and future
- * locales while keeping every public artifact reachable through pagination.
+ * sitemaps.org and Google cap a file at 50,000 URLs or 50 MB uncompressed.
+ * Each artifact expands to one `<url>` per locale plus a full `xhtml:link`
+ * alternate set, so the byte limit binds first. A Worker also has to hold
+ * the document in memory. Production measured about 5.3 KB per artifact
+ * at six locales; 1,000 rows is ~5 MB / 6,000 URLs — well inside the cap,
+ * small enough for Search Console's fetcher (a 13 MB / 2,500-row file was
+ * reported unreadable), and still one hop from the index for the whole
+ * catalog.
  */
-export const SITEMAP_PAGE_SIZE = 2_500
+export const SITEMAP_PAGE_SIZE = 1_000
 
 /**
  * The catalog as a crawler needs to see it.
