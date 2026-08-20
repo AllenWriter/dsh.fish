@@ -28,6 +28,8 @@ export interface BottomSheetProps {
   description?: string;
   children?: ReactNode;
   className?: string;
+  /** Class for the dismiss scrim. The default is a dim veil without blur. */
+  backdropClassName?: string;
   /** Min drag distance (px) past current snap to dismiss. */
   dismissThreshold?: number;
 }
@@ -41,6 +43,7 @@ export function BottomSheet({
   description,
   children,
   className,
+  backdropClassName,
   dismissThreshold = 120,
 }: BottomSheetProps) {
   const [snap, setSnap] = useState(defaultSnap);
@@ -154,10 +157,12 @@ export function BottomSheet({
             exit={{ opacity: 0 }}
             transition={DRAWER}
             onClick={() => onOpenChange(false)}
-            // A dim scrim with a light blur. backdrop-blur is GPU-expensive and
-            // re-rasterizes every frame the sheet drags over it; a small radius
-            // plus more opacity keeps the glass look without the jank.
-            className="pointer-events-auto absolute inset-0 bg-background/40 backdrop-blur-sm"
+            // Dim the page without blurring it — a backdrop-filter would
+            // freeze and re-rasterize the whole document under the sheet.
+            className={cn(
+              "pointer-events-auto absolute inset-0 bg-background/40",
+              backdropClassName,
+            )}
           />
           <motion.div
             ref={sheetRef}

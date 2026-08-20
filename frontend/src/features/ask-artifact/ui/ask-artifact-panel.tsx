@@ -6,9 +6,11 @@ import { Message, MessageContent, MessageGroup } from '@/shared/ui/agents/messag
 import { MessageScroller } from '@/shared/ui/agents/message-scroller'
 import { PromptInput } from '@/shared/ui/agents/prompt-input'
 import { StreamingResponse } from '@/shared/ui/agents/streaming-response'
-import { ThinkingShimmer } from '@/shared/ui/agents/loading-states/thinking-shimmer'
+import { AgentProgress, ReasoningText } from '@/shared/ui/agents/loading-states'
+import { Loader } from '@/shared/ui/motion/loader'
 import { Markdown } from '@/shared/ui/markdown'
 import { useT } from '@/shared/config/i18n'
+import { useDisplayClock } from '@/shared/lib/hooks/use-display-clock'
 import { AskHttpError, startAskStream } from '../api/ask-stream'
 import {
   applyAskEvent,
@@ -115,18 +117,34 @@ function AskTurnView({
   idPrefix: string
 }) {
   const t = useT()
+  const displayed = useDisplayClock(turn.answer, {
+    flush: turn.status !== 'streaming',
+    resetKey: turn.id,
+  })
   const activity: AgentActivityItem[] = turn.files.map((file, index) => ({
     id: `${turn.id}-file-${index}`,
     type: 'tool',
     action: 'read',
     target: t('ask.scanning', { path: file.path }),
   }))
-  const citations: CitationItem[] = turn.cites.map((cite, index) => ({
+  const fileCitations: CitationItem[] = turn.cites.map((cite, index) => ({
     id: `${turn.id}-cite-${index}`,
     title: cite.path,
     domain: cite.repo,
     url: githubBlobUrl(cite),
   }))
+  const deepWikiCitation: CitationItem[] =
+    turn.status === 'complete' && queryId !== undefined
+      ? [
+          {
+            id: `${turn.id}-deepwiki`,
+            title: t('ask.deepwiki'),
+            domain: 'deepwiki.com',
+            url: deepWikiSearchUrl(queryId),
+          },
+        ]
+      : []
+  const citations = [...deepWikiCitation, ...fileCitations]
 
   return (
     <>
@@ -143,42 +161,48 @@ function AskTurnView({
               status={turn.status === 'streaming' ? 'working' : 'complete'}
               defaultOpen
               collapseOnComplete={false}
+              renderWorkingStatus={() => (
+                <AgentProgress label={t('ask.working')} running={turn.status === 'streaming'} />
+              )}
               className="mb-2"
             />
-          ) : turn.status === 'streaming' && turn.answer === '' ? (
-            <ThinkingShimmer>{t('ask.thinking')}</ThinkingShimmer>
+          ) : turn.status === 'streaming' && displayed === '' ? (
+            <ReasoningText
+              phrases={[
+                t('ask.reasoning.thinking'),
+                t('ask.reasoning.context'),
+                t('ask.reasoning.connecting'),
+                t('ask.reasoning.forming'),
+              ]}
+              indicator={
+                <Loader variant="ascii-line" size={14} speed={0.8} label={t('ask.thinking')} />
+              }
+            />
           ) : null}
-          {turn.answer !== '' || turn.status !== 'streaming' ? (
+          {displayed !== '' || turn.status !== 'streaming' ? (
             <StreamingResponse
               status={turn.status === 'error' ? 'error' : turn.status}
               copyText={turn.answer}
               sources={citations}
               showActions={false}
             >
-              {turn.answer === '' ? (
+              {displayed === '' ? (
                 <p className="text-sm text-muted-foreground">
                   {turn.status === 'error' ? (turn.error ?? t('ask.error')) : t('ask.complete')}
                 </p>
               ) : (
-                <Markdown source={turn.answer} />
+                <Markdown source={displayed} />
               )}
             </StreamingResponse>
           ) : null}
           {citations.length > 0 && turn.status !== 'streaming' ? (
-            <Citations citations={citations} idPrefix={idPrefix} className="mt-2" />
-          ) : null}
-          {turn.status === 'complete' && queryId !== undefined ? (
-            <p className="mt-2 text-xs text-muted-foreground">
-              {t('ask.attribution')}{' '}
-              <a
-                href={deepWikiSearchUrl(queryId)}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="underline decoration-border underline-offset-2 hover:text-foreground"
-              >
-                {t('ask.attributionLink')}
-              </a>
-            </p>
+            <Citations
+              citations={citations}
+              title={t('ask.sources')}
+              idPrefix={idPrefix}
+              defaultOpen
+              className="mt-2"
+            />
           ) : null}
         </MessageContent>
       </Message>

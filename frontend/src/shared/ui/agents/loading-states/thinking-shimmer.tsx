@@ -1,3 +1,4 @@
+// Vendored from the beui registry; import aliases remapped onto FSD shared.
 // beui.dev/components/agents/loading-states
 import type { ReactNode } from "react";
 import { TextShimmer } from "@/shared/ui/motion/text-shimmer";

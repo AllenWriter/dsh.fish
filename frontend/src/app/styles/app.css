@@ -69,6 +69,9 @@
     --line: oklch(0.916 0.008 250);
     --line-strong: oklch(0.83 0.014 250);
     --ring-color: oklch(0.52 0.19 263);
+    /* Edge of the plugin page when the ask column is open — a drop to the
+       right, where that column sits. */
+    --shadow-column: 8px 0 24px color-mix(in oklch, var(--fg) 16%, transparent);
 
     /*
      * Catalog-card Social preview. The image is a texture behind type, not a
@@ -110,6 +113,7 @@
     --line-strong: oklch(0.375 0.035 250);
     --ring-color: oklch(0.72 0.145 263);
     color-scheme: dark;
+    --shadow-column: inset -1px 0 0 color-mix(in oklch, var(--fg) 12%, transparent);
 
     --artifact-og-opacity: 0.38;
     --artifact-og-opacity-hover: 0.48;
@@ -143,6 +147,7 @@
       --line-strong: oklch(0.375 0.035 250);
       --ring-color: oklch(0.72 0.145 263);
       color-scheme: dark;
+      --shadow-column: inset -1px 0 0 color-mix(in oklch, var(--fg) 12%, transparent);
 
       --artifact-og-opacity: 0.38;
       --artifact-og-opacity-hover: 0.48;

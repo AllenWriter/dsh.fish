@@ -60,6 +60,8 @@ export {
   TerminalWindowIcon as CliIcon,
   RobotIcon as AgentIcon,
   ChatTextIcon as AskIcon,
+  SidebarSimpleIcon as AskPanelClosedIcon,
+  SidebarIcon as AskPanelOpenIcon,
   KeyIcon as CredentialIcon,
 
   // Outcomes and states.

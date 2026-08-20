@@ -39,8 +39,8 @@ async function mockAsk(page: Page, handler: (post: { question: string; queryId?:
   })
 }
 
-function askPanel(page: Page) {
-  return page.locator('[role="dialog"][aria-modal="true"]').filter({
+function askSurface(page: Page) {
+  return page.locator('#ask-panel, [role="dialog"][aria-modal="true"]').filter({
     has: page.getByLabel('Ask about this repository…'),
   })
 }
@@ -52,7 +52,7 @@ async function openAsk(page: Page): Promise<void> {
 
 test.describe('artifact ask', () => {
   test.beforeEach(async ({ context }) => {
-    // The community stack sits in the same corner as the ask drawer and
+    // The community stack sits in the same corner as the ask toggle and
     // intercepts clicks. Retire it the way a returning reader would.
     await context.addCookies([{ name: 'community', value: 'discord.x.feedback', url: E2E_ORIGIN }])
   })
@@ -82,9 +82,13 @@ test.describe('artifact ask', () => {
 
     await expect(page.getByText('Reading src/index.ts')).toBeVisible()
     await expect(page.getByText('It exposes Postgres as tools.')).toBeVisible()
-    await expect(page.getByRole('link', { name: 'View on DeepWiki' })).toHaveAttribute(
+    await expect(page.getByRole('link', { name: 'DeepWiki' })).toHaveAttribute(
       'href',
       `https://deepwiki.com/search/${QUERY_ID}`,
+    )
+    await expect(page.getByRole('link', { name: 'DeepWiki' }).locator('img')).toHaveAttribute(
+      'src',
+      'https://deepwiki.com/favicon.ico',
     )
     expect(posts[0]?.queryId).toBeUndefined()
 
@@ -110,22 +114,27 @@ test.describe('artifact ask', () => {
     await expect(page.getByRole('button', { name: 'Send prompt' })).toBeEnabled()
   })
 
-  test('uses a drawer at 1280 and a bottom sheet below lg', async ({ page }) => {
+  test('uses a right column at 1280 and a bottom sheet below lg', async ({ page }) => {
     await page.goto(GITHUB, { waitUntil: 'load' })
     await expect(page.getByRole('heading', { name: 'Install', level: 2 })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'README badge' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Reviews' })).toBeVisible()
 
     await openAsk(page)
-    const dialog = askPanel(page)
-    await expect(dialog).toBeVisible()
     const viewport = page.viewportSize()
     const isDesktop = (viewport?.width ?? 0) >= 1024
-    const tag = await dialog.evaluate((node) => node.tagName.toLowerCase())
     if (isDesktop) {
-      expect(tag).toBe('aside')
+      const column = page.locator('#ask-panel')
+      await expect(column).toBeVisible()
+      expect(await column.evaluate((node) => node.tagName.toLowerCase())).toBe('aside')
+      await expect(page.locator('[role="dialog"][aria-modal="true"]')).toHaveCount(0)
+      await expect(column).toHaveAttribute('aria-hidden', 'false')
     } else {
-      expect(tag).not.toBe('aside')
+      const sheet = page.locator('[role="dialog"][aria-modal="true"]').filter({
+        has: page.getByLabel('Ask about this repository…'),
+      })
+      await expect(sheet).toBeVisible()
+      expect(await sheet.evaluate((node) => node.tagName.toLowerCase())).not.toBe('aside')
     }
   })
 
@@ -139,7 +148,7 @@ test.describe('artifact ask', () => {
     await page.getByLabel('Ask about this repository…').fill('Inject?')
     await page.getByRole('button', { name: 'Send prompt' }).click()
     await expect(page.getByText('Safe')).toBeVisible()
-    await expect(askPanel(page).locator('script')).toHaveCount(0)
+    await expect(askSurface(page).locator('script')).toHaveCount(0)
   })
 
   test('does not translate the panel when reduced motion is requested', async ({ page }) => {
@@ -149,7 +158,7 @@ test.describe('artifact ask', () => {
       await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches),
     ).toBe(true)
     await openAsk(page)
-    const panel = askPanel(page)
+    const panel = askSurface(page)
     await expect(panel).toBeVisible()
     for (let sample = 0; sample < 6; sample += 1) {
       const transform = await panel.evaluate((node) => getComputedStyle(node).transform)

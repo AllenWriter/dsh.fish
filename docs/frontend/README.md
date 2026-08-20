@@ -12,6 +12,7 @@ This section defines how the frontend is organized using **Feature-Sliced Design
 - [`import-rules.md`](import-rules.md) — cross-layer and cross-slice import rules.
 - [`ui-patterns.md`](ui-patterns.md) — semantic styling, no hardcoded copy, no redundant copy.
 - [`i18n.md`](i18n.md) — locales, message catalogs, locale-aware links and loaders.
+- [`streaming.md`](streaming.md) — arrival vs display clocks for model-native text.
 
 ## Quick start
 
@@ -22,8 +23,11 @@ This section defines how the frontend is organized using **Feature-Sliced Design
 5. Read [`i18n.md`](i18n.md) before writing any user-facing string or internal link.
 
 The artifact page composes `widgets/artifact-ask` around `features/ask-artifact`.
-beUI drawer / bottom-sheet / message / prompt-input / streaming-response /
-agent-activity / citations are vendored under `shared/ui/`.
+Desktop is a layout column (beUI `Button` + `IconSwap`); below `lg` it is
+beUI `bottom-sheet`. Message / prompt-input / streaming-response /
+agent-activity / citations / loading-states (`thinking-shimmer`,
+`reasoning-text`, `agent-progress`) are vendored under `shared/ui/`. Do not use
+beUI `drawer` here — that overlay blurs the plugin page.
 
 ## Core principle
 

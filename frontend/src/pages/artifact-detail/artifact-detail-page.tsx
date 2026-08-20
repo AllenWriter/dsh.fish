@@ -127,7 +127,8 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
   const locale = useLocale()
 
   return (
-    <article className="mx-auto w-full min-w-0 max-w-6xl px-6 py-10">
+    <ArtifactAsk artifactId={artifact.id} ask={artifact.ask}>
+      <article className="mx-auto w-full min-w-0 max-w-6xl px-6 py-10">
       <header className="border-b border-border pb-8">
         {/* A visible trail, matching the BreadcrumbList in the head. A crawler
             reads both; a reader arriving from a search result only has this
@@ -359,19 +360,19 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
         </section>
 
         <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-          {/* Install, ask, the README badge, then reviews: rail cards, not a
+          {/* Install, the README badge, then reviews: rail cards, not a
               section that only appears after the readme. A long readme would
               otherwise bury the comments; sitting here they stay in view with
               the install surface. */}
           <div className="flex flex-col gap-4">
             <InstallPanel artifact={artifact} plan={plan} />
-            <ArtifactAsk artifactId={artifact.id} ask={artifact.ask} />
             <ReadmeBadge artifact={artifact} origin={origin} />
             <ArtifactReviews reviews={reviews} now={now} />
           </div>
         </div>
       </div>
-    </article>
+      </article>
+    </ArtifactAsk>
   )
 }
 

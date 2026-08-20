@@ -99,11 +99,14 @@ rather than a source row parked beside the install commands. A GitHub
 profile URL is also GitHub's `{login}.png`, so the portrait is not a second
 stored image.
 
-That same column, beside the readme, stacks four rail cards when ask is
-available: the install panel, **Ask this project**, the README badge snippet,
-then community reviews. Ask is a GitHub-only, feature-flagged panel
-(`ARTIFACT_ASK_ENABLED`); npm and flagged-off Workers omit the control
-entirely. The Worker proxies DeepWiki Ada (Fast) as SSE — the browser never
+That same column, beside the readme, stacks three rail cards: the install
+panel, the README badge snippet, then community reviews. Ask is a
+GitHub-only, feature-flagged **column** (`ARTIFACT_ASK_ENABLED`) that
+sits beside the plugin page rather than in the rail. Opening it rounds
+the page's right corners where they meet the column and drops
+`--shadow-column`; there is no overlay and no backdrop blur. npm and
+flagged-off Workers omit the control entirely. The Worker proxies
+DeepWiki Ada (Fast) as SSE — the browser never
 calls `api.devin.ai`. See [`../decisions/adr-0004-artifact-ask-via-ada.md`](../decisions/adr-0004-artifact-ask-via-ada.md).
 
 Reviews are a

@@ -26,9 +26,11 @@ FSD uses six layers. Each layer has a single responsibility and a strict downwar
 - Examples: header, sidebar, dashboard card, order summary panel.
 - Can compose features and entities, but should remain focused on one visual block.
 
-The artifact page rail includes `artifact-ask` (GitHub-sourced plugins only): a
-card that opens a desktop drawer or a mobile bottom sheet around the
-`ask-artifact` feature.
+The artifact page rail includes install, the README badge, and reviews.
+`artifact-ask` wraps the plugin page (GitHub-sourced plugins only): a
+right-hand column on desktop, a beUI bottom sheet below `lg`, around the
+`ask-artifact` feature. Opening the column rounds the page's right edge
+and drops a column shadow; it does not overlay or blur the page.
 
 **Does not contain:** application-wide state or routing logic.
 
@@ -38,6 +40,9 @@ card that opens a desktop drawer or a mobile bottom sheet around the
 - Examples: authentication, search, add to cart, submit feedback.
 - Contains UI, state, API calls, and utilities that belong to that scenario.
 - `ask-artifact` owns the Ada-backed Q&A thread: SSE reader, `queryId`, messages.
+  While Ada is working it uses beUI loading states: `ReasoningText` before the
+  first file event, then `AgentProgress` on the activity header. Answer text
+  is paced by `useDisplayClock` (see [`streaming.md`](streaming.md)).
 
 **Does not contain:** generic primitives (those go in `shared`) or domain rules that belong to `entities`.
 

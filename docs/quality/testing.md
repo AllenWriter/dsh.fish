@@ -11,6 +11,9 @@
 - Place unit tests next to the source file or in a `__tests__` directory.
 - Test domain invariants and edge cases thoroughly.
 - Do not test framework code.
+- Stream display-clock tests (`frontend/src/shared/lib/stream-display-clock.test.ts`)
+  pin grapheme boundaries, 60 Hz vs 120 Hz wall-clock progress, leftover budget,
+  terminate flush, and the 4,096 / 512 caps. They do not drive `requestAnimationFrame`.
 
 ## Integration tests
 
@@ -143,8 +146,8 @@ as community-toasts / icons-touch, not the six-width readme matrix. The Worker
 under test has `ARTIFACT_ASK_ENABLED=true` (written into `.dev.vars` **before**
 the Worker boots); Playwright fulfills
 `**/api/v1/artifacts/*/ask` with an SSE fixture so **CI never hits Ada**
-(`api.devin.ai`). Assertions: GitHub rail control vs npm absence; stream then
-DeepWiki link; follow-up reuses `queryId`; 429 copy; drawer vs bottom sheet;
+(`api.devin.ai`). Assertions: GitHub toggle vs npm absence; stream then
+DeepWiki citation (favicon from deepwiki.com); follow-up reuses `queryId`; 429 copy; right column vs bottom sheet;
 `skipHtml` on a script delta; no transform drift under reduced motion.
 
 Limiter load tests live in
