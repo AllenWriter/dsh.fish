@@ -1,0 +1,24 @@
+---
+title: Hook bridges
+description: Run existing Claude Code or Codex shell hooks inside DeepSeek Harness. Declared as dsh.hub.kind with a dsh.hub.hook block.
+---
+
+A hook bridge runs your existing Claude Code or Codex shell hooks inside dsh. Like MCP servers, this kind has no harness manifest convention — it installs as a bridge plugin row in the profile patch — so `dsh.hub` is the source of truth.
+
+```json
+{
+  "dsh": {
+    "hub": {
+      "kind": "hook-bridge",
+      "hook": {
+        "dialect": "claude-code",
+        "settingsPath": "hooks/settings.json"
+      }
+    }
+  }
+}
+```
+
+`dialect` is `claude-code` or `codex`. `settingsPath` is relative to the repository; a path that escapes the repository is rejected.
+
+A declared-but-malformed manifest — a kind without its block, a `settingsPath` that leaves the repo, a `hub.kind` outside the six kinds — is a domain error. The sweep records it as skipped; the submission endpoint returns it to the submitter.

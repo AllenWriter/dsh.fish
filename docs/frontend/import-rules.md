@@ -48,3 +48,12 @@ import { internalHelper } from 'features/add-to-cart/lib/internalHelper';
 ## Exceptions
 
 Exceptions must be documented in [`docs/project/architecture.md`](../project/architecture.md) and approved by the user.
+
+### Product docs, sitemap, and markdown negotiation
+
+`pages/seo` and `pages/markdown` may import from `pages/docs` so every product-docs slug is enumerated once, from the MDX tree:
+
+- `pages/markdown` imports the docs **public API** (`productDocsMarkdown`) — bundled source text, no Fumadocs.
+- `pages/seo` imports `docsSitemapPaths` from `pages/docs/source`. That helper cannot live on the docs public API: `defineDocs` is a Vite macro, and the markdown unit tests import `@/pages/docs` without the plugin.
+
+Do not copy the slug list into the sitemap or the markdown handler.

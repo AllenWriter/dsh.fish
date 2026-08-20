@@ -17,6 +17,7 @@ out/
 
 # Build output and framework caches
 .react-router/
+.source/
 build/
 .wrangler/
 .dev.vars

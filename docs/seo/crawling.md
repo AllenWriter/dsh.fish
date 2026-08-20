@@ -19,7 +19,7 @@ names are exactly the paths anyone can read in it.
 
 ```
 /sitemap.xml                       sitemapindex
-├── /sitemaps/pages.xml            home, browse, 6 kinds, 12 categories, docs, submit
+├── /sitemaps/pages.xml            home, browse, 6 kinds, 12 categories, every /docs slug, submit
 └── /sitemaps/artifacts/:n.xml     one page of the catalog, 1,000 artifacts each
 ```
 
@@ -49,7 +49,10 @@ they are read at different times: the head only after a page is fetched, the
 sitemap before anything is.
 
 For six languages that is 6 entries × 7 links per path. `pages.xml` is
-therefore 132 `<url>` elements for 22 paths, which is correct, not a bug.
+therefore 192 `<url>` elements for 32 paths (the original 22, with the
+single `/docs` URL replaced by every slug the Fumadocs source enumerates),
+which is correct, not a bug. Adding an MDX file grows that count in the
+same commit; do not hand-maintain a second list.
 
 ### `lastmod`
 

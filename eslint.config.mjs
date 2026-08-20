@@ -11,6 +11,7 @@ export default tseslint.config(
       '**/build/**',
       '**/dist/**',
       '**/.react-router/**',
+      '**/.source/**',
       '**/.wrangler/**',
       '**/.pnpm-store/**',
       '**/.workspace/**',

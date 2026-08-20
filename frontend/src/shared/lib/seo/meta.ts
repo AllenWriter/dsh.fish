@@ -33,6 +33,8 @@ export interface PageMetaInput {
   readonly index?: boolean
   readonly type?: 'website' | 'article'
   readonly jsonLd?: readonly Record<string, unknown>[]
+  /** Locales with distinct, translated content. Defaults to every locale. */
+  readonly availableLocales?: readonly Locale[]
 }
 
 /**
@@ -55,6 +57,7 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
     index = true,
     type = 'website',
     jsonLd = [],
+    availableLocales = LOCALES.map(({ code }) => code),
   } = input
 
   const url = absoluteUrl(origin, locale, path)
@@ -88,8 +91,12 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
 
   // A link preview offers the reader other languages it could have rendered in.
   for (const other of LOCALES) {
+    if (!availableLocales.includes(other.code)) continue
     if (other.code === locale) continue
-    descriptors.push({ property: 'og:locale:alternate', content: other.ogLocale })
+    descriptors.push({
+      property: 'og:locale:alternate',
+      content: other.ogLocale,
+    })
   }
 
   if (index) {
@@ -104,7 +111,9 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
     // contradictory instructions about the same document, and which one wins is
     // not defined — so a page that is not for the index claims no canonical.
     descriptors.push({ tagName: 'link', rel: 'canonical', href: url })
-    for (const alternate of alternates(origin, path)) {
+    for (const alternate of availableLocales.length > 1
+      ? alternates(origin, path, availableLocales)
+      : []) {
       descriptors.push({
         tagName: 'link',
         rel: 'alternate',
@@ -158,13 +167,18 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
 export function errorMeta(rawLocale?: string): MetaDescriptor[] {
   const locale = matchLocale(rawLocale) ?? DEFAULT_LOCALE
   return [
-    { title: `${translate(locale, 'notFound.title')} — ${translate(locale, 'app.name')}` },
+    {
+      title: `${translate(locale, 'notFound.title')} — ${translate(locale, 'app.name')}`,
+    },
     { name: 'robots', content: 'noindex, follow' },
   ]
 }
 
 /** `<html lang>` and `dir`, from the same registry the URLs come from. */
-export function documentLanguage(locale: Locale): { lang: string; dir: 'ltr' | 'rtl' } {
+export function documentLanguage(locale: Locale): {
+  lang: string
+  dir: 'ltr' | 'rtl'
+} {
   const definition = localeDefinition(locale)
   return { lang: definition.tag, dir: definition.dir }
 }

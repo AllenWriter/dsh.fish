@@ -36,6 +36,8 @@ export interface SitemapUrl {
   readonly lastModified?: string
   readonly changeFrequency?: 'daily' | 'weekly' | 'monthly'
   readonly priority?: number
+  /** Locales with distinct content. Defaults to every supported locale. */
+  readonly locales?: readonly Locale[]
 }
 
 /**
@@ -82,7 +84,7 @@ export function resolveArtifactSitemapPage(
  */
 export function urlSetXml(origin: string, urls: readonly SitemapUrl[]): string {
   const body = urls
-    .flatMap((url) => LOCALE_CODES.map((locale) => urlEntry(origin, locale, url)))
+    .flatMap((url) => (url.locales ?? LOCALE_CODES).map((locale) => urlEntry(origin, locale, url)))
     .join('\n')
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -92,13 +94,17 @@ ${body}
 }
 
 function urlEntry(origin: string, locale: Locale, url: SitemapUrl): string {
-  const alternates = [
-    ...LOCALE_CODES.map(
-      (code) =>
-        `    <xhtml:link rel="alternate" hreflang="${hreflangFor(code)}" href="${escapeXml(absoluteUrl(origin, code, url.path))}"/>`,
-    ),
-    `    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(absoluteUrl(origin, 'en', url.path))}"/>`,
-  ].join('\n')
+  const locales = url.locales ?? LOCALE_CODES
+  const alternates =
+    locales.length > 1
+      ? [
+          ...locales.map(
+            (code) =>
+              `    <xhtml:link rel="alternate" hreflang="${hreflangFor(code)}" href="${escapeXml(absoluteUrl(origin, code, url.path))}"/>`,
+          ),
+          `    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(absoluteUrl(origin, 'en', url.path))}"/>`,
+        ].join('\n')
+      : undefined
 
   return [
     '  <url>',
@@ -110,7 +116,7 @@ function urlEntry(origin: string, locale: Locale, url: SitemapUrl): string {
       ? []
       : [`    <changefreq>${url.changeFrequency}</changefreq>`]),
     ...(url.priority === undefined ? [] : [`    <priority>${url.priority.toFixed(1)}</priority>`]),
-    alternates,
+    ...(alternates === undefined ? [] : [alternates]),
     '  </url>',
   ].join('\n')
 }

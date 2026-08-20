@@ -17,6 +17,8 @@ canonical home of something.
 | `/browse?…` any query | ❌ `noindex, follow` | A view of a listing that already has a canonical home. |
 | `/kind/…?offset=` | ❌ `noindex, follow` | Page two is a real page but not the page to land on for the term. |
 | `/docs` | ✅ | "How do I publish a dsh plugin" is a question people search. |
+| `/docs/…` (MDX pages) | ✅ | One URL per guide (`/docs/cli`, `/docs/publish/hook-bridge`, …). Generated from the Fumadocs source into `pages.xml`. |
+| `/docs/search` | ❌ | JSON title/description index for the section. Not a document. |
 | `/submit` | ✅ | Same — the explanation is public even though the form is gated. |
 | `/dashboard`, `/sign-in`, `/device` | ❌ `noindex, follow` | Account pages. Nothing a search result should lead to. |
 | 404s | ❌ | A real 404 status, never a soft one. |

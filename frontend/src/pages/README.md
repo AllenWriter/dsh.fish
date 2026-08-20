@@ -18,3 +18,8 @@ This layer contains page components that map to URLs.
 ## Dependencies
 
 `pages` can import from `widgets`, `features`, `entities`, `shared`.
+
+Product docs are the `docs` slice: MDX lives in `frontend/content/docs/`
+(outside this tree), the splat route and Fumadocs source live here, and
+chrome lives in `widgets/docs-shell`. See
+[`docs/decisions/adr-0004-product-docs-with-fumadocs.md`](../../../docs/decisions/adr-0004-product-docs-with-fumadocs.md).

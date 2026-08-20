@@ -39,3 +39,4 @@ Anything that crosses both boundaries — for example, a shared type contract be
 - Detailed layer rules (those live in [`frontend/`](../frontend/README.md) and [`backend/`](../backend/README.md)).
 - Operational procedures (those live in [`operations/`](../operations/README.md)).
 - Testing or code-review policy (those live in [`quality/`](../quality/README.md)).
+- Reader-facing publishing and CLI guides (those live on the site at `/docs`; see [`../decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md)).

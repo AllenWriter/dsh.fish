@@ -46,11 +46,24 @@ describe('artifact sitemap paths', () => {
   })
 
   it('serves the .xml form, redirects the extensionless form, 404s the rest', () => {
-    expect(resolveArtifactSitemapPage('0.xml')).toEqual({ type: 'xml', page: 0 })
-    expect(resolveArtifactSitemapPage('12.xml')).toEqual({ type: 'xml', page: 12 })
-    expect(resolveArtifactSitemapPage('0')).toEqual({ type: 'redirect', page: 0 })
-    expect(resolveArtifactSitemapPage('0.xml.bak')).toEqual({ type: 'missing' })
-    expect(resolveArtifactSitemapPage('latest.xml')).toEqual({ type: 'missing' })
+    expect(resolveArtifactSitemapPage('0.xml')).toEqual({
+      type: 'xml',
+      page: 0,
+    })
+    expect(resolveArtifactSitemapPage('12.xml')).toEqual({
+      type: 'xml',
+      page: 12,
+    })
+    expect(resolveArtifactSitemapPage('0')).toEqual({
+      type: 'redirect',
+      page: 0,
+    })
+    expect(resolveArtifactSitemapPage('0.xml.bak')).toEqual({
+      type: 'missing',
+    })
+    expect(resolveArtifactSitemapPage('latest.xml')).toEqual({
+      type: 'missing',
+    })
     expect(resolveArtifactSitemapPage(undefined)).toEqual({ type: 'missing' })
   })
 })
@@ -86,6 +99,15 @@ describe('urlSetXml', () => {
     const bare = urlSetXml(ORIGIN, [{ path: '/docs' }])
     expect(bare).not.toContain('<lastmod>')
     expect(bare).not.toContain('<priority>')
+  })
+
+  it('emits an English-only document once without false translation links', () => {
+    const englishOnly = urlSetXml(ORIGIN, [{ path: '/docs', locales: ['en'] }])
+
+    expect(englishOnly.match(/<url>/g)).toHaveLength(1)
+    expect(englishOnly).toContain(`<loc>${ORIGIN}/docs</loc>`)
+    expect(englishOnly).not.toContain(`${ORIGIN}/ja/docs`)
+    expect(englishOnly).not.toContain('<xhtml:link')
   })
 })
 

@@ -1,0 +1,22 @@
+---
+title: Submit and claim
+description: Submit a source, not a description. The registry re-reads the real manifest. Ownership is checked against the GitHub account linked to the session.
+---
+
+The [submit form](/submit) takes a source, not a description: `npm:<package>` or `github:<owner>/<repo>[/<path>]`, plus the kind you believe it is. The registry re-reads the real manifest, so a submitter cannot hand-write catalog fields the crawler would not itself have produced.
+
+A `kindHint` rotates probe order (a skill hint reads `SKILL.md` first) but never substitutes for proof. A snapshot whose detected kind differs from the submitted kind is rejected.
+
+## Who can submit
+
+Submitting needs a browser session. A harness device token can search, install and rate, but it cannot publish on a user's behalf.
+
+## Immediate approval vs review
+
+A submission the indexer can read **and** that the submitter demonstrably owns is approved immediately. Ownership is the GitHub account linked through OAuth, compared to the repository owner at the moment of the claim — it is not stored on the hub `Account`. Everything else queues for review.
+
+An artifact already claimed by another account is a conflict. npm has no equivalent identity check; GitHub-backed sources do.
+
+## After it lands
+
+When an artifact is created or its README Markdown changes, localization work is queued per site locale. Generated Markdown is served only while its source hash still matches the catalog row; pending, failed and stale translations expose the original README instead.

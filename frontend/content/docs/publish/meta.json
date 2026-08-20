@@ -1,0 +1,11 @@
+{
+  "title": "publish",
+  "pages": [
+    "bundle",
+    "skill",
+    "mcp-server",
+    "agent-preset",
+    "profile",
+    "hook-bridge"
+  ]
+}

@@ -35,6 +35,7 @@ export function withDiscoveryLinks(
       'Link',
       `<${url.origin}${url.pathname}>; rel="alternate"; type="text/markdown"`,
     )
+    decorated.headers.append('Vary', 'Accept')
   }
   return decorated
 }
