@@ -114,7 +114,11 @@ Claude Code hooks into dsh" — are what rank for the second kind, and they are
 also what earns inbound links. `/docs` is one page today; it could be a section.
 
 This is a content commitment, not a code change, which is why it is P2: a stale
-guide is worse than no guide.
+guide is worse than no guide. The proposed hosting for that section is Fumadocs
+under `/docs/*`, with the catalog chrome left alone — see
+[`../decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md).
+Do not stand up the shell before the P0 pages (hook bridges, CLI, hub plugin)
+exist as documents.
 
 ### Author pages
 

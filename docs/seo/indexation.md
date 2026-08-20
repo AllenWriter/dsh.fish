@@ -16,7 +16,7 @@ canonical home of something.
 | `/browse` (bare) | ✅ | The catalog itself. |
 | `/browse?…` any query | ❌ `noindex, follow` | A view of a listing that already has a canonical home. |
 | `/kind/…?offset=` | ❌ `noindex, follow` | Page two is a real page but not the page to land on for the term. |
-| `/docs` | ✅ | "How do I publish a dsh plugin" is a question people search. |
+| `/docs` | ✅ | "How do I publish a dsh plugin" is a question people search. Nested `/docs/…` guides, if added, are each their own document — see [`../decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md). |
 | `/submit` | ✅ | Same — the explanation is public even though the form is gated. |
 | `/dashboard`, `/sign-in`, `/device` | ❌ `noindex, follow` | Account pages. Nothing a search result should lead to. |
 | 404s | ❌ | A real 404 status, never a soft one. |

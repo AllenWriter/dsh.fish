@@ -514,5 +514,6 @@ language-neutral in the database.
 ## Related documents
 
 - [`decisions/adr-0001-plugin-hub-architecture.md`](../decisions/adr-0001-plugin-hub-architecture.md)
+- [`decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md) — reader-facing `/docs`, proposed
 - [`operations/deployment.md`](../operations/deployment.md)
 - [`frontend/README.md`](../frontend/README.md), [`backend/README.md`](../backend/README.md)
