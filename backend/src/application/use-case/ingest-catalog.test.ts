@@ -199,7 +199,7 @@ describe('IngestCatalog', () => {
       [indexer('github', [snapshot({ readmeMarkdown: '# Hello' })]).source],
       scheduled,
     ).execute()
-    expect(scheduled).toEqual([{ artifactId: 'dsh-hello-plugin', markdown: '# Hello' }])
+    expect(scheduled).toEqual([{ artifactId: 'dsh-hello-plugin', markdown: '# Hello', summary: 'A bundle.' }])
 
     // A content change with an untouched README must not pay the per-locale
     // scheduling reads again.
@@ -217,8 +217,8 @@ describe('IngestCatalog', () => {
     ])
     await ingest(repository, [readmeChange.source], scheduled).execute()
     expect(scheduled).toEqual([
-      { artifactId: 'dsh-hello-plugin', markdown: '# Hello' },
-      { artifactId: 'dsh-hello-plugin', markdown: '# Hello v2' },
+      { artifactId: 'dsh-hello-plugin', markdown: '# Hello', summary: 'A bundle.' },
+      { artifactId: 'dsh-hello-plugin', markdown: '# Hello v2', summary: 'A better bundle.' },
     ])
   })
 
@@ -231,7 +231,7 @@ describe('IngestCatalog', () => {
 
     expect(report).toMatchObject({ created: 1, errors: [] })
     expect(rows.has('dsh-hello-plugin')).toBe(true)
-    expect(scheduled).toEqual([{ artifactId: 'dsh-hello-plugin', markdown: '# Hello' }])
+    expect(scheduled).toEqual([{ artifactId: 'dsh-hello-plugin', markdown: '# Hello', summary: 'A bundle.' }])
   })
 
   it('does not schedule localization for a plugin with no README', async () => {

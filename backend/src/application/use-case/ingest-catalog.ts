@@ -147,7 +147,7 @@ async function scheduleReadmeLocalization(
 ): Promise<void> {
   const markdown = artifact.readmeMarkdown
   if (markdown === undefined || markdown.trim() === '') return
-  await scheduler.schedule({ artifactId: artifact.id, markdown })
+  await scheduler.schedule({ artifactId: artifact.id, markdown, summary: artifact.summary })
 }
 
 export function toArtifact(snapshot: IndexedSnapshot, ownerAccountId?: string): Artifact {

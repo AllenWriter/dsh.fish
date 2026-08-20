@@ -12,8 +12,10 @@ const SEARCH_LIMIT = 8
 export async function searchCatalog(
   text: string,
   signal: AbortSignal,
+  locale?: string,
 ): Promise<readonly Artifact[]> {
   const params = new URLSearchParams({ q: text, limit: String(SEARCH_LIMIT) })
+  if (locale !== undefined) params.set('locale', locale)
   const response = await fetch(`/api/v1/artifacts?${params}`, { signal })
   if (!response.ok) {
     throw new Error(`Catalog search failed (${response.status})`)

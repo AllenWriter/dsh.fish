@@ -29,6 +29,7 @@ export async function loader({ context, params }: Route.LoaderArgs) {
   const { baseUrl } = container.config
 
   const { items } = await container.useCases.searchArtifacts.execute({
+    locale,
     sort: 'recent',
     limit: FEED_ENTRY_COUNT,
   })

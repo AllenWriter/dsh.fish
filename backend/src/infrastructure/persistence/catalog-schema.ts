@@ -179,3 +179,29 @@ export const artifactReadmeTranslations = sqliteTable(
     index('artifact_readme_translations_status_idx').on(table.status),
   ],
 )
+
+/**
+ * Generated summary translations, one current result per artifact and locale.
+ *
+ * Same contract as the README table: the source hash ties the generated text
+ * to the exact upstream summary and translation policy, and terminal failures
+ * stay in D1 because the queue has no dead-letter queue.
+ */
+export const artifactSummaryTranslations = sqliteTable(
+  'artifact_summary_translations',
+  {
+    artifactId: text('artifact_id')
+      .notNull()
+      .references(() => artifacts.id, { onDelete: 'cascade' }),
+    locale: text('locale').notNull(),
+    sourceHash: text('source_hash').notNull(),
+    status: text('status').notNull(),
+    text: text('text'),
+    error: text('error'),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.artifactId, table.locale] }),
+    index('artifact_summary_translations_status_idx').on(table.status),
+  ],
+)

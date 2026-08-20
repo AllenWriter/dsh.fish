@@ -1,5 +1,9 @@
 import type { ArtifactRepository } from '../../domain/artifact/artifact-repository.js'
 import type { ReadmeTranslationRepository } from '../../domain/artifact/readme-translation.js'
+import type {
+  SummaryTranslation,
+  SummaryTranslationRepository,
+} from '../../domain/artifact/summary-translation.js'
 import { DomainError } from '../../domain/shared/error.js'
 import { slug } from '../../domain/shared/slug.js'
 import type { ArtifactDetailDto } from '../dto/artifact-dto.js'
@@ -10,6 +14,7 @@ export class GetArtifactDetail {
   constructor(
     private readonly artifacts: ArtifactRepository,
     private readonly readmeTranslations: ReadmeTranslationRepository,
+    private readonly summaryTranslations: SummaryTranslationRepository,
   ) {}
 
   async execute(artifactId: string, locale?: string): Promise<ArtifactDetailDto> {
@@ -17,19 +22,31 @@ export class GetArtifactDetail {
     if (!artifact) {
       throw DomainError.notFound('No such artifact.', { artifactId })
     }
-    const source = artifact.readmeMarkdown
-    if (locale === undefined || source === undefined || source.trim() === '') {
-      return toDetailDto(artifact)
-    }
 
-    const translation = await this.readmeTranslations.find(artifact.id, locale)
-    const sourceHash = await readmeDigest(source)
+    if (locale === undefined) return toDetailDto(artifact)
+
+    const source = artifact.readmeMarkdown
+    const [translation, summaryTranslation] = await Promise.all([
+      this.readmeTranslations.find(artifact.id, locale),
+      this.summaryTranslations.find(artifact.id, locale),
+    ])
+
+    const sourceHash = source === undefined ? undefined : await readmeDigest(source)
     const localized =
       translation?.status === 'completed' &&
       translation.sourceHash === sourceHash &&
       translation.markdown !== undefined
         ? { markdown: translation.markdown, locale: translation.locale }
         : undefined
-    return toDetailDto(artifact, localized)
+    const localizedSummary = await this.currentSummaryText(summaryTranslation, artifact.summary)
+    return toDetailDto(artifact, localized, localizedSummary)
+  }
+
+  private async currentSummaryText(
+    translation: SummaryTranslation | undefined,
+    summary: string,
+  ): Promise<string | undefined> {
+    if (translation?.status !== 'completed' || translation.text === undefined) return undefined
+    return translation.sourceHash === (await readmeDigest(summary)) ? translation.text : undefined
   }
 }

@@ -1,9 +1,13 @@
-import { and, asc, eq, exists, gt, isNotNull, lt, sql } from 'drizzle-orm'
+import { and, asc, eq, exists, gt, isNotNull, lt, notExists, or, sql } from 'drizzle-orm'
 import type { DrizzleD1Database } from 'drizzle-orm/d1'
 import type { ReadmeLocalizationBackfillSource } from '../../application/port/readme-localization.js'
 import type { Slug } from '../../domain/shared/slug.js'
 import { slug } from '../../domain/shared/slug.js'
-import { artifactReadmeTranslations, artifacts } from './catalog-schema.js'
+import {
+  artifactReadmeTranslations,
+  artifactSummaryTranslations,
+  artifacts,
+} from './catalog-schema.js'
 import * as schema from './schema.js'
 
 type Db = DrizzleD1Database<typeof schema>
@@ -14,7 +18,11 @@ export class D1ReadmeLocalizationBackfillSource implements ReadmeLocalizationBac
 
   async listAfter(afterArtifactId: Slug | undefined, limit: number) {
     const rows = await this.db
-      .select({ artifactId: artifacts.id, markdown: artifacts.readmeMarkdown })
+      .select({
+        artifactId: artifacts.id,
+        markdown: artifacts.readmeMarkdown,
+        summary: artifacts.summary,
+      })
       .from(artifacts)
       .where(
         and(
@@ -30,7 +38,7 @@ export class D1ReadmeLocalizationBackfillSource implements ReadmeLocalizationBac
   }
 
   async listStaleFailures(olderThan: Date, limit: number) {
-    const failed = this.db
+    const failedReadme = this.db
       .select({ one: sql`1` })
       .from(artifactReadmeTranslations)
       .where(
@@ -40,15 +48,36 @@ export class D1ReadmeLocalizationBackfillSource implements ReadmeLocalizationBac
           lt(artifactReadmeTranslations.updatedAt, olderThan),
         ),
       )
+    const failedSummary = this.db
+      .select({ one: sql`1` })
+      .from(artifactSummaryTranslations)
+      .where(
+        and(
+          eq(artifactSummaryTranslations.artifactId, artifacts.id),
+          eq(artifactSummaryTranslations.status, 'failed'),
+          lt(artifactSummaryTranslations.updatedAt, olderThan),
+        ),
+      )
+    // Summaries joined the pipeline after the README stock backfill completed,
+    // so an artifact with no summary row at all has never been scheduled for
+    // one. Once any row exists, the 6-hour failure rule above owns the retry.
+    const anySummary = this.db
+      .select({ one: sql`1` })
+      .from(artifactSummaryTranslations)
+      .where(eq(artifactSummaryTranslations.artifactId, artifacts.id))
 
     const rows = await this.db
-      .select({ artifactId: artifacts.id, markdown: artifacts.readmeMarkdown })
+      .select({
+        artifactId: artifacts.id,
+        markdown: artifacts.readmeMarkdown,
+        summary: artifacts.summary,
+      })
       .from(artifacts)
       .where(
         and(
           isNotNull(artifacts.readmeMarkdown),
           sql`trim(${artifacts.readmeMarkdown}) <> ''`,
-          exists(failed),
+          or(exists(failedReadme), exists(failedSummary), notExists(anySummary)),
         ),
       )
       .orderBy(asc(artifacts.id))
@@ -58,9 +87,9 @@ export class D1ReadmeLocalizationBackfillSource implements ReadmeLocalizationBac
   }
 }
 
-function readmeRow(row: { artifactId: string; markdown: string | null }) {
+function readmeRow(row: { artifactId: string; markdown: string | null; summary: string }) {
   if (row.markdown === null) {
     throw new Error('README backfill projection returned a null README.')
   }
-  return { artifactId: slug(row.artifactId), markdown: row.markdown }
+  return { artifactId: slug(row.artifactId), markdown: row.markdown, summary: row.summary }
 }

@@ -117,6 +117,7 @@ async function homeResponse(
   locale: Locale,
 ): Promise<Response> {
   const trending = await container.useCases.searchArtifacts.execute({
+    locale,
     sort: 'popular',
     limit: 20,
   })
@@ -159,6 +160,7 @@ async function listingResponse(
   const query = url.searchParams.get('q') ?? ''
 
   const results = await container.useCases.searchArtifacts.execute({
+    locale,
     ...(query === '' ? {} : { text: query }),
     kinds: [...filter.kinds],
     categories: [...filter.categories],

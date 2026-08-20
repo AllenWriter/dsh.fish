@@ -5,11 +5,13 @@ import type {
 } from '../../domain/artifact/artifact-repository.js'
 import { artifactKind } from '../../domain/artifact/artifact-kind.js'
 import { isCategory } from '../../domain/artifact/category.js'
+import type { SummaryTranslationRepository } from '../../domain/artifact/summary-translation.js'
 import { DomainError } from '../../domain/shared/error.js'
 import { pageRequest } from '../../domain/shared/pagination.js'
 import { slug } from '../../domain/shared/slug.js'
 import type { ArtifactSummaryDto, PageDto } from '../dto/artifact-dto.js'
 import { toPageDto, toSummaryDto } from '../dto/artifact-dto.js'
+import { readmeDigest } from '../lib/readme-digest.js'
 
 export interface SearchArtifactsInput {
   readonly text?: string
@@ -20,6 +22,8 @@ export interface SearchArtifactsInput {
   readonly sort?: string
   readonly limit?: number
   readonly offset?: number
+  /** When set, summaries are served in this locale where a current translation exists. */
+  readonly locale?: string
 }
 
 const SORTS: readonly ArtifactSort[] = ['relevance', 'popular', 'recent', 'name', 'rising']
@@ -30,7 +34,10 @@ const SORTS: readonly ArtifactSort[] = ['relevance', 'popular', 'recent', 'name'
  * what keeps the agent's view of the catalog identical to the human's.
  */
 export class SearchArtifacts {
-  constructor(private readonly artifacts: ArtifactRepository) {}
+  constructor(
+    private readonly artifacts: ArtifactRepository,
+    private readonly summaryTranslations: SummaryTranslationRepository,
+  ) {}
 
   async execute(input: SearchArtifactsInput): Promise<PageDto<ArtifactSummaryDto>> {
     const query: ArtifactQuery = {
@@ -52,7 +59,29 @@ export class SearchArtifacts {
     }
 
     const result = await this.artifacts.search(query)
-    return toPageDto(result, toSummaryDto)
+    if (input.locale === undefined || result.items.length === 0) {
+      return toPageDto(result, toSummaryDto)
+    }
+
+    const translations = await this.summaryTranslations.listFor(
+      result.items.map((item) => item.id),
+      input.locale,
+    )
+    const byArtifact = new Map(translations.map((row) => [String(row.artifactId), row]))
+    const localized = await Promise.all(
+      result.items.map(async (artifact) => {
+        const row = byArtifact.get(String(artifact.id))
+        if (row?.status !== 'completed' || row.text === undefined) return artifact.summary
+        return row.sourceHash === (await readmeDigest(artifact.summary)) ? row.text : artifact.summary
+      }),
+    )
+    const summaryByArtifact = new Map(
+      result.items.map((artifact, index) => [String(artifact.id), localized[index]!]),
+    )
+    return toPageDto(result, (artifact) => ({
+      ...toSummaryDto(artifact),
+      summary: summaryByArtifact.get(String(artifact.id)) ?? artifact.summary,
+    }))
   }
 }
 

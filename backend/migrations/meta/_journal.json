@@ -50,6 +50,13 @@
       "when": 1787165539996,
       "tag": "0006_lucky_firestar",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1787203548360,
+      "tag": "0007_bouncy_leper_queen",
+      "breakpoints": true
     }
   ]
 }

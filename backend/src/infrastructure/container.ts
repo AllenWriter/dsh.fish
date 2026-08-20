@@ -30,6 +30,7 @@ import { RepoProber } from './ingestion/repo-prober.js'
 import { KvSweepCursor, sweepCursorKey } from './ingestion/sweep-cursor.js'
 import { D1ArtifactRepository } from './persistence/d1-artifact-repository.js'
 import { D1ReadmeTranslationRepository } from './persistence/d1-readme-translation-repository.js'
+import { D1SummaryTranslationRepository } from './persistence/d1-summary-translation-repository.js'
 import { D1ReadmeLocalizationBackfillSource } from './persistence/d1-readme-localization-backfill-source.js'
 import { D1LinkedIdentityReader } from './persistence/d1-linked-identity.js'
 import { D1ReviewRepository } from './persistence/d1-review-repository.js'
@@ -80,6 +81,7 @@ export function createContainer(env: HubEnv, options: ContainerOptions): Contain
 
   const artifacts = new D1ArtifactRepository(db)
   const readmeTranslations = new D1ReadmeTranslationRepository(db)
+  const summaryTranslations = new D1SummaryTranslationRepository(db)
   const readmeBackfillSource = new D1ReadmeLocalizationBackfillSource(db)
   const submissions = new D1SubmissionRepository(db)
   const reviews = new D1ReviewRepository(db)
@@ -105,8 +107,8 @@ export function createContainer(env: HubEnv, options: ContainerOptions): Contain
     submissions,
     reviews,
     useCases: {
-      searchArtifacts: new SearchArtifacts(artifacts),
-      getArtifactDetail: new GetArtifactDetail(artifacts, readmeTranslations),
+      searchArtifacts: new SearchArtifacts(artifacts, summaryTranslations),
+      getArtifactDetail: new GetArtifactDetail(artifacts, readmeTranslations, summaryTranslations),
       getArtifactReviews: new GetArtifactReviews(reviews, artifacts),
       getCatalogSnapshot: new GetCatalogSnapshot(artifacts, new KvCatalogSnapshotStore(env.KV)),
       describeScoring: new DescribeScoring(),

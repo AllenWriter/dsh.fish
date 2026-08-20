@@ -5,6 +5,11 @@ import type { HubBindings } from '../app.js'
 
 const searchQuery = z.object({
   q: z.string().max(200).optional(),
+  /** Optional BCP 47 locale for translated summaries. */
+  locale: z
+    .string()
+    .regex(/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/)
+    .optional(),
   kind: z.array(z.enum(ARTIFACT_KINDS)).optional(),
   category: z.array(z.string()).optional(),
   sort: z.enum(['relevance', 'popular', 'recent', 'name', 'rising']).optional(),
@@ -49,6 +54,7 @@ export function catalogRoutes() {
       ...(parsed.verified === undefined ? {} : { verifiedOnly: parsed.verified }),
       ...(parsed.limit === undefined ? {} : { limit: parsed.limit }),
       ...(parsed.offset === undefined ? {} : { offset: parsed.offset }),
+      ...(parsed.locale === undefined ? {} : { locale: parsed.locale }),
     })
     return context.json(result)
   })

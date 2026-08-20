@@ -38,6 +38,10 @@ This document describes database conventions. Fill in concrete technology choice
   primary key makes repeated ingestion idempotent; the source hash prevents a
   completed translation from surviving an upstream README or model-policy
   change.
+- `artifact_summary_translations` (migration `0007_bouncy_leper_queen`) — the
+  same contract for the short description: one row per artifact and locale,
+  hash-pinned to the upstream summary. Listings override the DTO summary with
+  the completed, hash-current row for the request locale.
 - `artifact_reviews` (migration `0006_lucky_firestar`) — one row per
   (artifact, account) community rating: whole stars 1–5 plus an optional
   comment. The composite primary key is what makes re-rating an overwrite

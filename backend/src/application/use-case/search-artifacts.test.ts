@@ -2,6 +2,17 @@ import { describe, expect, it } from 'vitest'
 import { SearchArtifacts } from './search-artifacts.js'
 import type { ArtifactQuery, ArtifactRepository } from '../../domain/artifact/artifact-repository.js'
 import { page } from '../../domain/shared/pagination.js'
+import type { SummaryTranslationRepository } from '../../domain/artifact/summary-translation.js'
+
+/** No translations stored; every lookup comes back empty. */
+function emptySummaryTranslations(): SummaryTranslationRepository {
+  return {
+    find: async () => undefined,
+    listFor: async () => [],
+    save: async () => {},
+  }
+}
+
 
 /** Captures the query instead of answering it; the read result is irrelevant here. */
 function capturingRepository() {
@@ -35,7 +46,7 @@ describe('SearchArtifacts sort resolution', () => {
   it('accepts the rising sort and passes it through', async () => {
     const { repository, queries } = capturingRepository()
 
-    await new SearchArtifacts(repository).execute({ sort: 'rising' })
+    await new SearchArtifacts(repository, emptySummaryTranslations()).execute({ sort: 'rising' })
 
     expect(queries[0]?.sort).toBe('rising')
   })
@@ -43,7 +54,7 @@ describe('SearchArtifacts sort resolution', () => {
   it('rejects a sort the catalog does not support', async () => {
     const { repository } = capturingRepository()
 
-    await expect(new SearchArtifacts(repository).execute({ sort: 'magic' })).rejects.toMatchObject(
+    await expect(new SearchArtifacts(repository, emptySummaryTranslations()).execute({ sort: 'magic' })).rejects.toMatchObject(
       { code: 'INVALID_ARGUMENT' },
     )
   })
@@ -51,7 +62,7 @@ describe('SearchArtifacts sort resolution', () => {
   it('falls back from relevance to popular when there is no query text', async () => {
     const { repository, queries } = capturingRepository()
 
-    await new SearchArtifacts(repository).execute({ sort: 'relevance' })
+    await new SearchArtifacts(repository, emptySummaryTranslations()).execute({ sort: 'relevance' })
 
     expect(queries[0]?.sort).toBe('popular')
   })

@@ -113,6 +113,7 @@ export function toSummaryDto(artifact: Artifact): ArtifactSummaryDto {
 export function toDetailDto(
   artifact: Artifact,
   localizedReadme?: { readonly markdown: string; readonly locale: string },
+  localizedSummary?: string,
 ): ArtifactDetailDto {
   const docBase = sourceDocBase(artifact.source)
   const assetBase = sourceAssetBase(artifact.source)
@@ -120,6 +121,7 @@ export function toDetailDto(
 
   return {
     ...toSummaryDto(artifact),
+    ...(localizedSummary === undefined ? {} : { summary: localizedSummary }),
     payload: artifact.payload,
     ...(localizedReadme !== undefined
       ? {

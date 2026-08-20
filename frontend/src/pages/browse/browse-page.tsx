@@ -63,6 +63,7 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 
   const [results, facets] = await Promise.all([
     container.useCases.searchArtifacts.execute({
+      locale,
       ...(query === '' ? {} : { text: query }),
       kinds: url.searchParams.getAll('kind'),
       categories: url.searchParams.getAll('category'),

@@ -6,6 +6,10 @@ import type {
   ReadmeTranslationRepository,
 } from '../../domain/artifact/readme-translation.js'
 import { npmSource } from '../../domain/artifact/source-ref.js'
+import type {
+  SummaryTranslation,
+  SummaryTranslationRepository,
+} from '../../domain/artifact/summary-translation.js'
 import type { Slug } from '../../domain/shared/slug.js'
 import { readmeDigest } from '../lib/readme-digest.js'
 import { GetArtifactDetail } from './get-artifact-detail.js'
@@ -53,6 +57,14 @@ function translations(value?: ReadmeTranslation): ReadmeTranslationRepository {
   }
 }
 
+function summaryTranslations(value?: SummaryTranslation): SummaryTranslationRepository {
+  return {
+    find: async (_artifactId: Slug, _locale: string) => value,
+    listFor: async () => (value === undefined ? [] : [value]),
+    save: async () => {},
+  }
+}
+
 describe('GetArtifactDetail README localization', () => {
   it('returns the completed translation for the requested locale', async () => {
     const sourceHash = await readmeDigest(artifact.readmeMarkdown!)
@@ -66,6 +78,7 @@ describe('GetArtifactDetail README localization', () => {
         markdown: '# 你好',
         updatedAt: new Date(),
       }),
+      summaryTranslations(),
     )
 
     const detail = await useCase.execute(artifact.id, 'zh-CN')
@@ -88,11 +101,90 @@ describe('GetArtifactDetail README localization', () => {
         markdown: '# 旧译文',
         updatedAt: new Date(),
       }),
+      summaryTranslations(),
     )
 
     const detail = await useCase.execute(artifact.id, 'zh-CN')
 
     expect(detail.readmeMarkdown).toBe('# Hello')
     expect(detail.readmeMachineTranslated).toBeUndefined()
+  })
+
+  it('serves the translated summary when it is current', async () => {
+    const useCase = new GetArtifactDetail(
+      artifactRepository(),
+      translations(),
+      summaryTranslations({
+        artifactId: artifact.id,
+        locale: 'zh-CN',
+        sourceHash: await readmeDigest(artifact.summary),
+        status: 'completed',
+        text: '一个 bundle。',
+        updatedAt: new Date(),
+      }),
+    )
+
+    const detail = await useCase.execute(artifact.id, 'zh-CN')
+
+    expect(detail.summary).toBe('一个 bundle。')
+  })
+
+  it('keeps the upstream summary when the stored translation is stale or failed', async () => {
+    const stale = new GetArtifactDetail(
+      artifactRepository(),
+      translations(),
+      summaryTranslations({
+        artifactId: artifact.id,
+        locale: 'zh-CN',
+        sourceHash: 'stale',
+        status: 'completed',
+        text: '过时的。',
+        updatedAt: new Date(),
+      }),
+    )
+    expect((await stale.execute(artifact.id, 'zh-CN')).summary).toBe('A bundle.')
+
+    const failed = new GetArtifactDetail(
+      artifactRepository(),
+      translations(),
+      summaryTranslations({
+        artifactId: artifact.id,
+        locale: 'zh-CN',
+        sourceHash: await readmeDigest(artifact.summary),
+        status: 'failed',
+        text: '不应出现。',
+        updatedAt: new Date(),
+      }),
+    )
+    expect((await failed.execute(artifact.id, 'zh-CN')).summary).toBe('A bundle.')
+  })
+
+  it('localizes the summary even when the artifact has no README', async () => {
+    const noReadme = Artifact.create({
+      id: 'dsh-bare',
+      kind: 'bundle',
+      displayName: 'dsh-bare',
+      summary: 'No docs.',
+      source: npmSource('dsh-bare', '1.0.0'),
+      payload: { kind: 'bundle', requiresBuild: false },
+    })
+    const repo = artifactRepository()
+    const useCase = new GetArtifactDetail(
+      { ...repo, findById: async () => noReadme },
+      translations(),
+      summaryTranslations({
+        artifactId: noReadme.id,
+        locale: 'ja',
+        sourceHash: await readmeDigest(noReadme.summary),
+        status: 'completed',
+        text: 'ドキュメントなし。',
+        updatedAt: new Date(),
+      }),
+    )
+
+    const detail = await useCase.execute(noReadme.id, 'ja')
+
+    expect(detail.summary).toBe('ドキュメントなし。')
+    expect(detail.readmeMarkdown).toBeUndefined()
   })
 })

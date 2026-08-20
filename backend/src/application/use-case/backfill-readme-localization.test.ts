@@ -36,8 +36,8 @@ function harness(
 
 describe('BackfillReadmeLocalization', () => {
   it('walks stored READMEs in durable pages and then stays complete', async () => {
-    const first = { artifactId: slug('alpha'), markdown: '# Alpha' }
-    const second = { artifactId: slug('beta'), markdown: '# Beta' }
+    const first = { artifactId: slug('alpha'), markdown: '# Alpha', summary: 'A summary.' }
+    const second = { artifactId: slug('beta'), markdown: '# Beta', summary: 'A summary.' }
     const { useCase, scheduled, state } = harness([first, second])
 
     await expect(useCase.execute(1)).resolves.toMatchObject({
@@ -64,7 +64,7 @@ describe('BackfillReadmeLocalization', () => {
     let saved = false
     const useCase = new BackfillReadmeLocalization(
       {
-        listAfter: async () => [{ artifactId: slug('alpha'), markdown: '# Alpha' }],
+        listAfter: async () => [{ artifactId: slug('alpha'), markdown: '# Alpha', summary: 'A summary.' }],
         listStaleFailures: async () => [],
       },
       {
@@ -81,8 +81,8 @@ describe('BackfillReadmeLocalization', () => {
   })
 
   it('reschedules stale terminal failures alongside and after the main pass', async () => {
-    const fresh = { artifactId: slug('alpha'), markdown: '# Alpha' }
-    const failed = { artifactId: slug('zero'), markdown: '# Zero' }
+    const fresh = { artifactId: slug('alpha'), markdown: '# Alpha', summary: 'A summary.' }
+    const failed = { artifactId: slug('zero'), markdown: '# Zero', summary: 'A summary.' }
     const { useCase, scheduled } = harness([fresh], [failed])
 
     await expect(useCase.execute(10)).resolves.toMatchObject({
@@ -130,7 +130,7 @@ describe('BackfillReadmeLocalization', () => {
       {
         // Returns the cursor position itself, so neither the cursor nor the
         // complete flag moves.
-        listAfter: async () => [{ artifactId: slug('alpha'), markdown: '# Alpha' }],
+        listAfter: async () => [{ artifactId: slug('alpha'), markdown: '# Alpha', summary: 'A summary.' }],
         listStaleFailures: async () => [],
       },
       {

@@ -79,6 +79,7 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
   const offset = Math.max(0, Number(new URL(request.url).searchParams.get('offset') ?? 0) || 0)
 
   const results = await container.useCases.searchArtifacts.execute({
+    locale,
     kinds: [kind],
     sort: 'popular',
     limit: PAGE_SIZE,

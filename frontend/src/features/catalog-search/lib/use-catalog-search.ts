@@ -10,7 +10,7 @@ const DEBOUNCE_MS = 200
  * An empty query is idle, not an empty result set. A failed request is
  * reported rather than rendered as "nothing matched".
  */
-export function useCatalogSearch(query: string): {
+export function useCatalogSearch(query: string, locale: string): {
   hits: readonly Artifact[]
   error: boolean
 } {
@@ -29,7 +29,7 @@ export function useCatalogSearch(query: string): {
     setError(false)
     const controller = new AbortController()
     const timer = window.setTimeout(() => {
-      void searchCatalog(text, controller.signal)
+      void searchCatalog(text, controller.signal, locale)
         .then((items) => {
           setHits(items)
           setError(false)
@@ -46,7 +46,7 @@ export function useCatalogSearch(query: string): {
       window.clearTimeout(timer)
       controller.abort()
     }
-  }, [query])
+  }, [query, locale])
 
   return { hits, error }
 }

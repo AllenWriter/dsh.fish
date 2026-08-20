@@ -130,6 +130,7 @@ export class SubmitArtifact {
         await this.readmeLocalization.schedule({
           artifactId: artifact.id,
           markdown: artifact.readmeMarkdown,
+          summary: artifact.summary,
         })
       }
       return {
