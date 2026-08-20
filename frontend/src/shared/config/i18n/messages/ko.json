@@ -248,5 +248,19 @@
   "ask.reasoning.connecting": "세부 사항을 연결하는 중",
   "ask.reasoning.forming": "답변을 구성하는 중",
   "ask.sources": "출처",
-  "ask.deepwiki": "DeepWiki"
+  "ask.deepwiki": "DeepWiki",
+  "ask.suggested.title": "이런 질문은 어떠세요",
+  "ask.suggested.shuffle": "다른 질문 보기",
+  "ask.suggested.q1": "이 플러그인은 무엇을 하나요?",
+  "ask.suggested.q2": "어떻게 설치하고 설정하나요?",
+  "ask.suggested.q3": "소스의 실행 시작점은 어디인가요?",
+  "ask.suggested.q4": "무엇에 의존하나요?",
+  "ask.suggested.q5": "어떤 자격 증명이나 환경 변수가 필요한가요?",
+  "ask.suggested.q6": "어떻게 테스트되나요?",
+  "ask.suggested.q7": "알려진 제약은 무엇인가요?",
+  "ask.suggested.q8": "어떻게 확장하나요?",
+  "ask.suggested.q9": "오류는 어떻게 처리하나요?",
+  "ask.suggested.q10": "어떤 권한이 필요한가요?",
+  "ask.suggested.q11": "코드는 어떻게 구성되어 있나요?",
+  "ask.suggested.q12": "이해하려면 무엇부터 읽어야 하나요?"
 }

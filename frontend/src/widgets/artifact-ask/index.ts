@@ -1,1 +1,1 @@
-export { ArtifactAsk } from './artifact-ask'
+export { ArtifactAsk, ArtifactAskSuggestions } from './artifact-ask'

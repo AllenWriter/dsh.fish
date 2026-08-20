@@ -1,7 +1,16 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 import { useReducedMotion } from 'motion/react'
 import type { ArtifactDetail } from '@/entities/artifact/model/types'
-import { AskArtifactPanel } from '@/features/ask-artifact'
+import { AskArtifactPanel, AskSuggestions, type AskRequest } from '@/features/ask-artifact'
 import { useT } from '@/shared/config/i18n'
 import { EASE_OUT_CSS } from '@/shared/lib/ease'
 import { cn } from '@/shared/lib/utils'
@@ -11,9 +20,20 @@ import { Button } from '@/shared/ui/motion/button'
 import { BottomSheet } from '@/shared/ui/motion/bottom-sheet'
 
 const LG_QUERY = '(min-width: 1024px)'
+
 /** Same width OpenTrade's agent column uses — the inner pane stays this wide
  *  while the outer clip animates from zero, so the transcript does not reflow. */
 const ASK_PANEL_WIDTH = 380
+
+/**
+ * How anything inside the page reaches the thread.
+ *
+ * The page content is this widget's `children`, so a card sitting in the rail
+ * has no other way to open the column and put a question in it. Absent — on a
+ * plugin with no ask — every consumer renders nothing, which is why the value
+ * is optional rather than a no-op.
+ */
+const AskChannel = createContext<((question: string) => void) | undefined>(undefined)
 
 /**
  * Ask layout on a plugin page.
@@ -39,6 +59,14 @@ export function ArtifactAsk({
   const [open, setOpen] = useState(false)
   const desktop = useMinWidthLg()
   const reduce = useReducedMotion()
+  const [request, setRequest] = useState<AskRequest | undefined>()
+  const nextRequestId = useRef(0)
+
+  const askQuestion = useCallback((question: string) => {
+    setOpen(true)
+    nextRequestId.current += 1
+    setRequest({ id: nextRequestId.current, question })
+  }, [])
 
   useEffect(() => {
     if (!open || !desktop) return
@@ -54,66 +82,81 @@ export function ArtifactAsk({
   if (!ask.available) return children
 
   const thread = (
-    <AskArtifactPanel artifactId={artifactId} className="flex min-h-0 flex-1 flex-col" />
+    <AskArtifactPanel
+      artifactId={artifactId}
+      request={request}
+      className="flex min-h-0 flex-1 flex-col"
+    />
   )
 
   return (
-    <div className="lg:flex lg:min-h-0">
-      <div
-        className={cn(
-          'relative min-w-0 flex-1 bg-background',
-          'transition-[border-radius,box-shadow] duration-200',
-          desktop && open
-            ? 'rounded-r-2xl shadow-[var(--shadow-column)] lg:sticky lg:top-16 lg:h-[calc(100dvh-4rem)] lg:overflow-y-auto'
-            : null,
-        )}
-        style={{ transitionTimingFunction: EASE_OUT_CSS }}
-      >
-        <AskTopBar
-          open={open}
-          pinBelowSiteHeader={!(desktop && open)}
-          onToggle={() => setOpen((current) => !current)}
-        />
-        {children}
+    <AskChannel.Provider value={askQuestion}>
+      <div className="lg:flex lg:min-h-0">
+        <div
+          className={cn(
+            'relative min-w-0 flex-1 bg-background',
+            'transition-[border-radius,box-shadow] duration-200',
+            desktop && open
+              ? 'rounded-r-2xl shadow-[var(--shadow-column)] lg:sticky lg:top-16 lg:h-[calc(100dvh-4rem)] lg:overflow-y-auto'
+              : null,
+          )}
+          style={{ transitionTimingFunction: EASE_OUT_CSS }}
+        >
+          {desktop && open ? null : (
+            <AskTopBar open={open} onToggle={() => setOpen((current) => !current)} />
+          )}
+          {children}
+        </div>
+
+        <AskColumn
+          open={desktop && open}
+          onClose={() => setOpen(false)}
+          title={t('ask.title')}
+          reduceMotion={Boolean(reduce)}
+        >
+          {desktop ? thread : null}
+        </AskColumn>
+
+        <BottomSheet
+          open={!desktop && open}
+          onOpenChange={setOpen}
+          title={t('ask.title')}
+          snapPoints={[0.72, 0.94]}
+          className="bg-card"
+          backdropClassName="bg-background/50"
+        >
+          {desktop ? null : thread}
+        </BottomSheet>
       </div>
-
-      <AskColumn
-        open={desktop && open}
-        onClose={() => setOpen(false)}
-        title={t('ask.title')}
-        reduceMotion={Boolean(reduce)}
-      >
-        {desktop ? thread : null}
-      </AskColumn>
-
-      <BottomSheet
-        open={!desktop && open}
-        onOpenChange={setOpen}
-        title={t('ask.title')}
-        snapPoints={[0.72, 0.94]}
-        className="bg-card"
-        backdropClassName="bg-background/50"
-      >
-        {desktop ? null : thread}
-      </BottomSheet>
-    </div>
+    </AskChannel.Provider>
   )
 }
 
-function AskTopBar({
-  open,
-  pinBelowSiteHeader,
-  onToggle,
+/**
+ * The "you might ask" card, placed by the page but wired to this widget.
+ *
+ * It lives here rather than in the page because the questions are only useful
+ * next to a thread that can answer them: with no ask on this plugin there is
+ * no channel, and the card does not render at all.
+ */
+export function ArtifactAskSuggestions({
+  artifactId,
+  className,
 }: {
-  open: boolean
-  pinBelowSiteHeader: boolean
-  onToggle: () => void
+  artifactId: string
+  className?: string
 }) {
+  const askQuestion = useContext(AskChannel)
+  if (askQuestion === undefined) return null
+  return <AskSuggestions seed={artifactId} onAsk={askQuestion} className={className} />
+}
+
+function AskTopBar({ open, onToggle }: { open: boolean; onToggle: () => void }) {
   const t = useT()
   const label = open ? t('ask.collapse') : t('ask.open')
 
   return (
-    <div className={cn('sticky z-10 h-0', pinBelowSiteHeader ? 'top-16' : 'top-0')}>
+    <div className="sticky top-16 z-10 h-0">
       <div className="flex justify-end px-3 pt-3 sm:px-6">
         <Button
           type="button"

@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
   useRouteLoaderData,
 } from 'react-router'
 import type { Route } from '../+types/root'
@@ -118,6 +119,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const data = useRouteLoaderData<typeof loader>('root')
+  const { pathname } = useLocation()
+  const { path } = splitLocalePath(pathname.replace(/\.data$/, ''))
+  // Plugin pages keep the footer inside the ask layout's main column so it
+  // stays on that surface when the Q&A pane is open, instead of dropping out
+  // under both columns.
+  const footerInPage = /^\/a\/[^/]+\/?$/.test(path)
 
   return (
     <div className="flex min-h-screen min-w-0 flex-col">
@@ -125,7 +132,7 @@ export default function App() {
       <main id="main" className="min-w-0 flex-1">
         <Outlet />
       </main>
-      <SiteFooter />
+      {footerInPage ? null : <SiteFooter />}
       <CommunityToasts dismissed={data?.dismissedToasts ?? []} />
     </div>
   )

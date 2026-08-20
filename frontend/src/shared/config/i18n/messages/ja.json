@@ -248,5 +248,19 @@
   "ask.reasoning.connecting": "詳細をつなげています",
   "ask.reasoning.forming": "回答をまとめています",
   "ask.sources": "出典",
-  "ask.deepwiki": "DeepWiki"
+  "ask.deepwiki": "DeepWiki",
+  "ask.suggested.title": "こんな質問はどうですか",
+  "ask.suggested.shuffle": "別の質問を見る",
+  "ask.suggested.q1": "このプラグインは何をするものですか？",
+  "ask.suggested.q2": "インストールと設定の方法は？",
+  "ask.suggested.q3": "ソースの実行の起点はどこですか？",
+  "ask.suggested.q4": "何に依存していますか？",
+  "ask.suggested.q5": "どの認証情報や環境変数が必要ですか？",
+  "ask.suggested.q6": "どうテストされていますか？",
+  "ask.suggested.q7": "既知の制限はありますか？",
+  "ask.suggested.q8": "どう拡張できますか？",
+  "ask.suggested.q9": "エラーはどう扱われますか？",
+  "ask.suggested.q10": "どの権限が必要ですか？",
+  "ask.suggested.q11": "コードはどう構成されていますか？",
+  "ask.suggested.q12": "理解するには、まずどこを読むべきですか？"
 }

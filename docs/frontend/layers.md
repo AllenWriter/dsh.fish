@@ -30,7 +30,14 @@ The artifact page rail includes install, the README badge, and reviews.
 `artifact-ask` wraps the plugin page (GitHub-sourced plugins only): a
 right-hand column on desktop, a beUI bottom sheet below `lg`, around the
 `ask-artifact` feature. Opening the column rounds the page's right edge
-and drops a column shadow; it does not overlay or blur the page.
+and drops a column shadow; it does not overlay or blur the page. The site
+footer is composed on the plugin page, inside that main column.
+
+`artifact-ask` also exports `ArtifactAskSuggestions`, the "you might ask"
+card the page places in the header rail. Because the page content is the
+widget's `children`, the two talk over a context the widget provides: the card
+calls it, the column opens, and the question is handed to the thread. With no
+ask on that plugin there is no provider and the card renders nothing.
 
 **Does not contain:** application-wide state or routing logic.
 
@@ -42,7 +49,10 @@ and drops a column shadow; it does not overlay or blur the page.
 - `ask-artifact` owns the Ada-backed Q&A thread: SSE reader, `queryId`, messages.
   While Ada is working it uses beUI loading states: `ReasoningText` before the
   first file event, then `AgentProgress` on the activity header. Answer text
-  is paced by `useDisplayClock` (see [`streaming.md`](streaming.md)).
+  is paced by `useDisplayClock` (see [`streaming.md`](streaming.md)). It also
+  owns the suggested-question pool: twelve openers generic enough for any
+  GitHub-sourced plugin, drawn three at a time by a seeded shuffle so the
+  server and the client agree and hydration holds.
 
 **Does not contain:** generic primitives (those go in `shared`) or domain rules that belong to `entities`.
 

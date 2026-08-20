@@ -1,4 +1,4 @@
-import { useCallback, useId, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { AgentActivity } from '@/shared/ui/agents/agent-activity'
 import type { AgentActivityItem } from '@/shared/ui/agents/agent-activity/types'
 import { Citations, type CitationItem } from '@/shared/ui/agents/citations'
@@ -23,15 +23,25 @@ import {
 } from '../model/ask-session'
 
 /**
+ * A question handed to the thread from outside it — today, a suggested opener.
+ *
+ * The counter is what distinguishes "asked again" from a re-render, so the same
+ * text can be sent twice without the panel treating the second click as noise.
+ */
+export type AskRequest = { id: number; question: string }
+
+/**
  * The ask conversation: composer, streamed answer, scanned paths, cites.
  * `queryId` stays in this tab so a follow-up reuses Ada's thread.
  */
 export function AskArtifactPanel({
   artifactId,
   className,
+  request,
 }: {
   artifactId: string
   className?: string
+  request?: AskRequest
 }) {
   const t = useT()
   const idPrefix = useId()
@@ -39,6 +49,7 @@ export function AskArtifactPanel({
   const [draft, setDraft] = useState('')
   const [busy, setBusy] = useState(false)
   const [banner, setBanner] = useState<string | undefined>()
+  const handledRequest = useRef(0)
 
   const send = useCallback(
     async (question: string) => {
@@ -76,6 +87,15 @@ export function AskArtifactPanel({
     },
     [artifactId, busy, idPrefix, session.queryId, session.turns.length, t],
   )
+
+  useEffect(() => {
+    if (request === undefined || request.id === handledRequest.current) return
+    handledRequest.current = request.id
+    // A stream in flight owns the thread, so the question lands in the composer
+    // instead: the reader can see it, edit it, and send it when the turn ends.
+    if (busy) setDraft(request.question)
+    else void send(request.question)
+  }, [busy, request, send])
 
   return (
     <div className={className}>

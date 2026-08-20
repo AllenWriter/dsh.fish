@@ -248,5 +248,19 @@
   "ask.reasoning.connecting": "Соединяю детали",
   "ask.reasoning.forming": "Формирую ответ",
   "ask.sources": "Источники",
-  "ask.deepwiki": "DeepWiki"
+  "ask.deepwiki": "DeepWiki",
+  "ask.suggested.title": "Возможно, вы спросите",
+  "ask.suggested.shuffle": "Показать другие вопросы",
+  "ask.suggested.q1": "Что делает этот плагин?",
+  "ask.suggested.q2": "Как его установить и настроить?",
+  "ask.suggested.q3": "Где в исходниках начинается выполнение?",
+  "ask.suggested.q4": "От чего он зависит?",
+  "ask.suggested.q5": "Какие ключи или переменные окружения ему нужны?",
+  "ask.suggested.q6": "Как он тестируется?",
+  "ask.suggested.q7": "Какие у него известные ограничения?",
+  "ask.suggested.q8": "Как его расширить?",
+  "ask.suggested.q9": "Как он обрабатывает ошибки?",
+  "ask.suggested.q10": "Какие права ему нужны?",
+  "ask.suggested.q11": "Как организован код?",
+  "ask.suggested.q12": "С чего начать чтение, чтобы разобраться?"
 }

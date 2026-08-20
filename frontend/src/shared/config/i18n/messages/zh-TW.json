@@ -248,5 +248,19 @@
   "ask.reasoning.connecting": "正在串聯細節",
   "ask.reasoning.forming": "正在組織回答",
   "ask.sources": "來源",
-  "ask.deepwiki": "DeepWiki"
+  "ask.deepwiki": "DeepWiki",
+  "ask.suggested.title": "猜你想問",
+  "ask.suggested.shuffle": "換一批",
+  "ask.suggested.q1": "這個外掛是做什麼的？",
+  "ask.suggested.q2": "怎麼安裝和設定？",
+  "ask.suggested.q3": "原始碼的執行進入點在哪裡？",
+  "ask.suggested.q4": "它依賴哪些東西？",
+  "ask.suggested.q5": "需要哪些金鑰或環境變數？",
+  "ask.suggested.q6": "它是怎麼測試的？",
+  "ask.suggested.q7": "有哪些已知限制？",
+  "ask.suggested.q8": "怎麼擴充它？",
+  "ask.suggested.q9": "它怎麼處理錯誤？",
+  "ask.suggested.q10": "它需要哪些權限？",
+  "ask.suggested.q11": "程式碼是怎麼組織的？",
+  "ask.suggested.q12": "想讀懂它，應該先看哪部分？"
 }

@@ -36,6 +36,7 @@ export {
   SunIcon as LightThemeIcon,
   MoonIcon as DarkThemeIcon,
   ArrowSquareOutIcon as ExternalLinkIcon,
+  ShuffleIcon as ShuffleIcon,
 
   // Account, and the places the project and its maintainer can be reached.
   SignInIcon as SignInIcon,

@@ -148,7 +148,8 @@ the Worker boots); Playwright fulfills
 `**/api/v1/artifacts/*/ask` with an SSE fixture so **CI never hits Ada**
 (`api.devin.ai`). Assertions: GitHub toggle vs npm absence; stream then
 DeepWiki citation (favicon from deepwiki.com); follow-up reuses `queryId`; 429 copy; right column vs bottom sheet;
-`skipHtml` on a script delta; no transform drift under reduced motion.
+`skipHtml` on a script delta; no transform drift under reduced motion; a
+suggested opener redraws on shuffle and posts the question it displays.
 
 Limiter load tests live in
 `backend/src/infrastructure/ask/kv-ask-rate-limiter.load.test.ts` against a

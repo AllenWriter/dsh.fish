@@ -248,5 +248,19 @@
   "ask.reasoning.connecting": "Connecting the details",
   "ask.reasoning.forming": "Forming a response",
   "ask.sources": "Sources",
-  "ask.deepwiki": "DeepWiki"
+  "ask.deepwiki": "DeepWiki",
+  "ask.suggested.title": "You might ask",
+  "ask.suggested.shuffle": "Show other questions",
+  "ask.suggested.q1": "What does this plugin do?",
+  "ask.suggested.q2": "How do I install and configure it?",
+  "ask.suggested.q3": "Where does execution start in the source?",
+  "ask.suggested.q4": "What does it depend on?",
+  "ask.suggested.q5": "What credentials or environment variables does it need?",
+  "ask.suggested.q6": "How is it tested?",
+  "ask.suggested.q7": "What are its known limitations?",
+  "ask.suggested.q8": "How do I extend it?",
+  "ask.suggested.q9": "How does it handle errors?",
+  "ask.suggested.q10": "What permissions does it need?",
+  "ask.suggested.q11": "How is the code organised?",
+  "ask.suggested.q12": "What should I read first to understand it?"
 }

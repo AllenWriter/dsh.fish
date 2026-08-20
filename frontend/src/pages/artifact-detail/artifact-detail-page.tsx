@@ -2,7 +2,8 @@ import { data } from 'react-router'
 import type { Route } from './+types/artifact-detail-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { ArtifactReviews } from '@/widgets/artifact-reviews/artifact-reviews'
-import { ArtifactAsk } from '@/widgets/artifact-ask'
+import { ArtifactAsk, ArtifactAskSuggestions } from '@/widgets/artifact-ask'
+import { SiteFooter } from '@/widgets/site-footer/site-footer'
 import { InstallPanel } from '@/widgets/install-panel/install-panel'
 import { ReadmeBadge } from '@/widgets/readme-badge/readme-badge'
 import { AuthorCard } from '@/entities/artifact/ui/author-card'
@@ -326,6 +327,7 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
               {t('artifact.source')}
               <ExternalLinkIcon className="size-4 text-muted-foreground" weight="bold" />
             </a>
+            <ArtifactAskSuggestions artifactId={artifact.id} />
           </div>
         </div>
       </header>
@@ -372,6 +374,7 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
         </div>
       </div>
       </article>
+      <SiteFooter />
     </ArtifactAsk>
   )
 }

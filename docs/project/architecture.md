@@ -104,7 +104,11 @@ panel, the README badge snippet, then community reviews. Ask is a
 GitHub-only, feature-flagged **column** (`ARTIFACT_ASK_ENABLED`) that
 sits beside the plugin page rather than in the rail. Opening it rounds
 the page's right corners where they meet the column and drops
-`--shadow-column`; there is no overlay and no backdrop blur. npm and
+`--shadow-column`; there is no overlay and no backdrop blur. The site
+footer stays inside that main column so it does not drop out under the
+Q&A pane. The header rail carries a "you might ask" card — three openers
+drawn from a twelve-question pool by a seed derived from the plugin id, so
+the draw survives hydration; clicking one opens the column and asks it. npm and
 flagged-off Workers omit the control entirely. The Worker proxies
 DeepWiki Ada (Fast) as SSE — the browser never
 calls `api.devin.ai`. See [`../decisions/adr-0004-artifact-ask-via-ada.md`](../decisions/adr-0004-artifact-ask-via-ada.md).

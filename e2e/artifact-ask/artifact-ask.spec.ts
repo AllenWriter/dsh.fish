@@ -45,6 +45,12 @@ function askSurface(page: Page) {
   })
 }
 
+function suggestions(page: Page) {
+  return page.locator('section').filter({
+    has: page.getByRole('heading', { name: 'You might ask' }),
+  })
+}
+
 async function openAsk(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Ask this project' }).click({ force: true })
   await expect(page.getByLabel('Ask about this repository…')).toBeVisible()
@@ -64,6 +70,31 @@ test.describe('artifact ask', () => {
 
     await page.goto(NPM, { waitUntil: 'load' })
     await expect(page.getByRole('button', { name: 'Ask this project' })).toHaveCount(0)
+    // No thread to answer them, so the openers do not render either.
+    await expect(suggestions(page)).toHaveCount(0)
+  })
+
+  test('asks a suggested question and can redraw the set', async ({ page }) => {
+    const posts: Array<{ question: string; queryId?: string }> = []
+    await mockAsk(page, (post) => {
+      posts.push(post)
+      return { status: 200, body: sseBody() }
+    })
+
+    await page.goto(GITHUB, { waitUntil: 'load' })
+    const card = suggestions(page)
+    const options = card.locator('li button')
+    await expect(options).toHaveCount(3)
+
+    const drawn = await options.allInnerTexts()
+    await card.getByRole('button', { name: 'Show other questions' }).click()
+    await expect.poll(() => options.allInnerTexts()).not.toEqual(drawn)
+
+    const question = (await options.first().innerText()).trim()
+    await options.first().click()
+    await expect(page.getByLabel('Ask about this repository…')).toBeVisible()
+    await expect.poll(() => posts.length).toBe(1)
+    expect(posts[0]?.question).toBe(question)
   })
 
   test('streams an answer, cites a path, and links DeepWiki', async ({ page }) => {
