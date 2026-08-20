@@ -61,7 +61,16 @@ export interface ArtifactDetailDto extends ArtifactSummaryDto {
   /** Browsable URL of that commit. Absent when there is no pinned commit. */
   readonly sourceCommitUrl?: string
   readonly publishedAt: string
+  /**
+   * Whether this page can open the Ada-backed ask panel. `reason` is a machine
+   * token; the UI maps it through i18n and hides the control when unavailable.
+   */
+  readonly ask: ArtifactAskDto
 }
+
+export type ArtifactAskDto =
+  | { readonly available: true; readonly repoName: string }
+  | { readonly available: false; readonly reason: 'not_github' | 'disabled' }
 
 export interface PageDto<T> {
   readonly items: readonly T[]
@@ -114,6 +123,7 @@ export function toDetailDto(
   artifact: Artifact,
   localizedReadme?: { readonly markdown: string; readonly locale: string },
   localizedSummary?: string,
+  askEnabled = false,
 ): ArtifactDetailDto {
   const docBase = sourceDocBase(artifact.source)
   const assetBase = sourceAssetBase(artifact.source)
@@ -139,7 +149,18 @@ export function toDetailDto(
       : { sourceCommitSha: artifact.sourceCommitSha }),
     ...(commitUrl === undefined ? {} : { sourceCommitUrl: commitUrl }),
     publishedAt: artifact.publishedAt.toISOString(),
+    ask: artifactAsk(artifact, askEnabled),
   }
+}
+
+export function artifactAsk(artifact: Artifact, askEnabled: boolean): ArtifactAskDto {
+  if (artifact.source.origin !== 'github') {
+    return { available: false, reason: 'not_github' }
+  }
+  if (!askEnabled) {
+    return { available: false, reason: 'disabled' }
+  }
+  return { available: true, repoName: `${artifact.source.owner}/${artifact.source.repo}` }
 }
 
 export function toPageDto<T, R>(source: Page<T>, map: (item: T) => R): PageDto<R> {

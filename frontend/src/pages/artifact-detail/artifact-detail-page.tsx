@@ -2,6 +2,7 @@ import { data } from 'react-router'
 import type { Route } from './+types/artifact-detail-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { ArtifactReviews } from '@/widgets/artifact-reviews/artifact-reviews'
+import { ArtifactAsk } from '@/widgets/artifact-ask'
 import { InstallPanel } from '@/widgets/install-panel/install-panel'
 import { ReadmeBadge } from '@/widgets/readme-badge/readme-badge'
 import { AuthorCard } from '@/entities/artifact/ui/author-card'
@@ -358,12 +359,13 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
         </section>
 
         <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-          {/* Install, the README badge, then reviews: three rail cards, not a
+          {/* Install, ask, the README badge, then reviews: rail cards, not a
               section that only appears after the readme. A long readme would
               otherwise bury the comments; sitting here they stay in view with
               the install surface. */}
           <div className="flex flex-col gap-4">
             <InstallPanel artifact={artifact} plan={plan} />
+            <ArtifactAsk artifactId={artifact.id} ask={artifact.ask} />
             <ReadmeBadge artifact={artifact} origin={origin} />
             <ArtifactReviews reviews={reviews} now={now} />
           </div>

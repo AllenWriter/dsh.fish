@@ -14,6 +14,7 @@ describe('openApiDocument', () => {
       '/api/health',
       '/api/v1/artifacts',
       '/api/v1/artifacts/{id}',
+      '/api/v1/artifacts/{id}/ask',
       '/api/v1/artifacts/{id}/install-plan',
       '/api/v1/artifacts/{id}/reviews',
       '/api/v1/catalog/snapshot',
@@ -21,6 +22,14 @@ describe('openApiDocument', () => {
       '/api/v1/facets',
       '/api/v1/scoring',
     ])
+  })
+
+  it('documents ask as an SSE POST outside the snapshot cache contract', () => {
+    const ask = document.paths['/api/v1/artifacts/{id}/ask'].post
+    expect(ask.responses['200'].content['text/event-stream']).toBeDefined()
+    expect(ask.responses['429']).toBeDefined()
+    expect(ask.responses['503']).toBeDefined()
+    expect(ask.description).toMatch(/snapshot/i)
   })
 
   it('matches the search parameters the router actually parses', () => {

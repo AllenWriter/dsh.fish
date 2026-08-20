@@ -60,6 +60,7 @@ export {
   // Installing.
   TerminalWindowIcon as CliIcon,
   RobotIcon as AgentIcon,
+  ChatTextIcon as AskIcon,
   KeyIcon as CredentialIcon,
 
   // Outcomes and states.

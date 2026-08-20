@@ -68,3 +68,10 @@ A plugin page's readme is rendered as structured markdown, not as raw HTML.
 there is no `dangerouslySetInnerHTML`. The prose is still the unique indexable
 content a plugin page has; headings become real heading elements, which is
 better for the crawler than a `<pre>` of the source.
+
+## Artifact ask
+
+Q&A on a plugin page is client-only. Crawlers still see the artifact document
+(readme, install plan, reviews) without chat transcripts: nothing from Ada is
+in the HTML the loader returns, and `POST /api/v1/artifacts/:id/ask` is not a
+snapshot or sitemap URL.

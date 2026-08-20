@@ -30,7 +30,7 @@ export function mobileProjects(): Project[] {
     return {
       name,
       // The other suites declare their own viewport, and each needs exactly one.
-      testIgnore: /(catalog-og|icons|community-toasts)\//,
+      testIgnore: /(catalog-og|icons|community-toasts|artifact-ask)\//,
       use: { ...device, defaultBrowserType: 'chromium' },
     }
   })

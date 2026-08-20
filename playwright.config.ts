@@ -76,5 +76,18 @@ export default defineConfig({
         defaultBrowserType: 'chromium',
       },
     },
+    {
+      name: 'artifact-ask',
+      testMatch: /artifact-ask\/.*\.spec\.ts/,
+      use: {
+        viewport: { width: 1280, height: 900 },
+        defaultBrowserType: 'chromium',
+      },
+    },
+    {
+      name: 'artifact-ask-touch',
+      testMatch: /artifact-ask\/.*\.spec\.ts/,
+      use: { ...devices['Pixel 7'], defaultBrowserType: 'chromium' },
+    },
   ],
 })

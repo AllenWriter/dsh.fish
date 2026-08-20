@@ -44,7 +44,9 @@ For errors:
 | 404  | Resource not found. |
 | 409  | Conflict (e.g., duplicate unique value). |
 | 422  | Semantic validation error. |
+| 429  | Caller exceeded a documented rate budget (`RATE_LIMITED`). |
 | 500  | Unexpected server error. |
+| 503  | A required upstream is down or the Worker circuit is open (`UNAVAILABLE`). |
 
 ## Error codes
 
@@ -59,6 +61,17 @@ For errors:
 - The anonymous read surface is described by an OpenAPI 3.1 document served at
   `/openapi.json` (see [`docs/seo/crawling.md`](../seo/crawling.md)); keep it in
   sync when adding or changing public endpoints.
+
+## Streaming exception
+
+`POST /api/v1/artifacts/:id/ask` is the one anonymous endpoint that does not
+use the JSON envelope on success. A started response is `text/event-stream`
+(`event: file|delta|cite|done|error` plus JSON `data:`), with
+`Cache-Control: no-store` and `X-Ask-Query-Id`. Failures **before** the stream
+starts still use the envelope above (400, 404, 422, 429, 503). Ask is omitted
+from the catalog snapshot and from edge cache.
+
+See [`adr-0004-artifact-ask-via-ada.md`](../decisions/adr-0004-artifact-ask-via-ada.md).
 
 ## Pagination
 

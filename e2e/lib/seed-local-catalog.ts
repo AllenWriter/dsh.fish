@@ -29,19 +29,31 @@ export function seedLocalCatalog(root: string): void {
 
 function ensureDevVars(frontend: string): void {
   const path = resolve(frontend, '.dev.vars')
-  try {
-    writeFileSync(
-      path,
-      [
-        'PUBLIC_BASE_URL=http://localhost:5173',
-        'BETTER_AUTH_SECRET=e2e-test-secret-not-for-production',
-        '',
-      ].join('\n'),
-      { flag: 'wx' },
-    )
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error
+  const required: Record<string, string> = {
+    PUBLIC_BASE_URL: 'http://localhost:5173',
+    BETTER_AUTH_SECRET: 'e2e-test-secret-not-for-production',
+    ARTIFACT_ASK_ENABLED: 'true',
   }
+  let existing = ''
+  try {
+    existing = readFileSync(path, 'utf8')
+  } catch {
+    writeFileSync(path, Object.entries(required).map(([key, value]) => `${key}=${value}`).join('\n') + '\n')
+    return
+  }
+  let next = existing
+  for (const [key, value] of Object.entries(required)) {
+    const line = `${key}=${value}`
+    const pattern = new RegExp(`^${key}=.*$`, 'm')
+    if (pattern.test(next)) {
+      // Ask must be on for the artifact-ask Playwright project; other keys
+      // keep whatever the developer already set.
+      if (key === 'ARTIFACT_ASK_ENABLED') next = next.replace(pattern, line)
+      continue
+    }
+    next = `${next.replace(/\s*$/, '\n')}${line}\n`
+  }
+  if (next !== existing) writeFileSync(path, next)
 }
 
 function wrangler(frontend: string, args: string): void {

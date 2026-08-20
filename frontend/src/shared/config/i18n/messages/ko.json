@@ -235,5 +235,18 @@
   "artifact.maintenanceLabel": "유지 관리",
   "markdown.browseAll": "카탈로그 둘러보기",
   "markdown.catalogSnapshot": "카탈로그 스냅숏",
-  "markdown.resultCount": "결과 {count}개"
+  "markdown.resultCount": "결과 {count}개",
+  "ask.open": "이 프로젝트에 묻기",
+  "ask.title": "이 프로젝트에 묻기",
+  "ask.placeholder": "이 저장소에 대해 질문…",
+  "ask.close": "닫기",
+  "ask.unavailable.not_github": "질문은 GitHub에서 온 플러그인에서만 사용할 수 있습니다.",
+  "ask.attribution": "답변은 DeepWiki의 공개 HEAD 인덱스를 사용하며, 이 카탈로그 행이 스캔한 커밋이 아닙니다.",
+  "ask.attributionLink": "DeepWiki에서 보기",
+  "ask.rateLimited": "질문이 너무 많습니다. 잠시 후 다시 시도하세요.",
+  "ask.unavailable": "Q&A 서비스를 잠시 사용할 수 없습니다.",
+  "ask.error": "답변을 완료하지 못했습니다.",
+  "ask.scanning": "{path} 읽는 중",
+  "ask.complete": "답변 완료",
+  "ask.thinking": "저장소를 살펴보는 중…"
 }

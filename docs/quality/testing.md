@@ -43,7 +43,7 @@ deterministic unit test.
 - Keep them stable and fast enough to run in CI.
 - Use deterministic test data.
 
-`pnpm run test:e2e` runs Playwright. Five project groups share one config:
+`pnpm run test:e2e` runs Playwright. Project groups share one config:
 
 **Plugin-detail markdown** is an exception to "journeys only": a third-party
 readme is the unique content of `/a/:id`, and its layout is resolution-dependent.
@@ -137,6 +137,19 @@ That last test emulates the preference with `page.emulateMedia` and asserts the
 media query is in force before reading anything from it. Declaring it as a
 `test.use` fixture is not enough to trust — a preference that silently failed to
 apply would leave the test asserting the unreduced path and passing anyway.
+
+**Artifact ask** (`e2e/artifact-ask/`) is 1280×900 plus Pixel 7 — the same split
+as community-toasts / icons-touch, not the six-width readme matrix. The Worker
+under test has `ARTIFACT_ASK_ENABLED=true`; Playwright fulfills
+`**/api/v1/artifacts/*/ask` with an SSE fixture so **CI never hits Ada**
+(`api.devin.ai`). Assertions: GitHub rail control vs npm absence; stream then
+DeepWiki link; follow-up reuses `queryId`; 429 copy; drawer vs bottom sheet;
+`skipHtml` on a script delta; no transform drift under reduced motion.
+
+Limiter load tests live in
+`backend/src/infrastructure/ask/kv-ask-rate-limiter.load.test.ts` against a
+fake Ada. The live probe (`scripts/ada-live-probe.ts`) is ops-only, gated on
+`LIVE_ADA_PROBE=1`, capped at 20 Fast requests, and is not a GitHub Actions job.
 
 Pagination is covered by a unit test, not here: the seed holds seven rows against a
 page size of twenty-four, so a browser never reaches a second page.

@@ -166,7 +166,7 @@ export function openApiDocument(baseUrl: string) {
       title: 'dsh.fish catalog API',
       version: '1.0.0',
       description:
-        'Read-only access to the dsh plugin registry: search, artifact detail, install plans, facets, the public scoring model, and a versioned whole-catalog snapshot. All endpoints listed here are anonymous. Agents can also request any HTML page as markdown via `Accept: text/markdown`.',
+        'Read-only access to the dsh plugin registry: search, artifact detail, install plans, facets, the public scoring model, a versioned whole-catalog snapshot, and (when enabled) a streaming ask against GitHub-sourced artifacts. All endpoints listed here are anonymous. Agents can also request any HTML page as markdown via `Accept: text/markdown`. Ask is omitted from the snapshot contract and is never cached: it is a POST that streams `text/event-stream`.',
     },
     servers: [{ url: baseUrl }],
     paths: {
@@ -258,9 +258,59 @@ export function openApiDocument(baseUrl: string) {
                 sourceCommitSha: { type: 'string', description: 'The commit the indexer scanned, for git sources.' },
                 sourceCommitUrl: { type: 'string', format: 'uri' },
                 publishedAt: { type: 'string', format: 'date-time' },
+                ask: artifactAskSchema(),
               },
             }),
             '404': jsonResponse('No artifact with that id.', errorSchema),
+          },
+        },
+      },
+      '/api/v1/artifacts/{id}/ask': {
+        post: {
+          operationId: 'askArtifact',
+          summary: 'Ask a GitHub-sourced artifact (SSE)',
+          description:
+            'Anonymous Fast-mode proxy of DeepWiki Ada. Streaming is an exception to the JSON envelope: a started response is `text/event-stream` with events `file`, `delta`, `cite`, `done`, and `error`. Failures before the stream starts still use the JSON error envelope (400, 404, 422, 429, 503). Ask is omitted from the anonymous snapshot contract and from edge cache. GitHub sources only; npm and submissions return 422. Gated by ARTIFACT_ASK_ENABLED.',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['question'],
+                  properties: {
+                    question: { type: 'string', minLength: 1, maxLength: 2000 },
+                    queryId: {
+                      type: 'string',
+                      description: 'Reuse the previous query id for a follow-up in the same tab.',
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            '200': {
+              description: 'Mapped Ada events as Server-Sent Events. X-Ask-Query-Id is the thread id.',
+              headers: {
+                'X-Ask-Query-Id': { schema: { type: 'string' } },
+                'Cache-Control': { schema: { type: 'string', enum: ['no-store'] } },
+              },
+              content: {
+                'text/event-stream': {
+                  schema: {
+                    type: 'string',
+                    description: 'SSE frames: event is file|delta|cite|done|error; data is JSON.',
+                  },
+                },
+              },
+            },
+            '400': jsonResponse('Invalid body.', errorSchema),
+            '404': jsonResponse('No artifact with that id.', errorSchema),
+            '422': jsonResponse('Ask is disabled or the artifact is not GitHub-sourced.', errorSchema),
+            '429': jsonResponse('Caller or artifact budget exhausted (RATE_LIMITED).', errorSchema),
+            '503': jsonResponse('Ada or the Worker circuit is unavailable (UNAVAILABLE).', errorSchema),
           },
         },
       },
@@ -458,5 +508,28 @@ function catalogMetaSchema() {
       artifactCount: { type: 'integer' },
       generatedAt: { type: 'string', format: 'date-time' },
     },
+  } as const
+}
+
+function artifactAskSchema() {
+  return {
+    oneOf: [
+      {
+        type: 'object',
+        required: ['available', 'repoName'],
+        properties: {
+          available: { type: 'boolean', enum: [true] },
+          repoName: { type: 'string', description: 'GitHub owner/repo Ada will be asked about.' },
+        },
+      },
+      {
+        type: 'object',
+        required: ['available', 'reason'],
+        properties: {
+          available: { type: 'boolean', enum: [false] },
+          reason: { type: 'string', enum: ['not_github', 'disabled'] },
+        },
+      },
+    ],
   } as const
 }

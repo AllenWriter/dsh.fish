@@ -235,5 +235,18 @@
   "artifact.maintenanceLabel": "メンテナンス",
   "markdown.browseAll": "カタログを見る",
   "markdown.catalogSnapshot": "カタログスナップショット",
-  "markdown.resultCount": "{count} 件の結果"
+  "markdown.resultCount": "{count} 件の結果",
+  "ask.open": "このプロジェクトに聞く",
+  "ask.title": "このプロジェクトに聞く",
+  "ask.placeholder": "このリポジトリについて質問…",
+  "ask.close": "閉じる",
+  "ask.unavailable.not_github": "質問は GitHub 由来のプラグインでのみ利用できます。",
+  "ask.attribution": "回答は DeepWiki の公開 HEAD インデックスに基づき、このカタログ行がスキャンしたコミットではありません。",
+  "ask.attributionLink": "DeepWiki で見る",
+  "ask.rateLimited": "質問が多すぎます。しばらくしてから再試行してください。",
+  "ask.unavailable": "Q&A サービスは一時的に利用できません。",
+  "ask.error": "回答を完了できませんでした。",
+  "ask.scanning": "{path} を読み取り中",
+  "ask.complete": "回答完了",
+  "ask.thinking": "リポジトリを調べています…"
 }

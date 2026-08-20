@@ -16,6 +16,9 @@ The interfaces layer adapts the application layer to the outside world. It handl
 - Validate input at the boundary. Invalid input should produce a clear error response (see [`api-conventions.md`](api-conventions.md)).
 - Do not pass HTTP request objects into application services.
 - Use the DTOs returned by application services for responses.
+- `POST /api/v1/artifacts/:id/ask` is the streaming exception: parse the JSON
+  body, call `AskArtifact`, return `text/event-stream`. Pre-stream errors stay
+  on the JSON envelope. See [`api-conventions.md`](api-conventions.md).
 
 ## Example
 

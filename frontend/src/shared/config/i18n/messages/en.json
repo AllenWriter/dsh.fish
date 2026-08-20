@@ -235,5 +235,18 @@
   "artifact.maintenanceLabel": "Maintenance",
   "markdown.browseAll": "Browse the catalog",
   "markdown.catalogSnapshot": "Catalog snapshot",
-  "markdown.resultCount": "{count} results"
+  "markdown.resultCount": "{count} results",
+  "ask.open": "Ask this project",
+  "ask.title": "Ask this project",
+  "ask.placeholder": "Ask about this repository…",
+  "ask.close": "Close",
+  "ask.unavailable.not_github": "Ask is available for GitHub-sourced plugins.",
+  "ask.attribution": "Answers use DeepWiki’s public HEAD index, not the commit this catalog row scanned.",
+  "ask.attributionLink": "View on DeepWiki",
+  "ask.rateLimited": "Too many questions right now. Try again in a few minutes.",
+  "ask.unavailable": "The Q&A service is temporarily unavailable.",
+  "ask.error": "The answer could not be completed.",
+  "ask.scanning": "Reading {path}",
+  "ask.complete": "Answer complete",
+  "ask.thinking": "Looking through the repository…"
 }
