@@ -184,6 +184,8 @@
   "docs.menu": "Меню документации",
   "docs.search.placeholder": "Поиск по документации",
   "docs.search.empty": "Нет подходящих страниц",
+  "docs.nav.start": "Начало",
+  "docs.nav.develop": "Разработка",
   "docs.nav.publish": "Публикация",
   "docs.nav.install": "Установка",
   "docs.nav.reference": "Справка",

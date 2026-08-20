@@ -1,0 +1,17 @@
+---
+title: 從首次執行到自訂工具的 DeepSeek Harness 指南
+description: 啟動 DeepSeek Harness、連接模型、從 dsh.fish 安裝可信擴充功能，並開發第一個外掛程式。
+---
+
+DeepSeek Harness 是開源代理執行框架。dsh.fish 是獨立的擴充功能目錄，協助你尋找、檢查並安裝 Harness 能載入的內容。
+
+## 選擇你的路徑
+
+- **第一次使用？** 依照[快速開始](/docs/quickstart)啟動 Web UI、設定模型、選擇工作區並完成第一個任務。
+- **需要新能力？** 在工作階段中使用 [Hub 外掛程式](/docs/hub)，或在終端使用 [dsh.fish CLI](/docs/cli)。安裝前先檢查計畫。
+- **開發整合？** 建立[第一個外掛程式](/docs/develop/first-plugin)、註冊[工具](/docs/develop/tool)，再驗證[設定](/docs/develop/configuration)。
+- **準備發布？** 選擇合適的[發布格式](/docs/publish/bundle)，提交原始碼並查看公開評分。
+
+目錄會讀取真實儲存庫或套件 manifest。網站、CLI 和 Hub 外掛程式使用同一個安裝計畫 API。Git 套件的建置指令碼在代理沙箱之外執行，因此必須另外明確授權。
+
+DeepSeek Harness 仍處於開發者預覽階段。版本細節請參考[官方指南](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart)。

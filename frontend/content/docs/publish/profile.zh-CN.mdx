@@ -1,0 +1,18 @@
+---
+title: Profile
+description: 用有序 bundle 列表发布 DeepSeek Harness profile，并理解逐行覆盖规则。
+---
+
+Profile 是有序的 `dsh.profile.bundles` 栈。索引器会按顺序为每个 bundle 生成一次安装。
+
+```json
+{
+  "dsh": {
+    "profile": {
+      "bundles": ["@deepseek-ai/dsh-base", "dsh-hello-plugin"]
+    }
+  }
+}
+```
+
+后面的层按行获胜，patch 会整体替换一行配置而不是深度合并，因此顺序会改变结果。Profile 探针最先运行；同时像 profile 和 bundle 的包会被归类为 profile。

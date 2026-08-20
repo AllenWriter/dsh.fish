@@ -84,7 +84,12 @@ describe('maybeMarkdownResponse', () => {
         getArtifactDetail: { execute: async () => DETAIL },
         resolveInstallPlan: { execute: async () => PLAN },
         searchArtifacts: {
-          execute: async () => ({ items: [mockArtifact()], total: 1, limit: 50, offset: 0 }),
+          execute: async () => ({
+            items: [mockArtifact()],
+            total: 1,
+            limit: 50,
+            offset: 0,
+          }),
         },
       },
     } as unknown as Container
@@ -124,28 +129,45 @@ describe('maybeMarkdownResponse', () => {
     )
     expect(localized).not.toBeNull()
 
-    const browse = await maybeMarkdownResponse(request('/browse?q=mcp', 'text/markdown'), stubContainer())
+    const browse = await maybeMarkdownResponse(
+      request('/browse?q=mcp', 'text/markdown'),
+      stubContainer(),
+    )
     expect(browse).not.toBeNull()
     expect(await browse!.text()).toContain('- [@acme/dsh-hello]')
 
-    const kind = await maybeMarkdownResponse(request('/kind/bundle', 'text/markdown'), stubContainer())
+    const kind = await maybeMarkdownResponse(
+      request('/kind/bundle', 'text/markdown'),
+      stubContainer(),
+    )
     expect(kind).not.toBeNull()
 
     const docs = await maybeMarkdownResponse(request('/docs/cli', 'text/markdown'), stubContainer())
     expect(docs).not.toBeNull()
     expect(await docs!.text()).toContain('npx @dsh-fish/cli')
+
+    const localizedDocs = await maybeMarkdownResponse(
+      request('/zh-CN/docs/quickstart', 'text/markdown'),
+      stubContainer(),
+    )
+    expect(localizedDocs).not.toBeNull()
+    expect(await localizedDocs!.text()).toContain('启动 Web UI')
   })
 
   it('falls through for unknown paths and unknown artifacts', async () => {
     const container = stubContainer()
     expect(await maybeMarkdownResponse(request('/submit', 'text/markdown'), container)).toBeNull()
-    expect(await maybeMarkdownResponse(request('/kind/nope', 'text/markdown'), container)).toBeNull()
+    expect(
+      await maybeMarkdownResponse(request('/kind/nope', 'text/markdown'), container),
+    ).toBeNull()
 
     const missing = {
       ...container,
       useCases: {
         ...container.useCases,
-        getArtifactDetail: { execute: async () => Promise.reject(new Error('not found')) },
+        getArtifactDetail: {
+          execute: async () => Promise.reject(new Error('not found')),
+        },
       },
     } as unknown as Container
     expect(await maybeMarkdownResponse(request('/a/missing', 'text/markdown'), missing)).toBeNull()

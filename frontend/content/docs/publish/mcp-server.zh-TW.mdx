@@ -1,0 +1,25 @@
+---
+title: MCP Server
+description: 宣告 MCP transport 與憑據參照，將外部服務安裝為 DeepSeek Harness 原生工具。
+---
+
+MCP server 會作為 `dsh-mcp-client` 列寫入 profile patch；`package.json` 的 `dsh.hub` 是目錄的事實來源。
+
+```json
+{
+  "dsh": {
+    "hub": {
+      "kind": "mcp-server",
+      "mcp": {
+        "serverName": "github",
+        "transport": "stdio",
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-github"],
+        "credentials": [{ "envName": "GITHUB_TOKEN", "required": true }]
+      }
+    }
+  }
+}
+```
+
+`transport` 可為帶 `command` 的 `stdio`，或帶 `url` 的 `streamable-http`。目錄只儲存環境變數名稱等憑據參照，絕不儲存密鑰值。

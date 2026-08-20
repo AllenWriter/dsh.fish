@@ -1,0 +1,40 @@
+---
+title: Зарегистрируйте инструмент
+description: Добавьте типизированный инструмент в плагин DeepSeek Harness и проверьте ввод, результат и очистку.
+---
+
+У инструмента должна быть одна ясная задача. Проверяйте все входные данные, возвращайте проверяемый результат и избегайте скрытых побочных эффектов.
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+import { defineTool } from '@deepseek-ai/dsh-tools'
+
+export const inject = ['tools']
+
+export function apply(ctx: Context) {
+  ctx.tools.register(
+    defineTool({
+      name: 'greet',
+      description: 'Greet someone by name.',
+      parameters: {
+        name: {
+          type: 'string',
+          required: true,
+          description: 'The name to greet',
+        },
+      },
+      output: {
+        schema: { type: 'string' },
+        render: (_args, value) => [{ type: 'text', text: value }],
+      },
+      async execute(args) {
+        return `Hello, ${args.name}!`
+      },
+    }),
+  )
+}
+```
+
+Регистрируйте инструмент внутри `apply(ctx)` через актуальный официальный API, чтобы он исчезал при выгрузке плагина. Проверьте корректный, пустой и ошибочный ввод, затем отправьте в Web UI `Use greet for Ada.` и изучите IN/OUT строки инструмента.
+
+Не передавайте API-ключи в аргументах и результатах. Читайте их через механизм credentials Harness и маскируйте в логах.

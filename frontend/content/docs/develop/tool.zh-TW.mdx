@@ -1,0 +1,40 @@
+---
+title: 註冊工具
+description: 為 DeepSeek Harness 外掛程式新增型別化工具，並驗證輸入、結果與清理行為。
+---
+
+每個工具只做一件事、驗證所有輸入、回傳可核對的證據，並避免隱藏副作用。
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+import { defineTool } from '@deepseek-ai/dsh-tools'
+
+export const inject = ['tools']
+
+export function apply(ctx: Context) {
+  ctx.tools.register(
+    defineTool({
+      name: 'greet',
+      description: 'Greet someone by name.',
+      parameters: {
+        name: {
+          type: 'string',
+          required: true,
+          description: 'The name to greet',
+        },
+      },
+      output: {
+        schema: { type: 'string' },
+        render: (_args, value) => [{ type: 'text', text: value }],
+      },
+      async execute(args) {
+        return `Hello, ${args.name}!`
+      },
+    }),
+  )
+}
+```
+
+在 `apply(ctx)` 內依目前官方 API 註冊，使卸載外掛程式時工具也會移除。測試有效、空白和錯誤輸入；dump profile 確認只註冊一次；在 Web UI 傳送 `Use greet for Ada.`，檢查工具列的 IN/OUT。
+
+不要把 API 金鑰放進工具參數或回傳值。透過 Harness 憑據機制讀取，並在記錄中遮蔽敏感資料。

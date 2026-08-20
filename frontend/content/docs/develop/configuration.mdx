@@ -1,0 +1,48 @@
+---
+title: Configure, package, and install a plugin
+description: Validate plugin configuration, understand profile patch order, package compiled output, and test installation safely.
+---
+
+Configuration is part of your plugin's public contract. Reject invalid values with a useful message instead of silently inventing defaults.
+
+## Define and validate configuration
+
+Keep a documented schema beside the plugin. Separate ordinary settings from credentials; managed credentials are not copied into `process.env`. Test missing fields, wrong types, and values at each boundary.
+
+## Understand composition order
+
+The harness resolves configuration in this order:
+
+1. bundles declared by the profile;
+2. the profile's `cordis.patch`;
+3. the home-level `cordis.patch`;
+4. command-line patches.
+
+Later configuration replaces a matching row as a whole; it is not a deep merge. Dump the resolved configuration whenever an override seems to disappear.
+
+```sh
+dsh --profile demo --dump-config
+```
+
+## Package compiled output
+
+Publish only files needed at runtime, including `lib/`, the manifest, README, and license. Test the exact tarball rather than the working tree:
+
+```sh
+pnpm pack
+dsh plugin --profile demo add ./hello-harness-0.1.0.tgz
+```
+
+If installation from Git runs `prepare`, that script executes on the user's machine outside the agent sandbox. Keep it deterministic, document it, and recommend pinning a commit. pnpm 10 and later may require an explicit `allowBuilds` entry.
+
+## Release checklist
+
+- Install into a clean test profile.
+- Dump and inspect the resolved rows.
+- Exercise success, validation failure, and disposal.
+- Restart after bundle changes; use hot reload only for supported patch edits.
+- Remove the plugin and confirm no files, tools, or background resources remain.
+
+When the package is ready, choose the matching [dsh.fish publishing format](/docs/publish/bundle) and [submit the source](/docs/submit).
+
+Official references: [Plugin configuration](https://deepseek-harness.github.io/deepseek-harness/en/develop/basic/config/) and [Package and install a plugin](https://deepseek-harness.github.io/deepseek-harness/en/develop/basic/publish/).

@@ -1,0 +1,16 @@
+---
+title: Bundle
+description: dsh.bundle.patch で DeepSeek Harness が有効化できる npm プラグインパッケージを宣言します。
+---
+
+Bundle は `dsh.bundle.patch` を宣言する npm パッケージで、`dsh plugin add` の導入単位です。
+
+```json
+{
+  "name": "dsh-hello-plugin",
+  "files": ["index.js", "cordis.patch.yml"],
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}
+```
+
+宣言がないパッケージは導入できても Harness のレイヤーを有効化しません。npm にはビルド済みコードを公開してください。Git 導入で `prepare` を使う場合、利用者によるビルドスクリプトの明示的な許可が必要です。

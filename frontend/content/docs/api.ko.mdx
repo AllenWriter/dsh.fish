@@ -1,0 +1,16 @@
+---
+title: REST API
+description: 공개 JSON API로 dsh.fish를 검색하고 아티팩트와 설치 계획을 확인하며 점수와 카탈로그를 동기화합니다.
+---
+
+공개 API는 검색과 읽기 전용 카탈로그 통합에 사용합니다. 전체 규격은 [OpenAPI 문서](/openapi.json)에 있습니다.
+
+```sh
+curl -s 'https://dsh.fish/api/v1/artifacts?q=postgres&kind=mcp-server'
+curl -s 'https://dsh.fish/api/v1/artifacts/ARTIFACT_ID/install-plan?profile=web'
+curl -s 'https://dsh.fish/api/v1/scoring'
+```
+
+설치 계획은 데이터입니다. 그대로 실행하지 말고 각 파일, 패키지, profile patch를 사용자에게 보여 주며 빌드 스크립트는 따로 확인하세요.
+
+먼저 `/api/v1/catalog/version`을 확인하고 `dataVersion`이 바뀔 때만 snapshot을 내려받아 `ETag`를 저장합니다. 공개 읽기에는 계정이 필요 없습니다.

@@ -9,10 +9,10 @@ import { source } from './source'
  * client filter of this payload; Orama/Shiki never enter the Worker bundle.
  */
 export async function loader({ params, request }: Route.LoaderArgs) {
-  requireLocale(params.locale)
+  const locale = requireLocale(params.locale)
   const url = new URL(request.url)
   const query = url.searchParams.get('q')?.trim().toLowerCase() ?? ''
-  const pages = source.getPages().map((page) => ({
+  const pages = source.getPages(locale).map((page) => ({
     url: page.url,
     title: page.data.title,
     description: page.data.description ?? '',
@@ -22,7 +22,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       ? pages
       : pages.filter(
           (page) =>
-            page.title.toLowerCase().includes(query) || page.description.toLowerCase().includes(query),
+            page.title.toLowerCase().includes(query) ||
+            page.description.toLowerCase().includes(query),
         )
 
   return Response.json({ hits })

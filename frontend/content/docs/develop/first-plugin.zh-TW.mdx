@@ -1,0 +1,44 @@
+---
+title: 開發第一個外掛程式
+description: 建立最小 DeepSeek Harness 外掛程式，以原始碼 overlay 載入，並在 Web UI 中驗證生命週期。
+---
+
+Harness 由外掛程式組合而成。外掛程式接收 Cordis context，並註冊可在卸載時完整清理的 effect。
+
+<DocsVideo
+  src="/docs/video/develop.mp4"
+  poster="/docs/video/develop-poster.jpg"
+  title="一種能力，完整可見"
+  caption="用 30 秒了解從 apply 函式到可觀察結果的真實開發循環。"
+  transcriptLabel="影片文字稿"
+>
+  <p>外掛程式開發——一種能力，完整可見。</p>
+  <p>從一個 apply 函式開始，官方原始碼定義生命週期。</p>
+  <p>讓工具可觀察。原始 UI 顯示呼叫、推理和結果。</p>
+  <p>驗證、移除、重複。乾淨的 profile 讓結果保持清晰。</p>
+  <p>下一步——建構最小而有用的東西。</p>
+</DocsVideo>
+
+目前官方開發流程從 DeepSeek Harness 原始碼倉庫執行。先完成官方的原始碼啟動步驟，再於倉庫根目錄建立 `scratch-plugin/src/my-plugin.ts`：
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+export const name = 'hello-harness'
+export function apply(ctx: Context): void {
+  console.log('[hello-harness] plugin loaded!')
+}
+```
+
+建立 `scratch-plugin/cordis.yml`，並將路徑替換為原始碼倉庫的絕對路徑：
+
+```yaml
+- insert:
+    - id: hello
+      name: '/absolute/path/to/deepseek-harness/scratch-plugin/src/my-plugin.ts'
+```
+
+```sh
+pnpm dsh web --patch ./scratch-plugin/cordis.yml
+```
+
+開啟 `http://127.0.0.1:3080` 並確認終端輸出載入訊息。透過 `ctx` 註冊的能力會在卸載時自動清理；計時器或網路連線等外部資源應使用 `ctx.effect()` 回傳 disposer。

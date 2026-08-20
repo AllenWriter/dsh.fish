@@ -1,0 +1,46 @@
+---
+title: クイックスタート：DeepSeek Harness を実行する
+description: DeepSeek Harness Web UI を起動し、モデルとワークスペースを設定して最初のリポジトリタスクを完了します。
+---
+
+API キーはローカルに保存され、モデルへのリクエストは dsh.fish を経由しません。
+
+<DocsVideo
+  src="/docs/video/quickstart.mp4"
+  poster="/docs/video/quickstart-poster.jpg"
+  title="起動から最初のタスクまで"
+  caption="実際の UI を使った Web UI 設定フローを 27 秒で紹介します。"
+  transcriptLabel="動画の文字起こし"
+>
+  <p>DeepSeek Harness — ゼロから最初のタスクへ。</p>
+  <p>本物の Web UI を起動。コマンドは一つ、既定ではローカルのみ。</p>
+  <p>モデルを接続。API キーは自分のマシンに保存されます。</p>
+  <p>ワークスペースを一つ選び、小さく検証できる質問をします。</p>
+  <p>次の一歩 — 小さく問い、すべて検証する。</p>
+</DocsVideo>
+
+## 1. Web UI を起動する
+
+```sh
+npx @deepseek-ai/dsh web
+```
+
+ブラウザが開かなければ `http://127.0.0.1:3080` にアクセスします。
+
+## 2. モデルを接続する
+
+**Settings → Models** を開き、プロバイダー、モデル名、API キーを入力して保存します。次のリクエストから反映され、再起動は不要です。OpenAI 互換エンドポイントでは base URL とモデル識別子を正確に確認してください。
+
+## 3. ワークスペースを選ぶ
+
+**Choose workspace** から対象リポジトリを選びます。ワークスペースは信頼境界です。無関係な秘密情報や個人ファイルを含む上位ディレクトリは開かないでください。
+
+## 4. 最初のタスク
+
+```text
+Summarize this repository and identify its main packages.
+```
+
+回答に出たファイルが実在することを確かめ、次に小さなテストを一つ実行します。権限要求と差分を個別に確認してください。`workspace-write` は書き込みを制御しますが、すべての読み取り、プロセス、ネットワークを隔離するものではありません。
+
+次は [Hub プラグイン](/docs/hub)を導入するか、[最初のプラグイン](/docs/develop/first-plugin)を作ります。

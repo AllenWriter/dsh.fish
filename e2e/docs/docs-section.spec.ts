@@ -7,8 +7,8 @@ import { E2E_ORIGIN } from '../lib/origin'
  * Product docs as a Fumadocs section.
  *
  * Functional claims a crawler or an agent would notice: one URL per guide,
- * live scoring, markdown negotiation, search JSON not under `/api/`, Japanese
- * chrome around English MDX. Screenshots of the first fold are written for a
+ * live scoring, localized Markdown, video, and search JSON not under `/api/`.
+ * Screenshots of the first fold are written for a
  * human to look at — they are not visual baselines.
  */
 
@@ -49,23 +49,32 @@ async function shot(page: Page, name: string): Promise<void> {
 }
 
 test.describe('product docs on a desktop', () => {
-  test('the section home has a sidebar, one h1, and the probe table', async ({ page }) => {
+  test('the section home has the complete learning path and localized alternates', async ({
+    page,
+  }) => {
     await openDocs(page, '/docs')
 
     const menu = page.getByRole('navigation', { name: 'Documentation menu' })
     await expect(menu).toBeVisible()
     await expect(
       page.getByRole('heading', { level: 1, name: 'Publishing to dsh.fish' }),
+    ).toHaveCount(0)
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'DeepSeek Harness, from first run to your own tools',
+      }),
     ).toBeVisible()
     await expect(page.locator('article h1')).toHaveCount(1)
     await expect(menu.getByRole('link', { name: 'Hook bridges' })).toBeVisible()
     await expect(menu.getByRole('link', { name: 'CLI' })).toBeVisible()
-    await expect(page.locator('article table')).toContainText('SKILL.md')
+    await expect(menu.getByRole('link', { name: 'Quickstart: run DeepSeek Harness' })).toBeVisible()
+    await expect(menu.getByRole('link', { name: 'Build your first plugin' })).toBeVisible()
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
       `${E2E_ORIGIN}/docs`,
     )
-    await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(0)
+    await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(7)
     await shot(page, 'docs-home-light')
   })
 
@@ -118,15 +127,22 @@ test.describe('product docs on a desktop', () => {
     await shot(page, 'docs-search-filter-light')
   })
 
-  test('Japanese chrome wraps the English MDX', async ({ page }) => {
+  test('Japanese docs are translated, canonical, and indexable', async ({ page }) => {
     await openDocs(page, '/ja/docs')
     await expect(page.getByRole('navigation', { name: 'ドキュメントメニュー' })).toBeVisible()
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Publishing to dsh.fish' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'DeepSeek Harness 入門から独自ツール開発まで',
+      }),
     ).toBeVisible()
     await expect(page.getByRole('searchbox', { name: 'ドキュメントを検索' })).toBeVisible()
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, follow')
-    await expect(page.locator('link[rel="canonical"]')).toHaveCount(0)
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /index, follow/)
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      'href',
+      `${E2E_ORIGIN}/ja/docs`,
+    )
+    await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(7)
     await shot(page, 'docs-home-ja')
   })
 
@@ -134,7 +150,10 @@ test.describe('product docs on a desktop', () => {
     await openDocs(page, '/docs', 'dark')
     await expect(page.locator('html')).toHaveClass(/dark/)
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Publishing to dsh.fish' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'DeepSeek Harness, from first run to your own tools',
+      }),
     ).toBeVisible()
     await shot(page, 'docs-home-dark')
   })
@@ -163,5 +182,21 @@ test.describe('product docs on a desktop', () => {
     expect(response.ok()).toBeTruthy()
     expect(response.headers()['content-type']).toContain('text/markdown')
     expect(await response.text()).toContain('npx @dsh-fish/cli')
+
+    const localized = await request.get('/zh-CN/docs/quickstart', {
+      headers: { accept: 'text/markdown' },
+    })
+    expect(localized.ok()).toBeTruthy()
+    expect(await localized.text()).toContain('启动 Web UI')
+  })
+
+  test('quickstart embeds a controlled video with a localized transcript', async ({ page }) => {
+    await openDocs(page, '/zh-CN/docs/quickstart')
+    const video = page.locator('article video')
+    await expect(video).toHaveCount(1)
+    await expect(video).toHaveAttribute('controls', '')
+    await expect(video).toHaveAttribute('poster', '/docs/video/quickstart-poster.jpg')
+    await page.getByText('视频文字稿').click()
+    await expect(page.getByText('从小处提问，逐项验证。')).toBeVisible()
   })
 })

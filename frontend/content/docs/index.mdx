@@ -1,27 +1,23 @@
 ---
-title: Publishing to dsh.fish
-description: Tag a repository with dsh-plugin, or submit it. The registry lists what the harness would actually load.
+title: DeepSeek Harness, from first run to your own tools
+description: Start DeepSeek Harness, connect a model, install trusted extensions from dsh.fish, and build your first plugin.
 ---
 
-Tag your repository with the `dsh-plugin` topic, or [submit it](/docs/submit). The registry reads the real manifest — what it lists is what the harness would load.
+DeepSeek Harness is an open-source agent harness. dsh.fish is an independent catalog for finding, checking, and installing things the harness can load. This guide joins the two into one practical path.
 
-A topic is a seed, not a claim. Most repositories that carry it are applications that mention the harness. Classification is a probe of files, in this order, and a repository that answers none of them yields no row.
+## Choose your path
 
-| Probe | Kind |
-| --- | --- |
-| `package.json` with `dsh.profile.bundles` | [Profile](/docs/publish/profile) |
-| `package.json` with `dsh.bundle` | [Bundle](/docs/publish/bundle) |
-| `package.json` with `dsh.hub.kind` + `dsh.hub.mcp` | [MCP server](/docs/publish/mcp-server) |
-| `package.json` with `dsh.hub.kind` + `dsh.hub.hook` | [Hook bridge](/docs/publish/hook-bridge) |
-| `SKILL.md` with `name` + `description` frontmatter | [Skill](/docs/publish/skill) |
-| `agent.cordis.yml` | [Agent preset](/docs/publish/agent-preset) |
+- **New to the harness?** Follow [Quickstart](/docs/quickstart) to launch the Web UI, add a model, choose a workspace, and run a first task.
+- **Want a capability?** Use the [hub plugin](/docs/hub) inside a session or the [dsh.fish CLI](/docs/cli) in a terminal. Inspect the plan before installing.
+- **Building an integration?** Create a [first plugin](/docs/develop/first-plugin), add a [tool](/docs/develop/tool), then validate its [configuration](/docs/develop/configuration).
+- **Ready to share?** Pick the matching [publishing format](/docs/publish/bundle), submit the source, and review the public score.
 
-JSON keys are identifiers. They stay in English in every language of this site — a translated key is a broken instruction.
+## What dsh.fish verifies
 
-## Install from three surfaces
+The catalog reads the repository or package manifest. A topic or submission is only a discovery seed; it does not decide what appears. Every artifact page shows the detected type, source, install plan, maintenance signals, and a reproducible score.
 
-The install plan is one domain object. The website renders copy-paste commands; [`@dsh-fish/cli`](/docs/cli) and the [`dsh-hub` plugin](/docs/hub) execute the same steps. They cannot drift apart.
+The website, CLI, and hub plugin all consume the same install-plan API. A plan can write files under `$DSH_HOME`, add packages, or patch a profile. Git packages that run build scripts require a separate, explicit approval because those scripts execute outside the agent sandbox.
 
-## How a listing is trusted
+## Version note
 
-Every artifact carries a public [quality score](/docs/scoring). The formula on that page is the constant `GET /api/v1/scoring` serves, not a paraphrase.
+DeepSeek Harness is a developer preview. Commands in this guide are limited to behavior verified in the published npm release. For internals and version-specific options, use the [official DeepSeek Harness guide](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart).

@@ -1,0 +1,24 @@
+---
+title: MCP Server
+description: MCP transport と資格情報の参照を宣言し、外部サービスを DeepSeek Harness のツールとして導入します。
+---
+
+MCP server は profile patch に `dsh-mcp-client` 行として追加され、`package.json` の `dsh.hub` がカタログの情報源です。
+
+```json
+{
+  "dsh": {
+    "hub": {
+      "kind": "mcp-server",
+      "mcp": {
+        "serverName": "github",
+        "transport": "stdio",
+        "command": "npx",
+        "credentials": [{ "envName": "GITHUB_TOKEN", "required": true }]
+      }
+    }
+  }
+}
+```
+
+`transport` は `command` 付きの `stdio`、または `url` 付きの `streamable-http` です。カタログは環境変数名などの参照だけを保存し、秘密値は保存しません。

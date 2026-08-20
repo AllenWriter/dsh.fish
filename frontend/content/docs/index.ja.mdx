@@ -1,0 +1,17 @@
+---
+title: DeepSeek Harness 入門から独自ツール開発まで
+description: DeepSeek Harness を起動し、モデルを接続し、dsh.fish から拡張を安全に導入して最初のプラグインを作ります。
+---
+
+DeepSeek Harness はオープンソースのエージェント実行基盤です。dsh.fish は、Harness が読み込める拡張を探し、内容を確認して導入するための独立したカタログです。
+
+## 目的から選ぶ
+
+- **初めて使う:** [クイックスタート](/docs/quickstart)で Web UI、モデル、ワークスペース、最初のタスクを設定します。
+- **機能を追加する:** セッション内の [Hub プラグイン](/docs/hub)、またはターミナルの [dsh.fish CLI](/docs/cli)を使います。導入前に計画を確認してください。
+- **連携を開発する:** [最初のプラグイン](/docs/develop/first-plugin)を作り、[ツール](/docs/develop/tool)と[設定](/docs/develop/configuration)を追加します。
+- **公開する:** 適切な[公開形式](/docs/publish/bundle)を選び、ソースを送信して公開スコアを確認します。
+
+dsh.fish は実際のリポジトリまたはパッケージ manifest を読みます。Web サイト、CLI、Hub プラグインは同じインストール計画 API を利用します。Git パッケージのビルドスクリプトはエージェントのサンドボックス外で動くため、個別の明示的な許可が必要です。
+
+Harness は開発者プレビューです。バージョン固有の詳細は[公式ガイド](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart)を参照してください。

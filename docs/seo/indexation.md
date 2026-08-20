@@ -7,21 +7,21 @@ canonical home of something.
 
 ## The table
 
-| URL | Indexed | Why |
-|---|---|---|
-| `/` and `/:locale` | ✅ | The landing page, per language. |
-| `/a/:artifactId` | ✅ | The reason the site exists. One per indexed plugin, per language. |
-| `/kind/:kind` | ✅ (page 1) | "MCP servers for DeepSeek Harness" is a phrase people type. |
-| `/category/:category` | ✅ (page 1) | The "what is it for" axis people search along. |
-| `/browse` (bare) | ✅ | The catalog itself. |
-| `/browse?…` any query | ❌ `noindex, follow` | A view of a listing that already has a canonical home. |
-| `/kind/…?offset=` | ❌ `noindex, follow` | Page two is a real page but not the page to land on for the term. |
-| `/docs` | ✅ | "How do I publish a dsh plugin" is a question people search. |
-| `/docs/…` (MDX pages) | ✅ | One URL per guide (`/docs/cli`, `/docs/publish/hook-bridge`, …). Generated from the Fumadocs source into `pages.xml`. |
-| `/docs/search` | ❌ | JSON title/description index for the section. Not a document. |
-| `/submit` | ✅ | Same — the explanation is public even though the form is gated. |
-| `/dashboard`, `/sign-in`, `/device` | ❌ `noindex, follow` | Account pages. Nothing a search result should lead to. |
-| 404s | ❌ | A real 404 status, never a soft one. |
+| URL                                 | Indexed              | Why                                                                                                                                                                             |
+| ----------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/` and `/:locale`                  | ✅                   | The landing page, per language.                                                                                                                                                 |
+| `/a/:artifactId`                    | ✅                   | The reason the site exists. One per indexed plugin, per language.                                                                                                               |
+| `/kind/:kind`                       | ✅ (page 1)          | "MCP servers for DeepSeek Harness" is a phrase people type.                                                                                                                     |
+| `/category/:category`               | ✅ (page 1)          | The "what is it for" axis people search along.                                                                                                                                  |
+| `/browse` (bare)                    | ✅                   | The catalog itself.                                                                                                                                                             |
+| `/browse?…` any query               | ❌ `noindex, follow` | A view of a listing that already has a canonical home.                                                                                                                          |
+| `/kind/…?offset=`                   | ❌ `noindex, follow` | Page two is a real page but not the page to land on for the term.                                                                                                               |
+| `/docs`                             | ✅                   | "How do I publish a dsh plugin" is a question people search.                                                                                                                    |
+| `/docs/…` (MDX pages)               | ✅                   | One URL per physical locale guide (`/docs/cli`, `/docs/publish/hook-bridge`, …). Generated from the Fumadocs source into `pages.xml`; fallback-only locales are not advertised. |
+| `/docs/search`                      | ❌                   | JSON title/description index for the section. Not a document.                                                                                                                   |
+| `/submit`                           | ✅                   | Same — the explanation is public even though the form is gated.                                                                                                                 |
+| `/dashboard`, `/sign-in`, `/device` | ❌ `noindex, follow` | Account pages. Nothing a search result should lead to.                                                                                                                          |
+| 404s                                | ❌                   | A real 404 status, never a soft one.                                                                                                                                            |
 
 `follow` is kept on everything excluded. A signed-in-only page is not worth
 indexing, but the links out of it lead to pages that are.

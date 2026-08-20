@@ -1,0 +1,16 @@
+---
+title: 플러그인 설정, 패키징, 설치
+description: 설정을 검증하고 profile 덮어쓰기 순서를 이해하며 빌드 결과물의 설치와 제거를 안전하게 시험합니다.
+---
+
+잘못된 설정은 분명한 오류로 거부하고 조용한 기본값으로 문제를 숨기지 마세요.
+
+구성 순서는 profile bundles → profile `cordis.patch` → home `cordis.patch` → CLI patch입니다. 뒤의 레이어는 같은 행 전체를 교체하며 deep merge하지 않습니다.
+
+```sh
+dsh --profile demo --dump-config
+pnpm pack
+dsh plugin --profile demo add ./hello-harness-0.1.0.tgz
+```
+
+배포물에는 런타임에 필요한 `lib/`, manifest, README, license를 넣고 작업 트리가 아닌 실제 tarball을 시험하세요. Git의 `prepare`는 샌드박스 밖에서 실행되므로 재현 가능하게 만들고 commit 고정을 권장합니다. 제거 후 도구, 파일, 백그라운드 리소스가 남지 않는지도 확인합니다.

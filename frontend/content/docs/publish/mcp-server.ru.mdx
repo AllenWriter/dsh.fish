@@ -1,0 +1,24 @@
+---
+title: MCP Server
+description: Объявите transport MCP и ссылки на credentials, чтобы установить внешний сервис как инструменты DeepSeek Harness.
+---
+
+MCP server добавляется в profile patch строкой `dsh-mcp-client`; источником данных каталога служит `dsh.hub` в `package.json`.
+
+```json
+{
+  "dsh": {
+    "hub": {
+      "kind": "mcp-server",
+      "mcp": {
+        "serverName": "github",
+        "transport": "stdio",
+        "command": "npx",
+        "credentials": [{ "envName": "GITHUB_TOKEN", "required": true }]
+      }
+    }
+  }
+}
+```
+
+`transport` — `stdio` с `command` или `streamable-http` с `url`. Каталог хранит только ссылки вроде имён переменных окружения, но никогда не значения секретов.

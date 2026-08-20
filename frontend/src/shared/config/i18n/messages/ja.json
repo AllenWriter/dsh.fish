@@ -184,6 +184,8 @@
   "docs.menu": "ドキュメントメニュー",
   "docs.search.placeholder": "ドキュメントを検索",
   "docs.search.empty": "一致するページはありません",
+  "docs.nav.start": "はじめる",
+  "docs.nav.develop": "開発",
   "docs.nav.publish": "公開",
   "docs.nav.install": "インストール",
   "docs.nav.reference": "リファレンス",

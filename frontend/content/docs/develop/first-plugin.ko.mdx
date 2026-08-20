@@ -1,0 +1,44 @@
+---
+title: 첫 플러그인 만들기
+description: 최소 DeepSeek Harness 플러그인을 만들고 소스 overlay로 불러와 Web UI에서 수명 주기를 확인합니다.
+---
+
+Harness는 플러그인으로 구성됩니다. 플러그인은 Cordis context를 받고 언로드할 때 정리할 수 있는 effect를 등록합니다.
+
+<DocsVideo
+  src="/docs/video/develop.mp4"
+  poster="/docs/video/develop-poster.jpg"
+  title="하나의 기능을 온전히 보이게"
+  caption="apply 함수부터 관찰 가능한 결과까지 실제 개발 흐름을 30초에 살펴봅니다."
+  transcriptLabel="동영상 대본"
+>
+  <p>플러그인 개발 — 하나의 기능을 온전히 보이게.</p>
+  <p>apply 함수 하나로 시작합니다. 공식 소스가 수명 주기를 정의합니다.</p>
+  <p>도구를 관찰 가능하게 만듭니다. 실제 UI가 호출, 추론, 결과를 보여 줍니다.</p>
+  <p>검증하고 제거하고 반복합니다. 깨끗한 profile이 결과를 명확하게 유지합니다.</p>
+  <p>다음 단계 — 가장 작고 유용한 것을 만드세요.</p>
+</DocsVideo>
+
+현재 공식 개발 흐름은 DeepSeek Harness 소스 checkout에서 실행합니다. 공식 소스 실행 절차를 마친 뒤 저장소 루트에 `scratch-plugin/src/my-plugin.ts`를 만드세요.
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+export const name = 'hello-harness'
+export function apply(ctx: Context): void {
+  console.log('[hello-harness] plugin loaded!')
+}
+```
+
+절대 경로를 사용하는 `scratch-plugin/cordis.yml`을 만듭니다.
+
+```yaml
+- insert:
+    - id: hello
+      name: '/absolute/path/to/deepseek-harness/scratch-plugin/src/my-plugin.ts'
+```
+
+```sh
+pnpm dsh web --patch ./scratch-plugin/cordis.yml
+```
+
+`http://127.0.0.1:3080`을 열고 터미널의 로드 메시지를 확인하세요. `ctx`를 통한 등록은 언로드할 때 자동으로 정리됩니다. 타이머나 연결은 disposer를 반환하는 `ctx.effect()`를 사용합니다.

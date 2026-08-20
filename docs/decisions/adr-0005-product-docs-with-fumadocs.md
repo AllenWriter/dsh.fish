@@ -14,10 +14,10 @@ change.
 The repository already has two documentation surfaces that look alike and are
 not the same thing:
 
-| Surface | Audience | Form today | Purpose |
-|---|---|---|---|
-| `docs/` in this repo | coding agents and maintainers | Markdown, linked from `AGENTS.md` | FSD/DDD conventions, operations, ADRs |
-| `https://dsh.fish/docs` | plugin authors, CLI users, agents discovering the hub | one React page, copy in i18n catalogs | how to publish, how the score works |
+| Surface                 | Audience                                              | Form today                            | Purpose                               |
+| ----------------------- | ----------------------------------------------------- | ------------------------------------- | ------------------------------------- |
+| `docs/` in this repo    | coding agents and maintainers                         | Markdown, linked from `AGENTS.md`     | FSD/DDD conventions, operations, ADRs |
+| `https://dsh.fish/docs` | plugin authors, CLI users, agents discovering the hub | one React page, copy in i18n catalogs | how to publish, how the score works   |
 
 The first surface is already detailed enough for agents: a change that alters
 behavior is supposed to update the matching file in the same commit. Turning
@@ -72,16 +72,16 @@ stale-guide failure mode the SEO backlog already rejects.
 Order is importance, not calendar. Each item is a page (or a small cluster)
 with a stable URL a crawler can rank:
 
-| Priority | Page | Why it is missing today |
-|---|---|---|
-| P0 | Hook bridges | Sixth kind, no tab, people will search for "Claude Code hooks dsh". |
-| P0 | CLI (`npx @dsh-fish/cli`) | The install plan's first command; README covers a subset. |
-| P0 | Hub plugin tools | `hub_search` / `hub_install` / `hub_rate` / device login. |
-| P1 | Publishing each kind | Expand the five paragraphs into real manifests, probes, and rejection reasons. |
-| P1 | Submit, claim, verify | The form is public; the ownership rule lives only in ADRs. |
-| P1 | Scoring | Keep the live `DescribeScoring` render; move it to its own URL. |
-| P2 | REST API | OpenAPI already exists; humans still need a walkthrough. |
-| P2 | Guides | "Write a skill", "declare an MCP server", "bridge Codex hooks". |
+| Priority | Page                      | Why it is missing today                                                        |
+| -------- | ------------------------- | ------------------------------------------------------------------------------ |
+| P0       | Hook bridges              | Sixth kind, no tab, people will search for "Claude Code hooks dsh".            |
+| P0       | CLI (`npx @dsh-fish/cli`) | The install plan's first command; README covers a subset.                      |
+| P0       | Hub plugin tools          | `hub_search` / `hub_install` / `hub_rate` / device login.                      |
+| P1       | Publishing each kind      | Expand the five paragraphs into real manifests, probes, and rejection reasons. |
+| P1       | Submit, claim, verify     | The form is public; the ownership rule lives only in ADRs.                     |
+| P1       | Scoring                   | Keep the live `DescribeScoring` render; move it to its own URL.                |
+| P2       | REST API                  | OpenAPI already exists; humans still need a walkthrough.                       |
+| P2       | Guides                    | "Write a skill", "declare an MCP server", "bridge Codex hooks".                |
 
 Code identifiers in snippets stay English in every locale
 ([`../frontend/i18n.md`](../frontend/i18n.md)). Chrome (nav, titles,
@@ -90,12 +90,12 @@ frontmatter — not both for the same string.
 
 ## Why Fumadocs fits the stack
 
-| This project | Fumadocs |
-|---|---|
-| React 19, React Router 8, Vite, Tailwind CSS 4 | Official React Router guide; Tailwind 4 CSS imports |
-| Optional locale prefix, default language bare | `defineI18n({ hideLocale: 'default-locale' })` and `:lang?/docs/*` |
-| SSR on Cloudflare Workers, `nodejs_compat` | `@fumadocs/local-md` documents a no-`eval` Markdown path for Workers; build-time MDX avoids the issue entirely |
-| Existing `/docs` in the header, footer, sitemap, and `service-doc` Link | Nested routes under the same path keep those contracts |
+| This project                                                            | Fumadocs                                                                                                       |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| React 19, React Router 8, Vite, Tailwind CSS 4                          | Official React Router guide; Tailwind 4 CSS imports                                                            |
+| Optional locale prefix, default language bare                           | `defineI18n({ hideLocale: 'default-locale' })` and `:lang?/docs/*`                                             |
+| SSR on Cloudflare Workers, `nodejs_compat`                              | `@fumadocs/local-md` documents a no-`eval` Markdown path for Workers; build-time MDX avoids the issue entirely |
+| Existing `/docs` in the header, footer, sitemap, and `service-doc` Link | Nested routes under the same path keep those contracts                                                         |
 
 Headless `fumadocs-core` (page tree, source loader) is the load-bearing part.
 `fumadocs-ui` is optional chrome and was not taken: remapping it onto hue 263
@@ -167,7 +167,8 @@ a guide is a document, not a button label. The exception is bounded:
   placeholder, "On this page") stays in the JSON catalogs.
 - Each locale gets its own MDX tree (`index.mdx`, `index.zh-CN.mdx`, …) or
   a `dir` parser. Missing translations fall back to English; they must not
-  404 a language the rest of the site serves.
+  404 a language the rest of the site serves. A fallback-only locale is not
+  canonical or advertised through `hreflang` and the sitemap.
 - `pageMeta` still builds the head. A Fumadocs `<title>` inside the page
   body is not a substitute.
 
@@ -187,6 +188,7 @@ frontend/content/docs/          MDX source (outside the FSD tree, like public/)
 frontend/src/pages/docs/        route, loader, meta, Fumadocs source module
 frontend/src/widgets/docs-shell/     sidebar + TOC; lives beside SiteHeader
 frontend/src/widgets/docs-scoring/   live DescribeScoring tables
+frontend/src/widgets/docs-media/     controlled video + localized transcript
 ```
 
 `source.ts` lives next to the docs page, not in `shared/`. Nothing outside
@@ -273,20 +275,21 @@ Harder:
 
 ## What shipped
 
-| Piece | Where |
-|---|---|
-| MDX (English) | `frontend/content/docs/` — intro, six publish kinds, CLI, hub plugin, scoring, submit |
-| Source loader | `frontend/src/pages/docs/source.ts` — `defineDocs` rewritten by Vite; never `getText('raw')` |
-| Routes | `:locale?/docs`, `:locale?/docs/*`, `:locale?/docs/search` (search **before** the splat) |
-| Shell | `widgets/docs-shell` — in-column sidebar + TOC; mobile sheet uses `SPRING_PANEL` |
-| Scoring | `widgets/docs-scoring` — `DescribeScoring` via the page loader |
-| Markdown | `import.meta.glob('…mdx?raw')` in `pages/docs/raw.ts`; Worker has no `content/docs` |
-| Search JSON | `/docs/search` — titles and descriptions only; Orama and Shiki stay out of the Worker |
-| Code fences | `rehypeCodeOptions: false` — no GitHub-themed token spans; fences match the catalog readme |
+| Piece             | Where                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------- |
+| MDX (six locales) | `frontend/content/docs/` — onboarding, installation, development, six publish kinds, submission, scoring, API |
+| Source loader     | `frontend/src/pages/docs/source.ts` — `defineDocs` rewritten by Vite; never `getText('raw')`                  |
+| Routes            | `:locale?/docs`, `:locale?/docs/*`, `:locale?/docs/search` (search **before** the splat)                      |
+| Shell             | `widgets/docs-shell` — in-column sidebar + TOC; mobile sheet uses `SPRING_PANEL`                              |
+| Scoring           | `widgets/docs-scoring` — `DescribeScoring` via the page loader                                                |
+| Markdown          | `import.meta.glob('…mdx?raw')` in `pages/docs/raw.ts`; Worker has no `content/docs`                           |
+| Search JSON       | `/docs/search` — titles and descriptions only; Orama and Shiki stay out of the Worker                         |
+| Code fences       | `rehypeCodeOptions: false` — no GitHub-themed token spans; fences match the catalog readme                    |
+| Video             | `widgets/docs-media` + `public/docs/video` — controls, poster, localized caption and transcript               |
 
-Still open, in the same order as before: per-locale MDX files, a REST walkthrough,
-and longer "how to write a …" guides. English fallback is the current locale
-story, not a blank folder.
+Every shipped guide has a physical file for all six locales. English fallback
+remains a route-safety mechanism; metadata and sitemap alternates are limited to
+translations that physically exist.
 
 ## Implementation order
 
@@ -304,7 +307,7 @@ No dates. Each step is a gate for the next:
 6. Turn on markdown negotiation for `/docs/*` so agents that already fetch
    plugin pages as Markdown can fetch the human docs the same way.
 
-Steps 1–4 and 6 are done. Step 5 is not.
+Steps 1–6 are done.
 
 ## References
 

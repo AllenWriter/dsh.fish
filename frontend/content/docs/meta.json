@@ -2,6 +2,15 @@
   "title": "Docs",
   "pages": [
     "index",
+    "---start---",
+    "quickstart",
+    "---install---",
+    "hub",
+    "cli",
+    "---develop---",
+    "develop/first-plugin",
+    "develop/tool",
+    "develop/configuration",
     "---publish---",
     "publish/bundle",
     "publish/skill",
@@ -9,11 +18,9 @@
     "publish/agent-preset",
     "publish/profile",
     "publish/hook-bridge",
-    "---install---",
-    "cli",
-    "hub",
     "---reference---",
+    "submit",
     "scoring",
-    "submit"
+    "api"
   ]
 }

@@ -1,0 +1,16 @@
+---
+title: Bundle
+description: 以 dsh.bundle.patch 宣告可由 DeepSeek Harness 啟用的 npm 外掛套件。
+---
+
+Bundle 是宣告 `dsh.bundle.patch` 的 npm 套件，也是 `dsh plugin add` 的安裝單位。
+
+```json
+{
+  "name": "dsh-hello-plugin",
+  "files": ["index.js", "cordis.patch.yml"],
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}
+```
+
+沒有此宣告的套件即使安裝成功，Harness 也不會啟用任何層。npm 套件應發布預先建置的程式碼；Git 安裝需要 `prepare`，並要求使用者明確允許建置指令碼。

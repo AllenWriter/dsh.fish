@@ -14,16 +14,16 @@ an agent drives.
 
 ## Technology stack
 
-| Concern | Choice |
-|---|---|
-| Runtime | Cloudflare Workers (`nodejs_compat`) |
-| Frontend | React 19 + React Router 8 (SSR), Tailwind CSS 4, beui components |
-| Backend | Hono, layered DDD |
-| Database | Cloudflare D1 (SQLite) via Drizzle ORM |
-| Cache / secondary storage | Cloudflare KV |
-| README localization | Cloudflare Agents SDK + OpenCode Go (`deepseek-v4-flash` → `hy3` → `mimo-v2.5`) |
-| Auth | Better Auth (`better-auth-cloudflare`), GitHub OAuth + OAuth device grant |
-| Scheduled work | Workers Cron Triggers |
+| Concern                   | Choice                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| Runtime                   | Cloudflare Workers (`nodejs_compat`)                                            |
+| Frontend                  | React 19 + React Router 8 (SSR), Tailwind CSS 4, beui components                |
+| Backend                   | Hono, layered DDD                                                               |
+| Database                  | Cloudflare D1 (SQLite) via Drizzle ORM                                          |
+| Cache / secondary storage | Cloudflare KV                                                                   |
+| README localization       | Cloudflare Agents SDK + OpenCode Go (`deepseek-v4-flash` → `hy3` → `mimo-v2.5`) |
+| Auth                      | Better Auth (`better-auth-cloudflare`), GitHub OAuth + OAuth device grant       |
+| Scheduled work            | Workers Cron Triggers                                                           |
 
 ## Deployment topology
 
@@ -61,12 +61,12 @@ Sharing an origin is a deliberate choice, not an accident of packaging:
 
 `backend/src/`, dependencies pointing inward.
 
-| Layer | Contents |
-|---|---|
-| `domain/` | `Artifact` aggregate, `ArtifactKind`, `ArtifactPayload`, `InstallPlan`, `Submission`, `Account`, `ogImageUrl`, the `quality-score` value object, repository ports |
-| `application/` | Use cases (`SearchArtifacts`, `ResolveInstallPlan`, `SubmitArtifact`, `IngestCatalog`, …), DTOs, indexer ports |
-| `infrastructure/` | D1 repositories, Better Auth composition, GitHub/npm/awesome-list indexers, the container |
-| `interfaces/` | Hono routers, Zod request schemas, the domain-error → HTTP mapping |
+| Layer             | Contents                                                                                                                                                          |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `domain/`         | `Artifact` aggregate, `ArtifactKind`, `ArtifactPayload`, `InstallPlan`, `Submission`, `Account`, `ogImageUrl`, the `quality-score` value object, repository ports |
+| `application/`    | Use cases (`SearchArtifacts`, `ResolveInstallPlan`, `SubmitArtifact`, `IngestCatalog`, …), DTOs, indexer ports                                                    |
+| `infrastructure/` | D1 repositories, Better Auth composition, GitHub/npm/awesome-list indexers, the container                                                                         |
+| `interfaces/`     | Hono routers, Zod request schemas, the domain-error → HTTP mapping                                                                                                |
 
 The domain has no dependency on Hono, Drizzle, Better Auth or Workers types
 beyond value objects. `infrastructure/container.ts` is the composition root and
@@ -76,14 +76,14 @@ is built **per request**, because D1 and KV bindings arrive per request.
 
 `frontend/src/`, imports flowing only downward.
 
-| Layer | Contents |
-|---|---|
-| `app/` | `root.tsx`, `routes.ts`, global styles |
-| `pages/` | One slice per route; composes widgets, owns loaders |
-| `widgets/` | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel`, `readme-badge`, `artifact-reviews`, `artifact-ask`, `community-toasts`, `docs-shell`, `docs-scoring` |
+| Layer       | Contents                                                                                                                                                                                                                                                                               |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/`      | `root.tsx`, `routes.ts`, global styles                                                                                                                                                                                                                                                 |
+| `pages/`    | One slice per route; composes widgets, owns loaders                                                                                                                                                                                                                                    |
+| `widgets/`  | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel`, `readme-badge`, `artifact-reviews`, `artifact-ask`, `community-toasts`, `docs-shell`, `docs-scoring`                                                                           |
 | `features/` | `account-menu` — the signed-in identity and the actions on it; `locale-switcher` — the language of the page you are on; `catalog-search` — the header palette's live query against `GET /api/v1/artifacts`; `ask-artifact` — POST `/api/v1/artifacts/:id/ask` and the streaming thread |
-| `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip`, `AuthorCard`, `artifactLd` |
-| `shared/` | beui components (`ui/motion/`, `ui/avatar`, `ui/animated-number`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, `lib/analytics`, auth client, `hub-context` |
+| `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip`, `AuthorCard`, `artifactLd`                                                                                                                                                              |
+| `shared/`   | beui components (`ui/motion/`, `ui/avatar`, `ui/animated-number`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, `lib/analytics`, auth client, `hub-context`                                                                                                         |
 
 The account slot in the header is the whole signed-in affordance: signed out it
 is the sign-in call to action; signed in it is the portrait Better Auth cached
@@ -143,15 +143,20 @@ never reads `content/docs` from disk. Search JSON is
 `pages/docs` owns the routes and the source module. `widgets/docs-shell`
 is in-column chrome beside `SiteHeader`. `widgets/docs-scoring` renders
 `DescribeScoring` so the documented formula cannot drift from
-`GET /api/v1/scoring`. `fumadocs-ui` is not a dependency: theme is the
+`GET /api/v1/scoring`. `widgets/docs-media` renders controlled, responsive
+video with a localized caption and transcript. `fumadocs-ui` is not a dependency: theme is the
 existing cookie on `<html>`, and the palette stays hue 263.
 
 Two same-layer imports are allowed so the slug list exists once:
 
 - `pages/markdown` → `pages/docs` public API (`productDocsMarkdown`)
-- `pages/seo` → `pages/docs/source` (`docsSitemapPaths`) — that helper
+- `pages/seo` → `pages/docs/source` (`docsSitemapEntries`) — that helper
   cannot sit on the public API, because `defineDocs` is a Vite macro and
   the markdown unit tests import `@/pages/docs` without the plugin
+
+Fumadocs uses dot-suffix locale files and React Router owns the URL prefix.
+`productDocsLocales` checks physical MDX files so page metadata and the sitemap
+never advertise an English fallback as a translation.
 
 See [`../decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md).
 
@@ -169,8 +174,7 @@ architecture rather than a finishing touch.
 **Six languages, in the URL, with a memory.** Every reader-facing route
 carries an optional `:locale?` first segment, and each loader passes it through
 `requireLocale`. An explicit switcher choice is stored in the `dsh_locale`
-cookie, so a later bare-URL visit is forwarded to the reader's prefix with a
-302. See `docs/decisions/adr-0003-locale-prefix-with-preference-cookie.md`.
+cookie, so a later bare-URL visit is forwarded to the reader's prefix with a 302. See `docs/decisions/adr-0003-locale-prefix-with-preference-cookie.md`.
 
 **Two crawlable facet axes.** `/kind/:kind` and `/category/:category` are real
 pages, not query strings, because that is the form an engine will rank and the
@@ -191,14 +195,14 @@ Six kinds, each taken from something the harness actually loads, each with a
 distinct install mechanism. `ArtifactKind` names them; `buildInstallPlan` owns
 how each reaches a machine.
 
-| Kind | What it is | How it installs |
-|---|---|---|
-| `bundle` | npm package declaring `dsh.bundle.patch` | `dsh plugin --profile <p> add <spec>` |
-| `profile` | ordered `dsh.profile.bundles` stack | one `add` per bundle, in order |
-| `skill` | `SKILL.md` bundle or flat Markdown | files written under `$DSH_HOME/skills` |
-| `mcp-server` | external MCP server | a `dsh-mcp-client` row in the profile patch |
-| `agent-preset` | directory holding one `agent.cordis.yml` | written to `$DSH_HOME/.agent-presets/<id>` |
-| `hook-bridge` | Claude Code / Codex hook bridge | a bridge plugin row in the profile patch |
+| Kind           | What it is                               | How it installs                             |
+| -------------- | ---------------------------------------- | ------------------------------------------- |
+| `bundle`       | npm package declaring `dsh.bundle.patch` | `dsh plugin --profile <p> add <spec>`       |
+| `profile`      | ordered `dsh.profile.bundles` stack      | one `add` per bundle, in order              |
+| `skill`        | `SKILL.md` bundle or flat Markdown       | files written under `$DSH_HOME/skills`      |
+| `mcp-server`   | external MCP server                      | a `dsh-mcp-client` row in the profile patch |
+| `agent-preset` | directory holding one `agent.cordis.yml` | written to `$DSH_HOME/.agent-presets/<id>`  |
+| `hook-bridge`  | Claude Code / Codex hook bridge          | a bridge plugin row in the profile patch    |
 
 ## How a repository becomes a row
 
@@ -207,14 +211,14 @@ is an application that mentions the harness. So a repository is classified by
 what it holds, in this order, and a repository that answers none of the probes
 yields nothing — the harness would load nothing from it either.
 
-| Probe | Row |
-|---|---|
-| `package.json` with `dsh.profile.bundles` | `profile` |
-| `package.json` with `dsh.bundle` | `bundle` |
-| `package.json` with `dsh.hub.kind` + `dsh.hub.mcp` | `mcp-server` |
-| `package.json` with `dsh.hub.kind` + `dsh.hub.hook` | `hook-bridge` |
-| `SKILL.md` with `name` + `description` frontmatter | `skill` |
-| `agent.cordis.yml` | `agent-preset` |
+| Probe                                               | Row            |
+| --------------------------------------------------- | -------------- |
+| `package.json` with `dsh.profile.bundles`           | `profile`      |
+| `package.json` with `dsh.bundle`                    | `bundle`       |
+| `package.json` with `dsh.hub.kind` + `dsh.hub.mcp`  | `mcp-server`   |
+| `package.json` with `dsh.hub.kind` + `dsh.hub.hook` | `hook-bridge`  |
+| `SKILL.md` with `name` + `description` frontmatter  | `skill`        |
+| `agent.cordis.yml`                                  | `agent-preset` |
 
 The MCP server and hook bridge kinds have no manifest convention in the harness
 — they install as files and rows under `$DSH_HOME`, not as a package layer —
@@ -345,11 +349,11 @@ Three dimensions, each 0–100, blended into a 0–100 score:
 score = round(0.4 · popularity + 0.3 · maintenance + 0.3 · quality)
 ```
 
-| Dimension | Exact rule |
-|---|---|
-| `popularity` | `raw = installs·3 + stars + downloads/10`; `round(100 · log10(1+raw) / log10(1+10000))`, capped at 100. Installs weigh most because they are the only signal the hub observes itself. |
-| `maintenance` | Derived from `maintenanceStatus`: `active` → 100, `slowing` → 60, `stale` → 30, `abandoned` → 0. |
-| `quality` | Additive trust points: verified 50, has readme 25, declares a license 15, names an author 10. |
+| Dimension     | Exact rule                                                                                                                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `popularity`  | `raw = installs·3 + stars + downloads/10`; `round(100 · log10(1+raw) / log10(1+10000))`, capped at 100. Installs weigh most because they are the only signal the hub observes itself. |
+| `maintenance` | Derived from `maintenanceStatus`: `active` → 100, `slowing` → 60, `stale` → 30, `abandoned` → 0.                                                                                      |
+| `quality`     | Additive trust points: verified 50, has readme 25, declares a license 15, names an author 10.                                                                                         |
 
 The grade is a threshold read of the score: `S` ≥ 85, `A` ≥ 70, `B` ≥ 50,
 otherwise `C`.
@@ -364,7 +368,7 @@ installs, `captured_at`) per artifact whose content or stats moved, and writes
 nothing at all for an artifact the sweep re-found unchanged — D1 bills per row
 written, and most of a sweep re-finds what the last sweep stored. The 7- or
 30-day velocity is the
-current star count minus the most recent snapshot taken *at least* that many
+current star count minus the most recent snapshot taken _at least_ that many
 days ago, and 0 when history does not reach back that far — a young artifact
 is unmeasured, not "rising". The sweep stores both windows on
 `artifacts.star_velocity_7d` / `star_velocity_30d` — and, in the same UPDATE,
@@ -393,7 +397,7 @@ agent-driven install cannot drift apart.
 
 ### Secrets are referenced, never stored
 
-An MCP server's payload carries a credential *reference* — a POSIX environment
+An MCP server's payload carries a credential _reference_ — a POSIX environment
 variable name — never a value, mirroring the harness's own credentials doctrine.
 That is what makes a catalog row safe to serve publicly and safe to render in a
 configuration UI.
@@ -516,7 +520,7 @@ file can be produced. There is no `dangerouslySetInnerHTML` and no sanitiser
 pass to keep ahead of attackers. `markdown.test.tsx` asserts these properties
 against the emitted markup, so a refactor that re-enables raw HTML fails there.
 
-A readme's *relative* paths were written against its own repository, not against
+A readme's _relative_ paths were written against its own repository, not against
 this site. `sourceDocBase` and `sourceAssetBase` in
 `backend/src/domain/artifact/source-ref.ts` say what such a path resolves to —
 a browsable page for a document, raw bytes for an image — and reach the page
@@ -534,7 +538,7 @@ tokens that have no break point. Tables and fences keep their own
 ### No hardcoded copy
 
 `frontend/src/shared/config/i18n/messages/*.json` holds every user-facing string. The
-backend sends message *keys* (`artifactKind.bundle.label`,
+backend sends message _keys_ (`artifactKind.bundle.label`,
 `install.warning.buildAllowance`), never prose, so the catalog stays
 language-neutral in the database.
 

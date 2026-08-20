@@ -88,7 +88,7 @@ export async function maybeMarkdownResponse(
     })
   }
 
-  const docsMarkdown = productDocsMarkdown(path)
+  const docsMarkdown = productDocsMarkdown(path, locale)
   if (docsMarkdown !== undefined) return markdownResponse(docsMarkdown)
 
   return null

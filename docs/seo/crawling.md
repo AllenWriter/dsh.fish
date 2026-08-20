@@ -48,11 +48,10 @@ form of `hreflang`. Both forms are emitted, here and in the page head, because
 they are read at different times: the head only after a page is fetched, the
 sitemap before anything is.
 
-For six languages that is 6 entries × 7 links per path. `pages.xml` is
-therefore 192 `<url>` elements for 32 paths (the original 22, with the
-single `/docs` URL replaced by every slug the Fumadocs source enumerates),
-which is correct, not a bug. Adding an MDX file grows that count in the
-same commit; do not hand-maintain a second list.
+For a path translated into all six languages that is 6 entries × 7 links.
+Product-doc entries derive their locale set from physical MDX files, so an
+English fallback never creates a false alternate. Adding a page or translation
+grows the sitemap in the same commit; do not hand-maintain a second list.
 
 ### `lastmod`
 
@@ -111,7 +110,7 @@ changed" channel a reader's aggregator or a feed-aware crawler polls. A feed
 is deliberately a window, not an export — the sitemap set is the complete one.
 
 Two details keep the ten feeds coherent. Every entry's `<id>` is the canonical
-*English* artifact URL, so the same artifact is the same entry in all ten
+_English_ artifact URL, so the same artifact is the same entry in all ten
 feeds and a subscriber switching languages does not see the whole catalog as
 new. And each indexable page advertises its own language's feed with a
 `<link rel="alternate" type="application/atom+xml">` in the head, emitted by
@@ -126,7 +125,7 @@ Google does not participate. The verification file is served at
 `/indexnow-<key>.txt`, returning the key itself.
 
 The route lives in the Worker entry (`frontend/workers/app.ts`), not in the
-React Router table: the filename *is* the key, and route parameters only match
+React Router table: the filename _is_ the key, and route parameters only match
 whole path segments, so no route pattern can express `indexnow-<key>.txt` with
 a runtime key. The key is a plain var (`INDEXNOW_KEY` in
 `frontend/wrangler.jsonc`) — public by design, since serving it is the entire

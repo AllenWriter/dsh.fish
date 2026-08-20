@@ -1,0 +1,17 @@
+---
+title: dsh.fish CLI
+description: 터미널에서 DeepSeek Harness 확장을 검색, 검토, 설치, 업데이트, 제거합니다.
+---
+
+`@dsh-fish/cli`는 아티팩트 페이지와 같은 설치 계획을 실행하고 DeepSeek Harness의 `$DSH_HOME`에 씁니다.
+
+```sh
+npx @dsh-fish/cli find postgres --kind mcp-server
+npx @dsh-fish/cli show release-notes
+npx @dsh-fish/cli add release-notes --profile web
+npx @dsh-fish/cli list
+```
+
+`add`는 Hub id, dsh.fish URL 또는 `owner/repo`를 받습니다. Git 패키지가 빌드 스크립트를 요구하면 `--allow-build-scripts`를 명시해야 합니다. `--yes`는 이 권한을 부여하지 않습니다.
+
+주요 명령은 `find`, `show`, `add`, `list`, `update`, `remove`, `init`입니다. 평가는 실제 설치하고 사용한 결과만 근거로 남기세요.

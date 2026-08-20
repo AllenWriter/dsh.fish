@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { execSync } from 'node:child_process'
 import { kitchenSinkReadme, KITCHEN_SINK_ARTIFACT_ID } from './kitchen-sink-readme.ts'
 import { sqlString } from './sql.ts'
+import { E2E_ORIGIN } from './origin.ts'
 
 /**
  * Apply catalogue migrations and the kitchen-sink readme to the local D1 that
@@ -39,7 +40,7 @@ export function prepareE2eDevVars(root: string): void {
 function ensureDevVars(frontend: string): void {
   const path = resolve(frontend, '.dev.vars')
   const required: Record<string, string> = {
-    PUBLIC_BASE_URL: 'http://localhost:5173',
+    PUBLIC_BASE_URL: E2E_ORIGIN,
     BETTER_AUTH_SECRET: 'e2e-test-secret-not-for-production',
     ARTIFACT_ASK_ENABLED: 'true',
   }
@@ -55,9 +56,11 @@ function ensureDevVars(frontend: string): void {
     const line = `${key}=${value}`
     const pattern = new RegExp(`^${key}=.*$`, 'm')
     if (pattern.test(next)) {
-      // Ask must be on for the artifact-ask Playwright project; other keys
-      // keep whatever the developer already set.
-      if (key === 'ARTIFACT_ASK_ENABLED') next = next.replace(pattern, line)
+      // The ask feature and canonical origin must match this test run. Other
+      // developer-owned values remain untouched.
+      if (key === 'ARTIFACT_ASK_ENABLED' || key === 'PUBLIC_BASE_URL') {
+        next = next.replace(pattern, line)
+      }
       continue
     }
     next = `${next.replace(/\s*$/, '\n')}${line}\n`

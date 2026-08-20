@@ -1,0 +1,44 @@
+---
+title: 最初のプラグインを作る
+description: 最小の DeepSeek Harness プラグインを作成し、ソース overlay として読み込み、Web UI でライフサイクルを確認します。
+---
+
+Harness はプラグインから構成されます。プラグインは Cordis context を受け取り、アンロード時に破棄できる effect を登録します。
+
+<DocsVideo
+  src="/docs/video/develop.mp4"
+  poster="/docs/video/develop-poster.jpg"
+  title="一つの機能を完全に見える形で"
+  caption="apply 関数から観測可能な結果まで、実際の開発ループを 30 秒で紹介します。"
+  transcriptLabel="動画の文字起こし"
+>
+  <p>プラグイン開発 — 一つの機能を完全に見える形で。</p>
+  <p>一つの apply 関数から始めます。公式ソースがライフサイクルを定義します。</p>
+  <p>ツールを観測可能にします。実際の UI が呼び出し、推論、結果を表示します。</p>
+  <p>検証、削除、反復。整理された profile が結果を読みやすく保ちます。</p>
+  <p>次の一歩 — 最小で役立つものを作る。</p>
+</DocsVideo>
+
+現在の公式開発フローは DeepSeek Harness のソース checkout から実行します。公式のソース起動手順を終え、リポジトリ直下に `scratch-plugin/src/my-plugin.ts` を作成します。
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+export const name = 'hello-harness'
+export function apply(ctx: Context): void {
+  console.log('[hello-harness] plugin loaded!')
+}
+```
+
+絶対パスを使う `scratch-plugin/cordis.yml` を作成します。
+
+```yaml
+- insert:
+    - id: hello
+      name: '/absolute/path/to/deepseek-harness/scratch-plugin/src/my-plugin.ts'
+```
+
+```sh
+pnpm dsh web --patch ./scratch-plugin/cordis.yml
+```
+
+`http://127.0.0.1:3080` を開き、ターミナルの読み込みログを確認します。`ctx` 経由の登録はアンロード時に自動で消えます。タイマーや接続には disposer を返す `ctx.effect()` を使います。

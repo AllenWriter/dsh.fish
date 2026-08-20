@@ -1,0 +1,54 @@
+---
+title: Register a tool
+description: Add a typed tool to a DeepSeek Harness plugin and verify its input, result, and cleanup behavior.
+---
+
+A tool is an operation the model can request. Keep it narrow: give it one clear outcome, validate every input, return useful evidence, and avoid hidden side effects.
+
+## Define the tool
+
+Use the tool API exposed by the harness version in your package. The essential shape is a stable name, a plain description, a schema, and an async handler:
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+import { defineTool } from '@deepseek-ai/dsh-tools'
+
+export const inject = ['tools']
+
+export function apply(ctx: Context) {
+  ctx.tools.register(
+    defineTool({
+      name: 'greet',
+      description: 'Greet someone by name.',
+      parameters: {
+        name: {
+          type: 'string',
+          required: true,
+          description: 'The name to greet',
+        },
+      },
+      output: {
+        schema: { type: 'string' },
+        render: (_args, value) => [{ type: 'text', text: value }],
+      },
+      async execute(args) {
+        return `Hello, ${args.name}!`
+      },
+    }),
+  )
+}
+```
+
+Register the tool inside `apply(ctx)`, using the current official API rather than a global singleton. Registration should be tied to the plugin context so unloading the plugin removes the tool.
+
+## Verify from both sides
+
+1. Run the plugin's unit test with valid, empty, and malformed input.
+2. Dump the profile and confirm the tool is present once.
+3. Start the Web UI and ask: `Use greet for Ada.`
+4. Inspect the tool row's input and output, not only the assistant's prose.
+5. Unload the plugin and verify that the tool disappears.
+
+Do not place API keys in tool arguments or results. Read managed credentials through the documented harness mechanism and mask secrets in logs.
+
+Official reference: [Build a tool](https://deepseek-harness.github.io/deepseek-harness/en/develop/basic/tool/).

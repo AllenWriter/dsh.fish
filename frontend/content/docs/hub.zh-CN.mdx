@@ -1,0 +1,32 @@
+---
+title: Hub 插件
+description: 在 DeepSeek Harness 会话中搜索 dsh.fish、检查安装计划并管理扩展。
+---
+
+Hub 插件让智能体无需离开会话即可搜索和安装目录制品。
+
+<DocsVideo
+  src="/docs/video/install.mp4"
+  poster="/docs/video/install-poster.jpg"
+  title="安装前先检查"
+  caption="用 24 秒了解发现、证据与生成的安装计划。"
+  transcriptLabel="视频文字稿"
+>
+  <p>dsh.fish——安装前先检查。</p>
+  <p>找到需要的能力，在实时 dsh.fish 目录中搜索。</p>
+  <p>比较证据：类型、来源、维护状态和评分。</p>
+  <p>检查每个安装步骤：文件、软件包和 profile 补丁。</p>
+  <p>下一步——一个计划，三个界面。</p>
+</DocsVideo>
+
+```sh
+dsh plugin --profile web add github:stvlynn/dsh.fish#main
+```
+
+Git 安装会运行 `prepare`。pnpm 10 及以上版本可能要求在 profile 的 `pnpm-workspace.yaml` 中明确允许 `dsh-hub` 构建。该脚本运行在智能体沙箱之外，请固定 commit 后再授权。
+
+核心工具为 `hub_search`、`hub_show`、`hub_install`、`hub_list`、`hub_update` 和 `hub_remove`。先用 `hub_show` 查看完整计划，再决定是否安装。需要构建脚本时，插件必须返回并请求用户明确批准。
+
+成功安装记录在 `$DSH_HOME/.dsh-fish-lock.json`，与 CLI 共用。文件写入被限制在解析后的 `$DSH_HOME` 内；试图越界的计划会被拒绝。
+
+目录读取无需登录。`hub_account` 使用设备授权流程登录；令牌保存在 `$DSH_HOME/.dsh-fish-token.json`，不会写入日志。设备令牌可以评分，但不能提交或认领制品。

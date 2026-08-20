@@ -9,18 +9,35 @@
  * Nothing outside this page slice imports Fumadocs.
  */
 import { docs } from 'collections/server'
+import { defineI18n } from 'fumadocs-core/i18n'
 import { loader } from 'fumadocs-core/source'
 import { isArtifactKind, type ArtifactKind } from '@/entities/artifact/model/types'
+import { DEFAULT_LOCALE, LOCALE_CODES, type Locale } from '@/shared/config/i18n'
 import type { DocsNavNode, DocsSeparatorKey, DocsTocItem } from '@/widgets/docs-shell'
+import { productDocsLocales } from './raw'
+
+const docsI18n = defineI18n({
+  languages: [...LOCALE_CODES],
+  defaultLanguage: DEFAULT_LOCALE,
+  parser: 'dot',
+  fallbackLanguage: DEFAULT_LOCALE,
+  hideLocale: 'default-locale',
+})
 
 export const source = loader({
   baseUrl: '/docs',
   source: docs.toFumadocsSource(),
+  i18n: docsI18n,
+  // React Router owns locale prefixes for the whole site. Keeping Fumadocs
+  // URLs locale-neutral lets LocaleLink add the prefix exactly once.
+  url: (slugs) => (slugs.length === 0 ? '/docs' : `/docs/${slugs.join('/')}`),
 })
 
 export { docs }
 
 const SEPARATOR_TITLE_KEY = {
+  start: 'docs.nav.start',
+  develop: 'docs.nav.develop',
   publish: 'docs.nav.publish',
   install: 'docs.nav.install',
   reference: 'docs.nav.reference',
@@ -48,7 +65,7 @@ function kindFromUrl(url: string): ArtifactKind | undefined {
  * Folders are flattened: the `meta.json` separators (`---publish---` etc.) are
  * the section headings, and those headings are i18n keys rather than copy.
  */
-export function docsNav(): DocsNavNode[] {
+export function docsNav(locale: Locale): DocsNavNode[] {
   const nodes: DocsNavNode[] = []
 
   function walk(
@@ -81,17 +98,28 @@ export function docsNav(): DocsNavNode[] {
     }
   }
 
-  walk(source.getPageTree().children)
+  walk(source.getPageTree(locale).children)
   return nodes
 }
 
 /** Indexable `/docs…` paths, including the section home. Used by the pages sitemap. */
 export function docsSitemapPaths(): readonly string[] {
-  const urls = source.getPages().map((page) => page.url)
+  const urls = source.getPages(DEFAULT_LOCALE).map((page) => page.url)
   if (!urls.includes('/docs')) {
     throw new Error('Product docs source has no /docs index page')
   }
   return [...urls].sort((a, b) => a.localeCompare(b))
+}
+
+/** Sitemap entries only advertise translations that exist as physical MDX files. */
+export function docsSitemapEntries(): readonly {
+  path: string
+  locales: readonly Locale[]
+}[] {
+  return docsSitemapPaths().map((path) => ({
+    path,
+    locales: productDocsLocales(path),
+  }))
 }
 
 export function slugsFromSplat(splat: string | undefined): string[] {

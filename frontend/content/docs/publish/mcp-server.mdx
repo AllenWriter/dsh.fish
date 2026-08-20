@@ -24,4 +24,4 @@ An MCP server is an external server mounted as native tools. The harness has no 
 
 `transport` may be `stdio` (with `command`) or `streamable-http` (with `url`). A stdio server without a command is rejected.
 
-The registry stores credential *references* — POSIX environment variable names — never values. The harness resolves them through `ctx.credentials`. That is what makes a catalog row safe to serve publicly.
+The registry stores credential _references_ — POSIX environment variable names — never values. The harness resolves them through `ctx.credentials`. That is what makes a catalog row safe to serve publicly.

@@ -1,0 +1,50 @@
+---
+title: 快速开始：运行 DeepSeek Harness
+description: 启动 DeepSeek Harness Web UI、连接模型、选择工作区并完成第一个仓库任务。
+---
+
+本教程会带你从空白终端进入可工作的 Harness 会话。API 密钥保存在本机，模型请求不经过 dsh.fish。
+
+<DocsVideo
+  src="/docs/video/quickstart.mp4"
+  poster="/docs/video/quickstart-poster.jpg"
+  title="从启动到第一个任务"
+  caption="用 27 秒了解基于真实界面的 Web UI 配置流程。"
+  transcriptLabel="视频文字稿"
+>
+  <p>DeepSeek Harness——从零到第一个任务。</p>
+  <p>启动真实 Web UI。一条命令，默认只监听本机。</p>
+  <p>连接模型。API 密钥保存在你的机器上。</p>
+  <p>选择一个工作区，然后提出一个小而可验证的问题。</p>
+  <p>下一步——从小处提问，逐项验证。</p>
+</DocsVideo>
+
+## 1. 启动 Web UI
+
+```sh
+npx @deepseek-ai/dsh web
+```
+
+如果浏览器没有自动打开，请访问 `http://127.0.0.1:3080`。
+
+## 2. 连接模型
+
+打开 **Settings → Models**，选择供应商，填写模型名和 API 密钥并保存。下一次请求会直接使用新配置，无需重启。对于 OpenAI 兼容端点，请逐字核对 base URL 和模型标识。
+
+## 3. 选择工作区
+
+点击 **Choose workspace** 并选择要检查的仓库。选择之前输入框不可用。把工作区当作信任边界：不要打开包含无关密钥或私人文件的上层目录。
+
+## 4. 完成第一个任务
+
+先发送只读请求：
+
+```text
+Summarize this repository and identify its main packages.
+```
+
+确认回答提到的文件确实存在，再尝试运行一个小型测试。逐项检查权限请求和最终 diff。
+
+新会话通常使用 `workspace-write`。它控制写入，但不代表所有读取、进程和网络行为都被隔离。只批准你理解的操作，并在提交前审阅修改。
+
+下一步：[安装 Hub 插件](/docs/hub)，或[开发第一个插件](/docs/develop/first-plugin)。

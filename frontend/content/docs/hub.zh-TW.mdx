@@ -1,0 +1,28 @@
+---
+title: Hub 外掛程式
+description: 在 DeepSeek Harness 工作階段中搜尋 dsh.fish、檢查安裝計畫並管理擴充功能。
+---
+
+<DocsVideo
+  src="/docs/video/install.mp4"
+  poster="/docs/video/install-poster.jpg"
+  title="安裝前先檢查"
+  caption="用 24 秒了解探索、證據與產生的安裝計畫。"
+  transcriptLabel="影片文字稿"
+>
+  <p>dsh.fish——安裝前先檢查。</p>
+  <p>找到需要的能力，在即時 dsh.fish 目錄中搜尋。</p>
+  <p>比較證據：類型、來源、維護狀態和評分。</p>
+  <p>檢查每個安裝步驟：檔案、套件和 profile patch。</p>
+  <p>下一步——一個計畫，三個介面。</p>
+</DocsVideo>
+
+```sh
+dsh plugin --profile web add github:stvlynn/dsh.fish#main
+```
+
+Git 安裝會執行 `prepare`。pnpm 10 以上版本可能要求在 profile 的 `pnpm-workspace.yaml` 明確允許 `dsh-hub` 建置。該指令碼在代理沙箱之外執行，請固定 commit 後再授權。
+
+核心工具為 `hub_search`、`hub_show`、`hub_install`、`hub_list`、`hub_update` 和 `hub_remove`。先用 `hub_show` 檢視完整計畫。成功安裝會記錄在 `$DSH_HOME/.dsh-fish-lock.json`，並與 CLI 共用。
+
+讀取目錄不需登入。`hub_account` 使用裝置授權流程；token 儲存在 `$DSH_HOME/.dsh-fish-token.json`，不會寫入記錄。裝置 token 可以評分，但不能提交或認領製品。

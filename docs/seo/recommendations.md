@@ -71,7 +71,7 @@ manual action.
 
 ### Translate the highest-traffic artifact summaries
 
-The catalog is deliberately not machine-translated. But a *curated* translation
+The catalog is deliberately not machine-translated. But a _curated_ translation
 of the summary for the top ~100 artifacts, stored as a distinct field and
 attributed as an editorial translation, would make those pages genuinely
 competitive in the non-English clusters instead of ranking on their frame alone.
@@ -116,9 +116,12 @@ also what earns inbound links.
 The hosting is in place: Fumadocs under `/docs/*`, catalog chrome left
 alone — see
 [`../decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md).
-P0 pages (hook bridges, CLI, hub plugin) and the per-kind publish notes
-exist as English MDX. Remaining work is still a content commitment: a REST
-walkthrough, longer how-to guides, and per-locale MDX. A stale guide is
+The baseline learning path is now complete in all six locales: first run,
+model and workspace setup, Hub and CLI installation, plugin/tool/configuration
+development, every publishing format, submission, scoring, and the REST API.
+The three highest-friction flows include short source-backed videos with
+localized transcripts. Remaining work is editorial depth: add focused recipes
+only when a stable, verified use case justifies another page. A stale guide is
 worse than no guide.
 
 ### Author pages

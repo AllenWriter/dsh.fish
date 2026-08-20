@@ -1,0 +1,16 @@
+---
+title: 設定、封裝並安裝外掛程式
+description: 驗證外掛程式設定、理解 profile 覆寫順序，並安全測試安裝與移除。
+---
+
+設定是外掛程式公共契約的一部分。遇到無效值時給出明確錯誤，不要用靜默預設值掩蓋問題。
+
+Harness 的組合順序為：profile bundles → profile `cordis.patch` → home `cordis.patch` → 命令列 patch。後面的層會整體取代同一列設定，而不是深度合併。
+
+```sh
+dsh --profile demo --dump-config
+pnpm pack
+dsh plugin --profile demo add ./hello-harness-0.1.0.tgz
+```
+
+發布套件應包含 `lib/`、manifest、README 與授權。測試實際 tarball。Git 安裝的 `prepare` 在代理沙箱之外執行；保持腳本可重現並建議固定 commit。移除後確認沒有遺留工具、檔案或背景資源。

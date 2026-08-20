@@ -1,0 +1,44 @@
+---
+title: Создайте первый плагин
+description: Создайте минимальный плагин DeepSeek Harness, подключите его как source overlay и проверьте жизненный цикл в Web UI.
+---
+
+Harness собирается из плагинов. Плагин получает Cordis context и регистрирует effect, который можно полностью удалить при выгрузке.
+
+<DocsVideo
+  src="/docs/video/develop.mp4"
+  poster="/docs/video/develop-poster.jpg"
+  title="Одна возможность, полностью на виду"
+  caption="30-секундный цикл разработки от apply-функции до наблюдаемого результата."
+  transcriptLabel="Текст видео"
+>
+  <p>Разработка плагина — одна возможность, полностью на виду.</p>
+  <p>Начните с одной apply-функции. Официальный исходный код задаёт жизненный цикл.</p>
+  <p>Сделайте инструмент наблюдаемым. Настоящий UI показывает вызовы, рассуждения и результаты.</p>
+  <p>Проверьте, удалите, повторите. Чистый profile сохраняет результат понятным.</p>
+  <p>Следующий шаг — создайте самое маленькое полезное решение.</p>
+</DocsVideo>
+
+Текущий официальный процесс разработки запускается из checkout исходного кода DeepSeek Harness. Сначала выполните официальную настройку запуска из исходников, затем создайте `scratch-plugin/src/my-plugin.ts` в корне репозитория.
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+export const name = 'hello-harness'
+export function apply(ctx: Context): void {
+  console.log('[hello-harness] plugin loaded!')
+}
+```
+
+Создайте `scratch-plugin/cordis.yml` с абсолютным путём.
+
+```yaml
+- insert:
+    - id: hello
+      name: '/absolute/path/to/deepseek-harness/scratch-plugin/src/my-plugin.ts'
+```
+
+```sh
+pnpm dsh web --patch ./scratch-plugin/cordis.yml
+```
+
+Откройте `http://127.0.0.1:3080` и проверьте сообщение загрузки в терминале. Регистрации через `ctx` очищаются автоматически; для таймеров и подключений используйте `ctx.effect()` с disposer.

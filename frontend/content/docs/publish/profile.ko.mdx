@@ -1,0 +1,16 @@
+---
+title: Profile
+description: 순서가 있는 bundle 목록으로 DeepSeek Harness profile을 게시하고 행 단위 덮어쓰기를 이해합니다.
+---
+
+Profile은 순서가 있는 `dsh.profile.bundles` 스택입니다.
+
+```json
+{
+  "dsh": {
+    "profile": { "bundles": ["@deepseek-ai/dsh-base", "dsh-hello-plugin"] }
+  }
+}
+```
+
+뒤의 레이어가 행 단위로 우선하며 patch는 행 전체를 교체하고 deep merge하지 않습니다. 순서가 결과를 바꿉니다. Profile 검사는 가장 먼저 실행되므로 profile과 bundle 모두처럼 보이는 패키지는 profile로 분류됩니다.

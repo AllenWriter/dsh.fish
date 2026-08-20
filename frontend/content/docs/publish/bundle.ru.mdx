@@ -1,0 +1,16 @@
+---
+title: Bundle
+description: Объявите npm-пакет плагина через dsh.bundle.patch, чтобы DeepSeek Harness мог активировать его.
+---
+
+Bundle — npm-пакет с `dsh.bundle.patch` и единица установки для `dsh plugin add`.
+
+```json
+{
+  "name": "dsh-hello-plugin",
+  "files": ["index.js", "cordis.patch.yml"],
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}
+```
+
+Без декларации пакет может установиться, но Harness не активирует его слой. Публикуйте в npm собранный код. Git-установка с `prepare` требует явного разрешения пользователя на скрипт сборки.

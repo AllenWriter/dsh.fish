@@ -1,0 +1,40 @@
+---
+title: 注册工具
+description: 为 DeepSeek Harness 插件添加类型化工具，并验证输入、结果与清理行为。
+---
+
+工具是模型可以请求的操作。每个工具只做一件事，验证所有输入，返回可核对的证据，并避免隐藏副作用。
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+import { defineTool } from '@deepseek-ai/dsh-tools'
+
+export const inject = ['tools']
+
+export function apply(ctx: Context) {
+  ctx.tools.register(
+    defineTool({
+      name: 'greet',
+      description: 'Greet someone by name.',
+      parameters: {
+        name: {
+          type: 'string',
+          required: true,
+          description: 'The name to greet',
+        },
+      },
+      output: {
+        schema: { type: 'string' },
+        render: (_args, value) => [{ type: 'text', text: value }],
+      },
+      async execute(args) {
+        return `Hello, ${args.name}!`
+      },
+    }),
+  )
+}
+```
+
+在 `apply(ctx)` 内按当前官方 API 注册，使卸载插件时工具也会移除。分别测试有效、空白和错误输入；dump profile 确认只注册一次；在 Web UI 中发送 `Use greet for Ada.`，检查工具行的 IN/OUT，而不只是助手总结。
+
+不要把 API 密钥放进工具参数或返回值。通过 Harness 的凭据机制读取，并在日志中遮盖敏感数据。

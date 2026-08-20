@@ -21,17 +21,17 @@ Git packages that build from source are refused until you pass `--allow-build-sc
 
 ## Other commands
 
-| Command | What it does |
-| --- | --- |
-| `find [query]` | Search the catalog (`--kind` restricts to one type). |
-| `show <source>` | One artifact and the commands installing it would run. |
-| `list` | Artifacts this machine installed through the CLI or the hub plugin. |
-| `remove <id>` | Reverse the recorded files, patch rows and packages. |
-| `update [id]` | Re-apply the current plan. |
-| `init [name]` | Write a `SKILL.md` the hub indexer will accept. |
-| `login` / `logout` / `whoami` | Device-grant account, same token as the hub plugin. |
-| `rate <source> <1-5> [comment...]` | Rate an artifact; replaces your previous rating. Needs `login`. |
-| `reviews <source>` | Average rating, 5-to-1 distribution and recent comments. |
+| Command                            | What it does                                                        |
+| ---------------------------------- | ------------------------------------------------------------------- |
+| `find [query]`                     | Search the catalog (`--kind` restricts to one type).                |
+| `show <source>`                    | One artifact and the commands installing it would run.              |
+| `list`                             | Artifacts this machine installed through the CLI or the hub plugin. |
+| `remove <id>`                      | Reverse the recorded files, patch rows and packages.                |
+| `update [id]`                      | Re-apply the current plan.                                          |
+| `init [name]`                      | Write a `SKILL.md` the hub indexer will accept.                     |
+| `login` / `logout` / `whoami`      | Device-grant account, same token as the hub plugin.                 |
+| `rate <source> <1-5> [comment...]` | Rate an artifact; replaces your previous rating. Needs `login`.     |
+| `reviews <source>`                 | Average rating, 5-to-1 distribution and recent comments.            |
 
 ```sh
 npx @dsh-fish/cli find postgres --kind mcp-server
@@ -49,11 +49,11 @@ An agent driving this CLI should follow the same rule the hub plugin's `hub_rate
 
 ## Options
 
-| Option | Description |
-| --- | --- |
-| `--profile, -p` | Harness profile (default `$DSH_PROFILE` or `web`). |
-| `--registry` | Hub origin (default `$DSH_FISH_URL` or `https://dsh.fish`). |
-| `--kind, -k` | Restrict `find` to one artifact kind. |
-| `--allow-build-scripts` | Permit a git package to run its prepare script. |
-| `--json` | Machine-readable output. |
-| `--yes, -y` | Skip confirmation prompts. Does not grant build scripts. |
+| Option                  | Description                                                 |
+| ----------------------- | ----------------------------------------------------------- |
+| `--profile, -p`         | Harness profile (default `$DSH_PROFILE` or `web`).          |
+| `--registry`            | Hub origin (default `$DSH_FISH_URL` or `https://dsh.fish`). |
+| `--kind, -k`            | Restrict `find` to one artifact kind.                       |
+| `--allow-build-scripts` | Permit a git package to run its prepare script.             |
+| `--json`                | Machine-readable output.                                    |
+| `--yes, -y`             | Skip confirmation prompts. Does not grant build scripts.    |

@@ -1,0 +1,21 @@
+---
+title: 从首次运行到自定义工具的 DeepSeek Harness 指南
+description: 启动 DeepSeek Harness、连接模型、从 dsh.fish 安装可信扩展，并开发第一个插件。
+---
+
+DeepSeek Harness 是开源智能体运行框架。dsh.fish 是独立的扩展目录，帮助你发现、检查并安装 Harness 能加载的内容。本指南把二者串成一条完整路径。
+
+## 选择你的路径
+
+- **第一次使用？** 按照[快速开始](/docs/quickstart)启动 Web UI、配置模型、选择工作区并完成第一个任务。
+- **需要新能力？** 在会话中使用 [Hub 插件](/docs/hub)，或在终端使用 [dsh.fish CLI](/docs/cli)。安装前先检查计划。
+- **开发集成？** 创建[第一个插件](/docs/develop/first-plugin)，注册[工具](/docs/develop/tool)，再验证[配置](/docs/develop/configuration)。
+- **准备发布？** 选择合适的[发布格式](/docs/publish/bundle)，提交源码并查看公开评分。
+
+## dsh.fish 会验证什么
+
+目录会读取真实仓库或包清单。主题标签和提交只是发现入口，不能决定展示内容。每个制品页都会显示检测到的类型、源码、安装计划、维护信号和可复现评分。
+
+网站、CLI 和 Hub 插件使用同一个安装计划 API。计划可能向 `$DSH_HOME` 写文件、添加包或修改 profile。Git 包的构建脚本运行在智能体沙箱之外，因此必须单独明确授权。
+
+DeepSeek Harness 仍处于开发者预览阶段。本指南只使用已验证的 npm 版本行为；版本相关细节请参考[官方指南](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart)。

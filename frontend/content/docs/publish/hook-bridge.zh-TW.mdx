@@ -1,0 +1,22 @@
+---
+title: Hook Bridge
+description: 在 DeepSeek Harness 中執行既有 Claude Code 或 Codex shell hooks。
+---
+
+Hook bridge 會作為 bridge plugin 列安裝至 profile patch，`dsh.hub` 是事實來源。
+
+```json
+{
+  "dsh": {
+    "hub": {
+      "kind": "hook-bridge",
+      "hook": {
+        "dialect": "claude-code",
+        "settingsPath": "hooks/settings.json"
+      }
+    }
+  }
+}
+```
+
+`dialect` 可為 `claude-code` 或 `codex`。`settingsPath` 必須相對於儲存庫，任何越界路徑都會被拒絕。宣告不完整或類型不符會回報明確錯誤。

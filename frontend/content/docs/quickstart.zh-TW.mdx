@@ -1,0 +1,46 @@
+---
+title: 快速開始：執行 DeepSeek Harness
+description: 啟動 DeepSeek Harness Web UI、連接模型、選擇工作區並完成第一個儲存庫任務。
+---
+
+本教學會帶你從空白終端進入可工作的 Harness 工作階段。API 金鑰保留在本機，模型請求不經過 dsh.fish。
+
+<DocsVideo
+  src="/docs/video/quickstart.mp4"
+  poster="/docs/video/quickstart-poster.jpg"
+  title="從啟動到第一個任務"
+  caption="用 27 秒了解以真實介面呈現的 Web UI 設定流程。"
+  transcriptLabel="影片文字稿"
+>
+  <p>DeepSeek Harness——從零到第一個任務。</p>
+  <p>啟動真實 Web UI。一行指令，預設只監聽本機。</p>
+  <p>連接模型。API 金鑰保存在你的機器上。</p>
+  <p>選擇一個工作區，再提出一個小而可驗證的問題。</p>
+  <p>下一步——從小處提問，逐項驗證。</p>
+</DocsVideo>
+
+## 1. 啟動 Web UI
+
+```sh
+npx @deepseek-ai/dsh web
+```
+
+若瀏覽器沒有自動開啟，請前往 `http://127.0.0.1:3080`。
+
+## 2. 連接模型
+
+開啟 **Settings → Models**，選擇供應商，輸入模型名稱與 API 金鑰後儲存。下一次請求會直接使用新設定，不需重新啟動。OpenAI 相容端點的 base URL 與模型識別碼必須完全正確。
+
+## 3. 選擇工作區
+
+按 **Choose workspace** 並選取要檢查的儲存庫。選取前輸入框不可用。請勿開啟包含無關密鑰或私人檔案的上層目錄。
+
+## 4. 完成第一個任務
+
+```text
+Summarize this repository and identify its main packages.
+```
+
+確認回覆提到的檔案確實存在，再嘗試執行一個小型測試。逐項檢查權限要求與最後的 diff。`workspace-write` 控制寫入，但不代表所有讀取、程序和網路行為都被隔離。
+
+下一步：[安裝 Hub 外掛程式](/docs/hub)，或[開發第一個外掛程式](/docs/develop/first-plugin)。

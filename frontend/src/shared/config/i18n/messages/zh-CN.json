@@ -184,6 +184,8 @@
   "docs.menu": "文档目录",
   "docs.search.placeholder": "搜索文档",
   "docs.search.empty": "没有匹配的页面",
+  "docs.nav.start": "开始",
+  "docs.nav.develop": "开发",
   "docs.nav.publish": "发布",
   "docs.nav.install": "安装",
   "docs.nav.reference": "参考",

@@ -1,0 +1,66 @@
+---
+title: Build your first plugin
+description: Create a minimal DeepSeek Harness plugin, load it as a source overlay, and verify its lifecycle in the Web UI.
+---
+
+DeepSeek Harness is composed from plugins. A plugin receives a Cordis context and registers effects that the harness can later dispose cleanly.
+
+<DocsVideo
+  src="/docs/video/develop.mp4"
+  poster="/docs/video/develop-poster.jpg"
+  title="One capability, fully visible"
+  caption="A 30-second source-backed development loop from apply function to observable result."
+  transcriptLabel="Video transcript"
+>
+  <p>Plugin development — One capability. Fully visible.</p>
+  <p>Begin with one apply function. The official source defines the lifecycle.</p>
+  <p>Make the tool observable. The original UI exposes calls, reasoning, and results.</p>
+  <p>Verify. Remove. Repeat. A clean profile keeps the result legible.</p>
+  <p>Next step — Build the smallest useful thing.</p>
+</DocsVideo>
+
+## Start from the source checkout
+
+The current official development flow runs from a DeepSeek Harness source checkout. Complete its run-from-source setup first, then create a scratch directory at the repository root:
+
+```sh
+mkdir -p scratch-plugin/src
+```
+
+Create `scratch-plugin/src/my-plugin.ts`:
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+
+export const name = 'hello-plugin'
+
+export function apply(ctx: Context): void {
+  console.log('[hello-plugin] plugin loaded!')
+}
+```
+
+## Load the source overlay
+
+Run `pwd`, then create `scratch-plugin/cordis.yml`. Replace the example root with the absolute source-checkout path:
+
+```yaml
+- insert:
+    - id: hello
+      name: '/absolute/path/to/deepseek-harness/scratch-plugin/src/my-plugin.ts'
+```
+
+Start the Web UI with the overlay:
+
+```sh
+pnpm dsh web --patch ./scratch-plugin/cordis.yml
+```
+
+Open `http://127.0.0.1:3080` and confirm that the terminal prints the plugin-loaded line. The absolute path matters: a patch contributes configuration but does not change the directory used to resolve modules.
+
+## Development loop
+
+Capabilities registered through `ctx` are effects and are removed when the plugin unloads. Use `ctx.effect()` with an explicit disposer for resources such as a timer or network connection. Source-overlay edits can hot-reload; adding, removing, or rebuilding a bundle normally requires a restart.
+
+Next, [register a tool](/docs/develop/tool), then add [validated configuration](/docs/develop/configuration).
+
+Official reference: [Your first plugin](https://deepseek-harness.github.io/deepseek-harness/en/develop/basic/).

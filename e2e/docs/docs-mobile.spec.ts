@@ -25,7 +25,10 @@ test.describe('product docs on a phone', () => {
   test('the menu is a sheet, not a second site chrome', async ({ page }) => {
     await openQuiet(page, '/docs')
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Publishing to dsh.fish' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'DeepSeek Harness, from first run to your own tools',
+      }),
     ).toBeVisible()
     await expect(page.getByRole('button', { name: 'Documentation menu' })).toBeVisible()
     await expect(page.getByRole('navigation', { name: 'Documentation menu' })).toHaveCount(0)

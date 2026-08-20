@@ -1,0 +1,28 @@
+---
+title: Hub 플러그인
+description: DeepSeek Harness 세션 안에서 dsh.fish를 검색하고 설치 계획을 검토하며 확장을 관리합니다.
+---
+
+<DocsVideo
+  src="/docs/video/install.mp4"
+  poster="/docs/video/install-poster.jpg"
+  title="설치 전에 검토하세요"
+  caption="탐색, 근거, 생성된 설치 계획을 24초에 살펴봅니다."
+  transcriptLabel="동영상 대본"
+>
+  <p>dsh.fish — 설치 전에 검토하세요.</p>
+  <p>필요한 기능을 찾고 실시간 dsh.fish 카탈로그를 검색합니다.</p>
+  <p>유형, 소스, 유지 관리 상태, 점수라는 근거를 비교합니다.</p>
+  <p>파일, 패키지, profile patch 등 모든 설치 단계를 확인합니다.</p>
+  <p>다음 단계 — 하나의 계획, 세 개의 화면.</p>
+</DocsVideo>
+
+```sh
+dsh plugin --profile web add github:stvlynn/dsh.fish#main
+```
+
+Git 설치는 `prepare`를 실행합니다. pnpm 10 이상은 profile의 `pnpm-workspace.yaml`에서 `dsh-hub` 빌드를 허용해야 할 수 있습니다. 스크립트는 샌드박스 밖에서 실행되므로 commit을 고정한 뒤 승인하세요.
+
+핵심 도구는 `hub_search`, `hub_show`, `hub_install`, `hub_list`, `hub_update`, `hub_remove`입니다. 먼저 `hub_show`로 전체 계획을 확인합니다. 설치 기록은 CLI와 공유하는 `$DSH_HOME/.dsh-fish-lock.json`에 저장됩니다.
+
+카탈로그 읽기에는 로그인이 필요 없습니다. 기기 토큰은 평가에는 사용할 수 있지만 게시나 소유권 신청에는 사용할 수 없습니다.

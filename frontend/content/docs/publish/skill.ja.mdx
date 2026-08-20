@@ -1,0 +1,15 @@
+---
+title: Skill
+description: kebab-case の名前と必須説明を持つ SKILL.md でエージェントスキルを公開します。
+---
+
+Skill は frontmatter を持つ `SKILL.md` で、`$DSH_HOME/skills` に導入されます。
+
+```md
+---
+name: release-notes
+description: Draft release notes from a commit range.
+---
+```
+
+`name` は kebab-case、`description` は必須です。`kindHint` は検出順を変えるだけで、有効なファイルの代わりにはなりません。

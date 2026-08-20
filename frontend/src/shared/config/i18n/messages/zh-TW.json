@@ -184,6 +184,8 @@
   "docs.menu": "文件目錄",
   "docs.search.placeholder": "搜尋文件",
   "docs.search.empty": "沒有符合的頁面",
+  "docs.nav.start": "開始",
+  "docs.nav.develop": "開發",
   "docs.nav.publish": "發布",
   "docs.nav.install": "安裝",
   "docs.nav.reference": "參考",

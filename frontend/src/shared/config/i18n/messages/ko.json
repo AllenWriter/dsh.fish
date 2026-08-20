@@ -184,6 +184,8 @@
   "docs.menu": "문서 메뉴",
   "docs.search.placeholder": "문서 검색",
   "docs.search.empty": "일치하는 페이지 없음",
+  "docs.nav.start": "시작",
+  "docs.nav.develop": "개발",
   "docs.nav.publish": "게시",
   "docs.nav.install": "설치",
   "docs.nav.reference": "참고",

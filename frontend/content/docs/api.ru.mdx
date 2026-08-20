@@ -1,0 +1,16 @@
+---
+title: REST API
+description: Ищите dsh.fish через публичный JSON API, проверяйте артефакты и планы установки, читайте оценки и синхронизируйте каталог.
+---
+
+Публичный API предназначен для поиска и интеграций только для чтения. Полная схема доступна в [OpenAPI](/openapi.json).
+
+```sh
+curl -s 'https://dsh.fish/api/v1/artifacts?q=postgres&kind=mcp-server'
+curl -s 'https://dsh.fish/api/v1/artifacts/ARTIFACT_ID/install-plan?profile=web'
+curl -s 'https://dsh.fish/api/v1/scoring'
+```
+
+План установки — данные, а не команда для слепого запуска. Покажите пользователю каждый файл, пакет и profile patch; скрипты сборки подтверждайте отдельно.
+
+Сначала опрашивайте `/api/v1/catalog/version`, скачивайте snapshot только при изменении `dataVersion` и сохраняйте `ETag`. Для публичного чтения учётная запись не нужна.

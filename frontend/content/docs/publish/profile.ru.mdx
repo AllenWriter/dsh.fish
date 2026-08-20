@@ -1,0 +1,16 @@
+---
+title: Profile
+description: Опубликуйте profile DeepSeek Harness как упорядоченный список bundle и учитывайте замену по строкам.
+---
+
+Profile — упорядоченный стек `dsh.profile.bundles`.
+
+```json
+{
+  "dsh": {
+    "profile": { "bundles": ["@deepseek-ai/dsh-base", "dsh-hello-plugin"] }
+  }
+}
+```
+
+Поздний слой побеждает по строке, а patch заменяет всю конфигурацию строки без deep merge. Поэтому порядок меняет результат. Profile проверяется первым; пакет, похожий и на profile, и на bundle, считается profile.

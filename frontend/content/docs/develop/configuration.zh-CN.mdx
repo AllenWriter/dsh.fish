@@ -1,0 +1,18 @@
+---
+title: 配置、打包并安装插件
+description: 验证插件配置、理解 profile 覆盖顺序，并安全测试构建产物的安装和移除。
+---
+
+配置是插件公共契约的一部分。遇到无效值时给出明确错误，不要用静默默认值掩盖问题。
+
+Harness 按以下顺序组合配置：profile 中的 bundles → profile `cordis.patch` → home `cordis.patch` → 命令行 patch。后面的层会整体替换同一行配置，而不是深度合并。
+
+```sh
+dsh --profile demo --dump-config
+pnpm pack
+dsh plugin --profile demo add ./hello-harness-0.1.0.tgz
+```
+
+发布包应包含运行时所需的 `lib/`、manifest、README 和许可证。测试实际 tarball，而不是工作区。Git 安装的 `prepare` 在用户机器、智能体沙箱之外运行；保持脚本确定、说明风险并建议固定 commit。
+
+发布前要在干净 profile 中安装、检查解析配置、测试成功与失败路径、验证 dispose，并在移除后确认没有遗留工具、文件或后台资源。

@@ -1,0 +1,40 @@
+---
+title: ツールを登録する
+description: DeepSeek Harness プラグインに型付きツールを追加し、入力、結果、破棄を検証します。
+---
+
+一つのツールには一つの明確な結果だけを持たせ、全入力を検証し、確認可能な証拠を返し、隠れた副作用を避けます。
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+import { defineTool } from '@deepseek-ai/dsh-tools'
+
+export const inject = ['tools']
+
+export function apply(ctx: Context) {
+  ctx.tools.register(
+    defineTool({
+      name: 'greet',
+      description: 'Greet someone by name.',
+      parameters: {
+        name: {
+          type: 'string',
+          required: true,
+          description: 'The name to greet',
+        },
+      },
+      output: {
+        schema: { type: 'string' },
+        render: (_args, value) => [{ type: 'text', text: value }],
+      },
+      async execute(args) {
+        return `Hello, ${args.name}!`
+      },
+    }),
+  )
+}
+```
+
+現在の公式 API に従って `apply(ctx)` 内で登録し、プラグインのアンロード時にツールも削除されるようにします。有効、空、異常な入力をテストし、Web UI で `Use greet for Ada.` を送ってツール行の IN/OUT を確認してください。
+
+API キーを引数や結果に含めず、Harness の資格情報機構から読み、ログでは秘匿します。

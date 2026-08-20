@@ -1,0 +1,28 @@
+---
+title: Hub プラグイン
+description: DeepSeek Harness のセッション内で dsh.fish を検索し、導入計画を確認して拡張を管理します。
+---
+
+<DocsVideo
+  src="/docs/video/install.mp4"
+  poster="/docs/video/install-poster.jpg"
+  title="導入前に確認する"
+  caption="探索、根拠、生成された導入計画を 24 秒で紹介します。"
+  transcriptLabel="動画の文字起こし"
+>
+  <p>dsh.fish — 導入前に確認する。</p>
+  <p>必要な機能を見つけ、稼働中の dsh.fish カタログを検索します。</p>
+  <p>種類、ソース、保守状況、スコアという根拠を比較します。</p>
+  <p>ファイル、パッケージ、profile patch の各導入手順を確認します。</p>
+  <p>次の一歩 — 一つの計画、三つの画面。</p>
+</DocsVideo>
+
+```sh
+dsh plugin --profile web add github:stvlynn/dsh.fish#main
+```
+
+Git からの導入では `prepare` が動きます。pnpm 10 以降は profile の `pnpm-workspace.yaml` で `dsh-hub` のビルド許可が必要になることがあります。スクリプトはサンドボックス外で動くため、commit を固定してから許可してください。
+
+主なツールは `hub_search`、`hub_show`、`hub_install`、`hub_list`、`hub_update`、`hub_remove` です。まず `hub_show` で計画全体を確認します。導入記録は CLI と共通の `$DSH_HOME/.dsh-fish-lock.json` に保存されます。
+
+カタログの閲覧にログインは不要です。デバイストークンは評価に使えますが、公開や所有権の申請はできません。

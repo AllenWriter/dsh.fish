@@ -1,0 +1,60 @@
+---
+title: 'Quickstart: run DeepSeek Harness'
+description: Launch the DeepSeek Harness Web UI, connect a model, choose a workspace, and complete your first repository task.
+---
+
+This tutorial takes you from an empty terminal to a working DeepSeek Harness session. Your API key stays on your machine; dsh.fish is not involved in model requests.
+
+<DocsVideo
+  src="/docs/video/quickstart.mp4"
+  poster="/docs/video/quickstart-poster.jpg"
+  title="From launch to first task"
+  caption="A 27-second source-backed tour of the Web UI setup flow."
+  transcriptLabel="Video transcript"
+>
+  <p>DeepSeek Harness — Zero to first task.</p>
+  <p>Start the real Web UI. One command. Local by default.</p>
+  <p>Connect a model. Your API key stays on your machine.</p>
+  <p>Choose one workspace. Then ask a small, verifiable question.</p>
+  <p>Next step — Ask small. Verify everything.</p>
+</DocsVideo>
+
+## 1. Start the Web UI
+
+```sh
+npx @deepseek-ai/dsh web
+```
+
+Open `http://127.0.0.1:3080` if the browser does not open automatically. The package is a developer preview, so read the npm prompt and release notes before using it on important work.
+
+## 2. Connect a model
+
+Open **Settings → Models**, choose a provider, enter the model name and API key, then save. The next request uses the saved configuration; no restart is needed.
+
+For an OpenAI-compatible endpoint, check the provider's base URL and model identifier exactly. A successful credential save does not prove that the endpoint accepts the selected model, so run the small first task below before a long session.
+
+## 3. Choose a workspace
+
+Select **Choose workspace** and open the repository you want the agent to inspect. The composer remains unavailable until a workspace is selected. Treat the workspace as a trust boundary: review the repository first, and do not open a directory containing unrelated secrets.
+
+## 4. Run a first task
+
+Send a read-only request:
+
+```text
+Summarize this repository and identify its main packages.
+```
+
+Check that the response names files that actually exist. Then ask for a small, verifiable action such as running one test target. Review each requested permission and the resulting diff.
+
+## Understand permissions
+
+A new session normally starts with `workspace-write`. This controls writes, but it does not mean every process, read, or network action is isolated. Approve only the operation you understand, keep credentials outside the workspace, and inspect changes before committing.
+
+## Next
+
+- Add catalog search and installation with the [dsh.fish hub plugin](/docs/hub).
+- Automate terminal tasks with the official headless command: `dsh --profile headless "run the tests"`.
+- Build a capability in [Your first plugin](/docs/develop/first-plugin).
+
+Official, version-specific reference: [Use the Web UI](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart).

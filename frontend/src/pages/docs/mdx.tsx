@@ -3,6 +3,7 @@ import type { ComponentType, JSX } from 'react'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { CopyButton } from '@/shared/ui/copy-button'
 import { cn } from '@/shared/lib/utils'
+import { DocsVideo } from '@/widgets/docs-media'
 
 /**
  * MDX tag map for first-party product docs.
@@ -15,7 +16,7 @@ type IntrinsicMdxComponents = Partial<{
   [Tag in keyof JSX.IntrinsicElements]: ComponentType<JSX.IntrinsicElements[Tag]>
 }>
 
-type ExtraMdxComponents = Record<string, ComponentType<Record<string, never>> | undefined>
+type ExtraMdxComponents = MDXComponents
 
 export function docsMdxComponents(extra?: ExtraMdxComponents): MDXComponents {
   const components = {
@@ -104,7 +105,7 @@ export function docsMdxComponents(extra?: ExtraMdxComponents): MDXComponents {
   // @types/mdx derives intrinsic props from the global JSX namespace, while
   // React 19 exports JSX from `react`. Keep the renderer locally type-safe and
   // bridge those structurally equivalent maps only at the package boundary.
-  return { ...components, ...extra } as unknown as MDXComponents
+  return { ...components, DocsVideo, ...extra } as unknown as MDXComponents
 }
 
 function CodeFence({ children }: { children?: React.ReactNode }) {

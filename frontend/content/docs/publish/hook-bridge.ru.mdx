@@ -1,0 +1,22 @@
+---
+title: Hook Bridge
+description: Запускайте существующие shell hooks Claude Code или Codex внутри DeepSeek Harness.
+---
+
+Hook bridge добавляется строкой bridge plugin в profile patch; источником служит `dsh.hub`.
+
+```json
+{
+  "dsh": {
+    "hub": {
+      "kind": "hook-bridge",
+      "hook": {
+        "dialect": "claude-code",
+        "settingsPath": "hooks/settings.json"
+      }
+    }
+  }
+}
+```
+
+`dialect` — `claude-code` или `codex`. `settingsPath` задаётся относительно репозитория; выход за его пределы отклоняется. Неполная декларация или неверный тип возвращает явную ошибку.

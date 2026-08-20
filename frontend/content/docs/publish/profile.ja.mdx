@@ -1,0 +1,16 @@
+---
+title: Profile
+description: 順序付き bundle リストで DeepSeek Harness profile を公開し、行単位の上書きを理解します。
+---
+
+Profile は順序付きの `dsh.profile.bundles` スタックです。
+
+```json
+{
+  "dsh": {
+    "profile": { "bundles": ["@deepseek-ai/dsh-base", "dsh-hello-plugin"] }
+  }
+}
+```
+
+後のレイヤーが行単位で優先され、patch は行全体を置換して deep merge しません。順序は結果に影響します。Profile の検査は最初に行われ、profile と bundle の両方に見えるパッケージは profile になります。

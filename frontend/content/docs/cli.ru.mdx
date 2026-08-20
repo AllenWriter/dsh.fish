@@ -1,0 +1,17 @@
+---
+title: dsh.fish CLI
+description: Ищите, проверяйте, устанавливайте, обновляйте и удаляйте расширения DeepSeek Harness из терминала.
+---
+
+`@dsh-fish/cli` выполняет тот же план установки, который показан на странице артефакта, и пишет в `$DSH_HOME` DeepSeek Harness.
+
+```sh
+npx @dsh-fish/cli find postgres --kind mcp-server
+npx @dsh-fish/cli show release-notes
+npx @dsh-fish/cli add release-notes --profile web
+npx @dsh-fish/cli list
+```
+
+`add` принимает Hub id, URL dsh.fish или `owner/repo`. Если Git-пакету нужен скрипт сборки, явно передайте `--allow-build-scripts`; флаг `--yes` такого разрешения не даёт.
+
+Основные команды: `find`, `show`, `add`, `list`, `update`, `remove`, `init`. Оценивайте только то, что действительно установили и использовали.

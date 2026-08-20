@@ -1,0 +1,24 @@
+---
+title: MCP Server
+description: MCP transport와 자격 증명 참조를 선언해 외부 서비스를 DeepSeek Harness 도구로 설치합니다.
+---
+
+MCP server는 profile patch에 `dsh-mcp-client` 행으로 추가되며 `package.json`의 `dsh.hub`가 카탈로그의 정보 원본입니다.
+
+```json
+{
+  "dsh": {
+    "hub": {
+      "kind": "mcp-server",
+      "mcp": {
+        "serverName": "github",
+        "transport": "stdio",
+        "command": "npx",
+        "credentials": [{ "envName": "GITHUB_TOKEN", "required": true }]
+      }
+    }
+  }
+}
+```
+
+`transport`는 `command`가 있는 `stdio` 또는 `url`이 있는 `streamable-http`입니다. 카탈로그는 환경 변수 이름 같은 참조만 저장하고 비밀 값은 저장하지 않습니다.

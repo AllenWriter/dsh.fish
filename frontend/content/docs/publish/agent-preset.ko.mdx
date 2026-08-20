@@ -1,0 +1,17 @@
+---
+title: Agent Preset
+description: 하나의 agent.cordis.yml로 재사용 가능한 DeepSeek Harness 에이전트 구성을 게시합니다.
+---
+
+Agent preset은 `agent.cordis.yml` 하나가 든 디렉터리입니다. `$DSH_HOME/.agent-presets/<id>`에 설치되며 디렉터리 이름이 preset id가 됩니다.
+
+```yaml
+- id: tools
+  name: 'dsh-tools'
+- id: prompt
+  name: 'dsh-system-prompt'
+  config:
+    persona: ./persona.md
+```
+
+파일을 저장소 루트나 제출한 하위 디렉터리에 두세요. 이 검사는 마지막에 실행되므로 더 앞선 package 또는 skill 규칙과 맞으면 그 종류가 사용됩니다.

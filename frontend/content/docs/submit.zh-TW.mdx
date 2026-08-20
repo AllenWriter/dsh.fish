@@ -1,0 +1,10 @@
+---
+title: 提交與認領
+description: 向 dsh.fish 提交真實原始碼，由目錄重新讀取 manifest 並驗證 GitHub 所有權。
+---
+
+[提交表單](/submit)接收 `npm:<package>` 或 `github:<owner>/<repo>[/<path>]` 等來源，以及你認為的類型。目錄會重新讀取真實 manifest，`kindHint` 只調整探測順序，不能取代證據。
+
+提交需要瀏覽器工作階段。來源可讀且目前 OAuth GitHub 帳戶能證明儲存庫所有權時會立即通過；其他情況進入審查。裝置 token 可以搜尋、安裝與評分，但不能發布或認領。
+
+README 變更後會按站點語言重新產生本地化內容。來源 hash 不符時顯示原始 README，避免提供過期翻譯。

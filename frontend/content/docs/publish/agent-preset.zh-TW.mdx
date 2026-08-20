@@ -1,0 +1,17 @@
+---
+title: Agent Preset
+description: 使用一個 agent.cordis.yml 發布可重複使用的 DeepSeek Harness 代理設定。
+---
+
+Agent preset 是包含一個 `agent.cordis.yml` 的目錄，安裝至 `$DSH_HOME/.agent-presets/<id>`；目錄名稱就是 preset id。
+
+```yaml
+- id: tools
+  name: 'dsh-tools'
+- id: prompt
+  name: 'dsh-system-prompt'
+  config:
+    persona: ./persona.md
+```
+
+將檔案放在儲存庫根目錄或提交的子目錄。這是最後一個檔案探針；若儲存庫已符合較早規則，將使用較早的類型。

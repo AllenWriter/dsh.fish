@@ -28,21 +28,21 @@ app -> pages -> widgets -> features -> entities -> shared
 
 ```ts
 // ✅ Good: page imports from widgets and features
-import { Header } from 'widgets/header';
-import { AddToCartButton } from 'features/add-to-cart';
+import { Header } from 'widgets/header'
+import { AddToCartButton } from 'features/add-to-cart'
 
 // ✅ Good: feature imports from entities and shared
-import { type Order } from 'entities/order';
-import { Button } from 'shared/ui';
+import { type Order } from 'entities/order'
+import { Button } from 'shared/ui'
 
 // ❌ Bad: feature imports from another feature
-import { useSearch } from 'features/search';
+import { useSearch } from 'features/search'
 
 // ❌ Bad: shared imports from entities
-import { type User } from 'entities/user';
+import { type User } from 'entities/user'
 
 // ❌ Bad: importing internals
-import { internalHelper } from 'features/add-to-cart/lib/internalHelper';
+import { internalHelper } from 'features/add-to-cart/lib/internalHelper'
 ```
 
 ## Exceptions
@@ -54,6 +54,6 @@ Exceptions must be documented in [`docs/project/architecture.md`](../project/arc
 `pages/seo` and `pages/markdown` may import from `pages/docs` so every product-docs slug is enumerated once, from the MDX tree:
 
 - `pages/markdown` imports the docs **public API** (`productDocsMarkdown`) — bundled source text, no Fumadocs.
-- `pages/seo` imports `docsSitemapPaths` from `pages/docs/source`. That helper cannot live on the docs public API: `defineDocs` is a Vite macro, and the markdown unit tests import `@/pages/docs` without the plugin.
+- `pages/seo` imports `docsSitemapEntries` from `pages/docs/source`. That helper cannot live on the docs public API: `defineDocs` is a Vite macro, and the markdown unit tests import `@/pages/docs` without the plugin.
 
 Do not copy the slug list into the sitemap or the markdown handler.

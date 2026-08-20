@@ -49,8 +49,10 @@ deterministic unit test.
 `pnpm run test:e2e` runs Playwright. Project groups share one config:
 **Product docs** (`e2e/docs/`) covers the Fumadocs section at one desktop
 viewport (1280×900) and one phone (Pixel 7). It asserts the sidebar, nested
-guides, live scoring, sidebar filter, Japanese chrome around English MDX,
-`/docs/search` JSON (not `/api/search`), and `Accept: text/markdown`. Fold
+guides, live scoring, sidebar filter, indexable Japanese MDX, controlled video
+with a localized transcript, `/docs/search` JSON (not `/api/search`), and
+localized `Accept: text/markdown`. Unit tests also require every guide to have
+a physical file in every public locale. Fold
 screenshots are written for inspection; they are not visual baselines.
 
 **Plugin-detail markdown** is an exception to "journeys only": a third-party
@@ -65,7 +67,7 @@ The tests assert:
 
 - GFM structure (demoted headings, tables, fences, task lists) and that raw
   HTML never reaches the DOM.
-- The *page* does not scroll sideways; wide tables and fences scroll inside
+- The _page_ does not scroll sideways; wide tables and fences scroll inside
   themselves.
 - A 1600px screenshot shrinks to the column; inline badges stay inline.
 - Below the `lg` breakpoint the install panel, README badge and reviews
@@ -131,7 +133,7 @@ cookie can be read back. What only a browser can show is the rest:
   `noopener`.
 - The maintainer's card asks for his GitHub portrait, stubbed so the suite stays
   off the network.
-- Dismissing writes the cookie, and a reload comes back as a *shorter* deck,
+- Dismissing writes the cookie, and a reload comes back as a _shorter_ deck,
   because the loader never offered the retired card again. A reader who has
   closed all three gets no live region at all.
 - The deck survives a client-side navigation without replaying its entrance.

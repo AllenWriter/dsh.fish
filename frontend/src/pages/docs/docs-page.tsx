@@ -6,6 +6,7 @@ import { breadcrumbLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 import { DocsShell } from '@/widgets/docs-shell'
 import { ScoringModel } from '@/widgets/docs-scoring'
 import { docsMdxComponents } from './mdx'
+import { productDocsLocales } from './raw'
 import { docsNav, slugsFromSplat, source, tocFromPage } from './source'
 
 const docsContent = browserCollections.docs.createClientLoader<{
@@ -22,15 +23,15 @@ const docsContent = browserCollections.docs.createClientLoader<{
 
 export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
   if (!loaderData) return errorMeta(params.locale)
-  const { origin, locale, path, title, description } = loaderData
+  const { origin, locale, path, title, description, availableLocales } = loaderData
   return pageMeta({
     origin,
     locale,
     path,
     title: `${title} — ${translate(locale, 'app.name')}`,
     description,
-    index: locale === 'en',
-    availableLocales: ['en'],
+    index: availableLocales.includes(locale),
+    availableLocales,
     type: 'article',
     jsonLd: [
       breadcrumbLd(origin, locale, [
@@ -45,11 +46,12 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
 export function loader({ context, params }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale)
   const slugs = slugsFromSplat(params['*'])
-  const page = source.getPage(slugs)
+  const page = source.getPage(slugs, locale)
   if (!page) throw new Response(null, { status: 404, statusText: 'Not Found' })
 
   const origin = context.get(hubContext).container.config.baseUrl
   const description = page.data.description?.trim() || translate(locale, 'seo.docs.description')
+  const availableLocales = productDocsLocales(page.url)
 
   return {
     locale,
@@ -59,7 +61,8 @@ export function loader({ context, params }: Route.LoaderArgs) {
     contentPath: page.path,
     title: page.data.title,
     description,
-    nav: docsNav(),
+    availableLocales,
+    nav: docsNav(locale),
     toc: tocFromPage(page),
     scoring: context.get(hubContext).container.useCases.describeScoring.execute(),
   }

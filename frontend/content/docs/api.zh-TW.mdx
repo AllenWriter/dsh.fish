@@ -1,0 +1,16 @@
+---
+title: REST API
+description: 使用公開 JSON API 搜尋 dsh.fish、檢查製品和安裝計畫、讀取評分並同步目錄。
+---
+
+公開 API 用於探索和唯讀目錄整合。完整結構請查看 [OpenAPI 文件](/openapi.json)。
+
+```sh
+curl -s 'https://dsh.fish/api/v1/artifacts?q=postgres&kind=mcp-server'
+curl -s 'https://dsh.fish/api/v1/artifacts/ARTIFACT_ID/install-plan?profile=web'
+curl -s 'https://dsh.fish/api/v1/scoring'
+```
+
+安裝計畫是資料，不應盲目執行。向使用者顯示每個檔案、套件與 profile patch，需要建置指令碼時另外確認。
+
+先輪詢 `/api/v1/catalog/version`，只在 `dataVersion` 變更時下載 `/api/v1/catalog/snapshot`，並保存 `ETag`。公開讀取不需帳戶；認證寫入與 scope 以 OpenAPI 為準。

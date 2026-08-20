@@ -1,0 +1,17 @@
+---
+title: Skill
+description: 用包含 kebab-case 名称和必填说明的 SKILL.md 发布智能体技能。
+---
+
+Skill 是带 frontmatter 的 `SKILL.md`，安装到 `$DSH_HOME/skills`。
+
+```md
+---
+name: release-notes
+description: Draft release notes from a commit range.
+---
+
+# Release notes
+```
+
+`name` 必须使用 kebab-case，`description` 必填；缺少任一项都不会被 provider 加载。提交时的 `kindHint` 只会调整探测顺序，不能代替有效文件。

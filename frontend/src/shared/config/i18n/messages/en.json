@@ -184,6 +184,8 @@
   "docs.menu": "Documentation menu",
   "docs.search.placeholder": "Search docs",
   "docs.search.empty": "No matching pages",
+  "docs.nav.start": "Start",
+  "docs.nav.develop": "Develop",
   "docs.nav.publish": "Publish",
   "docs.nav.install": "Install",
   "docs.nav.reference": "Reference",

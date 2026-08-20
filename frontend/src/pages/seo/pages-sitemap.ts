@@ -1,7 +1,7 @@
 import type { Route } from './+types/pages-sitemap'
 import { hubContext } from '@/shared/api/hub-context'
 import { ARTIFACT_KINDS, CATEGORIES } from '@/entities/artifact/model/types'
-import { docsSitemapPaths } from '@/pages/docs/source'
+import { docsSitemapEntries } from '@/pages/docs/source'
 import { urlSetXml, xmlResponse, type SitemapUrl } from './xml'
 
 /**
@@ -32,9 +32,9 @@ export function loader({ context }: Route.LoaderArgs) {
       changeFrequency: 'daily' as const,
       priority: 0.7,
     })),
-    ...docsSitemapPaths().map((path) => ({
+    ...docsSitemapEntries().map(({ path, locales }) => ({
       path,
-      locales: ['en'] as const,
+      locales,
       changeFrequency: 'monthly' as const,
       priority: path === '/docs' ? 0.6 : 0.55,
     })),
