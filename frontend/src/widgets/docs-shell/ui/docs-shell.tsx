@@ -39,12 +39,13 @@ export function DocsShell({
       if (event.key === 'Escape') setMenuOpen(false)
     }
     const previousOverflow = document.body.style.overflow
+    const menuButton = menuButtonRef.current
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', onKey)
     return () => {
       document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', onKey)
-      menuButtonRef.current?.focus()
+      menuButton?.focus()
     }
   }, [menuOpen])
 

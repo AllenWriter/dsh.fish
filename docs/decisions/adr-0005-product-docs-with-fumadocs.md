@@ -282,6 +282,7 @@ Harder:
 | Scoring | `widgets/docs-scoring` — `DescribeScoring` via the page loader |
 | Markdown | `import.meta.glob('…mdx?raw')` in `pages/docs/raw.ts`; Worker has no `content/docs` |
 | Search JSON | `/docs/search` — titles and descriptions only; Orama and Shiki stay out of the Worker |
+| Code fences | `rehypeCodeOptions: false` — no GitHub-themed token spans; fences match the catalog readme |
 
 Still open, in the same order as before: per-locale MDX files, a REST walkthrough,
 and longer "how to write a …" guides. English fallback is the current locale

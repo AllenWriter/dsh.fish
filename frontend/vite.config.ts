@@ -14,6 +14,15 @@ export default defineConfig({
       macro: {
         include: ['src/pages/docs/**/*.ts', 'src/pages/docs/**/*.tsx'],
       },
+      // Build-time Shiki would bake GitHub light/dark token spans into every
+      // fence. The catalog readme is plain mono on `--card`; product docs
+      // match that. Highlighting at runtime is forbidden on the Worker.
+      globalOptions: {
+        mdxOptions: {
+          rehypeCodeOptions: false,
+          remarkCodeTabOptions: false,
+        },
+      },
     }),
     // Runs dev and preview inside workerd, so local behavior matches production
     // bindings rather than a Node emulation of them.
