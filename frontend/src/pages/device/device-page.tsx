@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams, Link} from 'react-router'
+import { useSearchParams } from 'react-router'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { CliIcon, ConfirmIcon, DenyIcon, SecureIcon, SignInIcon } from '@/shared/ui/icon'
 import { EASE_OUT } from '@/shared/lib/ease'
@@ -7,15 +7,16 @@ import type { Route } from './+types/device-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { OTPInput, type OTPStatus } from '@/shared/ui/motion/otp-input'
 import { authClient, useSession } from '@/shared/api/auth-client'
-import { resolveLocale, translate, useT } from '@/shared/config/i18n'
+import { requireLocale, translate, useT } from '@/shared/config/i18n'
+import { LocaleLink } from '@/shared/ui/locale-link'
 import { errorMeta, pageMeta } from '@/shared/lib/seo'
 
 /** Kept in step with `DEVICE_USER_CODE_LENGTH` on the auth configuration. */
 const CODE_LENGTH = 8
 
 /** Nothing about an in-flight authorization belongs in a search index. */
-export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
-  if (!loaderData) return errorMeta()
+export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta(params.locale)
   const { origin, locale } = loaderData
   return pageMeta({
     origin,
@@ -27,9 +28,9 @@ export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
   })
 }
 
-export function loader({ context, request }: Route.LoaderArgs) {
+export function loader({ context, params }: Route.LoaderArgs) {
   return {
-    locale: resolveLocale(request),
+    locale: requireLocale(params.locale),
     origin: context.get(hubContext).container.config.baseUrl,
   }
 }
@@ -71,13 +72,13 @@ export default function DevicePage() {
     return (
       <Shell>
         <p className="text-muted-foreground">{t('device.signInFirst')}</p>
-        <Link
+        <LocaleLink
           to={`/sign-in?redirect=${encodeURIComponent(`/device?user_code=${code}`)}`}
           className="press mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
           <SignInIcon className="size-4" weight="bold" />
           {t('nav.signIn')}
-        </Link>
+        </LocaleLink>
       </Shell>
     )
   }

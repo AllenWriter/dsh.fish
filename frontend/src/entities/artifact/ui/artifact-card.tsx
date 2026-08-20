@@ -1,4 +1,3 @@
-import { Link } from 'react-router'
 import { motion, useReducedMotion } from 'motion/react'
 import { DownloadsIcon, StarsIcon, VerifiedIcon, WarningIcon } from '@/shared/ui/icon'
 import type { Artifact } from '../model/types'
@@ -8,6 +7,7 @@ import { MaintenanceChip } from './maintenance-chip'
 import { VelocityIndicator } from './velocity-indicator'
 import { ArtifactOgBackdrop } from './artifact-og-backdrop'
 import { useT } from '@/shared/config/i18n'
+import { LocaleLink } from '@/shared/ui/locale-link'
 import { AnimatedNumber } from '@/shared/ui/animated-number'
 import { EASE_OUT } from '@/shared/lib/ease'
 import { cn } from '@/shared/lib/utils'
@@ -66,12 +66,12 @@ export function ArtifactCard({ artifact, index = 0 }: { artifact: Artifact; inde
         </div>
 
         <h3 className="mt-3 text-balance text-base font-semibold leading-snug tracking-tight">
-          <Link
+          <LocaleLink
             to={`/a/${artifact.id}`}
             className="after:absolute after:inset-0 after:content-['']"
           >
             {artifact.displayName}
-          </Link>
+          </LocaleLink>
         </h3>
 
         <p className="mt-1.5 line-clamp-2 flex-1 text-pretty text-sm leading-relaxed text-muted-foreground">

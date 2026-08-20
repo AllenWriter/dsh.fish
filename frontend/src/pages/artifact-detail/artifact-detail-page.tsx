@@ -1,4 +1,4 @@
-import { data, Link} from 'react-router'
+import { data } from 'react-router'
 import type { Route } from './+types/artifact-detail-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { ArtifactReviews } from '@/widgets/artifact-reviews/artifact-reviews'
@@ -28,7 +28,8 @@ import {
   WarningIcon,
   type Icon,
 } from '@/shared/ui/icon'
-import { resolveLocale, translate, useLocale, useT } from '@/shared/config/i18n'
+import { requireLocale, translate, useLocale, useT } from '@/shared/config/i18n'
+import { LocaleLink } from '@/shared/ui/locale-link'
 import { Markdown } from '@/shared/ui/markdown'
 import { breadcrumbLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 import { relativeTime } from '@/shared/lib/format'
@@ -42,9 +43,9 @@ import { AnimatedNumber } from '@/shared/ui/animated-number'
  * pending or failed, the original remains visible. The rest of the page frame
  * is localized from the checked-in message catalogs.
  */
-export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
+export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
   // A 404 renders the error boundary, so loaderData is absent there.
-  if (!loaderData) return errorMeta()
+  if (!loaderData) return errorMeta(params.locale)
 
   const { artifact, plan, reviews, origin, locale } = loaderData
   const kindName = translate(locale, kindLabelKey(artifact.kind))
@@ -87,7 +88,7 @@ export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
 }
 
 export async function loader({ context, params, request }: Route.LoaderArgs) {
-  const locale = resolveLocale(request)
+  const locale = requireLocale(params.locale)
   const { container } = context.get(hubContext)
   const profile = new URL(request.url).searchParams.get('profile') ?? undefined
 
@@ -133,13 +134,13 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
         <nav aria-label={t('browse.title')} className="text-sm text-muted-foreground">
           <ol className="flex flex-wrap items-center gap-1.5">
             <li>
-              <Link
+              <LocaleLink
                 to="/"
                 className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
               >
                 <HomeIcon className="size-3.5" />
                 {t('app.name')}
-              </Link>
+              </LocaleLink>
             </li>
             {/* A caret rather than a slash: the trail points one step further in,
                 and a glyph says that where a punctuation mark only separates. */}
@@ -147,13 +148,13 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
               <NextPageIcon className="size-3.5 opacity-60" />
             </li>
             <li>
-              <Link
+              <LocaleLink
                 to={`/kind/${artifact.kind}`}
                 className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
               >
                 <KindIcon kind={artifact.kind} className="size-3.5" weight="regular" />
                 {t(kindPluralKey(artifact.kind))}
-              </Link>
+              </LocaleLink>
             </li>
           </ol>
         </nav>
@@ -277,13 +278,13 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
                 <ul className="mt-4 flex flex-wrap gap-1.5">
                   {artifact.categories.map((category) => (
                     <li key={category}>
-                      <Link
+                      <LocaleLink
                         to={`/category/${category}`}
                         className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
                       >
                         <CategoryIcon id={category} className="size-3.5" />
                         {t(`category.${category}`)}
-                      </Link>
+                      </LocaleLink>
                     </li>
                   ))}
                 </ul>
@@ -296,13 +297,13 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
                 <ul className="mt-2 flex flex-wrap gap-1.5">
                   {artifact.keywords.slice(0, 12).map((keyword) => (
                     <li key={keyword}>
-                      <Link
+                      <LocaleLink
                         to={`/browse?q=${encodeURIComponent(keyword)}`}
                         rel="nofollow"
                         className="inline-flex rounded-full border border-dashed border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
                       >
                         {keyword}
-                      </Link>
+                      </LocaleLink>
                     </li>
                   ))}
                 </ul>

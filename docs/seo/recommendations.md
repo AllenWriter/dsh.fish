@@ -147,10 +147,6 @@ rather than someone re-submitting the whole set by hand.
 
 ## Explicitly not recommended
 
-- **Reintroducing per-language URLs.** The site moved from path prefixes to
-  negotiated locales; engines index the default language and that is the
-  accepted trade. Reasoned through in
-  [`../decisions/adr-0002-negotiated-locale-urls.md`](../decisions/adr-0002-negotiated-locale-urls.md).
 - **A `keywords` meta tag.** No engine has used it in twenty years.
 - **Making the filtered `/browse` views indexable.** They are near-duplicates of
   pages that already have canonical homes; indexing them would compete with

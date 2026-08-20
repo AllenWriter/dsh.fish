@@ -4,7 +4,7 @@ import { createContainer } from '@dsh-fish/backend/infrastructure/container.js'
 import { AgentsReadmeLocalizationScheduler } from '@dsh-fish/backend/infrastructure/agents/agents-readme-localization-scheduler.js'
 import type { HubEnv } from '@dsh-fish/backend/infrastructure/config/env.js'
 import { hubContext } from '@/shared/api/hub-context'
-import { canonicalLocaleRedirect, LOCALE_CODES } from '@/shared/config/i18n'
+import { canonicalLocaleRedirect, LOCALE_CODES, preferredLocaleRedirect } from '@/shared/config/i18n'
 import { withDiscoveryLinks } from '@/shared/api/agent-discovery'
 import { maybeMarkdownResponse, supportsMarkdownNegotiation } from '@/pages/markdown'
 import { withEdgeCache } from './edge-cache'
@@ -57,13 +57,26 @@ async function handleRequest(
     })
   }
 
-  // One document, one URL, in the negotiated language. Every URL from the
-  // prefixed era — `/ja/browse`, `/en/browse`, `/ZH-cn`, retired languages
-  // alike — is folded onto the bare path before routing, permanently, so a
-  // crawler that ever saw the old form drops it.
+  // One document, one URL. `/en/browse` duplicates `/browse`, and `/ZH-cn`
+  // duplicates `/zh-CN` to a router that matches case-insensitively; both are
+  // folded into the canonical form before routing, permanently, so a crawler
+  // that ever saw the other form drops it.
   const canonical = canonicalLocaleRedirect(url.pathname, url.search)
   if (canonical !== undefined) {
     return Response.redirect(new URL(canonical, url.origin).toString(), 301)
+  }
+
+  // A reader who once picked a language is forwarded to it on bare-URL
+  // visits. Temporary: a preference is not a move, and the 302 keeps both the
+  // edge cache and crawlers (which hold no cookie) out of it.
+  const preferred = preferredLocaleRedirect(
+    url.pathname,
+    url.search,
+    request.headers.get('cookie'),
+    request.headers.get('accept'),
+  )
+  if (preferred !== undefined) {
+    return Response.redirect(new URL(preferred, url.origin).toString(), 302)
   }
 
   // Loaders resolve use cases in-process. A server-rendered page therefore

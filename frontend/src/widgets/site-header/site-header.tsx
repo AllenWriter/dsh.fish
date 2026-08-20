@@ -1,8 +1,9 @@
-import { useNavigate, Link, NavLink} from 'react-router'
+import { useNavigate } from 'react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { EASE_OUT } from '@/shared/lib/ease'
 import { IconSwap } from '@/shared/ui/icon-swap'
+import { LocaleLink, LocaleNavLink, useLocalePath } from '@/shared/ui/locale-link'
 import { AccountMenu } from '@/features/account-menu'
 import { CatalogSearchPalette } from '@/features/catalog-search'
 import { LocaleSwitcher } from '@/features/locale-switcher'
@@ -51,6 +52,7 @@ const SOCIAL: readonly { href: string; key: string; icon: Icon }[] = [
 export function SiteHeader() {
   const t = useT()
   const navigate = useNavigate()
+  const localePath = useLocalePath()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [paletteOpen, setPaletteOpen] = useState(false)
 
@@ -61,23 +63,25 @@ export function SiteHeader() {
         label: t(entry.key),
         group: t('nav.browse'),
         icon: entry.icon,
-        onSelect: () => navigate(entry.to),
+        onSelect: () => navigate(localePath(entry.to)),
       })),
       {
         id: 'dashboard',
         label: t('nav.dashboard'),
         group: t('nav.dashboard'),
         icon: DashboardIcon,
-        onSelect: () => navigate('/dashboard'),
+        onSelect: () => navigate(localePath('/dashboard')),
       },
     ],
-    [navigate, t],
+    // `t` and `localePath` are both derived from the request's language, so the
+    // palette's labels and destinations change together when it does.
+    [navigate, localePath, t],
   )
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-4 sm:px-6">
-        <Link to="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
+        <LocaleLink to="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
           <img
             src="/icons/whale-brand.png"
             alt=""
@@ -89,11 +93,11 @@ export function SiteHeader() {
           {/* The wordmark gives its seat to the controls on a phone; the mark
               alone still says whose site this is. */}
           <span className="hidden sm:inline">{t('app.name')}</span>
-        </Link>
+        </LocaleLink>
 
         <nav className="ml-4 hidden items-center gap-1 md:flex">
           {NAV.map((entry) => (
-            <NavLink
+            <LocaleNavLink
               key={entry.to}
               to={entry.to}
               className={({ isActive }) =>
@@ -114,7 +118,7 @@ export function SiteHeader() {
                   {t(entry.key)}
                 </>
               )}
-            </NavLink>
+            </LocaleNavLink>
           ))}
         </nav>
 
@@ -191,7 +195,7 @@ export function SiteHeader() {
               which is in the bar at every width. */}
           <div className="py-3">
           {NAV.map((entry) => (
-            <NavLink
+            <LocaleNavLink
               key={entry.to}
               to={entry.to}
               onClick={() => setMobileOpen(false)}
@@ -208,7 +212,7 @@ export function SiteHeader() {
                   {t(entry.key)}
                 </>
               )}
-            </NavLink>
+            </LocaleNavLink>
           ))}
           {SOCIAL.map((entry) => (
             <a

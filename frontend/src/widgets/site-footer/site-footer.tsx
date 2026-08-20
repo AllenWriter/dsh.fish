@@ -1,9 +1,9 @@
-import { Link } from 'react-router'
 import { ARTIFACT_KINDS, CATEGORIES, kindPluralKey } from '@/entities/artifact/model/types'
 import { KindIcon } from '@/entities/artifact/ui/kind-icon'
 import { CategoryIcon } from '@/entities/artifact/ui/category-icon'
 import { useT } from '@/shared/config/i18n'
 import { HARNESS_REPO_URL, HUB_DISCORD_URL, HUB_REPO_URL } from '@/shared/config/site'
+import { LocaleLink } from '@/shared/ui/locale-link'
 import {
   BrowseIcon,
   DiscordIcon,
@@ -124,11 +124,11 @@ export function SiteFooter() {
  */
 function FooterLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
-    <Link
+    <LocaleLink
       to={to}
       className="inline-flex min-h-9 items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
     >
       {children}
-    </Link>
+    </LocaleLink>
   )
 }

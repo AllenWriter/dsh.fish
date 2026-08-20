@@ -27,14 +27,6 @@ async function openWithStack(page: Page, path = '/'): Promise<void> {
   await expect(page.locator(ROW)).toHaveCount(3)
 }
 
-/** The negotiated-language path: an explicit choice lives in the cookie. */
-async function openWithStackInJapanese(page: Page): Promise<void> {
-  await page.context().addCookies([
-    { name: 'dsh_locale', value: 'ja', url: E2E_ORIGIN },
-  ])
-  await openWithStack(page)
-}
-
 test.describe('the community stack', () => {
   test('offers three destinations, each a real link', async ({ page }) => {
     await openWithStack(page)
@@ -72,10 +64,16 @@ test.describe('the community stack', () => {
     await expect(page.locator(ROW)).toHaveCount(3)
   })
 
-  test('speaks the language the reader negotiated', async ({ page }) => {
-    await openWithStackInJapanese(page)
+  test('speaks the language of the page it sits on', async ({ page }) => {
+    await openWithStack(page, '/ja')
     await expect(page.locator(STACK)).toHaveAttribute('aria-label', 'コミュニティ')
     await expect(page.locator(`${ROW} a`).nth(0)).toHaveText('Discord に参加')
+  })
+
+  test('forwards a returning reader to their chosen language', async ({ page }) => {
+    await page.context().addCookies([{ name: 'dsh_locale', value: 'ja', url: E2E_ORIGIN }])
+    await page.goto('/', { waitUntil: 'load' })
+    await expect(page).toHaveURL(/\/ja$/)
   })
 })
 

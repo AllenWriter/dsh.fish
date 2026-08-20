@@ -1,6 +1,6 @@
 /** Public API of the SEO helpers. */
 export { pageMeta, documentLanguage, errorMeta, type PageMetaInput } from './meta'
-export { absoluteUrl, clampDescription } from './url'
+export { absoluteUrl, alternates, clampDescription, hreflangFor, type Alternate } from './url'
 export {
   SCHEMA,
   breadcrumbLd,

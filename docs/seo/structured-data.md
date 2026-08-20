@@ -61,7 +61,8 @@ is how you install this.
 ## Language
 
 Every node carries `inLanguage` set to the same tag as `<html lang>` — the
-locale registry's `tag` field, so `zh-Hans` rather than `zh-CN`.
+locale registry's `tag` field, so `zh-Hans` rather than `zh-CN`, matching the
+`hreflang` set.
 
 The artifact node's `name`, `description` and `keywords` come from the crawled
 manifest and stay in whatever language the author wrote. Only the frame around

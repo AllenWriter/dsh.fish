@@ -2,7 +2,7 @@
 
 ## Status
 
-- Accepted (supersedes the URL-prefix strategy implied by ADR 0001's SEO layer)
+- Superseded by [ADR 0003](adr-0003-locale-prefix-with-preference-cookie.md)
 
 ## Context
 

@@ -31,38 +31,14 @@ describe('isCacheableRequest', () => {
       ),
     ).toBe(false)
   })
-
-  it('allows the locale cookie, which the cache key already separates', () => {
-    expect(
-      isCacheableRequest(
-        new Request('https://dsh.fish/browse', { headers: { cookie: 'dsh_locale=zh-CN' } }),
-      ),
-    ).toBe(true)
-    expect(
-      isCacheableRequest(
-        new Request('https://dsh.fish/browse', {
-          headers: { cookie: 'dsh_locale=zh-CN; session=abc' },
-        }),
-      ),
-    ).toBe(false)
-  })
 })
 
 describe('buildCacheKey', () => {
-  it('folds the negotiated language into the query string', () => {
+  it('keeps the URL as-is for HTML requests', () => {
     const key = buildCacheKey(
       new Request('https://dsh.fish/browse?q=git', { headers: { accept: 'text/html' } }),
     )
-    const url = new URL(key.url)
-    expect(url.searchParams.get('q')).toBe('git')
-    expect(url.searchParams.get('__dsh_locale')).toBe('en')
-  })
-
-  it('slices the cache by the locale cookie', () => {
-    const key = buildCacheKey(
-      new Request('https://dsh.fish/browse', { headers: { cookie: 'dsh_locale=ja' } }),
-    )
-    expect(new URL(key.url).searchParams.get('__dsh_locale')).toBe('ja')
+    expect(key.url).toBe('https://dsh.fish/browse?q=git')
   })
 
   it('marks markdown negotiation in the query string', () => {

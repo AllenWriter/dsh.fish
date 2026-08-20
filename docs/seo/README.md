@@ -5,7 +5,7 @@ every page the site owns, including every plugin it indexes.
 
 ## Documents
 
-- [`url-strategy.md`](url-strategy.md) — negotiated locales, canonical URLs, redirects.
+- [`url-strategy.md`](url-strategy.md) — language prefixes, canonical URLs, redirects.
 - [`indexation.md`](indexation.md) — what is offered to the index and what is withheld.
 - [`structured-data.md`](structured-data.md) — the schema.org graph and where each node comes from.
 - [`crawling.md`](crawling.md) — robots.txt, the sitemap set, internal link graph.
@@ -28,8 +28,9 @@ That produces three requirements the rest of the product does not have:
    is load-bearing, not a preference.
 2. **Every artifact must be discoverable without a link.** Hence the sitemap set
    in [`crawling.md`](crawling.md).
-3. **A document has one URL.** The language is negotiated per request
-   (cookie, then `Accept-Language`), never carried in the path. See
+3. **A language must be a URL.** Content negotiation is invisible to a crawler,
+   which sends no `Accept-Language`. A reader's explicit choice is remembered
+   in a cookie and honoured with a 302 on bare URLs. See
    [`url-strategy.md`](url-strategy.md).
 
 ## The shape of it
@@ -37,8 +38,8 @@ That produces three requirements the rest of the product does not have:
 | Concern | Where it lives |
 |---|---|
 | Locale registry, catalogs, `translate` | `frontend/src/shared/config/i18n/` |
-| Legacy-prefix redirects | `frontend/src/shared/config/i18n/path.ts` |
-| Head tags: canonical, OG, Twitter | `frontend/src/shared/lib/seo/meta.ts` |
+| URL prefixing, canonical redirects | `frontend/src/shared/config/i18n/path.ts` |
+| Head tags: canonical, hreflang, OG, Twitter | `frontend/src/shared/lib/seo/meta.ts` |
 | schema.org nodes (site, breadcrumb, collection) | `frontend/src/shared/lib/seo/structured-data.ts` |
 | schema.org node for an artifact | `frontend/src/entities/artifact/lib/artifact-ld.ts` |
 | robots.txt, sitemaps | `frontend/src/pages/seo/` |
@@ -70,6 +71,6 @@ Then, against `http://localhost:5173`:
 ```sh
 curl -s /robots.txt
 curl -s /sitemap.xml
-curl -sI /ja/browse            # expect 301 → /browse (legacy prefix)
-curl -s /kind/skill | grep -E 'canonical|<html'
+curl -sI /en/browse            # expect 301 → /browse
+curl -s /ja/kind/skill | grep -E 'canonical|hreflang|<html'
 ```

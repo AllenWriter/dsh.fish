@@ -1,21 +1,101 @@
-import { isRetiredLocale, matchLocale } from './locales'
+import { DEFAULT_LOCALE, matchLocale, isRetiredLocale, readLocaleCookie, type Locale } from './locales'
 
 /**
- * URL strategy: one document, one URL, with the language negotiated per
- * request (an explicit cookie choice, then `Accept-Language`) rather than
- * carried in the path. Every URL that still bears a language prefix — from
- * the prefixed era, active or retired — is folded onto the bare path of the
- * same page with a 301, permanently, so a crawler that ever saw the old form
- * drops it and keeps the link's weight.
+ * URL strategy: one path prefix per language, and none for the default one.
  *
- * Returns `undefined` when the URL is already prefix-free. A path whose first
+ * `/browse` is English, `/ja/browse` is Japanese. Sub-directories rather than
+ * sub-domains or a `?lang=` parameter, because a directory inherits the origin's
+ * authority, needs no extra DNS or certificate, and — unlike a query parameter —
+ * is unambiguously a separate document to a crawler.
+ */
+export interface SplitPath {
+  readonly locale: Locale
+  /** The path with any locale prefix removed. Always starts with `/`. */
+  readonly path: string
+  /** Whether the URL actually carried a prefix, as opposed to defaulting. */
+  readonly prefixed: boolean
+}
+
+export function splitLocalePath(pathname: string): SplitPath {
+  const [, head = '', ...rest] = pathname.split('/')
+  const locale = matchLocale(head)
+  if (locale === undefined) {
+    return { locale: DEFAULT_LOCALE, path: normalize(pathname), prefixed: false }
+  }
+  return { locale, path: normalize(`/${rest.join('/')}`), prefixed: true }
+}
+
+/**
+ * Prefix an unlocalized path for one language.
+ *
+ * The default language is served bare, so this is the identity there. Query and
+ * hash are preserved: filter links carry their whole query through a language
+ * switch, which is what a reader who switches mid-search expects.
+ */
+export function localizedPath(locale: Locale, path: string): string {
+  const normalized = normalize(path)
+  if (locale === DEFAULT_LOCALE) return normalized
+  const [pathOnly = '/', suffix = ''] = splitSuffix(normalized)
+  const prefixed = pathOnly === '/' ? `/${locale}` : `/${locale}${pathOnly}`
+  return `${prefixed}${suffix}`
+}
+
+/**
+ * Where a URL whose language prefix is not in canonical form should be sent.
+ *
+ * Two cases, one rule — one document, one URL:
+ *
+ * - `/en/browse` duplicates `/browse`, which is the most common way a
+ *   multilingual site splits its own ranking signal between two URLs.
+ * - `/ZH-cn/browse` is the same document as `/zh-CN/browse` to a router that
+ *   matches languages case-insensitively, and a different one to a crawler.
+ * - `/de/browse` names a retired language; it folds onto `/browse`, the
+ *   default-language URL of the same page, so old links keep working.
+ *
+ * Returns `undefined` when the URL is already canonical. A path whose first
  * segment is not a language at all is left alone: that is a page path, and
  * whether it exists is the router's question, not this function's.
  */
 export function canonicalLocaleRedirect(pathname: string, search = ''): string | undefined {
   const [, head = '', ...rest] = pathname.split('/')
-  if (matchLocale(head) === undefined && !isRetiredLocale(head)) return undefined
-  return `${normalize(`/${rest.join('/')}`)}${search}`
+  if (isRetiredLocale(head)) {
+    return `${normalize(`/${rest.join('/')}`)}${search}`
+  }
+  const locale = matchLocale(head)
+  if (locale === undefined) return undefined
+  if (locale !== DEFAULT_LOCALE && head === locale) return undefined
+  const { path } = splitLocalePath(pathname)
+  return `${localizedPath(locale, path)}${search}`
+}
+
+/**
+ * Where a bare-URL visit from a reader with a recorded language choice should
+ * be sent, or `undefined`.
+ *
+ * The URL owns the language: this never fires on a prefixed URL, only on a
+ * prefix-free reader page (`/browse`, `/a/x`), and only for browser
+ * navigations (`Accept: text/html`) — a feed reader or an API client holding
+ * the cookie still gets the resource it asked for. The redirect is a 302 at
+ * the Worker entry: a preference is not a permanent move, and a temporary
+ * redirect never enters the edge cache.
+ *
+ * Retired cookie values are ignored by `readLocaleCookie` itself. No cookie,
+ * or a cookie for the default language, means the bare page is already the
+ * right one.
+ */
+export function preferredLocaleRedirect(
+  pathname: string,
+  search: string,
+  cookieHeader: string | null,
+  acceptHeader: string | null,
+): string | undefined {
+  if (acceptHeader === null || !acceptHeader.includes('text/html')) return undefined
+  if (/\.[a-z0-9]+$/.test(pathname) || pathname.startsWith('/api/')) return undefined
+  const { path, prefixed } = splitLocalePath(pathname)
+  if (prefixed) return undefined
+  const preferred = readLocaleCookie(cookieHeader)
+  if (preferred === undefined || preferred === DEFAULT_LOCALE) return undefined
+  return `${localizedPath(preferred, path)}${search}`
 }
 
 /** Strip a trailing slash so `/browse/` and `/browse` produce one canonical URL. */

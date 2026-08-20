@@ -1,10 +1,11 @@
 /**
  * The locale registry.
  *
- * One list drives everything language-shaped in the product: the `lang`/`dir`
- * attributes on the document, the `og:locale` a link preview shows, and the
- * switcher in the header. Adding a language means adding one entry here plus
- * one message catalog — nothing else has a list of languages in it.
+ * One list drives everything language-shaped in the product: the URL prefix a
+ * page is served under, the `lang`/`dir` attributes on the document, the
+ * `hreflang` alternates a crawler reads, the `og:locale` a link preview shows,
+ * and the switcher in the header. Adding a language means adding one entry here
+ * plus one message catalog — nothing else has a list of languages in it.
  *
  * `nativeName` is deliberately not a translated string. A language switcher
  * that renders "German" to a reader who only speaks German is unusable; every
@@ -13,7 +14,7 @@
 export interface LocaleDefinition {
   /** URL prefix and catalog key. BCP 47, region only where it disambiguates. */
   readonly code: string
-  /** Value for `<html lang>`. */
+  /** Value for `<html lang>` and `hreflang`. */
   readonly tag: string
   /** Underscored form Open Graph wants: `zh_CN`, not `zh-CN`. */
   readonly ogLocale: string
@@ -44,9 +45,9 @@ export type Locale = (typeof LOCALES)[number]['code']
 export const DEFAULT_LOCALE: Locale = 'en'
 
 /**
- * Languages the site once served under a URL prefix and no longer does.
- * A retired prefix folds onto the bare path of the same page (a 301), so
- * existing links and crawlers follow through instead of dying on a 404.
+ * Languages the site once served and no longer does. A retired prefix folds
+ * onto the default-language URL of the same page (a 301), so existing links
+ * and crawlers follow through instead of dying on a 404.
  */
 const RETIRED = new Set(['de', 'es', 'fr', 'pt-br'])
 
@@ -56,8 +57,10 @@ export function isRetiredLocale(raw: string): boolean {
 }
 
 /**
- * Cookie holding an explicit language choice from the switcher. It outranks
- * `Accept-Language`: a browser setting is a guess, a click is a decision.
+ * Cookie holding an explicit language choice from the switcher. The URL still
+ * owns the language of a page; the cookie only answers "this reader chose
+ * another language before" so a bare-URL visit can be forwarded to their
+ * prefix once.
  */
 export const LOCALE_COOKIE = 'dsh_locale'
 
@@ -76,40 +79,6 @@ export function readLocaleCookie(header: string | null): Locale | undefined {
 /** One year; a language choice should outlive a browser restart. */
 export function writeLocaleCookie(locale: Locale): void {
   document.cookie = `${LOCALE_COOKIE}=${locale};path=/;max-age=31536000;samesite=lax`
-}
-
-/**
- * The best catalog for an `Accept-Language` header, or `undefined` when the
- * browser asks for nothing we have. Chinese is matched by script: `zh-Hant`
- * and the traditional-script regions get `zh-TW`, everything else Chinese
- * gets `zh-CN`.
- */
-export function negotiateLocale(header: string | null): Locale | undefined {
-  if (!header) return undefined
-  const accepted = header
-    .split(',')
-    .map((part) => {
-      const [tag = '', ...qparts] = part.trim().split(';q=')
-      const q = qparts.length === 0 ? 1 : Number(qparts.join(';q='))
-      return { tag: tag.toLowerCase(), q: Number.isFinite(q) ? q : 0 }
-    })
-    .filter((entry) => entry.tag !== '' && entry.tag !== '*' && entry.q > 0)
-    .sort((a, b) => b.q - a.q)
-
-  for (const { tag } of accepted) {
-    const match = matchAcceptedTag(tag)
-    if (match !== undefined) return match
-  }
-  return undefined
-}
-
-function matchAcceptedTag(tag: string): Locale | undefined {
-  const exact = BY_LOWER_CODE.get(tag)
-  if (exact) return exact.code as Locale
-  if (tag === 'zh' || tag === 'zh-hans' || tag === 'zh-sg' || tag === 'zh-my') return 'zh-CN'
-  if (tag === 'zh-hant' || tag === 'zh-tw' || tag === 'zh-hk' || tag === 'zh-mo') return 'zh-TW'
-  const base = tag.split('-')[0] ?? ''
-  return BY_LOWER_CODE.get(base)?.code as Locale | undefined
 }
 
 const BY_CODE = new Map<string, LocaleDefinition>(LOCALES.map((entry) => [entry.code, entry]))

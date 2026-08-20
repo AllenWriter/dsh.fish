@@ -9,10 +9,13 @@ import { LocaleLinks } from './locale-links'
  * Switching language without leaving the page you are on.
  *
  * The panel is portal-rendered on open, so its links are not in the server's
- * HTML. Choosing a language writes the `dsh_locale` cookie and reloads the
- * same URL; every later request — any entry point, any device tab — is then
- * negotiated into the chosen language. Until that first click, the guess is
- * the browser's own `Accept-Language`.
+ * HTML. Language discovery for crawlers is the `hreflang` set in the head and
+ * the sitemap `xhtml:link` alternates — this control is for the reader.
+ *
+ * It is also why the site never auto-redirects on `Accept-Language`: a reader
+ * who lands in the wrong language fixes it in one click, so there is no reason
+ * to guess for them — and guessing would serve a crawler, which sends no
+ * language preference, whichever language happened to be first in the header.
  */
 export function LocaleSwitcher({ className }: { className?: string }) {
   const t = useT()

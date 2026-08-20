@@ -1,16 +1,17 @@
-import { Form, Link} from 'react-router'
+import { Form } from 'react-router'
 import type { Route } from './+types/home-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { CatalogGrid } from '@/widgets/catalog-grid/catalog-grid'
 import { KindIcon } from '@/entities/artifact/ui/kind-icon'
 import { kindDescriptionKey, kindPluralKey } from '@/entities/artifact/model/types'
 import { ForwardIcon, SearchIcon } from '@/shared/ui/icon'
-import { resolveLocale, translate, useT } from '@/shared/config/i18n'
+import { requireLocale, translate, useT } from '@/shared/config/i18n'
+import { LocaleLink, useLocalePath } from '@/shared/ui/locale-link'
 import { errorMeta, organizationLd, pageMeta, websiteLd } from '@/shared/lib/seo'
 import { AnimatedNumber } from '@/shared/ui/animated-number'
 
-export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
-  if (!loaderData) return errorMeta()
+export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta(params.locale)
   const { origin, locale } = loaderData
   return pageMeta({
     origin,
@@ -34,8 +35,8 @@ export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
  * response, so serializing them would multiply the page's time to first byte
  * for no reason.
  */
-export async function loader({ context, request }: Route.LoaderArgs) {
-  const locale = resolveLocale(request)
+export async function loader({ context, params }: Route.LoaderArgs) {
+  const locale = requireLocale(params.locale)
   const { container } = context.get(hubContext)
   const { searchArtifacts, listCatalogFacets } = container.useCases
 
@@ -63,6 +64,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 export default function HomePage({ loaderData }: Route.ComponentProps) {
   const { trending, rising, recent, facets } = loaderData
   const t = useT()
+  const localePath = useLocalePath()
   const total = facets.kinds.reduce((sum, facet) => sum + facet.count, 0)
 
   return (
@@ -83,7 +85,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
           </p>
 
           <Form
-            action={'/browse'}
+            action={localePath('/browse')}
             method="get"
             className="mx-auto mt-8 flex max-w-lg gap-2"
           >
@@ -117,7 +119,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
               the ones a crawler can rank. */}
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             {facets.kinds.map((facet) => (
-              <Link
+              <LocaleLink
                 key={facet.kind}
                 to={`/kind/${facet.kind}`}
                 title={t(kindDescriptionKey(facet.kind))}
@@ -126,7 +128,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
                 <KindIcon kind={facet.kind} className="size-4 shrink-0" />
                 {t(kindPluralKey(facet.kind))}
                 <span className="tabular-nums opacity-60">{facet.count}</span>
-              </Link>
+              </LocaleLink>
             ))}
           </div>
         </div>
@@ -169,13 +171,13 @@ function Rail({
     <section>
       <div className="mb-5 flex items-baseline justify-between">
         <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
-        <Link
+        <LocaleLink
           to={to}
           className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           {t(linkKey)}
           <ForwardIcon className="size-3.5" weight="bold" />
-        </Link>
+        </LocaleLink>
       </div>
       {children}
     </section>

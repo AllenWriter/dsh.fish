@@ -9,7 +9,7 @@ import {
   type ArtifactKind,
 } from '@/entities/artifact/model/types'
 import { KindIcon } from '@/entities/artifact/ui/kind-icon'
-import { resolveLocale, translate, useT } from '@/shared/config/i18n'
+import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { breadcrumbLd, collectionLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 
 const PAGE_SIZE = 24
@@ -23,8 +23,8 @@ const PAGE_SIZE = 24
  * a stable, linked, canonical document about one topic, so it can accumulate
  * the authority a query string never will.
  */
-export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
-  if (!loaderData) return errorMeta()
+export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta(params.locale)
   const { origin, locale, kind, results, offset } = loaderData
   const kindName = translate(locale, kindPluralKey(kind))
   const heading = translate(locale, 'collection.kind.title', { kind: kindName })
@@ -64,7 +64,7 @@ export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
 }
 
 export async function loader({ context, params, request }: Route.LoaderArgs) {
-  const locale = resolveLocale(request)
+  const locale = requireLocale(params.locale)
   const raw = params.kind
 
   // An unknown type is a 404, not an empty listing: serving a page for every

@@ -4,7 +4,7 @@ import { CatalogGrid } from '@/widgets/catalog-grid/catalog-grid'
 import { CatalogPagination } from '@/widgets/catalog-pagination/catalog-pagination'
 import { CATEGORIES, isCategory } from '@/entities/artifact/model/types'
 import { CategoryIcon } from '@/entities/artifact/ui/category-icon'
-import { resolveLocale, translate, useT } from '@/shared/config/i18n'
+import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { breadcrumbLd, collectionLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 
 const PAGE_SIZE = 24
@@ -21,8 +21,8 @@ function categoryLabelKey(id: string): string {
  * category answers "what is it for" — and "what is it for" is the axis people
  * search along.
  */
-export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
-  if (!loaderData) return errorMeta()
+export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta(params.locale)
   const { origin, locale, category, results, offset } = loaderData
   const name = translate(locale, categoryLabelKey(category))
   const heading = translate(locale, 'collection.category.title', { category: name })
@@ -63,7 +63,7 @@ export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
 }
 
 export async function loader({ context, params, request }: Route.LoaderArgs) {
-  const locale = resolveLocale(request)
+  const locale = requireLocale(params.locale)
   const category = params.category
 
   if (!isCategory(category)) {
