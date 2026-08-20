@@ -75,6 +75,16 @@ test.describe('the community stack', () => {
     await page.goto('/', { waitUntil: 'load' })
     await expect(page).toHaveURL(/\/ja$/)
   })
+
+  test('keeps the language when the logo leads home', async ({ page }) => {
+    // Regression: the root loader used to read the locale from the request
+    // path, and client-side data requests arrive as `<path>.data` — `/ja`
+    // became the segment `ja.data` and the page silently flipped to English.
+    await page.goto('/ja/browse', { waitUntil: 'networkidle' })
+    await page.locator('header a').first().click()
+    await expect(page).toHaveURL(/\/ja$/)
+    await expect(page.locator('html')).toHaveAttribute('lang', 'ja')
+  })
 })
 
 test.describe('dismissal', () => {

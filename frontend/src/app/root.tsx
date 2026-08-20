@@ -57,9 +57,13 @@ export const links: Route.LinksFunction = () => [
 export function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url)
   const cookie = request.headers.get('cookie')
+  // Client-side navigations fetch this loader at `<path>.data`; the suffix
+  // turns `/zh-CN` into the segment `zh-CN.data`, which no longer matches a
+  // locale and would silently flip the document to the default language.
+  const pathname = url.pathname.replace(/\.data$/, '')
   return {
     theme: readThemeCookie(cookie),
-    locale: splitLocalePath(url.pathname).locale,
+    locale: splitLocalePath(pathname).locale,
     dismissedToasts: readDismissedToasts(cookie),
   }
 }
