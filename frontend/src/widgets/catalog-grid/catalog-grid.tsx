@@ -1,7 +1,7 @@
+import { Link } from 'react-router'
 import { ArtifactCard } from '@/entities/artifact/ui/artifact-card'
 import type { Artifact } from '@/entities/artifact/model/types'
 import { useT } from '@/shared/config/i18n'
-import { LocaleLink } from '@/shared/ui/locale-link'
 import { BrowseIcon, SearchIcon, SubmitIcon } from '@/shared/ui/icon'
 
 /**
@@ -26,20 +26,20 @@ export function CatalogGrid({ artifacts }: { artifacts: readonly Artifact[] }) {
         <p className="mt-4 font-medium">{t('browse.empty')}</p>
         <p className="mt-1 text-sm text-muted-foreground">{t('browse.emptyHint')}</p>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-          <LocaleLink
+          <Link
             to="/browse"
             className="press inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:border-border-strong"
           >
             <BrowseIcon className="size-4" weight="bold" />
             {t('browse.clearFilters')}
-          </LocaleLink>
-          <LocaleLink
+          </Link>
+          <Link
             to="/submit"
             className="press inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
           >
             <SubmitIcon className="size-4" weight="bold" />
             {t('nav.submit')}
-          </LocaleLink>
+          </Link>
         </div>
       </div>
     )

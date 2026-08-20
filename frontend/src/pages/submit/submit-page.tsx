@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { EASE_OUT } from '@/shared/lib/ease'
@@ -6,8 +7,7 @@ import { hubContext } from '@/shared/api/hub-context'
 import { ARTIFACT_KINDS, kindLabelKey, type ArtifactKind } from '@/entities/artifact/model/types'
 import { useSession } from '@/shared/api/auth-client'
 import { KindIcon } from '@/entities/artifact/ui/kind-icon'
-import { requireLocale, translate, useT } from '@/shared/config/i18n'
-import { LocaleLink } from '@/shared/ui/locale-link'
+import { resolveLocale, translate, useT } from '@/shared/config/i18n'
 import { breadcrumbLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 import {
   ApprovedIcon,
@@ -23,8 +23,8 @@ import {
  * DeepSeek Harness plugin" is a question people search, and this page is the
  * answer to it. Only the form behind it is gated, not the explanation.
  */
-export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
-  if (!loaderData) return errorMeta(params.locale)
+export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta()
   const { origin, locale } = loaderData
   return pageMeta({
     origin,
@@ -41,9 +41,9 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
   })
 }
 
-export function loader({ context, params }: Route.LoaderArgs) {
+export function loader({ context, request }: Route.LoaderArgs) {
   return {
-    locale: requireLocale(params.locale),
+    locale: resolveLocale(request),
     origin: context.get(hubContext).container.config.baseUrl,
   }
 }
@@ -73,13 +73,13 @@ export default function SubmitPage() {
     return (
       <Frame>
         <p className="text-muted-foreground">{t('submit.signInRequired')}</p>
-        <LocaleLink
+        <Link
           to="/sign-in?redirect=%2Fsubmit"
           className="press mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
           <SignInIcon className="size-4" weight="bold" />
           {t('nav.signIn')}
-        </LocaleLink>
+        </Link>
       </Frame>
     )
   }
@@ -200,13 +200,13 @@ export default function SubmitPage() {
                 <ApprovedIcon className="size-4 shrink-0" weight="fill" />
                 {t('submit.approved')}
               </p>
-              <LocaleLink
+              <Link
                 to={`/a/${outcome.artifactId}`}
                 className="mt-1 inline-flex items-center gap-1.5 text-primary underline"
               >
                 {outcome.artifactId}
                 <ForwardIcon className="size-3.5 shrink-0" weight="bold" />
-              </LocaleLink>
+              </Link>
             </>
           ) : outcome.kind === 'pending' ? (
             <p className="flex items-center gap-1.5">

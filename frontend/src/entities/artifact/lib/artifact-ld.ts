@@ -25,7 +25,7 @@ export function artifactLd(
   artifact: ArtifactDetail,
   installCommands: readonly string[] = [],
 ): Ld {
-  const url = absoluteUrl(origin, locale, `/a/${artifact.id}`)
+  const url = absoluteUrl(origin, `/a/${artifact.id}`)
 
   // A plan's steps include comment lines ("# Copy the composition to …"), which
   // are instructions to a reader, not commands. Publishing one as

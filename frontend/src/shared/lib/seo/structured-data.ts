@@ -25,7 +25,7 @@ export function websiteLd(origin: string, locale: Locale): Ld {
     '@type': 'WebSite',
     '@id': `${origin}/#website`,
     name: translate(locale, 'app.name'),
-    url: absoluteUrl(origin, locale, '/'),
+    url: absoluteUrl(origin, '/'),
     description: clampDescription(translate(locale, 'app.description')),
     inLanguage: localeDefinition(locale).tag,
     publisher: { '@id': `${origin}/#organization` },
@@ -34,7 +34,7 @@ export function websiteLd(origin: string, locale: Locale): Ld {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: `${absoluteUrl(origin, locale, '/browse')}?q={search_term_string}`,
+        urlTemplate: `${absoluteUrl(origin, '/browse')}?q={search_term_string}`,
       },
       'query-input': 'required name=search_term_string',
     },
@@ -81,7 +81,7 @@ export function breadcrumbLd(origin: string, locale: Locale, crumbs: readonly Cr
       '@type': 'ListItem',
       position: index + 1,
       name: crumb.name,
-      item: absoluteUrl(origin, locale, crumb.path),
+      item: absoluteUrl(origin, crumb.path),
     })),
   }
 }
@@ -112,7 +112,7 @@ export function collectionLd(
   },
 ): Ld {
   const offset = input.offset ?? 0
-  const url = absoluteUrl(origin, locale, input.path)
+  const url = absoluteUrl(origin, input.path)
   return {
     '@context': SCHEMA,
     '@type': 'CollectionPage',
@@ -129,7 +129,7 @@ export function collectionLd(
         '@type': 'ListItem',
         position: offset + index + 1,
         name: item.name,
-        url: absoluteUrl(origin, locale, item.path),
+        url: absoluteUrl(origin, item.path),
       })),
     },
   }

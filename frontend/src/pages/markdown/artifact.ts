@@ -1,4 +1,4 @@
-import { translate, localizedPath, type Locale } from '@/shared/config/i18n'
+import { translate, type Locale } from '@/shared/config/i18n'
 import {
   kindLabelKey,
   type ArtifactDetail,
@@ -98,7 +98,7 @@ export function listingItemMarkdown(
   locale: Locale,
   item: { id: string; displayName: string; summary: string },
 ): string {
-  const url = `${origin}${localizedPath(locale, `/a/${item.id}`)}`
+  const url = `${origin}/a/${item.id}`
   return `- [${item.displayName}](${url}) — ${oneLine(item.summary)}`
 }
 

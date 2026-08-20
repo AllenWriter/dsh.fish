@@ -4,8 +4,7 @@ import { hubContext } from '@/shared/api/hub-context'
 import { CatalogGrid } from '@/widgets/catalog-grid/catalog-grid'
 import { CatalogFilters } from '@/widgets/catalog-filters/catalog-filters'
 import { CatalogPagination } from '@/widgets/catalog-pagination/catalog-pagination'
-import { requireLocale, translate, useT } from '@/shared/config/i18n'
-import { useLocalePath } from '@/shared/ui/locale-link'
+import { resolveLocale, translate, useT } from '@/shared/config/i18n'
 import { breadcrumbLd, collectionLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 import { SearchIcon, SortIcon } from '@/shared/ui/icon'
 
@@ -21,8 +20,8 @@ const PAGE_SIZE = 24
  * `noindex, follow`: a crawler still walks through them to the plugin pages
  * they link to, which is the only thing worth reaching here.
  */
-export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
-  if (!loaderData) return errorMeta(params.locale)
+export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta()
   const { origin, locale, filtered, results, query } = loaderData
   const title = query
     ? `${translate(locale, 'browse.searchTitle', { query })} — ${translate(locale, 'app.name')}`
@@ -55,8 +54,8 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
   })
 }
 
-export async function loader({ context, params, request }: Route.LoaderArgs) {
-  const locale = requireLocale(params.locale)
+export async function loader({ context, request }: Route.LoaderArgs) {
+  const locale = resolveLocale(request)
   const url = new URL(request.url)
   const { container } = context.get(hubContext)
   const query = url.searchParams.get('q') ?? ''
@@ -89,7 +88,6 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 export default function BrowsePage({ loaderData }: Route.ComponentProps) {
   const { results, facets } = loaderData
   const t = useT()
-  const localePath = useLocalePath()
   const [params] = useSearchParams()
   const query = params.get('q') ?? ''
 
@@ -99,7 +97,7 @@ export default function BrowsePage({ loaderData }: Route.ComponentProps) {
         <h1 className="text-2xl font-semibold tracking-tight">
           {query ? t('browse.searchTitle', { query }) : t('browse.title')}
         </h1>
-        <Form method="get" action={localePath('/browse')} className="mt-4 flex flex-wrap gap-2">
+        <Form method="get" action={'/browse'} className="mt-4 flex flex-wrap gap-2">
           {/* `basis-full` below `sm`: the sort select and the submit button take
               close to 300px between them, which on a phone leaves the field too
               narrow to read a query back in. Its own row above them instead. */}

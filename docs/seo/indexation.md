@@ -9,8 +9,8 @@ canonical home of something.
 
 | URL | Indexed | Why |
 |---|---|---|
-| `/` and `/:locale` | ✅ | The landing page, per language. |
-| `/a/:artifactId` | ✅ | The reason the site exists. One per indexed plugin, per language. |
+| `/` | ✅ | The landing page. |
+| `/a/:artifactId` | ✅ | The reason the site exists. One per indexed plugin. |
 | `/kind/:kind` | ✅ (page 1) | "MCP servers for DeepSeek Harness" is a phrase people type. |
 | `/category/:category` | ✅ (page 1) | The "what is it for" axis people search along. |
 | `/browse` (bare) | ✅ | The catalog itself. |

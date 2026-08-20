@@ -1,17 +1,17 @@
 import { useLocation } from 'react-router'
 import { ConfirmIcon } from '@/shared/ui/icon'
-import { LOCALES, localizedPath, splitLocalePath, useLocale } from '@/shared/config/i18n'
+import { LOCALES, useLocale, writeLocaleCookie } from '@/shared/config/i18n'
 import { cn } from '@/shared/lib/utils'
 
 /**
- * Every language of the page the reader is on, as real anchors.
+ * Every language the current page can be negotiated into, as real anchors.
  *
  * Each option is named in its own language — a switcher that offers "German"
- * to someone who only reads German is unusable. Plain anchors, not client-side
- * links: switching language re-renders the whole document on the server, which
- * is the only way the `lang` attribute, the canonical URL and the copy change
- * together. The query string rides along, so a reader who switches mid-search
- * keeps their search.
+ * to someone who only reads German is unusable. Choosing one records the
+ * choice in the `dsh_locale` cookie and reloads the same URL: the path stays
+ * bare, the next render is negotiated from the cookie. A plain anchor, not a
+ * client-side link, because the whole document — `lang`, copy, README — is
+ * rendered on the server.
  */
 export function LocaleLinks({
   className,
@@ -22,17 +22,17 @@ export function LocaleLinks({
 }) {
   const active = useLocale()
   const location = useLocation()
-  const { path } = splitLocalePath(location.pathname)
 
   return (
     <ul className={className}>
       {LOCALES.map((locale) => (
         <li key={locale.code}>
           <a
-            href={`${localizedPath(locale.code, path)}${location.search}`}
+            href={`${location.pathname}${location.search}`}
             hrefLang={locale.tag}
             lang={locale.tag}
             aria-current={locale.code === active ? 'true' : undefined}
+            onClick={() => writeLocaleCookie(locale.code)}
             className={cn('flex items-center gap-2', itemClassName)}
           >
             <span className="flex-1 truncate">{locale.nativeName}</span>

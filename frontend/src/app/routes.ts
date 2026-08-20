@@ -9,11 +9,10 @@ import { index, route, type RouteConfig } from '@react-router/dev/routes'
  *
  * ## Languages
  *
- * Every reader-facing route carries an optional `:locale?` first segment, so
- * one route module serves `/browse` (the default language, unprefixed) and
- * `/ja/browse` alike. An optional segment matches *any* first segment, so each
- * loader passes it through `requireLocale`, which 404s anything that is not a
- * language rather than serving the same page under an unbounded set of URLs.
+ * One URL serves every language: the request's language is negotiated per
+ * request (cookie, then `Accept-Language`), never carried in the path. URLs
+ * from the prefixed era are folded onto the bare path at the Worker entry
+ * before routing.
  *
  * ## Crawlable facets
  *
@@ -24,36 +23,28 @@ import { index, route, type RouteConfig } from '@react-router/dev/routes'
  */
 export default [
   index('./pages/home/home-page.tsx'),
-  // The home page again, one level down: `/ja`, `/de`. `index()` takes no path,
-  // so the localized root needs its own entry and its own id.
-  route(':locale', './pages/home/home-page.tsx', { id: 'home-localized' }),
 
-  route(':locale?/browse', './pages/browse/browse-page.tsx'),
-  route(':locale?/kind/:kind', './pages/kind/kind-page.tsx'),
-  route(':locale?/category/:category', './pages/category/category-page.tsx'),
-  route(':locale?/a/:artifactId', './pages/artifact-detail/artifact-detail-page.tsx'),
-  // Per-artifact assets. No locale prefix: one bitmap and one badge serve every
-  // language variant of the page — the text next to them stays localized in
-  // the page head and in the README that embeds them.
+  route('browse', './pages/browse/browse-page.tsx'),
+  route('kind/:kind', './pages/kind/kind-page.tsx'),
+  route('category/:category', './pages/category/category-page.tsx'),
+  route('a/:artifactId', './pages/artifact-detail/artifact-detail-page.tsx'),
+  // Per-artifact assets.
   route('a/:artifactId/og.png', './pages/artifact-og/og-image.tsx'),
   route('a/:artifactId/badge.svg', './pages/artifact-badge/badge.svg.ts'),
-  route(':locale?/submit', './pages/submit/submit-page.tsx'),
-  route(':locale?/dashboard', './pages/dashboard/dashboard-page.tsx'),
-  route(':locale?/sign-in', './pages/sign-in/sign-in-page.tsx'),
+  route('submit', './pages/submit/submit-page.tsx'),
+  route('dashboard', './pages/dashboard/dashboard-page.tsx'),
+  route('sign-in', './pages/sign-in/sign-in-page.tsx'),
   // The device grant's verification page. `verification_uri_complete` links
   // straight here with the code prefilled.
-  route(':locale?/device', './pages/device/device-page.tsx'),
-  route(':locale?/docs', './pages/docs/docs-page.tsx'),
+  route('device', './pages/device/device-page.tsx'),
+  route('docs', './pages/docs/docs-page.tsx'),
 
-  // Crawler-facing resources. No locale prefix: there is one robots.txt per
-  // origin, and one sitemap set that lists every language of every URL.
+  // Crawler-facing resources. One sitemap set lists every URL once.
   route('robots.txt', './pages/seo/robots.ts'),
   route('sitemap.xml', './pages/seo/sitemap-index.ts'),
   route('sitemaps/pages.xml', './pages/seo/pages-sitemap.ts'),
   route('sitemaps/artifacts/:page', './pages/seo/artifacts-sitemap.ts'),
-  // Atom feeds are localized: the default language is unprefixed like every
-  // other reader-facing route, the other nine live under their prefix.
-  route(':locale?/feed.xml', './pages/seo/feed.ts'),
+  route('feed.xml', './pages/seo/feed.ts'),
   // Agent-discovery resources. The api-catalog (RFC 9727) and the OpenAPI
   // document are what the HTML pages' `Link` headers point at.
   route('.well-known/api-catalog', './pages/seo/api-catalog.ts'),

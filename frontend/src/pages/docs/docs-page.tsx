@@ -8,11 +8,11 @@ import {
   type ArtifactKind,
   type MaintenanceStatus,
 } from '@/entities/artifact/model/types'
-import { requireLocale, translate, useT, type Translator } from '@/shared/config/i18n'
+import { resolveLocale, translate, useT, type Translator } from '@/shared/config/i18n'
 import { breadcrumbLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 
-export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
-  if (!loaderData) return errorMeta(params.locale)
+export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta()
   const { origin, locale } = loaderData
   return pageMeta({
     origin,
@@ -30,10 +30,10 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
   })
 }
 
-export function loader({ context, params }: Route.LoaderArgs) {
+export function loader({ context, request }: Route.LoaderArgs) {
   const { container } = context.get(hubContext)
   return {
-    locale: requireLocale(params.locale),
+    locale: resolveLocale(request),
     origin: container.config.baseUrl,
     // The scoring model as data — the same constant `GET /api/v1/scoring`
     // serializes — so the documented formula can never drift from the executed

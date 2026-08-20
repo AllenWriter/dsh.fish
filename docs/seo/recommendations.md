@@ -27,7 +27,7 @@ silence.
 
 ### Confirm `PUBLIC_BASE_URL` is the production origin
 
-Every canonical URL, every `hreflang` and every sitemap `<loc>` is built from
+Every canonical URL and every sitemap `<loc>` is built from
 `container.config.baseUrl`, which is `PUBLIC_BASE_URL`. A preview deployment
 that inherits the production value emits production canonicals from a preview
 host; one that is left at `localhost` emits `http://localhost` canonicals to a
@@ -145,12 +145,10 @@ rather than someone re-submitting the whole set by hand.
 
 ## Explicitly not recommended
 
-- **Redirecting on `Accept-Language`.** Reasoned through in
-  [`url-strategy.md`](url-strategy.md). It hides five of six languages from
-  every crawler.
-- **Machine-translating crawled readmes.** Thousands of pages of text nobody
-  wrote, nobody reviewed and nobody can correct, in a context where being wrong
-  about an install command has consequences.
+- **Reintroducing per-language URLs.** The site moved from path prefixes to
+  negotiated locales; engines index the default language and that is the
+  accepted trade. Reasoned through in
+  [`../decisions/adr-0002-negotiated-locale-urls.md`](../decisions/adr-0002-negotiated-locale-urls.md).
 - **A `keywords` meta tag.** No engine has used it in twenty years.
 - **Making the filtered `/browse` views indexable.** They are near-duplicates of
   pages that already have canonical homes; indexing them would compete with

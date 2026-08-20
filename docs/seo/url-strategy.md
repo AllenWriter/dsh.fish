@@ -1,99 +1,72 @@
 # URL strategy
 
-One document, one URL, in six languages.
+One document, one URL. The language is negotiated per request, never carried
+in the path.
 
-## Language lives in the path
+## Language lives in the request
 
-| Language | Home | A plugin page |
-|---|---|---|
-| English (default) | `/` | `/a/acme-release-notes` |
-| Simplified Chinese | `/zh-CN` | `/zh-CN/a/acme-release-notes` |
-| Japanese | `/ja` | `/ja/a/acme-release-notes` |
+One URL serves every language. The locale is resolved per request, in order:
 
-Sub-directories, not sub-domains and not a `?lang=` parameter:
+1. The `dsh_locale` cookie — an explicit choice from the language switcher.
+2. `Accept-Language` — matched against the six catalogs, Chinese by script
+   (`zh-Hant`, `zh-HK` → `zh-TW`; `zh`, `zh-SG` → `zh-CN`).
+3. The default language, English.
 
-- A directory inherits the origin's accumulated authority. A sub-domain starts
-  from nothing and needs its own DNS record, certificate and verification.
-- A query parameter is not reliably a separate document to a crawler — it looks
-  like a session id or a filter, and is crawled and ranked accordingly.
-- A path prefix is visible in a shared link, which is how most language-specific
-  traffic actually propagates.
+A click outranks a browser setting: the setting is a guess, the click is a
+decision. The resolution is `resolveLocale(request)` in
+`frontend/src/shared/config/i18n/resolve-locale.ts`; loaders call it directly
+and hand the result down through loader data and React context.
 
-**The default language has no prefix.** `/browse` is English; `/en/browse` is a
-301 to it. Publishing both is the single most common way a multilingual site
-splits its own ranking signal across two URLs for one document.
+Why not the path: a reader's language ended at the first click that left a
+prefixed URL — every typed, bookmarked or externally shared link reset them to
+English. Negotiation makes the language a property of the reader instead of
+the address. The cost is multilingual indexation: one URL can only be indexed
+once, so engines see the default language. That trade is deliberate — see
+[`../decisions/adr-0002-negotiated-locale-urls.md`](../decisions/adr-0002-negotiated-locale-urls.md).
 
-**Retired languages redirect.** German, French, Spanish and Brazilian
-Portuguese were served once and are no longer declared, so `/de/*`, `/fr/*`,
-`/es/*` and `/pt-BR/*` 301 onto the same path in the default language —
-`/de/browse` lands on `/browse`. Their stored README translations are left in
-the database; they are simply not routed.
+**Old prefixed URLs redirect.** Every URL from the prefixed era — active
+locales, retired ones (de, fr, es, pt-BR), any casing — 301s onto the bare
+path of the same page: `/ja/browse` → `/browse`, `/de/a/x` → `/a/x`. The
+301 keeps the link's weight and teaches crawlers to drop the old form.
 
 ## Routing
 
-Every reader-facing route carries an optional first segment:
+Routes carry no language segment:
 
 ```ts
-route(':locale?/browse', './pages/browse/browse-page.tsx')
+route('browse', './pages/browse/browse-page.tsx')
 ```
 
-One route module serves both `/browse` and `/ja/browse`. An optional segment
-matches *any* first segment, so `/nonsense/browse` also reaches the browse
-route with `locale === 'nonsense'`. Serving that would publish an unbounded set
-of URLs all rendering the same English page, so **every localized loader starts
-with `requireLocale(params.locale)`**, which throws a real 404 for anything that
-is not a declared language.
-
-This is not optional and not decorative. A loader that skips it is a duplicate
-content generator.
-
-## Canonical redirects
-
 `canonicalLocaleRedirect` runs in `frontend/workers/app.ts` before routing and
-issues a 301 for two cases:
+issues the 301 for any first segment that is a known locale, active or
+retired. A first segment that is not a language is left alone — that is a
+page path, and whether it exists is the router's question.
 
-| Requested | Redirects to | Why |
-|---|---|---|
-| `/en/browse` | `/browse` | The default language is served bare. |
-| `/ZH-cn/browse` | `/zh-CN/browse` | React Router matches paths case-insensitively; a crawler does not. |
+## Canonical tags
 
-A first segment that is not a language at all is left alone — that is a page
-path, and whether it exists is the router's question.
-
-## Canonical tags and alternates
-
-`pageMeta` emits, for every indexable page:
-
-- `<link rel="canonical">` pointing at this page in **this** language.
-- `<link rel="alternate" hreflang="…">` for all six languages **plus**
-  `x-default` pointing at the unprefixed default.
-
-The set is reciprocal — every language lists every other, including itself — so
-a crawler landing on any one of them discovers the rest.
-
-`hreflang` uses **script** subtags for Chinese (`zh-Hans`, `zh-Hant`) rather
-than region ones. A reader in Singapore reads simplified Chinese and would be
-excluded by a `zh-CN` region match; the script is exactly what distinguishes
-the two catalogs that are actually maintained.
+`pageMeta` emits, for every indexable page, a `<link rel="canonical">` at the
+page's one URL. There is **no `hreflang` set**: `hreflang` exists to connect
+distinct per-language URLs, and there are none.
 
 The canonical is built from the page's path **without its query string**. That
 is what folds `/a/x?profile=web` into `/a/x`: previewing an install plan for a
 different profile is the same document.
 
-A page that is `noindex` emits **no** canonical and no alternates. A `noindex`
-page that also points a canonical at a different URL hands an engine two
-contradictory instructions about one document, and which one wins is undefined.
+A page that is `noindex` emits **no** canonical. A `noindex` page that also
+points a canonical at a different URL hands an engine two contradictory
+instructions about one document, and which one wins is undefined.
 
-## No automatic language redirects
+## Edge caching
 
-The site never redirects on `Accept-Language`, and never varies the response
-body by it. A crawler sends no language preference, so a site that guesses
-serves it whatever language happens to be first in the header — and indexes one
-language while the other nine stay invisible. Readers get a language switcher
-in the header. Crawlers get the `hreflang` set in the page head and the sitemap
-`xhtml:link` alternates.
+A negotiated response must never leak across languages through a shared cache.
+The Cache API does not vary on `Cookie` or `Accept-Language`, so the resolved
+locale is folded into the cache key's query string
+(`frontend/workers/edge-cache.ts`) — each language gets its own slice of every
+URL. The locale cookie is the one cookie that does not bypass the cache: it
+only selects a slice the key already separates.
 
 ## Trailing slashes
 
-`splitLocalePath` normalises a trailing slash away, so `/browse/` and `/browse`
-resolve to the same canonical URL.
+`canonicalLocaleRedirect` normalises a trailing slash away when folding a
+prefixed URL, so the prefixed form of `/browse/` lands on the same canonical
+URL as everything else.

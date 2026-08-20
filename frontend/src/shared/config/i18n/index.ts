@@ -2,16 +2,20 @@
  * Public API of the i18n slice.
  *
  * Everything language-shaped enters through here: the locale registry, the
- * catalogs, the URL-prefix rules and the React bindings. Nothing outside this
- * directory imports a catalog module directly.
+ * catalogs, the request-locale negotiation and the React bindings. Nothing
+ * outside this directory imports a catalog module directly.
  */
 export {
   DEFAULT_LOCALE,
   LOCALES,
   LOCALE_CODES,
+  LOCALE_COOKIE,
   isLocale,
   localeDefinition,
   matchLocale,
+  negotiateLocale,
+  readLocaleCookie,
+  writeLocaleCookie,
   type Locale,
   type LocaleDefinition,
 } from './locales'
@@ -26,8 +30,8 @@ export {
   type Translator,
 } from './translate'
 
-export { canonicalLocaleRedirect, localizedPath, splitLocalePath, type SplitPath } from './path'
+export { canonicalLocaleRedirect } from './path'
+
+export { resolveLocale } from './resolve-locale'
 
 export { LocaleProvider, useLocale, useT } from './locale-context'
-
-export { requireLocale } from './require-locale'

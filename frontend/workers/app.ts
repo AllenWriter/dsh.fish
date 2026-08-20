@@ -57,10 +57,10 @@ async function handleRequest(
     })
   }
 
-  // One document, one URL. `/en/browse` duplicates `/browse`, and `/ZH-cn`
-  // duplicates `/zh-CN` to a router that matches case-insensitively; both are
-  // folded into the canonical form before routing, permanently, so a crawler
-  // that ever saw the other form drops it.
+  // One document, one URL, in the negotiated language. Every URL from the
+  // prefixed era — `/ja/browse`, `/en/browse`, `/ZH-cn`, retired languages
+  // alike — is folded onto the bare path before routing, permanently, so a
+  // crawler that ever saw the old form drops it.
   const canonical = canonicalLocaleRedirect(url.pathname, url.search)
   if (canonical !== undefined) {
     return Response.redirect(new URL(canonical, url.origin).toString(), 301)

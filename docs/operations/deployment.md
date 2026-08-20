@@ -62,8 +62,7 @@ pnpm dlx wrangler secret put DEEPSEEK_API_KEY        # README localization, off-
 throws when it is empty rather than defaulting — a wrong origin silently breaks
 OAuth callbacks and cookie scoping, which is far harder to diagnose later.
 
-It is also the origin every canonical URL, `hreflang` alternate and sitemap
-`<loc>` is built from. A preview deployment that inherits the production value
+It is also the origin every canonical URL and sitemap `<loc>` is built from. A preview deployment that inherits the production value
 publishes production canonicals from a preview host; one left pointing at
 `localhost` publishes `http://localhost` canonicals to a crawler. Set it per
 environment, and keep preview deployments out of the index — see

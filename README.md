@@ -36,7 +36,7 @@ catalog with a shared, machine-executable install plan.
 - **One install plan, three surfaces** — the same domain-owned plan renders as a copy-pasteable command on the web, executes in the CLI, and runs inside the harness via the hub plugin. They cannot drift apart.
 - **Commit-pinned provenance** — each artifact shows the exact commit it was indexed at, linked back to GitHub.
 - **A real API** — versioned REST endpoints plus a full-catalog snapshot with an ETag sync contract for mirrors and bots.
-- **Ten languages, first-class** — SSR pages, per-locale Atom feeds, hreflang and structured data on every plugin page, per-plugin OG cards and shields-style README badges.
+- **Six languages, first-class** — SSR pages in the negotiated language (cookie or `Accept-Language`), a localized Atom feed, machine-translated READMEs, and structured data on every plugin page, per-plugin OG cards and shields-style README badges.
 
 ## Screenshots
 

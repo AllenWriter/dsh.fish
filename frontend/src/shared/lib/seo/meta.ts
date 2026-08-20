@@ -1,14 +1,7 @@
 import type { MetaDescriptor } from 'react-router'
-import {
-  DEFAULT_LOCALE,
-  LOCALES,
-  localeDefinition,
-  matchLocale,
-  translate,
-  type Locale,
-} from '@/shared/config/i18n'
+import { DEFAULT_LOCALE, localeDefinition, translate, type Locale } from '@/shared/config/i18n'
 import { OG_IMAGE } from '@/shared/config/site'
-import { absoluteUrl, alternates, clampDescription } from './url'
+import { absoluteUrl, clampDescription } from './url'
 
 export interface PageMetaInput {
   readonly origin: string
@@ -57,7 +50,7 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
     jsonLd = [],
   } = input
 
-  const url = absoluteUrl(origin, locale, path)
+  const url = absoluteUrl(origin, path)
   const summary = clampDescription(description)
   const image = `${origin.replace(/\/+$/, '')}${imagePath}`
   const definition = localeDefinition(locale)
@@ -86,12 +79,6 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
     { name: 'twitter:image:alt', content: translate(locale, 'app.tagline') },
   ]
 
-  // A link preview offers the reader other languages it could have rendered in.
-  for (const other of LOCALES) {
-    if (other.code === locale) continue
-    descriptors.push({ property: 'og:locale:alternate', content: other.ogLocale })
-  }
-
   if (index) {
     // `max-image-preview:large` is what lets the social card show up as a real
     // image in a result rather than a thumbnail.
@@ -104,21 +91,6 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
     // contradictory instructions about the same document, and which one wins is
     // not defined — so a page that is not for the index claims no canonical.
     descriptors.push({ tagName: 'link', rel: 'canonical', href: url })
-    for (const alternate of alternates(origin, path)) {
-      descriptors.push({
-        tagName: 'link',
-        rel: 'alternate',
-        // React's spelling, not the spec's. `Meta` spreads a link descriptor
-        // straight onto the element without React DOM's attribute mapping, so
-        // this renders literally as `hrefLang="ja"` — which HTML parses as
-        // `hreflang`, attribute names being case-insensitive. The lower-cased
-        // key produces the spec spelling but makes React log an invalid-property
-        // warning on every page, and a permanent console error is the kind of
-        // thing someone later "fixes" without knowing why it was there.
-        hrefLang: alternate.hreflang,
-        href: alternate.href,
-      })
-    }
     // Feed autodiscovery. Each page advertises its own language's feed: the
     // feed exists in every language the page does, and a feed-aware client
     // offers the reader the channel in the language they are already reading.
@@ -127,7 +99,7 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
       rel: 'alternate',
       type: 'application/atom+xml',
       title: translate(locale, 'feed.title'),
-      href: absoluteUrl(origin, locale, '/feed.xml'),
+      href: absoluteUrl(origin, '/feed.xml'),
     })
   } else {
     // `follow` still: a signed-in-only page is not worth indexing, but the links
@@ -155,8 +127,8 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
  * there is none of; anything unrecognised falls back to the default language,
  * which is the right guess for a URL that was already wrong.
  */
-export function errorMeta(rawLocale?: string): MetaDescriptor[] {
-  const locale = matchLocale(rawLocale) ?? DEFAULT_LOCALE
+export function errorMeta(): MetaDescriptor[] {
+  const locale = DEFAULT_LOCALE
   return [
     { title: `${translate(locale, 'notFound.title')} — ${translate(locale, 'app.name')}` },
     { name: 'robots', content: 'noindex, follow' },

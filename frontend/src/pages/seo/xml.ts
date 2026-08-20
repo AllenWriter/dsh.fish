@@ -1,5 +1,4 @@
-import { LOCALE_CODES, type Locale } from '@/shared/config/i18n'
-import { absoluteUrl, hreflangFor } from '@/shared/lib/seo'
+import { absoluteUrl } from '@/shared/lib/seo'
 
 /**
  * Sitemap serialisation.
@@ -27,7 +26,7 @@ export function escapeXml(value: string): string {
 }
 
 export interface SitemapUrl {
-  /** Unlocalized path. One entry is emitted per language, cross-linked. */
+  /** Unlocalized path. One entry per path: language is negotiated per request. */
   readonly path: string
   readonly lastModified?: string
   readonly changeFrequency?: 'daily' | 'weekly' | 'monthly'
@@ -35,42 +34,30 @@ export interface SitemapUrl {
 }
 
 /**
- * One `<urlset>` covering every language of every path.
+ * One `<urlset>` covering every path once.
  *
- * Each language gets its own `<url>` entry, and each entry lists the full
- * `xhtml:link` alternate set — the sitemap form of `hreflang`. Both forms are
- * emitted (here and in the page head) because they are read at different times:
- * the head only after a page is fetched, the sitemap before anything is.
+ * One URL serves every language through content negotiation, so there is a
+ * single `<loc>` per path and no `xhtml:link` alternate set — `hreflang`
+ * exists to point at distinct per-language URLs, and there are none.
  */
 export function urlSetXml(origin: string, urls: readonly SitemapUrl[]): string {
-  const body = urls
-    .flatMap((url) => LOCALE_CODES.map((locale) => urlEntry(origin, locale, url)))
-    .join('\n')
+  const body = urls.map((url) => urlEntry(origin, url)).join('\n')
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${body}
 </urlset>`
 }
 
-function urlEntry(origin: string, locale: Locale, url: SitemapUrl): string {
-  const alternates = [
-    ...LOCALE_CODES.map(
-      (code) =>
-        `    <xhtml:link rel="alternate" hreflang="${hreflangFor(code)}" href="${escapeXml(absoluteUrl(origin, code, url.path))}"/>`,
-    ),
-    `    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(absoluteUrl(origin, 'en', url.path))}"/>`,
-  ].join('\n')
-
+function urlEntry(origin: string, url: SitemapUrl): string {
   return [
     '  <url>',
-    `    <loc>${escapeXml(absoluteUrl(origin, locale, url.path))}</loc>`,
+    `    <loc>${escapeXml(absoluteUrl(origin, url.path))}</loc>`,
     ...(url.lastModified === undefined ? [] : [`    <lastmod>${url.lastModified}</lastmod>`]),
     ...(url.changeFrequency === undefined
       ? []
       : [`    <changefreq>${url.changeFrequency}</changefreq>`]),
     ...(url.priority === undefined ? [] : [`    <priority>${url.priority.toFixed(1)}</priority>`]),
-    alternates,
     '  </url>',
   ].join('\n')
 }

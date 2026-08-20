@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { LOCALE_CODES } from '@/shared/config/i18n'
 import { escapeXml, sitemapIndexXml, urlSetXml } from './xml'
 
 const ORIGIN = 'https://dsh.fish'
@@ -21,23 +20,13 @@ describe('escapeXml', () => {
 describe('urlSetXml', () => {
   const xml = urlSetXml(ORIGIN, [{ path: '/browse', lastModified: '2026-01-01T00:00:00.000Z' }])
 
-  it('emits one url entry per language', () => {
-    expect(xml.match(/<url>/g)).toHaveLength(LOCALE_CODES.length)
-  })
-
-  it('gives every entry the full alternate set, including x-default', () => {
-    const alternates = xml.match(/<xhtml:link /g) ?? []
-    expect(alternates).toHaveLength(LOCALE_CODES.length * (LOCALE_CODES.length + 1))
-    expect(xml.match(/hreflang="x-default"/g)).toHaveLength(LOCALE_CODES.length)
-  })
-
-  it('serves the default language unprefixed and the rest under their code', () => {
+  it('emits one url entry per path: one URL serves every language', () => {
+    expect(xml.match(/<url>/g)).toHaveLength(1)
     expect(xml).toContain(`<loc>${ORIGIN}/browse</loc>`)
-    expect(xml).toContain(`<loc>${ORIGIN}/ja/browse</loc>`)
   })
 
-  it('declares the xhtml namespace the alternates need', () => {
-    expect(xml).toContain('xmlns:xhtml="http://www.w3.org/1999/xhtml"')
+  it('emits no hreflang links: there are no distinct per-language URLs', () => {
+    expect(xml).not.toContain('<xhtml:link')
   })
 
   it('carries lastmod through', () => {

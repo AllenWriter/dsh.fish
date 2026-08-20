@@ -15,8 +15,7 @@ import { CommunityToasts, readDismissedToasts } from '@/widgets/community-toasts
 import {
   DEFAULT_LOCALE,
   LocaleProvider,
-  localizedPath,
-  splitLocalePath,
+  resolveLocale,
   translate,
   type Locale,
 } from '@/shared/config/i18n'
@@ -45,21 +44,20 @@ export const links: Route.LinksFunction = () => [
  * the class is rendered into the HTML and client and server agree from the
  * first byte — no flash, no mismatch.
  *
- * The language is read from the URL, not from a cookie or `Accept-Language`.
- * The URL is the only signal a crawler shares with a reader: a page whose
- * language depends on a request header is one page to an engine and ten to a
- * human, and the nine it cannot see never get indexed.
+ * The language is negotiated per request: an explicit choice in the
+ * `dsh_locale` cookie, then `Accept-Language`, then the default. One URL
+ * serves every language, so a bookmark or a shared link never strands the
+ * reader in a language they did not pick — the request decides, not the path.
  *
  * The dismissed community toasts come from a cookie for the theme's reason
  * again: deciding here is what keeps a toast a reader has already closed out
  * of the markup entirely, rather than rendered and then hidden.
  */
 export function loader({ request }: Route.LoaderArgs) {
-  const url = new URL(request.url)
   const cookie = request.headers.get('cookie')
   return {
     theme: readThemeCookie(cookie),
-    locale: splitLocalePath(url.pathname).locale,
+    locale: resolveLocale(request),
     dismissedToasts: readDismissedToasts(cookie),
   }
 }
@@ -125,7 +123,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
       <p className="text-muted-foreground">{body}</p>
       <a
-        href={localizedPath(locale, '/')}
+        href="/"
         className="press inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
       >
         <HomeIcon className="size-4" weight="bold" />

@@ -1,11 +1,6 @@
 import type { Route } from './+types/feed'
 import { hubContext } from '@/shared/api/hub-context'
-import {
-  DEFAULT_LOCALE,
-  localeDefinition,
-  requireLocale,
-  translate,
-} from '@/shared/config/i18n'
+import { localeDefinition, resolveLocale, translate } from '@/shared/config/i18n'
 import { absoluteUrl } from '@/shared/lib/seo'
 import { atomFeedXml, atomResponse, FEED_ENTRY_COUNT } from './atom'
 
@@ -23,8 +18,8 @@ import { atomFeedXml, atomResponse, FEED_ENTRY_COUNT } from './atom'
  * themselves are not translated — entry ids deliberately point at the one
  * canonical URL per artifact, shared by every language's feed.
  */
-export async function loader({ context, params }: Route.LoaderArgs) {
-  const locale = requireLocale(params.locale)
+export async function loader({ context, request }: Route.LoaderArgs) {
+  const locale = resolveLocale(request)
   const { container } = context.get(hubContext)
   const { baseUrl } = container.config
 
@@ -38,16 +33,16 @@ export async function loader({ context, params }: Route.LoaderArgs) {
 
   return atomResponse(
     atomFeedXml({
-      selfUrl: absoluteUrl(baseUrl, locale, '/feed.xml'),
-      alternateUrl: absoluteUrl(baseUrl, locale, '/'),
+      selfUrl: absoluteUrl(baseUrl, '/feed.xml'),
+      alternateUrl: absoluteUrl(baseUrl, '/'),
       title: translate(locale, 'feed.title'),
       subtitle: translate(locale, 'feed.description'),
       lang: localeDefinition(locale).tag,
       authorName: translate(locale, 'app.name'),
       updatedAt,
       entries: items.map((item) => ({
-        id: absoluteUrl(baseUrl, DEFAULT_LOCALE, `/a/${item.id}`),
-        url: absoluteUrl(baseUrl, locale, `/a/${item.id}`),
+        id: absoluteUrl(baseUrl, `/a/${item.id}`),
+        url: absoluteUrl(baseUrl, `/a/${item.id}`),
         title: item.displayName,
         ...(item.summary === '' ? {} : { summary: item.summary }),
         updatedAt: item.updatedAt,

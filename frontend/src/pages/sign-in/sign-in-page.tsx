@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { useSearchParams, Link} from 'react-router'
 import type { Route } from './+types/sign-in-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { authClient } from '@/shared/api/auth-client'
-import { requireLocale, translate, useT } from '@/shared/config/i18n'
-import { LocaleLink } from '@/shared/ui/locale-link'
+import { resolveLocale, translate, useT } from '@/shared/config/i18n'
 import { errorMeta, pageMeta } from '@/shared/lib/seo'
 import { ErrorIcon, GithubIcon, HomeIcon, SignInIcon, SignUpIcon } from '@/shared/ui/icon'
 import { IconSwap } from '@/shared/ui/icon-swap'
@@ -13,8 +12,8 @@ import { IconSwap } from '@/shared/ui/icon-swap'
  * Never indexed: an account page has nothing a search result should lead to.
  * `follow` still applies, so the links out of it are not dead ends.
  */
-export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
-  if (!loaderData) return errorMeta(params.locale)
+export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta()
   const { origin, locale } = loaderData
   return pageMeta({
     origin,
@@ -26,9 +25,9 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
   })
 }
 
-export function loader({ context, params }: Route.LoaderArgs) {
+export function loader({ context, request }: Route.LoaderArgs) {
   return {
-    locale: requireLocale(params.locale),
+    locale: resolveLocale(request),
     origin: context.get(hubContext).container.config.baseUrl,
   }
 }
@@ -137,13 +136,13 @@ export default function SignInPage() {
         {mode === 'sign-in' ? t('auth.signUp') : t('auth.haveAccount')}
       </button>
 
-      <LocaleLink
+      <Link
         to="/"
         className="mt-8 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
       >
         <HomeIcon className="size-3.5" />
         {t('notFound.home')}
-      </LocaleLink>
+      </Link>
     </div>
   )
 }

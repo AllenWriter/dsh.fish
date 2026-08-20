@@ -1,9 +1,9 @@
+import { Link } from 'react-router'
 import { useEffect, useState } from 'react'
 import type { Route } from './+types/dashboard-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { useSession } from '@/shared/api/auth-client'
-import { requireLocale, translate, useT } from '@/shared/config/i18n'
-import { LocaleLink } from '@/shared/ui/locale-link'
+import { resolveLocale, translate, useT } from '@/shared/config/i18n'
 import { errorMeta, pageMeta } from '@/shared/lib/seo'
 import { Avatar } from '@/shared/ui/avatar'
 import { cn } from '@/shared/lib/utils'
@@ -17,8 +17,8 @@ import {
 } from '@/shared/ui/icon'
 
 /** Someone else's dashboard is not a search result. */
-export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
-  if (!loaderData) return errorMeta(params.locale)
+export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
+  if (!loaderData) return errorMeta()
   const { origin, locale } = loaderData
   return pageMeta({
     origin,
@@ -70,9 +70,9 @@ const STATUS: Record<
   },
 }
 
-export function loader({ context, params }: Route.LoaderArgs) {
+export function loader({ context, request }: Route.LoaderArgs) {
   return {
-    locale: requireLocale(params.locale),
+    locale: resolveLocale(request),
     origin: context.get(hubContext).container.config.baseUrl,
   }
 }
@@ -103,13 +103,13 @@ export default function DashboardPage() {
   if (!session?.user) {
     return (
       <Frame>
-        <LocaleLink
+        <Link
           to="/sign-in?redirect=%2Fdashboard"
           className="press mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
         >
           <SignInIcon className="size-4" weight="bold" />
           {t('nav.signIn')}
-        </LocaleLink>
+        </Link>
       </Frame>
     )
   }
@@ -133,9 +133,9 @@ export default function DashboardPage() {
               <li key={submission.id} className="flex items-center gap-3 px-5 py-3.5 text-sm">
                 <span className="flex-1 truncate font-medium">
                   {submission.artifactId ? (
-                    <LocaleLink to={`/a/${submission.artifactId}`} className="hover:underline">
+                    <Link to={`/a/${submission.artifactId}`} className="hover:underline">
                       {submission.artifactId}
-                    </LocaleLink>
+                    </Link>
                   ) : (
                     submission.id.slice(0, 8)
                   )}

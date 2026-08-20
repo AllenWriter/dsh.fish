@@ -1,6 +1,5 @@
-import { useSearchParams } from 'react-router'
+import { useSearchParams, Link} from 'react-router'
 import { useT } from '@/shared/config/i18n'
-import { LocaleLink } from '@/shared/ui/locale-link'
 import { NextPageIcon, PreviousPageIcon } from '@/shared/ui/icon'
 
 /**
@@ -45,7 +44,7 @@ export function CatalogPagination({
   return (
     <nav aria-label={t('browse.pagination')} className="mt-8 flex items-center justify-between text-sm">
       {hasPrevious ? (
-        <LocaleLink
+        <Link
           to={build(Math.max(0, offset - limit))}
           rel="prev"
           aria-label={t('browse.previous')}
@@ -53,7 +52,7 @@ export function CatalogPagination({
         >
           <PreviousPageIcon className="size-4" weight="bold" />
           <span className="hidden sm:inline">{t('browse.previous')}</span>
-        </LocaleLink>
+        </Link>
       ) : (
         <span />
       )}
@@ -61,7 +60,7 @@ export function CatalogPagination({
         {Math.floor(offset / limit) + 1} / {Math.ceil(total / limit)}
       </span>
       {hasNext ? (
-        <LocaleLink
+        <Link
           to={build(offset + limit)}
           rel="next"
           aria-label={t('browse.next')}
@@ -69,7 +68,7 @@ export function CatalogPagination({
         >
           <span className="hidden sm:inline">{t('browse.next')}</span>
           <NextPageIcon className="size-4" weight="bold" />
-        </LocaleLink>
+        </Link>
       ) : (
         <span />
       )}

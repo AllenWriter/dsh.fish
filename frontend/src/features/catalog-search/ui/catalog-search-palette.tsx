@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { CommandPalette, type CommandItem } from '@/shared/ui/motion/command-palette'
 import { useT } from '@/shared/config/i18n'
-import { useLocalePath } from '@/shared/ui/locale-link'
 import {
   artifactPath,
   browseSearchPath,
@@ -29,7 +28,6 @@ export function CatalogSearchPalette({
 }) {
   const t = useT()
   const navigate = useNavigate()
-  const localePath = useLocalePath()
   const [query, setQuery] = useState('')
   const { hits, error } = useCatalogSearch(open ? query : '')
   const text = query.trim()
@@ -46,10 +44,10 @@ export function CatalogSearchPalette({
           searchAllLabel: t('nav.searchAll', { query: text }),
           errorLabel: t('common.error'),
         },
-        (q) => navigate(localePath(browseSearchPath(q))),
-        (id) => navigate(localePath(artifactPath(id))),
+        (q) => navigate(browseSearchPath(q)),
+        (id) => navigate(artifactPath(id)),
       ),
-    [commands, error, hits, localePath, navigate, t, text],
+    [commands, error, hits, navigate, t, text],
   )
 
   return (

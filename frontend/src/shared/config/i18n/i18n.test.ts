@@ -7,8 +7,9 @@ import { CATEGORIES } from '@dsh-fish/backend/domain/artifact/category.js'
 import { Artifact } from '@dsh-fish/backend/domain/artifact/artifact.js'
 import { buildInstallPlan, installTarget } from '@dsh-fish/backend/domain/artifact/install-plan.js'
 import { githubSource, npmSource } from '@dsh-fish/backend/domain/artifact/source-ref.js'
-import { CATALOGS, DEFAULT_LOCALE, LOCALES, LOCALE_CODES, translate } from './index'
-import { canonicalLocaleRedirect, localizedPath, splitLocalePath } from './path'
+import { CATALOGS, LOCALES, LOCALE_CODES, translate } from './index'
+import { negotiateLocale, readLocaleCookie } from './locales'
+import { canonicalLocaleRedirect } from './path'
 import { en } from './messages'
 
 /**
@@ -175,85 +176,55 @@ describe('translate', () => {
   })
 })
 
-describe('locale paths', () => {
-  it('serves the default language without a prefix', () => {
-    expect(localizedPath(DEFAULT_LOCALE, '/browse')).toBe('/browse')
-    expect(localizedPath(DEFAULT_LOCALE, '/')).toBe('/')
+describe('locale negotiation', () => {
+  it('reads an explicit choice from the locale cookie', () => {
+    expect(readLocaleCookie('theme=dark; dsh_locale=ja')).toBe('ja')
+    expect(readLocaleCookie('dsh_locale=zh-TW')).toBe('zh-TW')
+    expect(readLocaleCookie(null)).toBeUndefined()
+    // A stale value from a retired language is not a choice we can honour.
+    expect(readLocaleCookie('dsh_locale=de')).toBeUndefined()
   })
 
-  it('prefixes every other language, including at the root', () => {
-    expect(localizedPath('ja', '/browse')).toBe('/ja/browse')
-    expect(localizedPath('zh-CN', '/')).toBe('/zh-CN')
+  it('honours the strongest acceptable language', () => {
+    expect(negotiateLocale('ja,en;q=0.8')).toBe('ja')
+    expect(negotiateLocale('fr;q=0.9,ko;q=0.7')).toBe('ko')
+    expect(negotiateLocale('en-US,en;q=0.9')).toBe('en')
   })
 
-  it('carries the query string through a language switch', () => {
-    expect(localizedPath('ko', '/browse?q=postgres&kind=skill')).toBe(
-      '/ko/browse?q=postgres&kind=skill',
-    )
+  it('matches Chinese by script, not by region', () => {
+    expect(negotiateLocale('zh-HK')).toBe('zh-TW')
+    expect(negotiateLocale('zh-Hant')).toBe('zh-TW')
+    expect(negotiateLocale('zh-SG')).toBe('zh-CN')
+    expect(negotiateLocale('zh')).toBe('zh-CN')
   })
 
-  it('splits a prefixed path back into language and page', () => {
-    expect(splitLocalePath('/ko/a/dsh-hello')).toEqual({
-      locale: 'ko',
-      path: '/a/dsh-hello',
-      prefixed: true,
-    })
-  })
-
-  it('treats a first segment that is not a language as part of the path', () => {
-    expect(splitLocalePath('/browse')).toEqual({
-      locale: DEFAULT_LOCALE,
-      path: '/browse',
-      prefixed: false,
-    })
-  })
-
-  it('round-trips every language', () => {
-    for (const locale of LOCALE_CODES) {
-      expect(splitLocalePath(localizedPath(locale, '/docs'))).toEqual({
-        locale,
-        path: '/docs',
-        prefixed: locale !== DEFAULT_LOCALE,
-      })
-    }
-  })
-
-  it('normalises a trailing slash away, so one page has one URL', () => {
-    expect(splitLocalePath('/browse/').path).toBe('/browse')
-    expect(localizedPath('ru', '/browse/')).toBe('/ru/browse')
+  it('returns undefined for languages we do not serve', () => {
+    expect(negotiateLocale('de-DE,de;q=0.9')).toBeUndefined()
+    expect(negotiateLocale(null)).toBeUndefined()
   })
 })
 
 describe('canonical redirects', () => {
-  it('folds an explicit default-language prefix onto the bare path', () => {
+  it('folds a prefixed URL onto the bare path of the same page', () => {
     expect(canonicalLocaleRedirect('/en/browse')).toBe('/browse')
-    expect(canonicalLocaleRedirect('/en')).toBe('/')
+    expect(canonicalLocaleRedirect('/ja/browse')).toBe('/browse')
+    expect(canonicalLocaleRedirect('/zh-CN')).toBe('/')
   })
 
-  it('folds a mis-cased prefix onto the canonical one', () => {
-    expect(canonicalLocaleRedirect('/ZH-cn/browse')).toBe('/zh-CN/browse')
-  })
-
-  it('preserves the query string across the redirect', () => {
-    expect(canonicalLocaleRedirect('/en/browse', '?q=postgres')).toBe('/browse?q=postgres')
-  })
-
-  it('leaves an already-canonical URL alone', () => {
-    expect(canonicalLocaleRedirect('/ja/browse')).toBeUndefined()
-    expect(canonicalLocaleRedirect('/browse')).toBeUndefined()
-    expect(canonicalLocaleRedirect('/')).toBeUndefined()
-  })
-
-  it('folds a retired language onto the same page in the default language', () => {
+  it('folds a retired language the same way', () => {
     expect(canonicalLocaleRedirect('/de/browse')).toBe('/browse')
     expect(canonicalLocaleRedirect('/fr')).toBe('/')
-    expect(canonicalLocaleRedirect('/PT-br/a/dsh-hello', '?q=postgres')).toBe(
-      '/a/dsh-hello?q=postgres',
-    )
   })
 
-  it('leaves a page path that is not a language alone', () => {
-    expect(canonicalLocaleRedirect('/robots.txt')).toBeUndefined()
+  it('folds a mis-cased prefix too, and keeps the query string', () => {
+    expect(canonicalLocaleRedirect('/ZH-cn/browse', '?q=postgres')).toBe('/browse?q=postgres')
+    expect(canonicalLocaleRedirect('/PT-br/a/dsh-hello')).toBe('/a/dsh-hello')
+  })
+
+  it('leaves an already-bare URL alone', () => {
+    expect(canonicalLocaleRedirect('/browse')).toBeUndefined()
+    expect(canonicalLocaleRedirect('/')).toBeUndefined()
     expect(canonicalLocaleRedirect('/a/dsh-hello')).toBeUndefined()
+    expect(canonicalLocaleRedirect('/robots.txt')).toBeUndefined()
   })
 })

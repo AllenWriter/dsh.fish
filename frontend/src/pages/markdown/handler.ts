@@ -1,5 +1,5 @@
 import type { Container } from '@dsh-fish/backend/infrastructure/container.js'
-import { localizedPath, splitLocalePath, translate, type Locale } from '@/shared/config/i18n'
+import { resolveLocale, translate, type Locale } from '@/shared/config/i18n'
 import {
   CATEGORIES,
   isArtifactKind,
@@ -21,7 +21,7 @@ const LISTING_LIMIT = 50
  * and error pages carry no discovery links.
  */
 export function supportsMarkdownNegotiation(pathname: string): boolean {
-  const { path } = splitLocalePath(pathname)
+  const path = pathname
   if (path === '/' || path === '/browse') return true
   if (/^\/a\/[^/]+$/.test(path)) return true
   const kindMatch = /^\/kind\/([\w-]+)$/.exec(path)
@@ -46,7 +46,8 @@ export async function maybeMarkdownResponse(
   if (!prefersMarkdown(request.headers.get('accept'))) return null
 
   const url = new URL(request.url)
-  const { locale, path } = splitLocalePath(url.pathname)
+  const locale = resolveLocale(request)
+  const path = url.pathname
   const origin = container.config.baseUrl
 
   const artifactMatch = /^\/a\/([^/]+)$/.exec(path)
@@ -132,7 +133,7 @@ async function homeResponse(
     '',
     translate(locale, 'app.description'),
     '',
-    `- ${translate(locale, 'markdown.browseAll')}: ${origin}${localizedPath(locale, '/browse')}`,
+    `- ${translate(locale, 'markdown.browseAll')}: ${origin}/browse`,
     `- API: ${origin}/api/v1/artifacts`,
     `- ${translate(locale, 'markdown.catalogSnapshot')}: ${origin}/api/v1/catalog/snapshot`,
     '',

@@ -11,8 +11,11 @@
  * server must always see fresh responses.
  */
 
+import { LOCALE_COOKIE, resolveLocale } from '@/shared/config/i18n'
+
 const MARKDOWN_KEY_PARAM = '__dsh_accept'
 const MARKDOWN_KEY_VALUE = 'markdown'
+const LOCALE_KEY_PARAM = '__dsh_locale'
 
 /** Browser lifetime for anonymous HTML, which the SSR pipeline sends without one. */
 const ANONYMOUS_HTML_CACHE_CONTROL = 'public, max-age=300'
@@ -21,28 +24,38 @@ const ANONYMOUS_HTML_CACHE_CONTROL = 'public, max-age=300'
  * True when the request may be served from, and stored in, the edge cache.
  *
  * A session cookie or credentials mean the response may be personalized, so
- * authenticated traffic bypasses the cache entirely.
+ * authenticated traffic bypasses the cache entirely. The locale cookie is the
+ * one exception: it only moves the request between per-language cache slices,
+ * which the key below already keeps apart.
  */
 export function isCacheableRequest(request: Request): boolean {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return false
   }
-  return !request.headers.has('cookie') && !request.headers.has('authorization')
+  if (request.headers.has('authorization')) return false
+  const cookie = request.headers.get('cookie')
+  if (cookie === null) return true
+  return cookie
+    .split(';')
+    .map((part) => part.trim().split('=')[0])
+    .every((name) => name === LOCALE_COOKIE)
 }
 
 /**
  * The cache key for a request.
  *
- * The Cache API does not reliably vary on `Accept`, so markdown negotiation is
- * folded into the key's query string: HTML and markdown variants of the same
- * path never collide. The key is always a GET request — the Cache API rejects
- * `put` with any other method, and a HEAD lookup must find what a GET stored.
+ * The Cache API does not reliably vary on `Accept` or `Cookie`, so content
+ * negotiation is folded into the key's query string: the negotiated language
+ * and the markdown variant of the same path each get their own slice and
+ * never collide — one reader's Japanese page is never served to the next
+ * reader's English request.
  */
 export function buildCacheKey(request: Request): Request {
   const url = new URL(request.url)
   if (request.headers.get('accept')?.includes('text/markdown')) {
     url.searchParams.set(MARKDOWN_KEY_PARAM, MARKDOWN_KEY_VALUE)
   }
+  url.searchParams.set(LOCALE_KEY_PARAM, resolveLocale(request))
   return new Request(url.toString())
 }
 

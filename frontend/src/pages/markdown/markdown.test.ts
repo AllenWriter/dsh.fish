@@ -65,12 +65,12 @@ describe('artifactMarkdown', () => {
 })
 
 describe('listingItemMarkdown', () => {
-  it('links the name to the localized plugin page', () => {
+  it('links the name to the one URL of the plugin page', () => {
     expect(listingItemMarkdown(ORIGIN, 'en', mockArtifact())).toBe(
       '- [@acme/dsh-hello](https://dsh.fish/a/dsh-hello) — A bundle.',
     )
     expect(listingItemMarkdown(ORIGIN, 'ja', mockArtifact())).toContain(
-      'https://dsh.fish/ja/a/dsh-hello',
+      'https://dsh.fish/a/dsh-hello',
     )
   })
 })
@@ -116,13 +116,7 @@ describe('maybeMarkdownResponse', () => {
     expect(await response!.text()).toContain('# @acme/dsh-hello')
   })
 
-  it('serves localized and listing paths as markdown', async () => {
-    const localized = await maybeMarkdownResponse(
-      request('/zh-CN/a/dsh-hello', 'text/markdown'),
-      stubContainer(),
-    )
-    expect(localized).not.toBeNull()
-
+  it('serves artifact and listing paths as markdown', async () => {
     const browse = await maybeMarkdownResponse(request('/browse?q=mcp', 'text/markdown'), stubContainer())
     expect(browse).not.toBeNull()
     expect(await browse!.text()).toContain('- [@acme/dsh-hello]')
@@ -148,11 +142,9 @@ describe('maybeMarkdownResponse', () => {
 })
 
 describe('supportsMarkdownNegotiation', () => {
-  it('covers the home, listing and artifact paths, localized or not', () => {
+  it('covers the home, listing and artifact paths', () => {
     expect(supportsMarkdownNegotiation('/')).toBe(true)
-    expect(supportsMarkdownNegotiation('/ja')).toBe(true)
     expect(supportsMarkdownNegotiation('/browse')).toBe(true)
-    expect(supportsMarkdownNegotiation('/zh-CN/browse')).toBe(true)
     expect(supportsMarkdownNegotiation('/kind/bundle')).toBe(true)
     expect(supportsMarkdownNegotiation('/category/coding')).toBe(true)
     expect(supportsMarkdownNegotiation('/a/dsh-hello')).toBe(true)

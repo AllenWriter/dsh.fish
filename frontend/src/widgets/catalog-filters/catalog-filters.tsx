@@ -3,7 +3,6 @@ import type { FacetsDto } from '@/entities/artifact/model/types'
 import { KindIcon } from '@/entities/artifact/ui/kind-icon'
 import { CategoryIcon } from '@/entities/artifact/ui/category-icon'
 import { useT } from '@/shared/config/i18n'
-import { useLocalePath } from '@/shared/ui/locale-link'
 import { cn } from '@/shared/lib/utils'
 import { VerifiedIcon } from '@/shared/ui/icon'
 
@@ -16,7 +15,6 @@ import { VerifiedIcon } from '@/shared/ui/icon'
  */
 export function CatalogFilters({ facets }: { facets: FacetsDto }) {
   const t = useT()
-  const localePath = useLocalePath()
   const [params] = useSearchParams()
   const activeKinds = new Set(params.getAll('kind'))
   const activeCategories = new Set(params.getAll('category'))
@@ -31,7 +29,7 @@ export function CatalogFilters({ facets }: { facets: FacetsDto }) {
             return (
               <li key={facet.kind}>
                 <a
-                  href={localePath(toggleParam(params, 'kind', facet.kind))}
+                  href={toggleParam(params, 'kind', facet.kind)}
                   // The canonical home of this listing is `/kind/<kind>`, which
                   // the footer links and the sitemap carries. A combination
                   // filter is a view of it, not another page, so a crawler is
@@ -70,7 +68,7 @@ export function CatalogFilters({ facets }: { facets: FacetsDto }) {
             return (
               <li key={category.id}>
                 <a
-                  href={localePath(toggleParam(params, 'category', category.id))}
+                  href={toggleParam(params, 'category', category.id)}
                   rel="nofollow"
                   aria-pressed={active}
                   className={cn(
@@ -93,7 +91,7 @@ export function CatalogFilters({ facets }: { facets: FacetsDto }) {
         </ul>
       </section>
 
-      <Form method="get" action={localePath('/browse')}>
+      <Form method="get" action={'/browse'}>
         <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-muted-foreground">
           <input
             type="checkbox"

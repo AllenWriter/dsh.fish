@@ -1,8 +1,8 @@
+import { Link } from 'react-router'
 import { useState } from 'react'
 import { DashboardIcon, SignInIcon, SignOutIcon } from '@/shared/ui/icon'
 import { signOut, useSession } from '@/shared/api/auth-client'
 import { useT } from '@/shared/config/i18n'
-import { LocaleLink } from '@/shared/ui/locale-link'
 import { Avatar } from '@/shared/ui/avatar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/motion/popover'
 
@@ -26,7 +26,7 @@ export function AccountMenu() {
 
   if (!user) {
     return (
-      <LocaleLink
+      <Link
         to="/sign-in"
         aria-label={t('nav.signIn')}
         className="press inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-2.5 py-1.5 text-sm font-medium text-primary-foreground sm:px-4"
@@ -34,7 +34,7 @@ export function AccountMenu() {
         <SignInIcon className="size-4" weight="bold" />
         {/* Icon-only on a phone, where the bar has no room for the word. */}
         <span className="hidden sm:inline">{t('nav.signIn')}</span>
-      </LocaleLink>
+      </Link>
     )
   }
 
@@ -65,14 +65,14 @@ export function AccountMenu() {
 
         <span className="my-1 block h-px bg-border" />
 
-        <LocaleLink
+        <Link
           to="/dashboard"
           onClick={() => setOpen(false)}
           className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm font-medium transition-colors hover:bg-muted"
         >
           <DashboardIcon className="size-4 text-muted-foreground" weight="bold" />
           {t('nav.dashboard')}
-        </LocaleLink>
+        </Link>
         <button
           type="button"
           onClick={() => {

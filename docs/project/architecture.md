@@ -120,12 +120,10 @@ A registry is a search product with no traffic of its own: nobody bookmarks a
 plugin page, they find it. That makes the crawler-facing surface part of the
 architecture rather than a finishing touch.
 
-**Ten languages, in the URL.** Every reader-facing route carries an optional
-`:locale?` first segment, so one route module serves `/browse` (English,
-unprefixed) and `/ja/browse` alike. Each loader passes that segment through
-`requireLocale`, which 404s anything that is not a declared language — without
-it, an optional segment matches everything and the site publishes an unbounded
-set of URLs rendering one page.
+**Six languages, negotiated.** One URL serves every language: the locale is
+resolved per request from the `dsh_locale` cookie, then `Accept-Language`,
+then English. URLs from the prefixed era 301 to the bare path. See
+`docs/decisions/adr-0002-negotiated-locale-urls.md`.
 
 **Two crawlable facet axes.** `/kind/:kind` and `/category/:category` are real
 pages, not query strings, because that is the form an engine will rank and the
