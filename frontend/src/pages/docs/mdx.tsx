@@ -1,7 +1,9 @@
-import type { MDXComponents } from 'mdx/types'
+import type { ComponentType } from 'react'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { CopyButton } from '@/shared/ui/copy-button'
 import { cn } from '@/shared/lib/utils'
+
+type MdxTagMap = Record<string, ComponentType<Record<string, unknown>> | undefined>
 
 /**
  * MDX tag map for first-party product docs.
@@ -10,7 +12,7 @@ import { cn } from '@/shared/lib/utils'
  * spent on every href, fences copy through the shared button) but headings are
  * not demoted: this page owns `<h1>` from frontmatter, so MDX `#` is `<h2>`.
  */
-export function docsMdxComponents(extra?: MDXComponents): MDXComponents {
+export function docsMdxComponents(extra?: MdxTagMap): MdxTagMap {
   return {
     h1: (props) => (
       <h2 {...props} className="mt-12 mb-4 scroll-mt-20 text-2xl font-semibold tracking-tight text-balance first:mt-0" />

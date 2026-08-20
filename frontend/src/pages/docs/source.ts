@@ -32,6 +32,11 @@ const SEPARATOR_TITLE_KEY = {
 
 function nodeText(value: unknown): string {
   if (typeof value === 'string' || typeof value === 'number') return String(value)
+  if (Array.isArray(value)) return value.map(nodeText).join('')
+  if (value && typeof value === 'object' && 'props' in value) {
+    const element = value as { props?: { children?: unknown } }
+    return nodeText(element.props?.children)
+  }
   return ''
 }
 

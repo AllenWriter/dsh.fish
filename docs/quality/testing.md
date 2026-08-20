@@ -47,6 +47,11 @@ deterministic unit test.
 - Use deterministic test data.
 
 `pnpm run test:e2e` runs Playwright. Project groups share one config:
+**Product docs** (`e2e/docs/`) covers the Fumadocs section at one desktop
+viewport (1280×900) and one phone (Pixel 7). It asserts the sidebar, nested
+guides, live scoring, sidebar filter, Japanese chrome around English MDX,
+`/docs/search` JSON (not `/api/search`), and `Accept: text/markdown`. Fold
+screenshots are written for inspection; they are not visual baselines.
 
 **Plugin-detail markdown** is an exception to "journeys only": a third-party
 readme is the unique content of `/a/:id`, and its layout is resolution-dependent.
