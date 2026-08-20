@@ -20,7 +20,10 @@ describe('alternates', () => {
   it('lists every language plus x-default', () => {
     const result = alternates(ORIGIN, '/browse')
     expect(result).toHaveLength(LOCALE_CODES.length + 1)
-    expect(result.at(-1)).toEqual({ hreflang: 'x-default', href: `${ORIGIN}/browse` })
+    expect(result.at(-1)).toEqual({
+      hreflang: 'x-default',
+      href: `${ORIGIN}/browse`,
+    })
   })
 
   it('uses script subtags for Chinese, so a reader in Singapore is not excluded', () => {
@@ -141,6 +144,31 @@ describe('pageMeta', () => {
     it('claims neither a canonical nor alternates, which would contradict it', () => {
       expect(find(excluded, (entry) => entry.rel === 'canonical')).toHaveLength(0)
       expect(find(excluded, (entry) => entry.rel === 'alternate')).toHaveLength(0)
+    })
+  })
+
+  describe('when content exists in only one language', () => {
+    const englishOnly = pageMeta({
+      origin: ORIGIN,
+      locale: 'en',
+      path: '/docs',
+      title: 'Documentation',
+      description: 'Product documentation.',
+      availableLocales: ['en'],
+    }) as Descriptor[]
+
+    it('keeps the real document canonical and indexable', () => {
+      expect(find(englishOnly, (entry) => entry.rel === 'canonical')[0]?.href).toBe(
+        `${ORIGIN}/docs`,
+      )
+      expect(content(englishOnly, 'name', 'robots')).toContain('index, follow')
+    })
+
+    it('does not advertise fallback copies as translated alternates', () => {
+      expect(
+        find(englishOnly, (entry) => entry.rel === 'alternate' && 'hrefLang' in entry),
+      ).toHaveLength(0)
+      expect(find(englishOnly, (entry) => entry.property === 'og:locale:alternate')).toHaveLength(0)
     })
   })
 

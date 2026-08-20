@@ -1,21 +1,17 @@
 /**
  * Product-docs content source.
  *
- * `defineDocs` is a build-time macro: Vite rewrites it to static imports of
- * the compiled MDX. The Worker never reads `content/docs` from disk and never
- * `eval`s compiled output. Do not call `getText('raw')` here — that API hits
- * the filesystem, which production does not have.
+ * The generated server collection contains build-time compiled MDX metadata.
+ * The Worker never reads `content/docs` from disk and never `eval`s output.
+ * Do not call `getText('raw')` here — that API hits the filesystem, which
+ * production does not have.
  *
  * Nothing outside this page slice imports Fumadocs.
  */
-import { defineDocs } from 'fumadocs-mdx/macro'
+import { docs } from 'collections/server'
 import { loader } from 'fumadocs-core/source'
 import { isArtifactKind, type ArtifactKind } from '@/entities/artifact/model/types'
 import type { DocsNavNode, DocsSeparatorKey, DocsTocItem } from '@/widgets/docs-shell'
-
-const docs = defineDocs({
-  dir: 'content/docs',
-})
 
 export const source = loader({
   baseUrl: '/docs',
@@ -55,7 +51,14 @@ function kindFromUrl(url: string): ArtifactKind | undefined {
 export function docsNav(): DocsNavNode[] {
   const nodes: DocsNavNode[] = []
 
-  function walk(children: readonly { type?: string; name?: unknown; url?: string; children?: readonly unknown[] }[]) {
+  function walk(
+    children: readonly {
+      type?: string
+      name?: unknown
+      url?: string
+      children?: readonly unknown[]
+    }[],
+  ) {
     for (const node of children) {
       if (node.type === 'separator') {
         const raw = nodeText(node.name)

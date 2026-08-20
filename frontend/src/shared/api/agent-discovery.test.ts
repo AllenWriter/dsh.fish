@@ -10,11 +10,7 @@ function htmlResponse(status = 200): Response {
 
 describe('withDiscoveryLinks', () => {
   it('adds the RFC 9727 discovery links to an HTML page', () => {
-    const response = withDiscoveryLinks(
-      htmlResponse(),
-      'https://dsh.fish/browse?kind=skill',
-      false,
-    )
+    const response = withDiscoveryLinks(htmlResponse(), 'https://dsh.fish/browse?kind=skill', false)
     const links = response.headers.get('link')
 
     expect(links).toContain('</.well-known/api-catalog>; rel="api-catalog"')
@@ -33,6 +29,14 @@ describe('withDiscoveryLinks', () => {
     expect(response.headers.get('link')).toContain(
       '<https://dsh.fish/ja/browse>; rel="alternate"; type="text/markdown"',
     )
+  })
+
+  it('varies negotiated HTML by Accept without discarding existing fields', () => {
+    const original = htmlResponse()
+    original.headers.set('vary', 'Origin')
+    const response = withDiscoveryLinks(original, 'https://dsh.fish/docs', true)
+
+    expect(response.headers.get('vary')).toBe('Origin, Accept')
   })
 
   it('omits the alternate when the path has no markdown representation', () => {

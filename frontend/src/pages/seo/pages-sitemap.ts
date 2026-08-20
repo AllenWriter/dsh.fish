@@ -34,6 +34,7 @@ export function loader({ context }: Route.LoaderArgs) {
     })),
     ...docsSitemapPaths().map((path) => ({
       path,
+      locales: ['en'] as const,
       changeFrequency: 'monthly' as const,
       priority: path === '/docs' ? 0.6 : 0.55,
     })),

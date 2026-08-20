@@ -30,18 +30,39 @@ export function DocsShell({
   const [menuOpen, setMenuOpen] = useState(false)
   const [query, setQuery] = useState('')
   const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
 
   const filtered = useMemo(() => filterNav(nav, query), [nav, query])
 
   useEffect(() => {
     if (!menuOpen) return
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMenuOpen(false)
+      if (event.key === 'Escape') {
+        setMenuOpen(false)
+        return
+      }
+      if (event.key !== 'Tab') return
+
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )
+      if (!focusable || focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last?.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first?.focus()
+      }
     }
     const previousOverflow = document.body.style.overflow
     const menuButton = menuButtonRef.current
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', onKey)
+    closeButtonRef.current?.focus()
     return () => {
       document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', onKey)
@@ -81,13 +102,13 @@ export function DocsShell({
               exit={reduce ? undefined : { opacity: 0 }}
               transition={{ duration: 0.18, ease: EASE_OUT }}
             >
-              <button
-                type="button"
+              <div
                 className="absolute inset-0 bg-foreground/20"
-                aria-label={t('community.dismiss')}
+                aria-hidden="true"
                 onClick={() => setMenuOpen(false)}
               />
               <motion.div
+                ref={dialogRef}
                 id="docs-mobile-nav"
                 role="dialog"
                 aria-modal="true"
@@ -101,6 +122,7 @@ export function DocsShell({
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium">{t('nav.docs')}</p>
                   <button
+                    ref={closeButtonRef}
                     type="button"
                     className="press hit-area grid size-10 place-items-center rounded-lg border border-border"
                     aria-label={t('community.dismiss')}
@@ -110,7 +132,11 @@ export function DocsShell({
                   </button>
                 </div>
                 <DocsSearch query={query} onQueryChange={setQuery} />
-                <DocsNav nav={filtered} currentUrl={currentUrl} onNavigate={() => setMenuOpen(false)} />
+                <DocsNav
+                  nav={filtered}
+                  currentUrl={currentUrl}
+                  onNavigate={() => setMenuOpen(false)}
+                />
               </motion.div>
             </motion.div>
           ) : null}
@@ -206,7 +232,9 @@ function DocsNav({
             onClick={onNavigate}
             className={cn(
               'press flex min-h-9 items-center gap-2 rounded-lg px-2 text-sm',
-              active ? 'bg-muted font-medium text-foreground' : 'text-muted-foreground hover:text-foreground',
+              active
+                ? 'bg-muted font-medium text-foreground'
+                : 'text-muted-foreground hover:text-foreground',
             )}
           >
             {node.kind ? (
@@ -231,7 +259,10 @@ function filterNav(nav: readonly DocsNavNode[], query: string): DocsNavNode[] {
       pendingSeparator = node
       continue
     }
-    if (node.title.toLowerCase().includes(needle) || (node.kind !== undefined && node.kind.includes(needle))) {
+    if (
+      node.title.toLowerCase().includes(needle) ||
+      (node.kind !== undefined && node.kind.includes(needle))
+    ) {
       if (pendingSeparator !== undefined) {
         out.push(pendingSeparator)
         pendingSeparator = undefined

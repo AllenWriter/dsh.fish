@@ -1,9 +1,8 @@
-import type { ComponentType } from 'react'
+import type { MDXComponents } from 'mdx/types'
+import type { ComponentType, JSX } from 'react'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { CopyButton } from '@/shared/ui/copy-button'
 import { cn } from '@/shared/lib/utils'
-
-type MdxTagMap = Record<string, ComponentType<Record<string, unknown>> | undefined>
 
 /**
  * MDX tag map for first-party product docs.
@@ -12,10 +11,19 @@ type MdxTagMap = Record<string, ComponentType<Record<string, unknown>> | undefin
  * spent on every href, fences copy through the shared button) but headings are
  * not demoted: this page owns `<h1>` from frontmatter, so MDX `#` is `<h2>`.
  */
-export function docsMdxComponents(extra?: MdxTagMap): MdxTagMap {
-  return {
+type IntrinsicMdxComponents = Partial<{
+  [Tag in keyof JSX.IntrinsicElements]: ComponentType<JSX.IntrinsicElements[Tag]>
+}>
+
+type ExtraMdxComponents = Record<string, ComponentType<Record<string, never>> | undefined>
+
+export function docsMdxComponents(extra?: ExtraMdxComponents): MDXComponents {
+  const components = {
     h1: (props) => (
-      <h2 {...props} className="mt-12 mb-4 scroll-mt-20 text-2xl font-semibold tracking-tight text-balance first:mt-0" />
+      <h2
+        {...props}
+        className="mt-12 mb-4 scroll-mt-20 text-2xl font-semibold tracking-tight text-balance first:mt-0"
+      />
     ),
     h2: (props) => (
       <h2
@@ -24,7 +32,10 @@ export function docsMdxComponents(extra?: MdxTagMap): MdxTagMap {
       />
     ),
     h3: (props) => (
-      <h3 {...props} className="mt-8 mb-2 scroll-mt-20 text-base font-semibold tracking-tight text-balance" />
+      <h3
+        {...props}
+        className="mt-8 mb-2 scroll-mt-20 text-base font-semibold tracking-tight text-balance"
+      />
     ),
     h4: (props) => (
       <h4 {...props} className="mt-7 mb-2 scroll-mt-20 text-sm font-semibold tracking-tight" />
@@ -58,7 +69,10 @@ export function docsMdxComponents(extra?: MdxTagMap): MdxTagMap {
     ol: (props) => <ol {...props} className="my-4 list-decimal space-y-1.5 ps-5" />,
     li: (props) => <li {...props} className="[overflow-wrap:anywhere]" />,
     blockquote: (props) => (
-      <blockquote {...props} className="my-4 border-l-2 border-border-strong pl-4 text-muted-foreground" />
+      <blockquote
+        {...props}
+        className="my-4 border-l-2 border-border-strong pl-4 text-muted-foreground"
+      />
     ),
     hr: () => <hr className="my-8 border-t border-border" />,
     table: ({ children }) => (
@@ -67,10 +81,13 @@ export function docsMdxComponents(extra?: MdxTagMap): MdxTagMap {
       </div>
     ),
     th: (props) => (
-      <th {...props} className="border-b border-border bg-muted/50 px-3 py-2 text-left font-medium" />
+      <th
+        {...props}
+        className="border-b border-border bg-muted/50 px-3 py-2 text-left font-medium"
+      />
     ),
     td: (props) => <td {...props} className="border-b border-border px-3 py-2 align-top" />,
-    pre: ({ children, ...props }) => <CodeFence {...props}>{children}</CodeFence>,
+    pre: ({ children }) => <CodeFence>{children}</CodeFence>,
     code: ({ children, className, ...props }) => (
       <code
         className={cn(
@@ -82,8 +99,12 @@ export function docsMdxComponents(extra?: MdxTagMap): MdxTagMap {
         {children}
       </code>
     ),
-    ...extra,
-  }
+  } satisfies IntrinsicMdxComponents
+
+  // @types/mdx derives intrinsic props from the global JSX namespace, while
+  // React 19 exports JSX from `react`. Keep the renderer locally type-safe and
+  // bridge those structurally equivalent maps only at the package boundary.
+  return { ...components, ...extra } as unknown as MDXComponents
 }
 
 function CodeFence({ children }: { children?: React.ReactNode }) {
@@ -93,12 +114,7 @@ function CodeFence({ children }: { children?: React.ReactNode }) {
       <pre className="max-w-full min-w-0 overflow-x-auto rounded-xl border border-border bg-card p-4 pr-12 font-mono text-[13px] leading-relaxed [scrollbar-width:thin]">
         {children}
       </pre>
-      {code === '' ? null : (
-        <CopyButton
-          text={code}
-          className="absolute right-2.5 top-2.5"
-        />
-      )}
+      {code === '' ? null : <CopyButton text={code} className="absolute right-2.5 top-2.5" />}
     </div>
   )
 }

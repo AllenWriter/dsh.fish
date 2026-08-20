@@ -15,7 +15,10 @@ function stubMdxTypesPackage(): Plugin {
   const esbuildPlugin = {
     name: 'stub-mdx-types',
     setup(build: {
-      onResolve: (options: { filter: RegExp }, callback: () => { path: string; namespace: string }) => void
+      onResolve: (
+        options: { filter: RegExp },
+        callback: () => { path: string; namespace: string },
+      ) => void
       onLoad: (
         options: { filter: RegExp; namespace: string },
         callback: () => { contents: string; loader: 'js' },
@@ -63,23 +66,9 @@ function stubMdxTypesPackage(): Plugin {
 export default defineConfig({
   plugins: [
     stubMdxTypesPackage(),
-    // Compile MDX at build time so the Worker never `eval`s or reads the
-    // content directory at runtime. Must run before the React Router plugin
-    // so `defineDocs` in page modules is rewritten to static imports.
-    fumadocsMdx({
-      macro: {
-        include: ['src/pages/docs/**/*.ts', 'src/pages/docs/**/*.tsx'],
-      },
-      // Build-time Shiki would bake GitHub light/dark token spans into every
-      // fence. The catalog readme is plain mono on `--card`; product docs
-      // match that. Highlighting at runtime is forbidden on the Worker.
-      globalOptions: {
-        mdxOptions: {
-          rehypeCodeOptions: false,
-          remarkCodeTabOptions: false,
-        },
-      },
-    }),
+    // Compile MDX at build time and generate separate server/browser indexes.
+    // The browser index uses dynamic imports, so each article is its own chunk.
+    fumadocsMdx(),
     // Runs dev and preview inside workerd, so local behavior matches production
     // bindings rather than a Node emulation of them.
     cloudflare({ viteEnvironment: { name: 'ssr' } }),

@@ -26,13 +26,19 @@ export interface Alternate {
  * language, which is what an engine serves when it cannot match the reader's
  * own language to one we publish.
  */
-export function alternates(origin: string, path: string): readonly Alternate[] {
+export function alternates(
+  origin: string,
+  path: string,
+  locales: readonly Locale[] = LOCALE_CODES,
+): readonly Alternate[] {
   return [
-    ...LOCALE_CODES.map((code) => ({
+    ...locales.map((code) => ({
       hreflang: hreflangFor(code),
       href: absoluteUrl(origin, code, path),
     })),
-    { hreflang: 'x-default', href: absoluteUrl(origin, 'en', path) },
+    ...(locales.includes('en')
+      ? [{ hreflang: 'x-default', href: absoluteUrl(origin, 'en', path) }]
+      : []),
   ]
 }
 
