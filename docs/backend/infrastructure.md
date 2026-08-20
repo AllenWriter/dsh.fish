@@ -11,9 +11,13 @@ The infrastructure layer implements the abstractions that the domain layer defin
   OpenCode Go HTTP client, and scheduler/backfill adapters behind application
   ports.
 - **Ada client** — `AdaClient` POSTs `https://api.devin.ai/ada/query` (Fast)
-  then opens the query WebSocket. Frames are mapped to `AskEvent`; file bodies
-  and Ada JSON never leave the adapter. Timeouts: connect 10s, idle 30s, total
-  60s. Upstream 429/5xx become `UNAVAILABLE`.
+  then opens the query WebSocket. Live Fast tokens arrive as
+  `{ type: "chunk", data: "<token>" }`; the adapter also accepts recorded
+  `text` / `delta` / `chunk` fixtures. Frames map to `AskEvent`; file bodies
+  and Ada JSON never leave the adapter. The SSE response sets
+  `Content-Encoding: none` so the edge does not gzip-buffer the stream.
+  Timeouts: connect 10s, idle 30s, total 60s. Upstream 429/5xx become
+  `UNAVAILABLE`.
 - **Ask rate limiter** — `KvAskRateLimiter` on the existing `KV` binding:
   12 asks / IP / 10 min, 4 concurrent streams / IP, 30 asks / artifact / hour,
   60 asks / Worker / minute. Consume/release is serialized inside one Worker

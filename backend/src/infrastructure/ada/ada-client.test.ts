@@ -76,6 +76,16 @@ describe('mapAdaFrame', () => {
     expect(mapAdaFrame(JSON.stringify({ type: 'done' }))).toEqual([{ type: 'done' }])
   })
 
+  it('maps live Ada Fast tokens on chunk.data', () => {
+    expect(mapAdaFrame(JSON.stringify({ type: 'chunk', data: 'Hello ' }))).toEqual([
+      { type: 'delta', text: 'Hello ' },
+    ])
+    expect(mapAdaFrame(JSON.stringify({ type: 'chunk', data: 'world' }))).toEqual([
+      { type: 'delta', text: 'world' },
+    ])
+    expect(mapAdaFrame(JSON.stringify({ state: 'done' }))).toEqual([{ type: 'done' }])
+  })
+
   it('skips malformed JSON instead of throwing', () => {
     expect(mapAdaFrame('not-json{')).toEqual([])
   })

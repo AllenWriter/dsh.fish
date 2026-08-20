@@ -67,7 +67,8 @@ For errors:
 `POST /api/v1/artifacts/:id/ask` is the one anonymous endpoint that does not
 use the JSON envelope on success. A started response is `text/event-stream`
 (`event: file|delta|cite|done|error` plus JSON `data:`), with
-`Cache-Control: no-store` and `X-Ask-Query-Id`. Failures **before** the stream
+`Cache-Control: no-cache, no-store, no-transform`, `Content-Encoding: none`,
+and `X-Ask-Query-Id`. Failures **before** the stream
 starts still use the envelope above (400, 404, 422, 429, 503). Ask is omitted
 from the catalog snapshot and from edge cache.
 

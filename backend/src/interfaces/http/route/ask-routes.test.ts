@@ -92,7 +92,8 @@ describe('POST /api/v1/artifacts/:id/ask', () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get('Content-Type')).toContain('text/event-stream')
-    expect(response.headers.get('Cache-Control')).toBe('no-store')
+    expect(response.headers.get('Cache-Control')).toBe('no-cache, no-store, no-transform')
+    expect(response.headers.get('Content-Encoding')).toBe('none')
     expect(response.headers.get('X-Ask-Query-Id')).toBe('ask_uuid')
     const body = await response.text()
     expect(body).toContain('event: file')

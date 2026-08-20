@@ -45,8 +45,8 @@ do not know, and CI must never discover that by hitting the live API.
   [`api-conventions.md`](../backend/api-conventions.md); errors before the
   stream starts still use the existing envelope. Mapped events are `file`,
   `delta`, `cite`, `done`, and `error` — Ada's JSON never leaves the Worker.
-- **Feature flag** `ARTIFACT_ASK_ENABLED` (Wrangler var, default off in
-  production until a live probe has a result).
+- **Feature flag** `ARTIFACT_ASK_ENABLED` (Wrangler var). Production is on
+  (`"true"` in `frontend/wrangler.jsonc`).
 
 ### Live-probe ethics
 
@@ -59,9 +59,9 @@ systematic WebSocket close under concurrency 2. Pass criteria for “none
 observed”: all 20 complete. Completing 20 requests **does not prove** there is
 no limit — it only means none showed up in that bounded run.
 
-After one successful probe, production `ARTIFACT_ASK_ENABLED` may be turned on
-and our KV numbers tightened to sit **below** whatever Ada showed (or kept at
-the conservative v1 caps if Ada never 429’d).
+After a probe, KV numbers may be tightened to sit **below** whatever Ada showed
+(or kept at the conservative v1 caps if Ada never 429’d). Production currently
+keeps the v1 caps with the flag on.
 
 ## Consequences
 

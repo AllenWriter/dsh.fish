@@ -295,7 +295,7 @@ export function openApiDocument(baseUrl: string) {
               description: 'Mapped Ada events as Server-Sent Events. X-Ask-Query-Id is the thread id.',
               headers: {
                 'X-Ask-Query-Id': { schema: { type: 'string' } },
-                'Cache-Control': { schema: { type: 'string', enum: ['no-store'] } },
+                'Cache-Control': { schema: { type: 'string', enum: ['no-cache, no-store, no-transform'] } },
               },
               content: {
                 'text/event-stream': {

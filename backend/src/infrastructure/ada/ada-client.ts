@@ -290,7 +290,7 @@ export function mapAdaFrame(raw: string): AskEvent[] {
     events.push(...splitCites(chunk))
   }
 
-  if (frame.type === 'done' || frame.done === true) {
+  if (frame.type === 'done' || frame.done === true || frame.state === 'done') {
     events.push({ type: 'done' })
   }
 
@@ -298,12 +298,16 @@ export function mapAdaFrame(raw: string): AskEvent[] {
 }
 
 function chunkText(frame: Record<string, unknown>): string | undefined {
+  // Live Ada Fast frames are `{ type: "chunk", data: "<token>" }`. The other
+  // shapes are recorded fixtures and older public clients.
+  if (frame.type === 'chunk' && typeof frame.data === 'string') return frame.data
   if (typeof frame.chunk === 'string') return frame.chunk
   if (frame.type === 'chunk' && typeof frame.text === 'string') return frame.text
   if (frame.type === 'chunk' && typeof frame.delta === 'string') return frame.delta
   if (typeof frame.chunk === 'object' && frame.chunk !== null) {
     const inner = frame.chunk as Record<string, unknown>
     if (typeof inner.text === 'string') return inner.text
+    if (typeof inner.data === 'string') return inner.data
   }
   return undefined
 }

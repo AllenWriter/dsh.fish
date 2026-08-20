@@ -32,7 +32,10 @@ export function askRoutes() {
       status: 200,
       headers: {
         'Content-Type': 'text/event-stream; charset=utf-8',
-        'Cache-Control': 'no-store',
+        // `no-transform` plus Cloudflare's `Content-Encoding: none` keep the
+        // edge from gzip/brotli-buffering the stream into one blob.
+        'Cache-Control': 'no-cache, no-store, no-transform',
+        'Content-Encoding': 'none',
         'X-Accel-Buffering': 'no',
         'X-Ask-Query-Id': session.queryId,
       },
@@ -57,6 +60,9 @@ function sseStream(events: AsyncIterable<AskEvent>): ReadableStream<Uint8Array> 
   return new ReadableStream({
     async start(controller) {
       try {
+        // Comment frame so the status line leaves the Worker before Ada's
+        // first mapped token — otherwise a long scan looks like a hang.
+        controller.enqueue(encoder.encode(': ask\n\n'))
         for await (const event of events) {
           controller.enqueue(encoder.encode(formatSse(event)))
           if (event.type === 'done' || event.type === 'error') break
