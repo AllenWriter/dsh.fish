@@ -37,13 +37,29 @@ because you passed `--yes`.
 | `update [id]` | Re-apply the current plan. |
 | `init [name]` | Write a `SKILL.md` the hub indexer will accept. |
 | `login` / `logout` / `whoami` | Device-grant account, same token as the hub plugin. |
+| `rate <source> <1-5> [comment...]` | Rate an artifact; replaces your previous rating. Needs `login`. |
+| `reviews <source>` | Average rating, 5-to-1 distribution and recent comments. |
 
 ```sh
 npx @dsh-fish/cli find postgres --kind mcp-server
 npx @dsh-fish/cli list --json
 npx @dsh-fish/cli remove release-notes
 npx @dsh-fish/cli init my-skill
+npx @dsh-fish/cli rate dsh-postgres-mcp 5 "installed and queried in minutes"
+npx @dsh-fish/cli reviews dsh-postgres-mcp
 ```
+
+## Ratings and reviews
+
+The site uses a 1–5 star scale: 1 is broken or misleading, 5 is excellent.
+`reviews` is anonymous; `rate` needs `login` and always speaks for the signed-in
+account — rating again overwrites the earlier one, never stacks. What the CLI
+writes is exactly what the artifact page renders, so a rating lands on the site
+the moment the command returns.
+
+An agent driving this CLI should follow the same rule the hub plugin's
+`hub_rate` tool states: rate only what it actually installed and used, from
+firsthand evidence, and tell its user when it leaves a rating.
 
 ## Options
 

@@ -43,6 +43,13 @@
       "when": 1787118720001,
       "tag": "0005_minor_ultimo",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1787165539996,
+      "tag": "0006_lucky_firestar",
+      "breakpoints": true
     }
   ]
 }

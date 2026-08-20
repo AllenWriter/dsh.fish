@@ -15,15 +15,18 @@ import type { ArtifactDetail } from '../model/types'
  * one structured-data node that has to know what an artifact is — its kind, its
  * source, the counters the crawler measured.
  *
- * Every field is something the indexer actually read. Deliberately absent:
- * `offers` and `aggregateRating`. Both would unlock a richer result, and both
- * would be a claim this registry has no data for.
+ * Every field is something the indexer actually read, or — for
+ * `aggregateRating` — something a signed-in account stated through the review
+ * API. `offers` stays absent: there is still no price to quote. The rating
+ * node is only emitted when at least one real rating exists, because an
+ * `aggregateRating` over zero ratings would be a claim no one made.
  */
 export function artifactLd(
   origin: string,
   locale: Locale,
   artifact: ArtifactDetail,
   installCommands: readonly string[] = [],
+  rating?: { average: number; count: number },
 ): Ld {
   const url = absoluteUrl(origin, `/a/${artifact.id}`)
 
@@ -74,5 +77,16 @@ export function artifactLd(
         }),
     ...(command === undefined ? {} : { softwareHelp: command }),
     ...(interactions.length === 0 ? {} : { interactionStatistic: interactions }),
+    ...(rating === undefined
+      ? {}
+      : {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: rating.average,
+            ratingCount: rating.count,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }),
   }
 }

@@ -15,6 +15,7 @@ describe('openApiDocument', () => {
       '/api/v1/artifacts',
       '/api/v1/artifacts/{id}',
       '/api/v1/artifacts/{id}/install-plan',
+      '/api/v1/artifacts/{id}/reviews',
       '/api/v1/catalog/snapshot',
       '/api/v1/catalog/version',
       '/api/v1/facets',

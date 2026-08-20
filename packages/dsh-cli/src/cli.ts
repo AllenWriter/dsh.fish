@@ -17,6 +17,7 @@ import {
   InstallRefused,
   PlanInstaller,
   clearToken,
+  renderArtifactReviews,
 } from 'dsh-hub/install'
 import { initSkill } from './init.js'
 import { parseArgv, UsageError, type CliFlags, type CliRequest } from './parse-args.js'
@@ -45,6 +46,13 @@ Account:
   logout             Forget the stored token
   whoami             Show who is signed in (alias: status)
 
+Community:
+  rate <source> <1-5> [comment...]
+                     Rate an artifact on the site's 1–5 scale; rating again
+                     replaces your previous rating. Needs login first
+  reviews <source>   Show an artifact's average rating, its 5-to-1
+                     distribution, and recent comments
+
 Options:
   --profile, -p      Harness profile (default: $DSH_PROFILE or web)
   --registry         Hub origin (default: $DSH_FISH_URL or https://dsh.fish)
@@ -62,6 +70,8 @@ Examples:
   npx @dsh-fish/cli find postgres --kind mcp-server
   npx @dsh-fish/cli list
   npx @dsh-fish/cli remove release-notes
+  npx @dsh-fish/cli rate dsh-postgres-mcp 5 "installed and queried in minutes"
+  npx @dsh-fish/cli reviews dsh-postgres-mcp
 `.trim()
 
 async function main(): Promise<void> {
@@ -134,6 +144,13 @@ async function main(): Promise<void> {
       case 'whoami':
       case 'status':
         await runWhoami(client, request.flags)
+        break
+      case 'rate':
+        await runRate(client, request)
+        break
+      case 'reviews':
+      case 'review':
+        await runReviews(client, request)
         break
       case 'init':
         await runInit(request)
@@ -343,6 +360,56 @@ async function runWhoami(client: HubClient, flags: CliFlags): Promise<void> {
     return
   }
   console.log(`Signed in to dsh.fish as ${me.account.displayName}.`)
+}
+
+/**
+ * The one catalog write this CLI performs. An agent driving the CLI should
+ * only rate what it actually installed and used — the same rule the hub
+ * plugin's hub_rate tool states — and say so to its user when it does.
+ */
+async function runRate(client: HubClient, request: CliRequest): Promise<void> {
+  const source = request.positional[0]
+  const ratingRaw = request.positional[1]
+  if (source === undefined || ratingRaw === undefined) {
+    throw new UsageError('rate needs an artifact id and a whole-number rating from 1 to 5.')
+  }
+  const rating = Number(ratingRaw)
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    throw new UsageError('rate needs a whole-number rating from 1 to 5.')
+  }
+  const comment = request.positional.slice(2).join(' ').trim()
+  const artifact = await resolveArtifact(client, source)
+  let reviews
+  try {
+    reviews = await client.rate({
+      artifactId: artifact.id,
+      rating,
+      ...(comment === '' ? {} : { comment }),
+    })
+  } catch (error) {
+    if (error instanceof HubError && error.code === 'UNAUTHENTICATED') {
+      throw new HubError('Not signed in to dsh.fish. Run `dsh-fish login` first.', 'UNAUTHENTICATED')
+    }
+    throw error
+  }
+  if (request.flags.json) {
+    console.log(JSON.stringify(reviews, null, 2))
+    return
+  }
+  console.log(`Rated ${artifact.displayName} (${artifact.id}): ${rating} ★.`)
+  console.log(renderArtifactReviews(reviews))
+}
+
+async function runReviews(client: HubClient, request: CliRequest): Promise<void> {
+  const source = request.positional[0]
+  if (source === undefined) throw new UsageError('reviews needs an artifact id, URL, or owner/repo.')
+  const artifact = await resolveArtifact(client, source)
+  const reviews = await client.reviews({ artifactId: artifact.id })
+  if (request.flags.json) {
+    console.log(JSON.stringify(reviews, null, 2))
+    return
+  }
+  console.log(renderArtifactReviews(reviews))
 }
 
 async function runInit(request: CliRequest): Promise<void> {

@@ -1,6 +1,7 @@
 import { data, Link} from 'react-router'
 import type { Route } from './+types/artifact-detail-page'
 import { hubContext } from '@/shared/api/hub-context'
+import { ArtifactReviews } from '@/widgets/artifact-reviews/artifact-reviews'
 import { InstallPanel } from '@/widgets/install-panel/install-panel'
 import { ReadmeBadge } from '@/widgets/readme-badge/readme-badge'
 import { AuthorCard } from '@/entities/artifact/ui/author-card'
@@ -45,7 +46,7 @@ export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
   // A 404 renders the error boundary, so loaderData is absent there.
   if (!loaderData) return errorMeta()
 
-  const { artifact, plan, origin, locale } = loaderData
+  const { artifact, plan, reviews, origin, locale } = loaderData
   const kindName = translate(locale, kindLabelKey(artifact.kind))
 
   return pageMeta({
@@ -64,7 +65,15 @@ export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
     }),
     type: 'article',
     jsonLd: [
-      artifactLd(origin, locale, artifact, plan.manualCommands),
+      artifactLd(
+        origin,
+        locale,
+        artifact,
+        plan.manualCommands,
+        reviews.summary.count > 0 && reviews.summary.average !== null
+          ? { average: reviews.summary.average, count: reviews.summary.count }
+          : undefined,
+      ),
       breadcrumbLd(origin, locale, [
         { name: translate(locale, 'app.name'), path: '/' },
         {
@@ -92,14 +101,18 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 
   // Previewing a plan is not installing: `recordInstall` stays off here, so the
   // install counter never becomes a page-view counter.
-  const plan = await container.useCases.resolveInstallPlan.execute({
-    artifactId: artifact.id,
-    ...(profile === undefined ? {} : { profile }),
-  })
+  const [plan, reviews] = await Promise.all([
+    container.useCases.resolveInstallPlan.execute({
+      artifactId: artifact.id,
+      ...(profile === undefined ? {} : { profile }),
+    }),
+    container.useCases.getArtifactReviews.execute(artifact.id),
+  ])
 
   return {
     artifact,
     plan,
+    reviews,
     locale,
     now: Date.now(),
     origin: container.config.baseUrl,
@@ -107,7 +120,7 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 }
 
 export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps) {
-  const { artifact, plan, now, origin } = loaderData
+  const { artifact, plan, reviews, now, origin } = loaderData
   const t = useT()
   const locale = useLocale()
 
@@ -349,6 +362,10 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
             <ReadmeBadge artifact={artifact} origin={origin} />
           </div>
         </div>
+      </div>
+
+      <div className="mt-10">
+        <ArtifactReviews reviews={reviews} now={now} />
       </div>
     </article>
   )

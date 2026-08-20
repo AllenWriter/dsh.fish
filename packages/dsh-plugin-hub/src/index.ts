@@ -13,7 +13,9 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { HubClient, HubError } from './hub-client.js'
+import type { ArtifactReviews } from './hub-client.js'
 import { InstallRefused, PlanInstaller } from './installer.js'
+import { renderArtifactReviews } from './review-text.js'
 import { clearToken, readToken } from './token-store.js'
 
 export const name = 'dsh-hub'
@@ -337,6 +339,84 @@ export function apply(ctx: Context, config: Config = Config): void {
       },
     }),
   )
+
+  ctx.tools.register(
+    defineTool({
+      name: 'hub_reviews',
+      description:
+        'Read dsh.fish community ratings for one artifact: the site uses a 1–5 star scale ' +
+        '(1 = broken or misleading, 2 = poor, 3 = works with real caveats, 4 = good, 5 = ' +
+        'excellent). Returns the average, how many accounts rated, the 5-to-1 distribution, ' +
+        'and the most recent comments. Call this before recommending an artifact, and before ' +
+        'hub_rate if you want context on what others experienced. Anonymous — no sign-in needed.',
+      parameters: {
+        artifactId: { type: 'string', required: true, description: 'Id from hub_search or hub_list.' },
+        limit: { type: 'integer', description: 'Maximum recent reviews to return (default 20).' },
+      },
+      output: {
+        schema: { type: 'json' },
+        render: (_args, value) => [
+          { type: 'text', text: renderArtifactReviews(value as ArtifactReviews) },
+        ],
+      },
+      async execute(args) {
+        return client.reviews({
+          artifactId: args.artifactId,
+          ...(args.limit === undefined ? {} : { limit: args.limit }),
+        })
+      },
+    }),
+  )
+
+  ctx.tools.register(
+    defineTool({
+      name: 'hub_rate',
+      description:
+        'Rate a dsh.fish artifact on the site’s 1–5 star scale (1 = broken or misleading, ' +
+        '2 = poor, 3 = works with real caveats, 4 = good, 5 = excellent), optionally with a ' +
+        'comment shown publicly on the artifact’s page. Rate only an artifact this machine ' +
+        'actually installed (check with hub_list) and only from firsthand evidence — a run ' +
+        'that worked, a failure you saw, documentation that misled you. Never fabricate ' +
+        'experience, and never rate without telling the user you are doing it; when an install ' +
+        'or usage clearly succeeded or failed, offer to leave the rating. A comment should say ' +
+        'what it was used for and what specifically worked or broke. Rating again overwrites ' +
+        'the previous rating from this account. Requires sign-in (hub_account action "login"). ' +
+        'Returns the fresh aggregate, so you can show the user their rating landing.',
+      parameters: {
+        artifactId: { type: 'string', required: true, description: 'Id from hub_list or hub_search.' },
+        rating: {
+          type: 'integer',
+          required: true,
+          description: 'Whole stars from 1 to 5 on the site scale.',
+        },
+        comment: {
+          type: 'string',
+          description: 'Optional public comment, up to 2000 characters. Specific, factual, firsthand.',
+        },
+      },
+      output: {
+        schema: { type: 'json' },
+        render: (_args, value) => [{ type: 'text', text: renderRate(value) }],
+      },
+      async execute(args) {
+        try {
+          return await client.rate({
+            artifactId: args.artifactId,
+            rating: args.rating,
+            ...(args.comment === undefined ? {} : { comment: args.comment }),
+          })
+        } catch (error) {
+          if (error instanceof HubError && error.code === 'UNAUTHENTICATED') {
+            throw new HubError(
+              'Not signed in to dsh.fish. Run hub_account with action "login" first — the user must approve in a browser.',
+              'UNAUTHENTICATED',
+            )
+          }
+          throw error
+        }
+      },
+    }),
+  )
 }
 
 /**
@@ -439,6 +519,11 @@ function renderAccount(value: unknown): string {
   if (state.action === 'logout') return 'Signed out of dsh.fish on this machine.'
   if (!state.signedIn) return 'Not signed in to dsh.fish. Run hub_account with action "login".'
   return `Signed in to dsh.fish as ${state.account ?? 'this account'}.`
+}
+
+function renderRate(value: unknown): string {
+  const reviews = value as ArtifactReviews
+  return `Rating recorded.\n${renderArtifactReviews(reviews)}`
 }
 
 export { HubError, InstallRefused }

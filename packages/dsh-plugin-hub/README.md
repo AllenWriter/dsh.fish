@@ -33,6 +33,21 @@ so a later push cannot change what runs.
 | `hub_remove` | Reverse a recorded install (files, patch rows, packages). |
 | `hub_update` | Re-apply the current plan for an installed artifact. |
 | `hub_account` | Sign in via the OAuth device flow, check status, or sign out. |
+| `hub_reviews` | Community ratings: the site's 1–5 scale, average, distribution, comments. |
+| `hub_rate` | Rate an installed artifact 1–5 stars, optionally with a public comment. |
+
+## Ratings and reviews
+
+The site runs a 1–5 star scale (1 = broken or misleading, 5 = excellent) that
+the artifact pages render read-only. `hub_reviews` reads it anonymously;
+`hub_rate` writes it and needs sign-in. A rating always speaks for the
+signed-in account, and rating again overwrites the earlier one.
+
+The tools carry their own rules in their descriptions, which the agent reads:
+rate only what this machine actually installed and used, from firsthand
+evidence, never fabricate experience, and tell the user when a rating is left.
+After an install or usage that clearly worked or failed, the agent is expected
+to *offer* a rating — the decision and the stars stay the user's call.
 
 ## Signing in
 
@@ -45,8 +60,8 @@ token is written to `$DSH_HOME/.dsh-fish-token.json` with mode 0600 and is never
 logged.
 
 A device token is deliberately weaker than a browser session — it can read the
-catalog and resolve install plans as you, but it cannot submit or claim
-artifacts.
+catalog, resolve install plans and rate artifacts as you, but it cannot submit
+or claim artifacts.
 
 ## Safety
 

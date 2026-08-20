@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import migrationSql from '../../../migrations/0004_artifact_source_commit_sha.sql?raw'
 import readmeMigrationSql from '../../../migrations/0005_minor_ultimo.sql?raw'
+import reviewsMigrationSql from '../../../migrations/0006_lucky_firestar.sql?raw'
 import journal from '../../../migrations/meta/_journal.json'
-import { artifactReadmeTranslations, artifacts } from './catalog-schema.js'
+import { artifactReadmeTranslations, artifactReviews, artifacts } from './catalog-schema.js'
 
 /**
  * The schema, the migration and the journal are written by hand and must
@@ -26,5 +27,18 @@ describe('artifact README translations', () => {
     expect(readmeMigrationSql).toContain('CREATE TABLE `artifact_readme_translations`')
     expect(readmeMigrationSql).not.toContain('CREATE TABLE `artifact_metrics`')
     expect(journal.entries.map((entry) => entry.tag)).toContain('0005_minor_ultimo')
+  })
+})
+
+describe('artifact reviews', () => {
+  it('keeps the schema, migration and journal in step', () => {
+    expect(artifactReviews.artifactId.notNull).toBe(true)
+    expect(artifactReviews.accountId.notNull).toBe(true)
+    expect(artifactReviews.authorName.name).toBe('author_name')
+    expect(artifactReviews.rating.notNull).toBe(true)
+    expect(artifactReviews.comment.notNull).toBe(false)
+    expect(reviewsMigrationSql).toContain('CREATE TABLE `artifact_reviews`')
+    expect(reviewsMigrationSql).toContain('PRIMARY KEY(`artifact_id`, `account_id`)')
+    expect(journal.entries.map((entry) => entry.tag)).toContain('0006_lucky_firestar')
   })
 })

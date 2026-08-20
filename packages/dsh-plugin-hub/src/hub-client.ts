@@ -43,6 +43,39 @@ export interface DeviceCodeGrant {
   interval: number
 }
 
+export interface ReviewAuthor {
+  name: string
+  avatarUrl?: string
+}
+
+export interface ReviewItem {
+  author: ReviewAuthor
+  rating: number
+  comment?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ReviewSummary {
+  /** One-decimal mean; null while nobody has rated. */
+  average: number | null
+  count: number
+  /** Count per star value: index 0 is the 1-star count, index 4 the 5-star count. */
+  distribution: [number, number, number, number, number]
+}
+
+/**
+ * The registry's community sentiment for one artifact. `scale` travels with
+ * the payload so a caller (human or agent) never has to guess what a rating
+ * means on this site.
+ */
+export interface ArtifactReviews {
+  artifactId: string
+  scale: { min: number; max: number }
+  summary: ReviewSummary
+  items: ReviewItem[]
+}
+
 export class HubError extends Error {
   constructor(
     message: string,
@@ -105,6 +138,42 @@ export class HubClient {
 
   async whoami(): Promise<{ account: { displayName: string } | null }> {
     return this.request('/api/v1/me')
+  }
+
+  /**
+   * Read community ratings: the site's scale, the aggregate and distribution,
+   * and the most recent reviews. Anonymous, like the rest of catalog reads.
+   */
+  async reviews(input: { artifactId: string; limit?: number }): Promise<ArtifactReviews> {
+    const params = new URLSearchParams()
+    if (input.limit !== undefined) params.set('limit', String(input.limit))
+    const suffix = params.size > 0 ? `?${params.toString()}` : ''
+    return this.request(
+      `/api/v1/artifacts/${encodeURIComponent(input.artifactId)}/reviews${suffix}`,
+    )
+  }
+
+  /**
+   * Rate an artifact, replacing the caller's earlier rating if there is one.
+   *
+   * This is the one catalog write a device token may perform: a rating only
+   * ever speaks for the account behind the token. The response is the same
+   * read model the website renders, so the caller sees its own rating land in
+   * the aggregate.
+   */
+  async rate(input: {
+    artifactId: string
+    rating: number
+    comment?: string
+  }): Promise<ArtifactReviews> {
+    return this.request(`/api/v1/artifacts/${encodeURIComponent(input.artifactId)}/reviews/mine`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        rating: input.rating,
+        ...(input.comment === undefined ? {} : { comment: input.comment }),
+      }),
+    })
   }
 
   /** Step one of the device grant: ask for a code pair. */

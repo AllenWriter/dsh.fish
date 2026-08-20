@@ -38,6 +38,15 @@ This document describes database conventions. Fill in concrete technology choice
   primary key makes repeated ingestion idempotent; the source hash prevents a
   completed translation from surviving an upstream README or model-policy
   change.
+- `artifact_reviews` (migration `0006_lucky_firestar`) — one row per
+  (artifact, account) community rating: whole stars 1–5 plus an optional
+  comment. The composite primary key is what makes re-rating an overwrite
+  rather than a second vote. `author_name` / `author_avatar_url` are snapshots
+  taken at rating time, deliberately not a join back to Better Auth's `users`:
+  a review is a public statement that should survive an account rename or
+  deletion unchanged, and the catalog's read path stays decoupled from
+  identity storage (the same rule `artifacts.owner_account_id` follows).
+  `account_id` itself is not a foreign key for the same reason.
 
 ## Migrations
 

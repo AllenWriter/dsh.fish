@@ -7,6 +7,7 @@ import type { HubEnv } from '../../infrastructure/config/env.js'
 import type { ReadmeLocalizationScheduler } from '../../application/port/readme-localization.js'
 import { toApiError } from './error-mapper.js'
 import { catalogRoutes } from './route/catalog-routes.js'
+import { reviewRoutes } from './route/review-routes.js'
 import { submissionRoutes } from './route/submission-routes.js'
 import { adminRoutes } from './route/admin-routes.js'
 
@@ -65,6 +66,7 @@ export function createApiApp(options: {
   app.all('/auth/*', (context) => context.get('container').auth.handler(context.req.raw))
 
   app.route('/v1', catalogRoutes())
+  app.route('/v1', reviewRoutes())
   app.route('/v1', submissionRoutes())
   app.route('/v1/admin', adminRoutes())
 

@@ -94,6 +94,34 @@ export const submissions = sqliteTable(
 )
 
 /**
+ * Community ratings and comments, one row per (artifact, account) — rating
+ * again replaces the row. The reviewer name and avatar are snapshots taken at
+ * rating time: a review is a public statement that should survive an account
+ * rename or deletion unchanged, and joining back to Better Auth's `users`
+ * would couple the catalog's read path to identity storage.
+ */
+export const artifactReviews = sqliteTable(
+  'artifact_reviews',
+  {
+    artifactId: text('artifact_id')
+      .notNull()
+      .references(() => artifacts.id, { onDelete: 'cascade' }),
+    /** A Better Auth user id, deliberately not a foreign key — see above. */
+    accountId: text('account_id').notNull(),
+    authorName: text('author_name').notNull(),
+    authorAvatarUrl: text('author_avatar_url'),
+    rating: integer('rating').notNull(),
+    comment: text('comment'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.artifactId, table.accountId] }),
+    index('artifact_reviews_account_idx').on(table.accountId),
+  ],
+)
+
+/**
  * Full-text index over the catalog.
  *
  * D1 is SQLite, so FTS5 is available and is what makes search a real ranked

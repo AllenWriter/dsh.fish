@@ -56,16 +56,18 @@ gate.
 
 ### A `SoftwareApplication` rich result
 
-`offers` and `aggregateRating` are deliberately absent (see
-[`structured-data.md`](structured-data.md)). Two honest routes to the rich
-result:
+`offers` is deliberately absent (see [`structured-data.md`](structured-data.md)).
+One honest route to the rich result remains:
 
 - **`offers` with `price: 0`** once the catalog records a licence classification
   it can stand behind — that is a factual claim about a free, open-source
   artifact, not an invented one.
-- **`aggregateRating`** only if the hub ever ships real ratings. Do not
-  synthesise one from stars; a GitHub star is not a rating, and asserting that
-  it is invites a manual action.
+
+`aggregateRating` shipped with the reviews feature: artifacts with at least one
+real harness-submitted rating emit the node (see
+[`structured-data.md`](structured-data.md)). It is still never synthesised from
+stars — a GitHub star is not a rating, and asserting that it is invites a
+manual action.
 
 ### Translate the highest-traffic artifact summaries
 

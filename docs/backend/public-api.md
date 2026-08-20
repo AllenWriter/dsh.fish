@@ -84,3 +84,47 @@ curl -s https://dsh.fish/api/v1/catalog/version
 curl -s -H 'If-None-Match: "9f2c…"' -w '%{http_code}\n' \
   https://dsh.fish/api/v1/catalog/snapshot
 ```
+
+## Community ratings
+
+### `GET /api/v1/artifacts/:id/reviews`
+
+The site's own 1–5 star rating system: the aggregate, the 5-to-1 distribution,
+and the most recent reviews. Ratings are written from the dsh harness (the hub
+plugin's `hub_rate` tool or `dsh-fish rate`), never from the web — this
+endpoint is the anonymous read side the artifact pages are rendered from.
+
+```json
+{
+  "artifactId": "dsh-postgres-mcp",
+  "scale": { "min": 1, "max": 5 },
+  "summary": {
+    "average": 3.8,
+    "count": 4,
+    "distribution": [0, 1, 0, 2, 1]
+  },
+  "items": [
+    {
+      "author": { "name": "Ada" },
+      "rating": 5,
+      "comment": "Installed and queried a live database with it.",
+      "createdAt": "2026-08-01T12:00:00.000Z",
+      "updatedAt": "2026-08-01T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+- `scale` travels with the payload so a client never has to guess what a
+  rating means on this site.
+- `distribution[i]` is the count of (i+1)-star ratings; `average` is `null`
+  while nobody has rated.
+- One rating per account per artifact — re-rating overwrites, so `count` is
+  always the number of distinct raters.
+- `?limit=` caps the returned reviews (default 20, max 100), most recently
+  written first. A review may be rating-only, with no `comment`.
+
+The write side is `PUT /api/v1/artifacts/:id/reviews/mine` with a bearer token
+from the device grant (session cookies work too). It accepts
+`{ "rating": 1–5, "comment?": string ≤ 2000 }` and returns the same document
+above, fresh after the write.

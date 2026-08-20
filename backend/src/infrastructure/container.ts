@@ -2,17 +2,20 @@ import { drizzle } from 'drizzle-orm/d1'
 import type { IncomingRequestCfProperties } from '@cloudflare/workers-types'
 import { GetArtifactDetail } from '../application/use-case/get-artifact-detail.js'
 import { BackfillReadmeLocalization } from '../application/use-case/backfill-readme-localization.js'
+import { GetArtifactReviews } from '../application/use-case/get-artifact-reviews.js'
 import { GetCatalogSnapshot } from '../application/use-case/get-catalog-snapshot.js'
 import { DescribeScoring } from '../application/use-case/describe-scoring.js'
 import { IngestCatalog } from '../application/use-case/ingest-catalog.js'
 import { ListCatalogFacets } from '../application/use-case/list-catalog-facets.js'
 import { ListSitemapEntries } from '../application/use-case/list-sitemap-entries.js'
+import { RateArtifact } from '../application/use-case/rate-artifact.js'
 import { ResolveInstallPlan } from '../application/use-case/resolve-install-plan.js'
 import { SearchArtifacts } from '../application/use-case/search-artifacts.js'
 import { SubmitArtifact } from '../application/use-case/submit-artifact.js'
 import type { IdGenerator, SourceIndexer } from '../application/port/source-indexer.js'
 import type { ReadmeLocalizationScheduler } from '../application/port/readme-localization.js'
 import type { ArtifactRepository } from '../domain/artifact/artifact-repository.js'
+import type { ReviewRepository } from '../domain/review/review.js'
 import type { SubmissionRepository } from '../domain/submission/submission.js'
 import { readConfig } from './config/env.js'
 import type { HubConfig, HubEnv } from './config/env.js'
@@ -29,6 +32,7 @@ import { D1ArtifactRepository } from './persistence/d1-artifact-repository.js'
 import { D1ReadmeTranslationRepository } from './persistence/d1-readme-translation-repository.js'
 import { D1ReadmeLocalizationBackfillSource } from './persistence/d1-readme-localization-backfill-source.js'
 import { D1LinkedIdentityReader } from './persistence/d1-linked-identity.js'
+import { D1ReviewRepository } from './persistence/d1-review-repository.js'
 import { D1SubmissionRepository } from './persistence/d1-submission-repository.js'
 import { KvCatalogSnapshotStore } from './persistence/kv-catalog-snapshot-store.js'
 import { KvReadmeLocalizationBackfillProgress } from './agents/kv-readme-localization-backfill-progress.js'
@@ -39,13 +43,16 @@ export interface Container {
   readonly auth: HubAuth
   readonly artifacts: ArtifactRepository
   readonly submissions: SubmissionRepository
+  readonly reviews: ReviewRepository
   readonly useCases: {
     readonly searchArtifacts: SearchArtifacts
     readonly getArtifactDetail: GetArtifactDetail
+    readonly getArtifactReviews: GetArtifactReviews
     readonly getCatalogSnapshot: GetCatalogSnapshot
     readonly describeScoring: DescribeScoring
     readonly listCatalogFacets: ListCatalogFacets
     readonly listSitemapEntries: ListSitemapEntries
+    readonly rateArtifact: RateArtifact
     readonly resolveInstallPlan: ResolveInstallPlan
     readonly submitArtifact: SubmitArtifact
     readonly ingestCatalog: IngestCatalog
@@ -75,6 +82,7 @@ export function createContainer(env: HubEnv, options: ContainerOptions): Contain
   const readmeTranslations = new D1ReadmeTranslationRepository(db)
   const readmeBackfillSource = new D1ReadmeLocalizationBackfillSource(db)
   const submissions = new D1SubmissionRepository(db)
+  const reviews = new D1ReviewRepository(db)
   const identities = new D1LinkedIdentityReader(db)
   const socialPreview = new GitHubSocialPreview(config.githubToken)
   const indexers: readonly SourceIndexer[] = [
@@ -95,13 +103,16 @@ export function createContainer(env: HubEnv, options: ContainerOptions): Contain
     auth: createAuth(env, options.cf, config.baseUrl),
     artifacts,
     submissions,
+    reviews,
     useCases: {
       searchArtifacts: new SearchArtifacts(artifacts),
       getArtifactDetail: new GetArtifactDetail(artifacts, readmeTranslations),
+      getArtifactReviews: new GetArtifactReviews(reviews, artifacts),
       getCatalogSnapshot: new GetCatalogSnapshot(artifacts, new KvCatalogSnapshotStore(env.KV)),
       describeScoring: new DescribeScoring(),
       listCatalogFacets: new ListCatalogFacets(artifacts),
       listSitemapEntries: new ListSitemapEntries(artifacts),
+      rateArtifact: new RateArtifact(reviews, artifacts),
       resolveInstallPlan: new ResolveInstallPlan(artifacts),
       submitArtifact: new SubmitArtifact(
         submissions,

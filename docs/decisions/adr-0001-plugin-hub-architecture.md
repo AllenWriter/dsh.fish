@@ -94,7 +94,11 @@ approval page can use a one-time-code input and a terminal can print something
 with no `O`/`0` or `I`/`1` ambiguity to misread.
 
 A device token is deliberately weaker than a session: `requireInteractiveSession`
-blocks it from submitting or claiming artifacts.
+blocks it from submitting or claiming artifacts. The one write it *may* perform
+is rating an artifact (`PUT /api/v1/artifacts/:id/reviews/mine` guards with
+`requireActor` instead): a harness agent that just installed something is the
+primary source of reviews, and a rating only ever speaks for the account behind
+the token — it can neither publish a catalog row nor act as another account.
 
 ### 7. Ingestion crawls; submission is a fast path
 

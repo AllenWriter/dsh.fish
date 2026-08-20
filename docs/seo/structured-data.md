@@ -36,16 +36,22 @@ source, the counters the crawler measured — and `shared` may not import from
 
 ## What is deliberately absent
 
-`SoftwareApplication` supports `offers` and `aggregateRating`, and either would
-unlock a richer search result. Neither is emitted, because this registry has no
-data for them: nobody has rated these plugins, and the hub does not know what a
-third party's package costs. Markup that asserts facts a site does not have is
-ignored at best and manually penalised at worst.
+`SoftwareApplication` supports `offers`, which would unlock a richer search
+result. It is not emitted, because the hub does not know what a third party's
+package costs. Markup that asserts facts a site does not have is ignored at
+best and manually penalised at worst.
 
-What *is* emitted instead is `interactionStatistic` — install count, weekly
-downloads and stars as `InteractionCounter` nodes. Those are measured numbers,
-and it is the one place schema.org lets a registry state popularity without
-inventing a rating.
+`aggregateRating` *is* emitted, but only when the reviews API holds at least
+one real rating for the artifact (see `artifactLd` — the page loader passes
+the aggregate only when `count > 0`). Ratings are written from the dsh harness
+and stored by the registry, so the node states a number the site can defend;
+an artifact nobody has rated yet carries no rating node, because an
+`aggregateRating` over zero ratings would be a claim no one made.
+
+What is emitted alongside both is `interactionStatistic` — install count,
+weekly downloads and stars as `InteractionCounter` nodes. Those are measured
+numbers, and it is the one place schema.org lets a registry state popularity
+without inventing a rating.
 
 `softwareHelp` carries the install command, but only a real one: a plan's
 `manualCommands` can include comment lines (`# Copy the composition to …`) that

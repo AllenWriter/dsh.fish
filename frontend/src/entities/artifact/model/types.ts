@@ -4,6 +4,11 @@ import type {
   InstallPlanDto,
   PageDto,
 } from '@dsh-fish/backend/application/dto/artifact-dto.js'
+import type {
+  ArtifactReviewsDto,
+  ReviewDto,
+  ReviewSummaryDto,
+} from '@dsh-fish/backend/application/dto/review-dto.js'
 import type { ArtifactKind } from '@dsh-fish/backend/domain/artifact/artifact-kind.js'
 import type {
   MaintenanceStatus,
@@ -19,12 +24,15 @@ import type { FacetsDto } from '@dsh-fish/backend/application/use-case/list-cata
 export type {
   ArtifactDetailDto,
   ArtifactKind,
+  ArtifactReviewsDto,
   ArtifactSummaryDto,
   FacetsDto,
   InstallPlanDto,
   MaintenanceStatus,
   PageDto,
   QualityGrade,
+  ReviewDto,
+  ReviewSummaryDto,
 }
 
 export type Artifact = ArtifactSummaryDto

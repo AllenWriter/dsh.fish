@@ -119,3 +119,32 @@ INSERT INTO artifact_categories (artifact_id, category_id) VALUES
   ('claude-code-hooks', 'devops'),
   ('dsh-review-stack', 'coding'),
   ('dsh-legacy-shim', 'other');
+
+-- Community reviews for the kitchen-sink detail page: a spread of ratings so
+-- the average, the distribution bars and the comment list all render. Other
+-- seeded artifacts stay unrated so the empty state is one navigation away.
+DELETE FROM artifact_reviews;
+INSERT INTO artifact_reviews (
+  artifact_id, account_id, author_name, author_avatar_url, rating, comment,
+  created_at, updated_at
+) VALUES
+(
+  'dsh-postgres-mcp', 'seed-account', 'Turtle Maintainer', NULL, 5,
+  'Installed it into the web profile and ran read-only queries against a staging database within minutes. The credential reference flow is exactly what a registry row should do.',
+  1754611200000, 1754611200000
+),
+(
+  'dsh-postgres-mcp', 'seed-reviewer-2', 'Ada Lovelace', NULL, 4,
+  'Works as planned. One caveat: the first query after a cold start is slow, so give the connection a second to warm up before judging it.',
+  1754524800000, 1754524800000
+),
+(
+  'dsh-postgres-mcp', 'seed-reviewer-3', 'Grace Hopper', NULL, 4,
+  NULL,
+  1754438400000, 1754438400000
+),
+(
+  'dsh-postgres-mcp', 'seed-reviewer-4', 'Alan Turing', NULL, 2,
+  'Could not get it to connect over SSL; the error surfaced by the harness did not say which side refused. Rating the out-of-box experience, not the idea.',
+  1754352000000, 1754352000000
+);

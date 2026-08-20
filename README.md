@@ -35,6 +35,7 @@ catalog with a shared, machine-executable install plan.
 - **Rising, not just popular** — per-sweep metrics snapshots power a `rising` sort that surfaces what is gaining stars this week.
 - **One install plan, three surfaces** — the same domain-owned plan renders as a copy-pasteable command on the web, executes in the CLI, and runs inside the harness via the hub plugin. They cannot drift apart.
 - **Commit-pinned provenance** — each artifact shows the exact commit it was indexed at, linked back to GitHub.
+- **Community ratings from the harness** — a 1–5 scale with comments, written only from the dsh CLI or hub plugin (`dsh-fish rate`, `hub_rate`) where the rater actually used the artifact. The web renders the average, the distribution and every comment read-only, and republishes the aggregate as `aggregateRating` structured data.
 - **A real API** — versioned REST endpoints plus a full-catalog snapshot with an ETag sync contract for mirrors and bots.
 - **Six languages, first-class** — SSR pages in the negotiated language (cookie or `Accept-Language`), a localized Atom feed, machine-translated READMEs, and structured data on every plugin page, per-plugin OG cards and shields-style README badges.
 

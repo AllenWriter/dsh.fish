@@ -98,6 +98,60 @@ const errorSchema = {
   },
 } as const
 
+const artifactReviewsSchema = {
+  type: 'object',
+  required: ['artifactId', 'scale', 'summary', 'items'],
+  properties: {
+    artifactId: { type: 'string' },
+    scale: {
+      type: 'object',
+      required: ['min', 'max'],
+      description: "The site's own rating system: whole stars from min to max.",
+      properties: {
+        min: { type: 'integer', enum: [1] },
+        max: { type: 'integer', enum: [5] },
+      },
+    },
+    summary: {
+      type: 'object',
+      required: ['average', 'count', 'distribution'],
+      properties: {
+        average: { type: ['number', 'null'], description: 'One-decimal mean; null while nobody has rated.' },
+        count: { type: 'integer' },
+        distribution: {
+          type: 'array',
+          items: { type: 'integer' },
+          minItems: 5,
+          maxItems: 5,
+          description: 'Count per star value: index 0 is the 1-star count, index 4 the 5-star count.',
+        },
+      },
+    },
+    items: {
+      type: 'array',
+      description: 'Most recently written first. A review may be rating-only, without a comment.',
+      items: {
+        type: 'object',
+        required: ['author', 'rating', 'createdAt', 'updatedAt'],
+        properties: {
+          author: {
+            type: 'object',
+            required: ['name'],
+            properties: {
+              name: { type: 'string' },
+              avatarUrl: { type: 'string', format: 'uri' },
+            },
+          },
+          rating: { type: 'integer', minimum: 1, maximum: 5 },
+          comment: { type: 'string' },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+    },
+  },
+} as const
+
 function jsonResponse(description: string, schema: unknown) {
   return {
     description,
@@ -244,6 +298,27 @@ export function openApiDocument(baseUrl: string) {
                 scannedAtCommit: { type: 'string' },
               },
             }),
+            '404': jsonResponse('No artifact with that id.', errorSchema),
+          },
+        },
+      },
+      '/api/v1/artifacts/{id}/reviews': {
+        get: {
+          operationId: 'getArtifactReviews',
+          summary: 'Community ratings: the scale, the aggregate, and recent reviews',
+          description:
+            "The site's own 1–5 star rating system. Ratings are written from the dsh harness (the hub plugin's rate tool, or `dsh-fish rate`), never from the web; this endpoint is the anonymous read side the artifact pages are rendered from.",
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+            {
+              name: 'limit',
+              in: 'query',
+              schema: { type: 'integer', minimum: 1, maximum: 100 },
+              description: 'Maximum recent reviews to return (default 20).',
+            },
+          ],
+          responses: {
+            '200': jsonResponse('The rating scale, the aggregate, and the most recent reviews.', artifactReviewsSchema),
             '404': jsonResponse('No artifact with that id.', errorSchema),
           },
         },

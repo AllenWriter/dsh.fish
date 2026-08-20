@@ -7,11 +7,16 @@
 
 export { CLI_CLIENT_ID, CLIENT_ID, HubClient, HubError } from './hub-client.js'
 export type {
+  ArtifactReviews,
   ArtifactSummary,
   DeviceCodeGrant,
   InstallPlan,
   InstallStep,
+  ReviewAuthor,
+  ReviewItem,
+  ReviewSummary,
 } from './hub-client.js'
+export { renderArtifactReviews } from './review-text.js'
 export { InstallRefused, PlanInstaller, packageNameFromSpec, safeJoin } from './installer.js'
 export type {
   AppliedStep,
