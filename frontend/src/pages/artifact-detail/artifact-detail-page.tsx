@@ -358,15 +358,16 @@ export default function ArtifactDetailPage({ loaderData }: Route.ComponentProps)
         </section>
 
         <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+          {/* Install, the README badge, then reviews: three rail cards, not a
+              section that only appears after the readme. A long readme would
+              otherwise bury the comments; sitting here they stay in view with
+              the install surface. */}
           <div className="flex flex-col gap-4">
             <InstallPanel artifact={artifact} plan={plan} />
             <ReadmeBadge artifact={artifact} origin={origin} />
+            <ArtifactReviews reviews={reviews} now={now} />
           </div>
         </div>
-      </div>
-
-      <div className="mt-10">
-        <ArtifactReviews reviews={reviews} now={now} />
       </div>
     </article>
   )

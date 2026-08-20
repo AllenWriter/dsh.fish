@@ -8,6 +8,10 @@ import { StarsIcon } from '@/shared/ui/icon'
 /**
  * Community ratings on a plugin page.
  *
+ * A rail card, same surface as the install panel and the README badge, so the
+ * comments stay beside the readme instead of waiting below it. Always rendered
+ * — an empty card still points at the harness write path.
+ *
  * Read-only on purpose: the write path lives in the dsh harness (the hub
  * plugin's rate tool, or `dsh-fish rate`), so this section renders what the
  * registry holds and points at the place a rating can actually come from. A
@@ -21,7 +25,7 @@ export function ArtifactReviews({ reviews, now }: { reviews: ArtifactReviewsDto;
   const { summary } = reviews
 
   return (
-    <section aria-labelledby="reviews-title" className="border-t border-border pt-8">
+    <section aria-labelledby="reviews-title" className="rounded-xl border border-border bg-card p-5">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <h2 id="reviews-title" className="text-base font-semibold tracking-tight">
           {t('artifact.reviews.title')}
@@ -34,10 +38,10 @@ export function ArtifactReviews({ reviews, now }: { reviews: ArtifactReviewsDto;
       </div>
 
       {summary.count === 0 || summary.average === null ? (
-        <p className="mt-4 text-sm text-muted-foreground">{t('artifact.reviews.empty')}</p>
+        <p className="mt-3 text-sm text-muted-foreground">{t('artifact.reviews.empty')}</p>
       ) : (
         <>
-          <div className="mt-5 grid items-start gap-6 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-12">
+          <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4">
             <div>
               <span className="text-3xl font-semibold tracking-tight tabular-nums">
                 {summary.average.toFixed(1)}
@@ -55,7 +59,7 @@ export function ArtifactReviews({ reviews, now }: { reviews: ArtifactReviewsDto;
           </div>
 
           {reviews.items.length > 0 ? (
-            <ul className="mt-8 divide-y divide-border border-t border-border">
+            <ul className="mt-4 max-h-80 divide-y divide-border overflow-y-auto overscroll-contain border-t border-border">
               {reviews.items.map((review) => (
                 <ReviewItem
                   key={`${review.author.name}:${review.createdAt}`}
@@ -68,7 +72,7 @@ export function ArtifactReviews({ reviews, now }: { reviews: ArtifactReviewsDto;
         </>
       )}
 
-      <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+      <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
         {t('artifact.reviews.readOnly', {
           command: `dsh-fish rate ${reviews.artifactId} <1-5>`,
         })}
@@ -143,24 +147,28 @@ function ReviewItem({ review, now }: { review: ReviewDto; now: number }) {
   const t = useT()
   const locale = useLocale()
   return (
-    <li className="py-4">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+    <li className="py-3">
+      <div className="flex items-start gap-2.5">
         <Avatar name={review.author.name} src={review.author.avatarUrl ?? null} size="sm" />
-        <span className="min-w-0 flex-1 truncate text-sm font-medium">{review.author.name}</span>
-        <Stars
-          value={review.rating}
-          label={t('artifact.reviews.averageOutOf', {
-            average: review.rating,
-            max: 5,
-          })}
-        />
-        <time className="text-xs text-muted-foreground" dateTime={review.updatedAt}>
-          {relativeTime(review.updatedAt, now, locale)}
-        </time>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="min-w-0 truncate text-sm font-medium">{review.author.name}</span>
+            <Stars
+              value={review.rating}
+              label={t('artifact.reviews.averageOutOf', {
+                average: review.rating,
+                max: 5,
+              })}
+            />
+            <time className="text-xs text-muted-foreground" dateTime={review.updatedAt}>
+              {relativeTime(review.updatedAt, now, locale)}
+            </time>
+          </div>
+          {review.comment ? (
+            <p className="mt-1.5 break-words text-sm leading-relaxed">{review.comment}</p>
+          ) : null}
+        </div>
       </div>
-      {review.comment ? (
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed">{review.comment}</p>
-      ) : null}
     </li>
   )
 }

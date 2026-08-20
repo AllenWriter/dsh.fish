@@ -60,7 +60,9 @@ The tests assert:
 - The *page* does not scroll sideways; wide tables and fences scroll inside
   themselves.
 - A 1600px screenshot shrinks to the column; inline badges stay inline.
-- Below the `lg` breakpoint the install panel stacks under the readme.
+- Below the `lg` breakpoint the install panel, README badge and reviews
+  stack under the readme. Above it, those three sit as rail cards beside
+  the readme; reviews is always in that rail, empty or not.
 
 Visual baselines of the first fold are stored for iPhone SE (3rd gen) and Pixel 7.
 Update them with `pnpm exec playwright test --update-snapshots`.

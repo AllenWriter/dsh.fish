@@ -75,7 +75,7 @@ is built **per request**, because D1 and KV bindings arrive per request.
 |---|---|
 | `app/` | `root.tsx`, `routes.ts`, global styles |
 | `pages/` | One slice per route; composes widgets, owns loaders |
-| `widgets/` | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel`, `artifact-reviews`, `community-toasts` |
+| `widgets/` | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel`, `readme-badge`, `artifact-reviews`, `community-toasts` |
 | `features/` | `account-menu` — the signed-in identity and the actions on it; `locale-switcher` — the language of the page you are on; `catalog-search` — the header palette's live query against `GET /api/v1/artifacts` |
 | `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip`, `AuthorCard`, `artifactLd` |
 | `shared/` | beui components (`ui/motion/`, `ui/avatar`, `ui/animated-number`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, `lib/analytics`, auth client, `hub-context` |
@@ -93,6 +93,11 @@ under that portrait — two facts about where the plugin comes from, stacked,
 rather than a source row parked beside the install commands. A GitHub
 profile URL is also GitHub's `{login}.png`, so the portrait is not a second
 stored image.
+
+That same column, beside the readme, stacks three rail cards: the install
+panel, the README badge snippet, then community reviews. Reviews are a
+permanent card in that rail — empty or not — so a long readme cannot bury
+the comments below the fold of the document.
 
 `community-toasts` is the only widget mounted outside `<Outlet>`: three
 invitations — the Discord room, the maintainer's feed, and the issue tracker —
