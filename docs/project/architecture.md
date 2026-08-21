@@ -374,13 +374,43 @@ is unmeasured, not "rising". The sweep stores both windows on
 `artifacts.star_velocity_7d` / `star_velocity_30d` — and, in the same UPDATE,
 the fresh stars/downloads counters, so a stats-only sweep needs no catalog
 rewrite — so `sort=rising` is a
-column scan (7-day velocity, then the popularity weighting) rather than a
-history join per request. Velocity is hub-derived state kept outside
+column scan (7-day velocity, then the stored `popularity` column) rather than a
+history join per request. `popularity` is the same number `listRank` /
+`Artifact.popularity` compute — hub installs weighted over copied stars,
+verified boost, deprecated decay — written on every catalog save, every
+metrics snapshot, and every install increment, so a listing `ORDER BY` does
+not re-evaluate that expression over the matching table. Velocity is hub-derived state kept outside
 `ArtifactStats`, so a velocity tick does not count as a public-page change and
 churn the sitemap `lastmod`.
 
 List and detail DTOs expose `score`, `grade`, `maintenanceStatus`,
 `starVelocity7d` and `starVelocity30d`.
+
+### Catalog listing pagination
+
+Browse, kind, and category pages keep **offset pagination** (`?offset=`,
+default 24). The HTML listings must be crawlable as real `<a href>`s, and
+Workers SSR already calls the use case in-process, so a cursor token would
+break the SEO contract without saving a round trip.
+
+The expensive part was never returning 24 rows; it was D1 reading wide
+README/payload columns and sorting on an expression, billed as rows-read.
+Listings now:
+
+1. `ORDER BY artifacts.popularity` (indexed with `deprecated`, and with `kind`
+   for `/kind/:kind`).
+2. Select a card projection that omits `readme_markdown`.
+3. Issue `COUNT(*)` and the page as one D1 `batch`, because the Worker-to-D1
+   hop dominates.
+
+`GET /api/v1/catalog/snapshot` still returns the whole public catalog as one
+KV-cached document — that is the third-party sync contract, not a browse
+path. Rebuilding it also uses the card projection so a Worker isolate does
+not load every README into memory.
+
+Cursor pagination stays on the ingest/localization backfills, which already
+resume from KV. Do not serve browse by slicing the snapshot in the Worker:
+that would duplicate `SearchArtifacts` filters and drift from D1.
 
 ## Cross-cutting concerns
 

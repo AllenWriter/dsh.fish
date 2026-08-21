@@ -23,6 +23,13 @@ This document describes database conventions. Fill in concrete technology choice
 
 ### Catalog columns
 
+- `artifacts.popularity` (real, migration `0008_artifact_popularity`) —
+  materialized `listRank` for listing sorts. Written on catalog save, metrics
+  snapshot, and install increment so `ORDER BY popularity` is a column scan
+  (the same pattern as `star_velocity_*`). Indexes: `(deprecated, popularity)`
+  for `/browse`, `(kind, deprecated, popularity)` for `/kind/:kind`, and
+  `(deprecated, star_velocity_7d, popularity)` for `sort=rising`. List and
+  snapshot reads omit `readme_markdown`; detail reads still load it.
 - `artifacts.source_commit_sha` (nullable text, migration
   `0004_artifact_source_commit_sha`) — the default-branch HEAD the GitHub
   indexer scanned. It denormalizes `source.commit` out of the JSON `SourceRef`

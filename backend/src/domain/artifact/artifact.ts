@@ -226,13 +226,12 @@ export class Artifact {
    *
    * Verified rows outrank unverified ones, and installs resolved through this
    * hub count for more than upstream popularity, because they are the only
-   * signal the hub can actually observe rather than copy.
+   * signal the hub can actually observe rather than copy. Stored on
+   * `artifacts.popularity` so a listing `ORDER BY` is a column scan, not an
+   * expression over every matching row.
    */
   get popularity(): number {
-    const base = this.props.stats.installs * 3 + this.props.stats.stars + this.props.stats.downloads / 10
-    const trust = this.verified ? 1.25 : 1
-    const decay = this.props.deprecated ? 0.1 : 1
-    return base * trust * decay
+    return listRank(this.props.stats, this.verified, this.props.deprecated)
   }
 
   /**
@@ -363,6 +362,21 @@ function publicArtifactChanged(
 ): boolean {
   const withStats = (value: PublicProps) => ({ ...publicFields(value), stats: value.stats })
   return JSON.stringify(withStats(previous)) !== JSON.stringify(withStats(next))
+}
+
+/**
+ * Sort key for catalog listings. The D1 `artifacts.popularity` column stores
+ * this number; the SQL that writes it must stay identical.
+ */
+export function listRank(
+  stats: ArtifactStats,
+  verified: boolean,
+  deprecated: boolean,
+): number {
+  const base = stats.installs * 3 + stats.stars + stats.downloads / 10
+  const trust = verified ? 1.25 : 1
+  const decay = deprecated ? 0.1 : 1
+  return base * trust * decay
 }
 
 /**
