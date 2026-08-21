@@ -394,7 +394,12 @@ export class D1ArtifactRepository implements ArtifactRepository {
             )
             .where(
               and(
-                inArray(artifactSummaryTranslations.artifactId, ids),
+                // D1 allows at most 100 bound parameters per statement. A
+                // sitemap page contains 1,000 artifacts, so expanding `ids`
+                // with `inArray` makes the whole endpoint fail before it can
+                // emit XML. `json_each` keeps the complete page in one query
+                // while binding the id set as a single JSON value.
+                sql`${artifactSummaryTranslations.artifactId} in (select value from json_each(${JSON.stringify(ids)}))`,
                 eq(artifactSummaryTranslations.status, 'completed'),
                 eq(artifactSummaryTranslations.sourceHash, artifacts.summaryHash),
                 or(

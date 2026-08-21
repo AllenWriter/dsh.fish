@@ -90,7 +90,10 @@ a browse page's worth of URLs or make every browse page pay for a projection it
 does not use.
 
 It reads through `ArtifactRepository.listForSitemap`, a port method returning a
-`SitemapEntry` projection (`id` + `updatedAt`) rather than an `Artifact`.
+`SitemapEntry` projection (`id` + `updatedAt`) rather than an `Artifact`. Locale
+availability for the 1,000-row page is passed to SQLite's `json_each` as one
+JSON binding; expanding the IDs into an `IN` parameter per artifact would
+exceed D1's 100-bound-parameter limit.
 
 ### Escaping
 
