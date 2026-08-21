@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, like, lte, or, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, like, lte, or, sql, type SQL } from 'drizzle-orm'
 import type { BatchItem } from 'drizzle-orm/batch'
 import type { DrizzleD1Database } from 'drizzle-orm/d1'
 import { Artifact } from '../../domain/artifact/artifact.js'
@@ -47,6 +47,12 @@ export class D1ArtifactRepository implements ArtifactRepository {
     return row ? toEntity(row) : undefined
   }
 
+  /**
+   * Catalog listings page in SQL (`LIMIT`/`OFFSET` plus a `COUNT(*)`), not in
+   * the Worker. The sort key is the stored `popularity` column — matching
+   * `listRank` — so D1 can satisfy default browse from an index instead of
+   * evaluating an expression over every row. The projection omits README text.
+   */
   async search(query: ArtifactQuery): Promise<Page<Artifact>> {
     const conditions = []
 
@@ -80,21 +86,24 @@ export class D1ArtifactRepository implements ArtifactRepository {
     }
 
     const where = conditions.length > 0 ? and(...conditions) : undefined
+    const order = orderFor(query)
 
-    const [countRow] = await this.db
+    // Count + page in one D1 batch: a Worker round trip to D1 dominates, and
+    // browse loaders already spend that budget on facets as well.
+    const countQuery = this.db
       .select({ total: sql<number>`count(*)` })
       .from(artifacts)
       .where(where)
-
-    const rows = await this.db
-      .select()
+    const pageQuery = this.db
+      .select(listingColumns)
       .from(artifacts)
       .where(where)
-      .orderBy(...orderFor(query))
+      .orderBy(...order)
       .limit(query.page.limit)
       .offset(query.page.offset)
+    const [countRows, pageRows] = await this.db.batch([countQuery, pageQuery])
 
-    return page(rows.map(toEntity), Number(countRow?.total ?? 0), query.page)
+    return page(pageRows.map(toListingEntity), Number(countRows[0]?.total ?? 0), query.page)
   }
 
   async countByKind(): Promise<readonly KindCount[]> {
@@ -130,7 +139,12 @@ export class D1ArtifactRepository implements ArtifactRepository {
   async incrementInstalls(id: Slug, by: number): Promise<void> {
     await this.db
       .update(artifacts)
-      .set({ installs: sql`${artifacts.installs} + ${by}` })
+      .set({
+        installs: sql`${artifacts.installs} + ${by}`,
+        // SQLite SET expressions read the pre-update row, so the rank uses
+        // `installs + by` rather than the column after this statement.
+        popularity: popularityFromColumns(sql`${artifacts.installs} + ${by}`),
+      })
       .where(eq(artifacts.id, id))
   }
 
@@ -173,6 +187,7 @@ export class D1ArtifactRepository implements ArtifactRepository {
         downloads: props.stats.downloads,
         starVelocity7d: starVelocity(props.stats.stars, history7d, 7, now),
         starVelocity30d: starVelocity(props.stats.stars, history30d, 30, now),
+        popularity: artifact.popularity,
       })
       .where(eq(artifacts.id, props.id as string))
     await this.db.batch([snapshot, velocities])
@@ -183,23 +198,23 @@ export class D1ArtifactRepository implements ArtifactRepository {
     // that reference it, but it is not something to invite a crawler to.
     const where = eq(artifacts.deprecated, false)
 
-    const [countRow] = await this.db
+    const countQuery = this.db
       .select({ total: sql<number>`count(*)` })
       .from(artifacts)
       .where(where)
-
-    const rows = await this.db
+    const pageQuery = this.db
       .select({ id: artifacts.id, updatedAt: artifacts.updatedAt })
       .from(artifacts)
       .where(where)
-      .orderBy(desc(artifacts.updatedAt))
+      .orderBy(desc(artifacts.updatedAt), desc(artifacts.id))
       .limit(request.limit)
       .offset(request.offset)
+    const [countRows, pageRows] = await this.db.batch([countQuery, pageQuery])
 
     // `updated_at` is a `timestamp_ms` column, so Drizzle hands back a Date.
     return page(
-      rows.map((row) => ({ id: slug(row.id), updatedAt: row.updatedAt })),
-      Number(countRow?.total ?? 0),
+      pageRows.map((row) => ({ id: slug(row.id), updatedAt: row.updatedAt })),
+      Number(countRows[0]?.total ?? 0),
       request,
     )
   }
@@ -214,11 +229,11 @@ export class D1ArtifactRepository implements ArtifactRepository {
 
   async listForSnapshot(): Promise<readonly Artifact[]> {
     const rows = await this.db
-      .select()
+      .select(listingColumns)
       .from(artifacts)
       .where(eq(artifacts.deprecated, false))
       .orderBy(asc(artifacts.id))
-    return rows.map(toEntity)
+    return rows.map(toListingEntity)
   }
 
   async catalogStats(): Promise<CatalogStats> {
@@ -266,6 +281,7 @@ export class D1ArtifactRepository implements ArtifactRepository {
       installs: props.stats.installs,
       starVelocity7d: props.starVelocity7d,
       starVelocity30d: props.starVelocity30d,
+      popularity: artifact.popularity,
       ownerAccountId: props.ownerAccountId ?? null,
       deprecated: props.deprecated,
       publishedAt: props.publishedAt,
@@ -307,29 +323,79 @@ export class D1ArtifactRepository implements ArtifactRepository {
 function orderFor(query: ArtifactQuery) {
   switch (query.sort) {
     case 'name':
-      return [asc(artifacts.displayName)]
+      return [asc(artifacts.displayName), asc(artifacts.id)]
     case 'recent':
-      return [desc(artifacts.updatedAt)]
+      return [desc(artifacts.updatedAt), desc(artifacts.id)]
     case 'rising':
-      // Star velocity first, then the popularity weighting, so a fast-climbing
+      // Star velocity first, then the stored list rank, so a fast-climbing
       // new plugin outranks a stagnant incumbent.
-      return [desc(artifacts.starVelocity7d), desc(popularityExpression())]
+      return [desc(artifacts.starVelocity7d), desc(artifacts.popularity), desc(artifacts.id)]
     case 'relevance':
       // Ranked by how early the query lands, then by the same weighting
-      // `Artifact.popularity` uses, so a text search still surfaces the
-      // artifact people actually install rather than the shortest name.
+      // `listRank` uses, so a text search still surfaces the artifact people
+      // actually install rather than the shortest name.
       return [
         desc(sql`(${artifacts.ownerAccountId} is not null)`),
-        desc(popularityExpression()),
+        desc(artifacts.popularity),
+        desc(artifacts.id),
       ]
     case 'popular':
     default:
-      return [desc(popularityExpression()), desc(artifacts.updatedAt)]
+      return [desc(artifacts.popularity), desc(artifacts.updatedAt), desc(artifacts.id)]
   }
 }
 
-function popularityExpression() {
-  return sql`(${artifacts.installs} * 3 + ${artifacts.stars} + ${artifacts.downloads} / 10.0) * (case when ${artifacts.ownerAccountId} is not null then 1.25 else 1 end)`
+/**
+ * SQL twin of `listRank`. Listing sorts read the stored column; this expression
+ * is only for writes that change `installs` without loading the row.
+ */
+function popularityFromColumns(installs: typeof artifacts.installs | SQL = artifacts.installs) {
+  return sql`(
+    (${installs} * 3 + ${artifacts.stars} + ${artifacts.downloads} / 10.0)
+    * (case when ${artifacts.ownerAccountId} is not null then 1.25 else 1 end)
+    * (case when ${artifacts.deprecated} then 0.1 else 1 end)
+  )`
+}
+
+/**
+ * Card/snapshot projection: payload is small JSON, README is the wide column
+ * a listing must not pull. `hasReadme` keeps the quality-score bit honest.
+ */
+const listingColumns = {
+  id: artifacts.id,
+  kind: artifacts.kind,
+  displayName: artifacts.displayName,
+  summary: artifacts.summary,
+  source: artifacts.source,
+  sourceOrigin: artifacts.sourceOrigin,
+  sourceCommitSha: artifacts.sourceCommitSha,
+  payload: artifacts.payload,
+  keywords: artifacts.keywords,
+  categories: artifacts.categories,
+  license: artifacts.license,
+  authorName: artifacts.authorName,
+  authorUrl: artifacts.authorUrl,
+  ogImageUrl: artifacts.ogImageUrl,
+  stars: artifacts.stars,
+  downloads: artifacts.downloads,
+  installs: artifacts.installs,
+  starVelocity7d: artifacts.starVelocity7d,
+  starVelocity30d: artifacts.starVelocity30d,
+  popularity: artifacts.popularity,
+  ownerAccountId: artifacts.ownerAccountId,
+  deprecated: artifacts.deprecated,
+  publishedAt: artifacts.publishedAt,
+  updatedAt: artifacts.updatedAt,
+  indexedAt: artifacts.indexedAt,
+  hasReadme: sql<number>`(${artifacts.readmeMarkdown} is not null)`.as('has_readme'),
+}
+
+function toListingEntity(row: Omit<ArtifactRow, 'readmeMarkdown'> & { hasReadme: number }): Artifact {
+  const { hasReadme, ...rest } = row
+  return toEntity({
+    ...rest,
+    readmeMarkdown: Number(hasReadme) === 0 ? null : '#',
+  })
 }
 
 function toEntity(row: ArtifactRow): Artifact {

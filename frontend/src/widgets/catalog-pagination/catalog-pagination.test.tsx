@@ -7,9 +7,8 @@ import { drawsGlyph } from '@/shared/ui/icon/icon.fixture'
 import { CatalogPagination } from './catalog-pagination'
 
 /**
- * Covered here rather than end to end because the seeded local catalog holds
- * seven rows against a page size of twenty-four, so a browser never reaches a
- * second page to click through.
+ * Widget affordances (caret, tap target, missing directions). Page-to-page
+ * SQL behaviour lives in `e2e/catalog-pagination/`.
  */
 function render(offset: number, total = 100) {
   return renderToStaticMarkup(

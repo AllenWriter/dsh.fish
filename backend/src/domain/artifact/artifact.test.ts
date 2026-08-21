@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Artifact, artifactContentChanged } from './artifact.js'
+import { Artifact, artifactContentChanged, listRank } from './artifact.js'
 import { FALLBACK_CATEGORY } from './category.js'
 import { githubSource, npmSource } from './source-ref.js'
 
@@ -135,6 +135,30 @@ describe('Artifact crawl timestamps', () => {
     })
 
     expect(refreshed.updatedAt.getTime()).toBeGreaterThan(earlier.getTime())
+  })
+})
+
+describe('listRank', () => {
+  const stats = { stars: 10, downloads: 20, installs: 4 }
+
+  it('weighs hub installs above copied stars and downloads', () => {
+    expect(listRank(stats, false, false)).toBe(4 * 3 + 10 + 20 / 10)
+  })
+
+  it('boosts a verified row and decays a deprecated one', () => {
+    const base = listRank(stats, false, false)
+    expect(listRank(stats, true, false)).toBe(base * 1.25)
+    expect(listRank(stats, false, true)).toBe(base * 0.1)
+  })
+
+  it('is what Artifact.popularity exposes', () => {
+    const artifact = Artifact.create({
+      ...base,
+      stats,
+      ownerAccountId: 'acct_1',
+      deprecated: true,
+    })
+    expect(artifact.popularity).toBe(listRank(stats, true, true))
   })
 })
 

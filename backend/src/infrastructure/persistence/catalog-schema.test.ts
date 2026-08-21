@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import migrationSql from '../../../migrations/0004_artifact_source_commit_sha.sql?raw'
 import readmeMigrationSql from '../../../migrations/0005_minor_ultimo.sql?raw'
 import reviewsMigrationSql from '../../../migrations/0006_lucky_firestar.sql?raw'
+import popularityMigrationSql from '../../../migrations/0008_artifact_popularity.sql?raw'
 import journal from '../../../migrations/meta/_journal.json'
 import { artifactReadmeTranslations, artifactReviews, artifacts } from './catalog-schema.js'
 
@@ -27,6 +28,19 @@ describe('artifact README translations', () => {
     expect(readmeMigrationSql).toContain('CREATE TABLE `artifact_readme_translations`')
     expect(readmeMigrationSql).not.toContain('CREATE TABLE `artifact_metrics`')
     expect(journal.entries.map((entry) => entry.tag)).toContain('0005_minor_ultimo')
+  })
+})
+
+describe('artifact popularity', () => {
+  it('maps to the stored list-rank column the 0008 migration adds', () => {
+    expect(artifacts.popularity.name).toBe('popularity')
+    expect(artifacts.popularity.notNull).toBe(true)
+
+    expect(popularityMigrationSql).toContain('ALTER TABLE `artifacts` ADD `popularity` real DEFAULT 0 NOT NULL')
+    expect(popularityMigrationSql).toContain('CREATE INDEX `artifacts_popularity_idx`')
+    expect(popularityMigrationSql).toContain('CREATE INDEX `artifacts_kind_popularity_idx`')
+    expect(popularityMigrationSql).toContain('CREATE INDEX `artifacts_rising_idx`')
+    expect(journal.entries.map((entry) => entry.tag)).toContain('0008_artifact_popularity')
   })
 })
 

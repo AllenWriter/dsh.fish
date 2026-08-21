@@ -1,4 +1,4 @@
-import { index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { index, integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 /**
  * Catalog tables. Better Auth owns its own tables in `auth-schema.ts`; the two
@@ -38,6 +38,11 @@ export const artifacts = sqliteTable(
     /** Stars gained over the trailing 7 / 30 days, recomputed on each ingestion sweep. */
     starVelocity7d: integer('star_velocity_7d').notNull().default(0),
     starVelocity30d: integer('star_velocity_30d').notNull().default(0),
+    /**
+     * Materialized `listRank` so a listing `ORDER BY` is a column scan.
+     * Written on every catalog save, metrics snapshot, and install increment.
+     */
+    popularity: real('popularity').notNull().default(0),
     ownerAccountId: text('owner_account_id'),
     deprecated: integer('deprecated', { mode: 'boolean' }).notNull().default(false),
     publishedAt: integer('published_at', { mode: 'timestamp_ms' }).notNull(),
@@ -49,6 +54,9 @@ export const artifacts = sqliteTable(
     index('artifacts_origin_idx').on(table.sourceOrigin),
     index('artifacts_owner_idx').on(table.ownerAccountId),
     index('artifacts_updated_idx').on(table.updatedAt),
+    index('artifacts_popularity_idx').on(table.deprecated, table.popularity),
+    index('artifacts_kind_popularity_idx').on(table.kind, table.deprecated, table.popularity),
+    index('artifacts_rising_idx').on(table.deprecated, table.starVelocity7d, table.popularity),
   ],
 )
 

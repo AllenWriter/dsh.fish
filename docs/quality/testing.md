@@ -163,8 +163,12 @@ Limiter load tests live in
 fake Ada. The live probe (`scripts/ada-live-probe.ts`) is ops-only, gated on
 `LIVE_ADA_PROBE=1`, capped at 20 Fast requests, and is not a GitHub Actions job.
 
-Pagination is covered by a unit test, not here: the seed holds seven rows against a
-page size of twenty-four, so a browser never reaches a second page.
+Pagination is covered end to end in `e2e/catalog-pagination/`. The shared seed
+stays one row per kind; the e2e D1 then inserts twenty filler bundles so
+`/browse` (page size 24) has a second page. The suite hits `GET /api/v1/artifacts`
+with `limit`/`offset` (disjoint slices, stored `popularity` order) and clicks
+the real prev/next anchors. The widget's caret/affordance cases stay in the
+unit test.
 
 Install the browser once with `pnpm exec playwright install --with-deps chromium`.
 

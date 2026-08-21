@@ -76,18 +76,29 @@ See [`adr-0004-artifact-ask-via-ada.md`](../decisions/adr-0004-artifact-ask-via-
 
 ## Pagination
 
-Use cursor-based pagination when possible. If offset-based pagination is required, use:
+Catalog listings (`GET /api/v1/artifacts`, the browse/kind/category loaders)
+use **offset pagination**. The HTML pages must stay crawlable as real
+`?offset=` links, and the Worker already calls the use case in-process, so a
+cursor token would not save a D1 hop.
 
 ```json
 {
-  "data": [ ... ],
-  "pagination": {
-    "page": 1,
-    "pageSize": 20,
-    "total": 100
-  }
+  "items": [ ... ],
+  "total": 100,
+  "limit": 24,
+  "offset": 0
 }
 ```
+
+`limit` defaults to 24 and caps at 100. The D1 query pages in SQL against the
+stored `popularity` column; it does not load the catalog into the Worker and
+slice it there.
+
+Use cursor-based pagination for forward-only scans (ingest shards, README
+localization backfill). Those already resume from KV. If another collection
+needs offset because callers jump to a page number, match the catalog shape
+above (`items`, `total`, `limit`, `offset`) rather than a nested
+`pagination` object.
 
 ## Idempotency
 
