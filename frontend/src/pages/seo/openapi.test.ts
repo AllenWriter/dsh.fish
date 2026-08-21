@@ -36,7 +36,16 @@ describe('openApiDocument', () => {
     const parameters = document.paths['/api/v1/artifacts'].get.parameters.map(
       (parameter) => parameter.name,
     )
-    expect(parameters).toEqual(['q', 'kind', 'category', 'sort', 'verified', 'limit', 'offset'])
+    expect(parameters).toEqual([
+      'q',
+      'kind',
+      'category',
+      'topic',
+      'sort',
+      'verified',
+      'limit',
+      'offset',
+    ])
   })
 
   it('documents the snapshot ETag contract', () => {

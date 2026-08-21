@@ -38,6 +38,8 @@ export interface SitemapUrl {
   readonly priority?: number
   /** Locales with distinct content. Defaults to every supported locale. */
   readonly locales?: readonly Locale[]
+  /** Locale-specific freshness, used by generated translation pages. */
+  readonly localeLastModified?: Partial<Record<Locale, string>>
 }
 
 /**
@@ -102,16 +104,18 @@ function urlEntry(origin: string, locale: Locale, url: SitemapUrl): string {
             (code) =>
               `    <xhtml:link rel="alternate" hreflang="${hreflangFor(code)}" href="${escapeXml(absoluteUrl(origin, code, url.path))}"/>`,
           ),
-          `    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(absoluteUrl(origin, 'en', url.path))}"/>`,
+          ...(locales.includes('en')
+            ? [`    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(absoluteUrl(origin, 'en', url.path))}"/>`]
+            : []),
         ].join('\n')
       : undefined
 
   return [
     '  <url>',
     `    <loc>${escapeXml(absoluteUrl(origin, locale, url.path))}</loc>`,
-    ...(url.lastModified === undefined
+    ...((url.localeLastModified?.[locale] ?? url.lastModified) === undefined
       ? []
-      : [`    <lastmod>${w3cDatetime(url.lastModified)}</lastmod>`]),
+      : [`    <lastmod>${w3cDatetime(url.localeLastModified?.[locale] ?? url.lastModified!)}</lastmod>`]),
     ...(url.changeFrequency === undefined
       ? []
       : [`    <changefreq>${url.changeFrequency}</changefreq>`]),

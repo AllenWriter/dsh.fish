@@ -9,8 +9,8 @@ One connected graph, emitted as `application/ld+json` through React Router's
 |---|---|---|
 | `WebSite` (+ `SearchAction`) | Home, per language | `websiteLd` |
 | `Organization` | Home, per language | `organizationLd` |
-| `BreadcrumbList` | Artifact, kind, category, browse, docs, submit | `breadcrumbLd` |
-| `CollectionPage` + `ItemList` | Browse, kind, category | `collectionLd` |
+| `BreadcrumbList` | Artifact, kind, category, topic, browse, docs, submit | `breadcrumbLd` |
+| `CollectionPage` + `ItemList` | Browse, kind, category, topic | `collectionLd` |
 | `SoftwareApplication` | Artifact detail | `artifactLd` |
 
 The `Organization.logo` is the square 256×256 whale brand mark. The 1200×630

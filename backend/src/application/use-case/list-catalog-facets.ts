@@ -2,6 +2,7 @@ import type { ArtifactRepository } from '../../domain/artifact/artifact-reposito
 import { ARTIFACT_KIND_META, ARTIFACT_KINDS } from '../../domain/artifact/artifact-kind.js'
 import type { ArtifactKind } from '../../domain/artifact/artifact-kind.js'
 import { CATEGORIES } from '../../domain/artifact/category.js'
+import { TOPICS } from '../../domain/artifact/topic.js'
 
 export interface FacetsDto {
   readonly kinds: readonly {
@@ -11,7 +12,8 @@ export interface FacetsDto {
     packageManaged: boolean
     count: number
   }[]
-  readonly categories: readonly { id: string; labelKey: string }[]
+  readonly categories: readonly { id: string; labelKey: string; count: number }[]
+  readonly topics: readonly { id: string; labelKey: string; count: number }[]
 }
 
 /**
@@ -22,8 +24,14 @@ export class ListCatalogFacets {
   constructor(private readonly artifacts: ArtifactRepository) {}
 
   async execute(): Promise<FacetsDto> {
-    const counts = await this.artifacts.countByKind()
+    const [counts, categoryCounts, topicCounts] = await Promise.all([
+      this.artifacts.countByKind(),
+      this.artifacts.countByCategory?.() ?? Promise.resolve([]),
+      this.artifacts.countByTopic?.() ?? Promise.resolve([]),
+    ])
     const byKind = new Map(counts.map((entry) => [entry.kind, entry.count]))
+    const byCategory = new Map(categoryCounts.map((entry) => [entry.id, entry.count]))
+    const byTopic = new Map(topicCounts.map((entry) => [entry.id, entry.count]))
     return {
       kinds: ARTIFACT_KINDS.map((kind) => ({
         kind,
@@ -32,7 +40,16 @@ export class ListCatalogFacets {
         packageManaged: ARTIFACT_KIND_META[kind].packageManaged,
         count: byKind.get(kind) ?? 0,
       })),
-      categories: CATEGORIES.map((entry) => ({ id: entry.id, labelKey: entry.labelKey })),
+      categories: CATEGORIES.map((entry) => ({
+        id: entry.id,
+        labelKey: entry.labelKey,
+        count: byCategory.get(entry.id) ?? 0,
+      })),
+      topics: TOPICS.map((entry) => ({
+        id: entry.id,
+        labelKey: entry.labelKey,
+        count: byTopic.get(entry.id) ?? 0,
+      })),
     }
   }
 }

@@ -54,6 +54,10 @@ describe('inferCategories', () => {
   it('splits hyphenated keywords so a compound label still lands', () => {
     expect(inferCategories({ keywords: ['code-review'] })).toEqual(['coding'])
   })
+
+  it('normalizes full-width Unicode before classification', () => {
+    expect(inferCategories({ keywords: ['ＰＯＳＴＧＲＥＳ'] })).toEqual(['data'])
+  })
 })
 
 describe('resolveCategories', () => {

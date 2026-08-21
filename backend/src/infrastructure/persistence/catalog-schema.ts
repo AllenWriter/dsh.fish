@@ -1,4 +1,12 @@
-import { index, integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import {
+  index,
+  integer,
+  primaryKey,
+  real,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from 'drizzle-orm/sqlite-core'
 
 /**
  * Catalog tables. Better Auth owns its own tables in `auth-schema.ts`; the two
@@ -13,6 +21,9 @@ export const artifacts = sqliteTable(
     kind: text('kind').notNull(),
     displayName: text('display_name').notNull(),
     summary: text('summary').notNull(),
+    /** Policy-aware digests used to invalidate stale localized projections. */
+    summaryHash: text('summary_hash'),
+    readmeHash: text('readme_hash'),
     /** JSON-encoded `SourceRef`. */
     source: text('source', { mode: 'json' }).notNull(),
     sourceOrigin: text('source_origin').notNull(),
@@ -75,6 +86,21 @@ export const artifactCategories = sqliteTable(
   (table) => [
     primaryKey({ columns: [table.artifactId, table.categoryId] }),
     index('artifact_categories_category_idx').on(table.categoryId),
+  ],
+)
+
+/** Curated user-intent topics, independent from the broad category taxonomy. */
+export const artifactTopics = sqliteTable(
+  'artifact_topics',
+  {
+    artifactId: text('artifact_id')
+      .notNull()
+      .references(() => artifacts.id, { onDelete: 'cascade' }),
+    topicId: text('topic_id').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.artifactId, table.topicId] }),
+    index('artifact_topics_topic_idx').on(table.topicId),
   ],
 )
 
@@ -142,6 +168,31 @@ export const artifactSearch = sqliteTable('artifact_search', {
   /** Lowercased `displayName + summary + keywords`, searched with LIKE fallbacks. */
   haystack: text('haystack').notNull(),
 })
+
+/** Exportable source-of-truth documents mirrored by the derived FTS5 table. */
+export const artifactSearchDocuments = sqliteTable(
+  'artifact_search_documents',
+  {
+    rowid: integer('rowid').primaryKey({ autoIncrement: true }),
+    artifactId: text('artifact_id')
+      .notNull()
+      .references(() => artifacts.id, { onDelete: 'cascade' }),
+    locale: text('locale').notNull(),
+    displayName: text('display_name').notNull(),
+    summary: text('summary').notNull(),
+    keywords: text('keywords').notNull(),
+    topics: text('topics').notNull(),
+    summaryHash: text('summary_hash').notNull(),
+    readmeHash: text('readme_hash'),
+  },
+  (table) => [
+    uniqueIndex('artifact_search_documents_artifact_locale_idx').on(
+      table.artifactId,
+      table.locale,
+    ),
+    index('artifact_search_documents_locale_idx').on(table.locale),
+  ],
+)
 
 /**
  * One row per artifact per ingestion sweep. The history is what star velocity

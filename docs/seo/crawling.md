@@ -15,6 +15,11 @@ so blocking it saves crawl budget without hiding an indexation instruction.
 Nothing there is a security boundary. robots.txt is a request, and the paths it
 names are exactly the paths anyone can read in it.
 
+Search/retrieval agents (`OAI-SearchBot`, `ChatGPT-User`, `Claude-SearchBot`,
+`Claude-User`) may crawl public pages and the catalog snapshot; training
+crawlers (`GPTBot`, `ClaudeBot`) are denied. Public responses also send
+`Content-Signal: ai-train=no, search=yes, ai-input=yes, use=reference`.
+
 ## The sitemap set
 
 ```
@@ -52,6 +57,12 @@ For a path translated into all six languages that is 6 entries × 7 links.
 Product-doc entries derive their locale set from physical MDX files, so an
 English fallback never creates a false alternate. Adding a page or translation
 grows the sitemap in the same commit; do not hand-maintain a second list.
+
+Artifact entries follow the same rule after `SEO_LOCALE_GATING` is enabled: a
+locale is present only when its summary and optional README translations match
+the current source hashes. `x-default` exists only when English is in the
+alternate set, and translated variants carry their own translation timestamp
+as `lastmod`.
 
 ### `lastmod`
 
@@ -209,7 +220,7 @@ The two documents those headers point at are resource routes under
 
 A page nothing links to is a page nothing ranks. Three deliberate link sources:
 
-1. **The footer** links every artifact type and every category to its own
+1. **The footer** links every artifact type, category and curated intent topic to its own
    indexable path, generated from the domain taxonomy rather than hand-listed —
    so a kind added to the domain appears in the footer and the sitemap in the
    same commit. Eighteen links in a footer is unremarkable for a directory, and

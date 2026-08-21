@@ -26,7 +26,7 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
   const { origin, locale, filtered, results, query } = loaderData
   const title = query
     ? `${translate(locale, 'browse.searchTitle', { query })} — ${translate(locale, 'app.name')}`
-    : `${translate(locale, 'browse.title')} — ${translate(locale, 'app.name')}`
+    : translate(locale, 'browse.pageTitle')
 
   return pageMeta({
     origin,

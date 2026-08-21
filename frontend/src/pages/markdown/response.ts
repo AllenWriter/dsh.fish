@@ -15,7 +15,7 @@ export function markdownResponse(markdown: string): Response {
       vary: 'accept',
       'cache-control': 'public, max-age=300',
       'x-markdown-tokens': String(estimateTokens(markdown)),
-      'content-signal': 'ai-train=yes, search=yes, ai-input=yes',
+      'content-signal': 'ai-train=no, search=yes, ai-input=yes, use=reference',
     },
   })
 }

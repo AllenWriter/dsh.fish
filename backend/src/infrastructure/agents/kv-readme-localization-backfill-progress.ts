@@ -8,7 +8,9 @@ import { slug } from '../../domain/shared/slug.js'
 
 const COMPLETE = 'complete'
 const CURSOR_PREFIX = 'cursor:'
-const KEY = `readme-i18n:backfill:${README_TRANSLATION_POLICY_VERSION}`
+/** Bump when the pass has new derived projections even if translation policy is unchanged. */
+const BACKFILL_PROJECTION_VERSION = 'search-v1'
+const KEY = `readme-i18n:backfill:${README_TRANSLATION_POLICY_VERSION}:${BACKFILL_PROJECTION_VERSION}`
 
 /** One versioned cursor in KV; a policy version bump automatically starts a new pass. */
 export class KvReadmeLocalizationBackfillProgress implements ReadmeLocalizationBackfillProgress {

@@ -84,6 +84,7 @@ async function handleRequest(
   const container = createContainer(env, {
     cf: request.cf,
     readmeLocalization: readmeLocalization(env),
+    supportedLocales: LOCALE_CODES,
   })
 
   // Agents get the catalog as markdown when they ask for it; browsers never
@@ -111,7 +112,10 @@ async function handleRequest(
 
 export default {
   async fetch(request, env, ctx) {
-    return withEdgeCache(request, ctx, () => handleRequest(request, env, ctx))
+    return withPublicSignals(
+      await withEdgeCache(request, ctx, () => handleRequest(request, env, ctx)),
+      request,
+    )
   },
 
   /**
@@ -131,6 +135,7 @@ export default {
   async scheduled(controller, env, ctx) {
     const container = createContainer(env, {
       readmeLocalization: readmeLocalization(env),
+      supportedLocales: LOCALE_CODES,
     })
 
     if (controller.cron === '* * * * *') {
@@ -176,3 +181,17 @@ export default {
     )
   },
 } satisfies ExportedHandler<HubEnv>
+
+function withPublicSignals(response: Response, request: Request): Response {
+  const headers = new Headers(response.headers)
+  headers.set('strict-transport-security', 'max-age=31536000; includeSubDomains')
+  const pathname = new URL(request.url).pathname
+  const publicRead =
+    (request.method === 'GET' || request.method === 'HEAD') &&
+    !pathname.startsWith('/api/auth/') &&
+    !/^\/(?:[^/]+\/)?(?:dashboard|device|sign-in)(?:\/|$)/.test(pathname)
+  if (publicRead && !headers.has('content-signal')) {
+    headers.set('content-signal', 'ai-train=no, search=yes, ai-input=yes, use=reference')
+  }
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
+}

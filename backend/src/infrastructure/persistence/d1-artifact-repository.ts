@@ -11,7 +11,9 @@ import type {
   CatalogStats,
   KindCount,
   SitemapEntry,
+  TaxonomyCount,
 } from '../../domain/artifact/artifact-repository.js'
+import { inferTopics, normalizeSearchText, topicSearchText } from '../../domain/artifact/topic.js'
 import { starVelocity } from '../../domain/artifact/quality-score.js'
 import type { MetricsSnapshot } from '../../domain/artifact/quality-score.js'
 import type { SourceRef } from '../../domain/artifact/source-ref.js'
@@ -19,7 +21,17 @@ import type { Page, PageRequest } from '../../domain/shared/pagination.js'
 import { page } from '../../domain/shared/pagination.js'
 import type { Slug } from '../../domain/shared/slug.js'
 import { slug } from '../../domain/shared/slug.js'
-import { artifactCategories, artifactMetrics, artifacts, artifactSearch } from './catalog-schema.js'
+import { readmeDigest } from '../../application/lib/readme-digest.js'
+import {
+  artifactCategories,
+  artifactMetrics,
+  artifactReadmeTranslations,
+  artifactSearch,
+  artifactSearchDocuments,
+  artifactSummaryTranslations,
+  artifactTopics,
+  artifacts,
+} from './catalog-schema.js'
 import * as schema from './schema.js'
 
 type Db = DrizzleD1Database<typeof schema>
@@ -39,7 +51,10 @@ const DAY_MS = 24 * 60 * 60 * 1000
  * a row that browses but never appears in search.
  */
 export class D1ArtifactRepository implements ArtifactRepository {
-  constructor(private readonly db: Db) {}
+  constructor(
+    private readonly db: Db,
+    private readonly ftsSearchEnabled = false,
+  ) {}
 
   async findById(id: Slug): Promise<Artifact | undefined> {
     const rows = await this.db.select().from(artifacts).where(eq(artifacts.id, id)).limit(1)
@@ -69,12 +84,28 @@ export class D1ArtifactRepository implements ArtifactRepository {
       conditions.push(eq(artifacts.ownerAccountId, query.ownerAccountId))
     }
     if (query.text !== undefined) {
-      const needle = `%${query.text.toLowerCase()}%`
+      const normalized = normalizeSearchText(query.text)
+      const needle = `%${normalized}%`
+      const locale = query.locale ?? 'und'
+      const documentMatch = this.ftsSearchEnabled && normalized.length >= 3
+        ? sql`exists (
+            select 1 from artifact_search_fts
+            join artifact_search_documents d on d.rowid = artifact_search_fts.rowid
+            where d.artifact_id = ${artifacts.id}
+              and d.locale in (${locale}, 'und')
+              and artifact_search_fts match ${ftsQuery(normalized)}
+          )`
+        : sql`exists (
+            select 1 from ${artifactSearchDocuments} d
+            where d.artifact_id = ${artifacts.id}
+              and d.locale in (${locale}, 'und')
+              and (d.display_name like ${needle} or d.summary like ${needle}
+                or d.keywords like ${needle} or d.topics like ${needle})
+          )`
       conditions.push(
         or(
-          like(sql`lower(${artifacts.displayName})`, needle),
-          like(sql`lower(${artifacts.summary})`, needle),
           like(sql`lower(${artifacts.id})`, needle),
+          documentMatch,
           sql`exists (select 1 from ${artifactSearch} where ${artifactSearch.artifactId} = ${artifacts.id} and ${artifactSearch.haystack} like ${needle})`,
         ),
       )
@@ -84,9 +115,14 @@ export class D1ArtifactRepository implements ArtifactRepository {
         sql`exists (select 1 from ${artifactCategories} where ${artifactCategories.artifactId} = ${artifacts.id} and ${artifactCategories.categoryId} in ${[...query.categories]})`,
       )
     }
+    if (query.topics && query.topics.length > 0) {
+      conditions.push(
+        sql`exists (select 1 from ${artifactTopics} where ${artifactTopics.artifactId} = ${artifacts.id} and ${artifactTopics.topicId} in ${[...query.topics]})`,
+      )
+    }
 
     const where = conditions.length > 0 ? and(...conditions) : undefined
-    const order = orderFor(query)
+    const order = orderFor(query, this.ftsSearchEnabled)
 
     // Count + page in one D1 batch: a Worker round trip to D1 dominates, and
     // browse loaders already spend that budget on facets as well.
@@ -115,13 +151,135 @@ export class D1ArtifactRepository implements ArtifactRepository {
     return rows.map((row) => ({ kind: artifactKind(row.kind), count: Number(row.count) }))
   }
 
+  async countByCategory(): Promise<readonly TaxonomyCount[]> {
+    const rows = await this.db
+      .select({ id: artifactCategories.categoryId, count: sql<number>`count(*)` })
+      .from(artifactCategories)
+      .innerJoin(artifacts, eq(artifacts.id, artifactCategories.artifactId))
+      .where(eq(artifacts.deprecated, false))
+      .groupBy(artifactCategories.categoryId)
+    return rows.map((row) => ({ id: row.id, count: Number(row.count) }))
+  }
+
+  async countByTopic(): Promise<readonly TaxonomyCount[]> {
+    const rows = await this.db
+      .select({ id: artifactTopics.topicId, count: sql<number>`count(*)` })
+      .from(artifactTopics)
+      .innerJoin(artifacts, eq(artifacts.id, artifactTopics.artifactId))
+      .where(eq(artifacts.deprecated, false))
+      .groupBy(artifactTopics.topicId)
+    return rows.map((row) => ({ id: row.id, count: Number(row.count) }))
+  }
+
+  async listAvailableLocales(id: Slug) {
+    const rows = await this.db
+      .select({
+        locale: artifactSummaryTranslations.locale,
+        summaryUpdatedAt: artifactSummaryTranslations.updatedAt,
+        readmeUpdatedAt: artifactReadmeTranslations.updatedAt,
+      })
+      .from(artifactSummaryTranslations)
+      .innerJoin(artifacts, eq(artifacts.id, artifactSummaryTranslations.artifactId))
+      .leftJoin(
+        artifactReadmeTranslations,
+        and(
+          eq(artifactReadmeTranslations.artifactId, artifactSummaryTranslations.artifactId),
+          eq(artifactReadmeTranslations.locale, artifactSummaryTranslations.locale),
+        ),
+      )
+      .where(
+        and(
+          eq(artifactSummaryTranslations.artifactId, id),
+          eq(artifactSummaryTranslations.status, 'completed'),
+          eq(artifactSummaryTranslations.sourceHash, artifacts.summaryHash),
+          or(
+            sql`${artifacts.readmeHash} is null`,
+            and(
+              eq(artifactReadmeTranslations.status, 'completed'),
+              eq(artifactReadmeTranslations.sourceHash, artifacts.readmeHash),
+            ),
+          ),
+        ),
+      )
+    return rows.map((row) => ({
+      locale: row.locale,
+      updatedAt:
+        row.readmeUpdatedAt !== null && row.readmeUpdatedAt > row.summaryUpdatedAt
+          ? row.readmeUpdatedAt
+          : row.summaryUpdatedAt,
+    }))
+  }
+
+  /** Rebuild one locale document only when every localized source is current. */
+  async refreshLocalizedSearchDocument(id: Slug, locale: string): Promise<void> {
+    const artifact = await this.findById(id)
+    if (!artifact) return
+    const available = await this.listAvailableLocales(id)
+    if (!available.some((entry) => entry.locale === locale)) {
+      await this.db
+        .delete(artifactSearchDocuments)
+        .where(
+          and(
+            eq(artifactSearchDocuments.artifactId, id),
+            eq(artifactSearchDocuments.locale, locale),
+          ),
+        )
+      return
+    }
+
+    const [summaryRow] = await this.db
+      .select({ text: artifactSummaryTranslations.text })
+      .from(artifactSummaryTranslations)
+      .where(
+        and(
+          eq(artifactSummaryTranslations.artifactId, id),
+          eq(artifactSummaryTranslations.locale, locale),
+        ),
+      )
+      .limit(1)
+    if (summaryRow?.text === null || summaryRow?.text === undefined) return
+    const props = artifact.toProps()
+    const topics = inferTopics({
+      keywords: props.keywords,
+      text: [props.displayName, props.summary, props.readmeMarkdown ?? ''].join(' '),
+    })
+    await this.db
+      .insert(artifactSearchDocuments)
+      .values({
+        artifactId: String(id),
+        locale,
+        displayName: normalizeSearchText(props.displayName),
+        summary: normalizeSearchText(summaryRow.text),
+        keywords: normalizeSearchText(props.keywords.join(' ')),
+        topics: normalizeSearchText(topicSearchText(topics)),
+        summaryHash: await readmeDigest(props.summary),
+        readmeHash:
+          props.readmeMarkdown === undefined ? null : await readmeDigest(props.readmeMarkdown),
+      })
+      .onConflictDoUpdate({
+        target: [artifactSearchDocuments.artifactId, artifactSearchDocuments.locale],
+        set: {
+          summary: normalizeSearchText(summaryRow.text),
+          keywords: normalizeSearchText(props.keywords.join(' ')),
+          topics: normalizeSearchText(topicSearchText(topics)),
+        },
+      })
+  }
+
+  /** Idempotent metadata backfill used after adding hashes, topics or search projections. */
+  async refreshSearchMetadata(id: Slug): Promise<void> {
+    const artifact = await this.findById(id)
+    if (!artifact) return
+    await this.runBatch(await this.writeStatements(artifact))
+  }
+
   async save(artifact: Artifact): Promise<void> {
-    await this.runBatch(this.writeStatements(artifact))
+    await this.runBatch(await this.writeStatements(artifact))
   }
 
   async saveMany(list: readonly Artifact[]): Promise<void> {
     if (list.length === 0) return
-    const statements = list.flatMap((artifact) => this.writeStatements(artifact))
+    const statements = (await Promise.all(list.map((artifact) => this.writeStatements(artifact)))).flat()
     // D1 caps the number of statements in one batch; chunk so a large crawl
     // cannot exceed it.
     for (let index = 0; index < statements.length; index += 50) {
@@ -211,9 +369,63 @@ export class D1ArtifactRepository implements ArtifactRepository {
       .offset(request.offset)
     const [countRows, pageRows] = await this.db.batch([countQuery, pageQuery])
 
+    const ids = pageRows.map((row) => row.id)
+    const localeRows =
+      ids.length === 0
+        ? []
+        : await this.db
+            .select({
+              artifactId: artifactSummaryTranslations.artifactId,
+              locale: artifactSummaryTranslations.locale,
+              summaryUpdatedAt: artifactSummaryTranslations.updatedAt,
+              readmeUpdatedAt: artifactReadmeTranslations.updatedAt,
+            })
+            .from(artifactSummaryTranslations)
+            .innerJoin(artifacts, eq(artifacts.id, artifactSummaryTranslations.artifactId))
+            .leftJoin(
+              artifactReadmeTranslations,
+              and(
+                eq(
+                  artifactReadmeTranslations.artifactId,
+                  artifactSummaryTranslations.artifactId,
+                ),
+                eq(artifactReadmeTranslations.locale, artifactSummaryTranslations.locale),
+              ),
+            )
+            .where(
+              and(
+                inArray(artifactSummaryTranslations.artifactId, ids),
+                eq(artifactSummaryTranslations.status, 'completed'),
+                eq(artifactSummaryTranslations.sourceHash, artifacts.summaryHash),
+                or(
+                  sql`${artifacts.readmeHash} is null`,
+                  and(
+                    eq(artifactReadmeTranslations.status, 'completed'),
+                    eq(artifactReadmeTranslations.sourceHash, artifacts.readmeHash),
+                  ),
+                ),
+              ),
+            )
+    const localesByArtifact = new Map<string, { locale: string; updatedAt: Date }[]>()
+    for (const row of localeRows) {
+      const list = localesByArtifact.get(row.artifactId) ?? []
+      list.push({
+        locale: row.locale,
+        updatedAt:
+          row.readmeUpdatedAt !== null && row.readmeUpdatedAt > row.summaryUpdatedAt
+            ? row.readmeUpdatedAt
+            : row.summaryUpdatedAt,
+      })
+      localesByArtifact.set(row.artifactId, list)
+    }
+
     // `updated_at` is a `timestamp_ms` column, so Drizzle hands back a Date.
     return page(
-      pageRows.map((row) => ({ id: slug(row.id), updatedAt: row.updatedAt })),
+      pageRows.map((row) => ({
+        id: slug(row.id),
+        updatedAt: row.updatedAt,
+        locales: localesByArtifact.get(row.id) ?? [],
+      })),
       Number(countRows[0]?.total ?? 0),
       request,
     )
@@ -258,13 +470,22 @@ export class D1ArtifactRepository implements ArtifactRepository {
     }
   }
 
-  private writeStatements(artifact: Artifact): BatchStatement[] {
+  private async writeStatements(artifact: Artifact): Promise<BatchStatement[]> {
     const props = artifact.toProps()
+    const summaryHash = await readmeDigest(props.summary)
+    const readmeHash =
+      props.readmeMarkdown === undefined ? null : await readmeDigest(props.readmeMarkdown)
+    const topics = inferTopics({
+      keywords: props.keywords,
+      text: [props.displayName, props.summary, props.readmeMarkdown ?? ''].join(' '),
+    })
     const values = {
       id: props.id as string,
       kind: props.kind,
       displayName: props.displayName,
       summary: props.summary,
+      summaryHash,
+      readmeHash,
       source: props.source,
       sourceOrigin: props.source.origin,
       sourceCommitSha: props.sourceCommitSha ?? null,
@@ -289,9 +510,7 @@ export class D1ArtifactRepository implements ArtifactRepository {
       indexedAt: props.indexedAt,
     }
 
-    const haystack = [props.displayName, props.summary, ...props.keywords]
-      .join(' ')
-      .toLowerCase()
+    const haystack = normalizeSearchText([props.displayName, props.summary, ...props.keywords].join(' '))
 
     const statements: BatchStatement[] = [
       this.db
@@ -299,10 +518,37 @@ export class D1ArtifactRepository implements ArtifactRepository {
         .values(values)
         .onConflictDoUpdate({ target: artifacts.id, set: values }),
       this.db.delete(artifactCategories).where(eq(artifactCategories.artifactId, values.id)),
+      this.db.delete(artifactTopics).where(eq(artifactTopics.artifactId, values.id)),
+      this.db
+        .delete(artifactSearchDocuments)
+        .where(and(eq(artifactSearchDocuments.artifactId, values.id), sql`${artifactSearchDocuments.locale} != 'und'`)),
       this.db
         .insert(artifactSearch)
         .values({ artifactId: values.id, haystack })
         .onConflictDoUpdate({ target: artifactSearch.artifactId, set: { haystack } }),
+      this.db
+        .insert(artifactSearchDocuments)
+        .values({
+          artifactId: values.id,
+          locale: 'und',
+          displayName: normalizeSearchText(props.displayName),
+          summary: normalizeSearchText(props.summary),
+          keywords: normalizeSearchText(props.keywords.join(' ')),
+          topics: normalizeSearchText(topicSearchText(topics)),
+          summaryHash,
+          readmeHash,
+        })
+        .onConflictDoUpdate({
+          target: [artifactSearchDocuments.artifactId, artifactSearchDocuments.locale],
+          set: {
+            displayName: normalizeSearchText(props.displayName),
+            summary: normalizeSearchText(props.summary),
+            keywords: normalizeSearchText(props.keywords.join(' ')),
+            topics: normalizeSearchText(topicSearchText(topics)),
+            summaryHash,
+            readmeHash,
+          },
+        }),
     ]
 
     if (props.categories.length > 0) {
@@ -316,11 +562,27 @@ export class D1ArtifactRepository implements ArtifactRepository {
       )
     }
 
+    if (topics.length > 0) {
+      statements.push(
+        this.db.insert(artifactTopics).values(
+          topics.map((topicId) => ({ artifactId: values.id, topicId })),
+        ),
+      )
+    }
+
     return statements
   }
 }
 
-function orderFor(query: ArtifactQuery) {
+function ftsQuery(normalized: string): string {
+  return normalized
+    .split(' ')
+    .filter(Boolean)
+    .map((token) => `"${token.replaceAll('"', '""')}"*`)
+    .join(' AND ')
+}
+
+function orderFor(query: ArtifactQuery, ftsSearchEnabled: boolean) {
   switch (query.sort) {
     case 'name':
       return [asc(artifacts.displayName), asc(artifacts.id)]
@@ -335,6 +597,19 @@ function orderFor(query: ArtifactQuery) {
       // `listRank` uses, so a text search still surfaces the artifact people
       // actually install rather than the shortest name.
       return [
+        ...(ftsSearchEnabled && query.text !== undefined && normalizeSearchText(query.text).length >= 3
+          ? [
+              asc(sql`coalesce((
+                select bm25(artifact_search_fts, 8.0, 5.0, 3.0, 2.0)
+                from artifact_search_fts
+                join artifact_search_documents d on d.rowid = artifact_search_fts.rowid
+                where d.artifact_id = ${artifacts.id}
+                  and d.locale in (${query.locale ?? 'und'}, 'und')
+                  and artifact_search_fts match ${ftsQuery(normalizeSearchText(query.text))}
+                limit 1
+              ), 999999.0)`),
+            ]
+          : []),
         desc(sql`(${artifacts.ownerAccountId} is not null)`),
         desc(artifacts.popularity),
         desc(artifacts.id),
@@ -366,6 +641,8 @@ const listingColumns = {
   kind: artifacts.kind,
   displayName: artifacts.displayName,
   summary: artifacts.summary,
+  summaryHash: artifacts.summaryHash,
+  readmeHash: artifacts.readmeHash,
   source: artifacts.source,
   sourceOrigin: artifacts.sourceOrigin,
   sourceCommitSha: artifacts.sourceCommitSha,

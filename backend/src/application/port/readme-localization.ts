@@ -2,7 +2,7 @@ import type { Slug } from '../../domain/shared/slug.js'
 
 export interface ScheduleReadmeLocalizationInput {
   readonly artifactId: Slug
-  readonly markdown: string
+  readonly markdown?: string
   readonly summary: string
 }
 
@@ -19,7 +19,7 @@ export interface ReadmeLocalizationScheduler {
 
 export interface ReadmeLocalizationBackfillItem {
   readonly artifactId: Slug
-  readonly markdown: string
+  readonly markdown?: string
   readonly summary: string
 }
 

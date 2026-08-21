@@ -122,3 +122,5 @@ export function kindDescriptionKey(kind: ArtifactKind): string {
  */
 export { ARTIFACT_KINDS, isArtifactKind } from '@dsh-fish/backend/domain/artifact/artifact-kind.js'
 export { CATEGORIES, isCategory } from '@dsh-fish/backend/domain/artifact/category.js'
+export { TOPICS, isTopic } from '@dsh-fish/backend/domain/artifact/topic.js'
+export type { TopicId } from '@dsh-fish/backend/domain/artifact/topic.js'

@@ -30,7 +30,7 @@ import {
   WarningIcon,
   type Icon,
 } from '@/shared/ui/icon'
-import { requireLocale, translate, useLocale, useT } from '@/shared/config/i18n'
+import { isLocale, requireLocale, translate, useLocale, useT } from '@/shared/config/i18n'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { Markdown } from '@/shared/ui/markdown'
 import { breadcrumbLd, errorMeta, pageMeta } from '@/shared/lib/seo'
@@ -49,7 +49,7 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
   // A 404 renders the error boundary, so loaderData is absent there.
   if (!loaderData) return errorMeta(params.locale)
 
-  const { artifact, plan, reviews, origin, locale } = loaderData
+  const { artifact, plan, reviews, origin, locale, localeIndexable } = loaderData
   const kindName = translate(locale, kindLabelKey(artifact.kind))
 
   return pageMeta({
@@ -66,8 +66,10 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
       summary: artifact.summary,
       kind: kindName,
     }),
+    index: localeIndexable,
+    availableLocales: artifact.availableLocales.filter(isLocale),
     type: 'article',
-    jsonLd: [
+    jsonLd: localeIndexable ? [
       artifactLd(
         origin,
         locale,
@@ -85,7 +87,7 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
         },
         { name: artifact.displayName, path: `/a/${artifact.id}` },
       ]),
-    ],
+    ] : [],
   })
 }
 
@@ -119,6 +121,8 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
     locale,
     now: Date.now(),
     origin: container.config.baseUrl,
+    localeIndexable:
+      !container.config.seoLocaleGating || artifact.availableLocales.includes(locale),
   }
 }
 

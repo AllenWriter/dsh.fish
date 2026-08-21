@@ -15,4 +15,11 @@ describe('robotsText', () => {
     expect(body).not.toContain('Disallow: /sign-in')
     expect(body).not.toContain('Disallow: /*/')
   })
+
+  it('allows retrieval agents but denies training crawlers', () => {
+    expect(body).toContain('User-agent: OAI-SearchBot\nAllow: /')
+    expect(body).toContain('Allow: /api/v1/catalog/snapshot')
+    expect(body).toContain('User-agent: GPTBot\nDisallow: /')
+    expect(body).toContain('User-agent: ClaudeBot\nDisallow: /')
+  })
 })

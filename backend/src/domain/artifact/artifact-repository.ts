@@ -2,6 +2,7 @@ import type { Page, PageRequest } from '../shared/pagination.js'
 import type { Slug } from '../shared/slug.js'
 import type { Artifact } from './artifact.js'
 import type { ArtifactKind } from './artifact-kind.js'
+import type { TopicId } from './topic.js'
 
 export type ArtifactSort = 'relevance' | 'popular' | 'recent' | 'name' | 'rising'
 
@@ -10,6 +11,8 @@ export interface ArtifactQuery {
   readonly kinds?: readonly ArtifactKind[]
   readonly categories?: readonly Slug[]
   readonly keywords?: readonly string[]
+  readonly topics?: readonly TopicId[]
+  readonly locale?: string
   readonly verifiedOnly?: boolean
   readonly includeDeprecated?: boolean
   readonly ownerAccountId?: string
@@ -20,6 +23,16 @@ export interface ArtifactQuery {
 export interface KindCount {
   readonly kind: ArtifactKind
   readonly count: number
+}
+
+export interface TaxonomyCount {
+  readonly id: string
+  readonly count: number
+}
+
+export interface ArtifactLocaleAvailability {
+  readonly locale: string
+  readonly updatedAt: Date
 }
 
 /**
@@ -33,6 +46,7 @@ export interface KindCount {
 export interface SitemapEntry {
   readonly id: Slug
   readonly updatedAt: Date
+  readonly locales?: readonly ArtifactLocaleAvailability[]
 }
 
 /**
@@ -59,6 +73,9 @@ export interface ArtifactRepository {
   findById(id: Slug): Promise<Artifact | undefined>
   search(query: ArtifactQuery): Promise<Page<Artifact>>
   countByKind(): Promise<readonly KindCount[]>
+  countByCategory?(): Promise<readonly TaxonomyCount[]>
+  countByTopic?(): Promise<readonly TaxonomyCount[]>
+  listAvailableLocales?(id: Slug): Promise<readonly ArtifactLocaleAvailability[]>
   save(artifact: Artifact): Promise<void>
   saveMany(artifacts: readonly Artifact[]): Promise<void>
   incrementInstalls(id: Slug, by: number): Promise<void>

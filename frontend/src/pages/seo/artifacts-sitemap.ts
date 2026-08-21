@@ -1,6 +1,7 @@
 import type { Route } from './+types/artifacts-sitemap'
 import { hubContext } from '@/shared/api/hub-context'
 import { artifactSitemapPath, resolveArtifactSitemapPage, urlSetXml, xmlResponse } from './xml'
+import { isLocale, type Locale } from '@/shared/config/i18n'
 
 /**
  * One page of indexed plugins, in every language.
@@ -47,6 +48,12 @@ export async function loader({ context, params }: Route.LoaderArgs) {
       items.map((entry) => ({
         path: `/a/${entry.id}`,
         lastModified: entry.updatedAt,
+        locales: entry.locales.map((item) => item.locale).filter(isLocale),
+        localeLastModified: Object.fromEntries(
+          entry.locales
+            .filter((item): item is { locale: Locale; updatedAt: string } => isLocale(item.locale))
+            .map((item) => [item.locale, item.updatedAt]),
+        ),
       })),
     ),
   )

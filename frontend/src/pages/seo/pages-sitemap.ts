@@ -1,6 +1,6 @@
 import type { Route } from './+types/pages-sitemap'
 import { hubContext } from '@/shared/api/hub-context'
-import { ARTIFACT_KINDS, CATEGORIES } from '@/entities/artifact/model/types'
+import { ARTIFACT_KINDS, CATEGORIES, TOPICS } from '@/entities/artifact/model/types'
 import { docsSitemapEntries } from '@/pages/docs/source'
 import { urlSetXml, xmlResponse, type SitemapUrl } from './xml'
 
@@ -16,21 +16,33 @@ import { urlSetXml, xmlResponse, type SitemapUrl } from './xml'
  * of *our* pages to prefer when it cannot fetch them all, and mean nothing
  * across sites.
  */
-export function loader({ context }: Route.LoaderArgs) {
-  const { baseUrl } = context.get(hubContext).container.config
+export async function loader({ context }: Route.LoaderArgs) {
+  const { container } = context.get(hubContext)
+  const { baseUrl } = container.config
+  const facets = await container.useCases.listCatalogFacets.execute()
+  const visibleKinds = new Set(facets.kinds.filter((item) => item.count > 0).map((item) => item.kind))
+  const visibleCategories = new Set(
+    facets.categories.filter((item) => item.count > 0).map((item) => item.id),
+  )
+  const visibleTopics = new Set(facets.topics.filter((item) => item.count >= 3).map((item) => item.id))
 
   const urls: SitemapUrl[] = [
     { path: '/', changeFrequency: 'daily', priority: 1 },
     { path: '/browse', changeFrequency: 'daily', priority: 0.9 },
-    ...ARTIFACT_KINDS.map((kind) => ({
+    ...ARTIFACT_KINDS.filter((kind) => visibleKinds.has(kind)).map((kind) => ({
       path: `/kind/${kind}`,
       changeFrequency: 'daily' as const,
       priority: 0.8,
     })),
-    ...CATEGORIES.map((category) => ({
+    ...CATEGORIES.filter((category) => visibleCategories.has(category.id)).map((category) => ({
       path: `/category/${category.id}`,
       changeFrequency: 'daily' as const,
       priority: 0.7,
+    })),
+    ...TOPICS.filter((topic) => visibleTopics.has(topic.id)).map((topic) => ({
+      path: `/for/${topic.id}`,
+      changeFrequency: 'daily' as const,
+      priority: 0.75,
     })),
     ...docsSitemapEntries().map(({ path, locales }) => ({
       path,

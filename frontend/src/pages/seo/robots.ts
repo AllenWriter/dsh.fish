@@ -27,6 +27,21 @@ export function loader({ context }: Route.LoaderArgs) {
 
 export function robotsText(baseUrl: string): string {
   return [
+    ...['OAI-SearchBot', 'ChatGPT-User', 'Claude-SearchBot', 'Claude-User'].flatMap(
+      (agent) => [
+        `User-agent: ${agent}`,
+        'Allow: /',
+        'Allow: /api/v1/catalog/snapshot',
+        'Disallow: /api/',
+        '',
+      ],
+    ),
+    'User-agent: GPTBot',
+    'Disallow: /',
+    '',
+    'User-agent: ClaudeBot',
+    'Disallow: /',
+    '',
     'User-agent: *',
     'Allow: /',
     'Disallow: /api/',

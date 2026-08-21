@@ -16,6 +16,7 @@ export function mockArtifact(overrides: Partial<Artifact> = {}): Artifact {
     summary: 'A bundle.',
     keywords: [],
     categories: ['other'],
+    topics: [],
     sourceOrigin: 'github',
     sourceUrl: 'https://github.com/acme/dsh-hello',
     author: { name: 'acme' },

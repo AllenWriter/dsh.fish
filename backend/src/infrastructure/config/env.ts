@@ -57,6 +57,9 @@ export interface HubEnv {
   readonly ARTIFACT_ASK_ENABLED?: string
   /** Override the per-IP ask budget (default 12 / 10 minutes). */
   readonly ARTIFACT_ASK_MAX_PER_IP?: string
+  /** Rollout switches: default off until the migration and backfill are verified. */
+  readonly CATALOG_FTS_SEARCH?: string
+  readonly SEO_LOCALE_GATING?: string
 }
 
 export interface HubConfig {
@@ -65,6 +68,8 @@ export interface HubConfig {
   readonly githubToken?: string
   readonly artifactAskEnabled: boolean
   readonly artifactAskMaxPerIp?: number
+  readonly catalogFtsSearch: boolean
+  readonly seoLocaleGating: boolean
 }
 
 export function readConfig(env: HubEnv): HubConfig {
@@ -83,6 +88,8 @@ export function readConfig(env: HubEnv): HubConfig {
       .filter((entry) => entry !== ''),
     ...(env.GITHUB_TOKEN === undefined ? {} : { githubToken: env.GITHUB_TOKEN }),
     artifactAskEnabled: env.ARTIFACT_ASK_ENABLED === 'true',
+    catalogFtsSearch: env.CATALOG_FTS_SEARCH === 'true',
+    seoLocaleGating: env.SEO_LOCALE_GATING === 'true',
     ...(maxPerIp === undefined ? {} : { artifactAskMaxPerIp: maxPerIp }),
   }
 }

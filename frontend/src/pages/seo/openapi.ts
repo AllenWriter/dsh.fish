@@ -34,6 +34,7 @@ const artifactSummarySchema = {
     'summary',
     'keywords',
     'categories',
+    'topics',
     'sourceOrigin',
     'sourceUrl',
     'verified',
@@ -53,6 +54,7 @@ const artifactSummarySchema = {
     summary: { type: 'string' },
     keywords: { type: 'array', items: { type: 'string' } },
     categories: { type: 'array', items: { type: 'string' } },
+    topics: { type: 'array', items: { type: 'string' } },
     sourceOrigin: { type: 'string', description: 'Where the indexer read it from: github, npm, awesome-list, or community.' },
     sourceUrl: { type: 'string', format: 'uri' },
     author: {
@@ -206,6 +208,20 @@ export function openApiDocument(baseUrl: string) {
               description: 'Repeatable category filter.',
             },
             {
+              name: 'topic',
+              in: 'query',
+              schema: {
+                type: 'array',
+                items: {
+                  type: 'string',
+                  enum: ['memory', 'code-review', 'web-search', 'vision-ocr', 'multi-agent', 'ui-themes'],
+                },
+              },
+              style: 'form',
+              explode: true,
+              description: 'Repeatable user-intent topic filter.',
+            },
+            {
               name: 'sort',
               in: 'query',
               schema: { type: 'string', enum: ['relevance', 'popular', 'recent', 'name', 'rising'] },
@@ -246,7 +262,7 @@ export function openApiDocument(baseUrl: string) {
           responses: {
             '200': jsonResponse('The artifact detail.', {
               ...artifactSummarySchema,
-              required: [...artifactSummarySchema.required, 'payload', 'publishedAt'],
+              required: [...artifactSummarySchema.required, 'payload', 'publishedAt', 'availableLocales'],
               properties: {
                 ...artifactSummarySchema.properties,
                 payload: { type: 'object', description: 'Kind-specific installation data.' },
@@ -258,6 +274,7 @@ export function openApiDocument(baseUrl: string) {
                 sourceCommitSha: { type: 'string', description: 'The commit the indexer scanned, for git sources.' },
                 sourceCommitUrl: { type: 'string', format: 'uri' },
                 publishedAt: { type: 'string', format: 'date-time' },
+                availableLocales: { type: 'array', items: { type: 'string', enum: LOCALE_CODES } },
                 ask: artifactAskSchema(),
               },
             }),
@@ -376,11 +393,11 @@ export function openApiDocument(baseUrl: string) {
       '/api/v1/facets': {
         get: {
           operationId: 'listCatalogFacets',
-          summary: 'Filter rails: every kind with a count, every category',
+          summary: 'Filter rails: kinds, categories and intent topics with counts',
           responses: {
-            '200': jsonResponse('Kinds and categories.', {
+            '200': jsonResponse('Kinds, categories and topics.', {
               type: 'object',
-              required: ['kinds', 'categories'],
+              required: ['kinds', 'categories', 'topics'],
               properties: {
                 kinds: {
                   type: 'array',
@@ -400,8 +417,16 @@ export function openApiDocument(baseUrl: string) {
                   type: 'array',
                   items: {
                     type: 'object',
-                    required: ['id', 'labelKey'],
-                    properties: { id: { type: 'string' }, labelKey: { type: 'string' } },
+                    required: ['id', 'labelKey', 'count'],
+                    properties: { id: { type: 'string' }, labelKey: { type: 'string' }, count: { type: 'integer' } },
+                  },
+                },
+                topics: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    required: ['id', 'labelKey', 'count'],
+                    properties: { id: { type: 'string' }, labelKey: { type: 'string' }, count: { type: 'integer' } },
                   },
                 },
               },

@@ -1,4 +1,4 @@
-import { ARTIFACT_KINDS, CATEGORIES, kindPluralKey } from '@/entities/artifact/model/types'
+import { ARTIFACT_KINDS, CATEGORIES, TOPICS, kindPluralKey } from '@/entities/artifact/model/types'
 import { KindIcon } from '@/entities/artifact/ui/kind-icon'
 import { CategoryIcon } from '@/entities/artifact/ui/category-icon'
 import { useT } from '@/shared/config/i18n'
@@ -65,7 +65,18 @@ export function SiteFooter() {
             </ul>
           </nav>
 
-          <nav aria-label={t('browse.category')} className="lg:col-span-2">
+          <nav aria-label={t('browse.topic')}>
+            <h2 className="text-sm font-medium text-foreground">{t('browse.topic')}</h2>
+            <ul className="mt-3 space-y-1.5">
+              {TOPICS.map((topic) => (
+                <li key={topic.id}>
+                  <FooterLink to={`/for/${topic.id}`}>{t(topic.labelKey)}</FooterLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav aria-label={t('browse.category')}>
             <h2 className="text-sm font-medium text-foreground">{t('browse.category')}</h2>
             <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5">
               {CATEGORIES.map((category) => (

@@ -43,6 +43,25 @@ function capturingRepository() {
 }
 
 describe('SearchArtifacts sort resolution', () => {
+  it('passes a supported intent topic and locale to the repository', async () => {
+    const { repository, queries } = capturingRepository()
+
+    await new SearchArtifacts(repository, emptySummaryTranslations()).execute({
+      topics: ['code-review'],
+      locale: 'zh-CN',
+    })
+
+    expect(queries[0]?.topics).toEqual(['code-review'])
+    expect(queries[0]?.locale).toBe('zh-CN')
+  })
+
+  it('rejects an uncurated topic instead of minting arbitrary landing pages', async () => {
+    const { repository } = capturingRepository()
+    await expect(
+      new SearchArtifacts(repository, emptySummaryTranslations()).execute({ topics: ['postgres'] }),
+    ).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
+  })
+
   it('accepts the rising sort and passes it through', async () => {
     const { repository, queries } = capturingRepository()
 

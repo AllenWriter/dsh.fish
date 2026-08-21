@@ -70,6 +70,7 @@ const ids: IdGenerator = { next: () => crypto.randomUUID() }
 export interface ContainerOptions {
   readonly cf?: IncomingRequestCfProperties
   readonly readmeLocalization: ReadmeLocalizationScheduler
+  readonly supportedLocales?: readonly string[]
 }
 
 /**
@@ -83,7 +84,7 @@ export function createContainer(env: HubEnv, options: ContainerOptions): Contain
   const config = readConfig(env)
   const db = drizzle(env.DB, { schema })
 
-  const artifacts = new D1ArtifactRepository(db)
+  const artifacts = new D1ArtifactRepository(db, config.catalogFtsSearch)
   const readmeTranslations = new D1ReadmeTranslationRepository(db)
   const summaryTranslations = new D1SummaryTranslationRepository(db)
   const readmeBackfillSource = new D1ReadmeLocalizationBackfillSource(db)
@@ -122,7 +123,11 @@ export function createContainer(env: HubEnv, options: ContainerOptions): Contain
       getCatalogSnapshot: new GetCatalogSnapshot(artifacts, new KvCatalogSnapshotStore(env.KV)),
       describeScoring: new DescribeScoring(),
       listCatalogFacets: new ListCatalogFacets(artifacts),
-      listSitemapEntries: new ListSitemapEntries(artifacts),
+      listSitemapEntries: new ListSitemapEntries(
+        artifacts,
+        options.supportedLocales ?? ['en'],
+        config.seoLocaleGating,
+      ),
       rateArtifact: new RateArtifact(reviews, artifacts),
       resolveInstallPlan: new ResolveInstallPlan(artifacts),
       submitArtifact: new SubmitArtifact(

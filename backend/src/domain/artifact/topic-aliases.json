@@ -1,0 +1,8 @@
+{
+  "memory": ["memory", "memories", "remember", "recall", "context", "knowledge base", "knowledge graph", "记忆", "记忆库", "上下文", "知识库", "記憶", "知識庫", "メモリ", "記憶", "コンテキスト", "메모리", "기억", "컨텍스트", "память", "контекст", "база знаний"],
+  "code-review": ["code review", "review code", "pull request review", "pr review", "static analysis", "代码审查", "代码评审", "程式碼審查", "程式碼檢閱", "コードレビュー", "코드 리뷰", "ревью кода", "проверка кода"],
+  "web-search": ["web search", "internet search", "browser search", "search engine", "crawler", "scraper", "网页搜索", "网络搜索", "浏览器搜索", "網頁搜尋", "網路搜尋", "ウェブ検索", "ブラウザ検索", "웹 검색", "브라우저 검색", "веб-поиск", "поиск в интернете"],
+  "vision-ocr": ["vision", "ocr", "image understanding", "image recognition", "multimodal", "视觉", "图像识别", "文字识别", "圖片識別", "文字辨識", "ビジョン", "画像認識", "文字認識", "비전", "이미지 인식", "문자 인식", "зрение", "распознавание изображений", "распознавание текста"],
+  "multi-agent": ["multi-agent", "multi agent", "subagent", "sub-agent", "agent orchestration", "swarm", "多代理", "子代理", "代理编排", "多代理協作", "代理協調", "マルチエージェント", "サブエージェント", "멀티 에이전트", "하위 에이전트", "мультиагент", "субагент", "оркестрация агентов"],
+  "ui-themes": ["ui theme", "ui themes", "theme", "themes", "skin", "skins", "interface", "frontend ui", "界面", "主题", "皮肤", "介面", "主題", "外觀", "テーマ", "スキン", "インターフェース", "테마", "스킨", "인터페이스", "тема", "интерфейс", "оформление"]
+}

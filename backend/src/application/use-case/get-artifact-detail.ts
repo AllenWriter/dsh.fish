@@ -24,7 +24,13 @@ export class GetArtifactDetail {
       throw DomainError.notFound('No such artifact.', { artifactId })
     }
 
-    if (locale === undefined) return toDetailDto(artifact, undefined, undefined, this.askEnabled)
+    const availability = (await this.artifacts.listAvailableLocales?.(artifact.id)) ?? []
+    const availableLocales = ['en', ...availability.map((entry) => entry.locale)].filter(
+      (value, index, list) => list.indexOf(value) === index,
+    )
+
+    if (locale === undefined)
+      return toDetailDto(artifact, undefined, undefined, this.askEnabled, availableLocales)
 
     const source = artifact.readmeMarkdown
     const [translation, summaryTranslation] = await Promise.all([
@@ -40,7 +46,7 @@ export class GetArtifactDetail {
         ? { markdown: translation.markdown, locale: translation.locale }
         : undefined
     const localizedSummary = await this.currentSummaryText(summaryTranslation, artifact.summary)
-    return toDetailDto(artifact, localized, localizedSummary, this.askEnabled)
+    return toDetailDto(artifact, localized, localizedSummary, this.askEnabled, availableLocales)
   }
 
   private async currentSummaryText(

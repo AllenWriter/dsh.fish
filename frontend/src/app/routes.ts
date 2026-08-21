@@ -31,6 +31,7 @@ export default [
   route(':locale?/browse', './pages/browse/browse-page.tsx'),
   route(':locale?/kind/:kind', './pages/kind/kind-page.tsx'),
   route(':locale?/category/:category', './pages/category/category-page.tsx'),
+  route(':locale?/for/:topic', './pages/topic/topic-page.tsx'),
   route(':locale?/a/:artifactId', './pages/artifact-detail/artifact-detail-page.tsx'),
   // Per-artifact assets. No locale prefix: one bitmap and one badge serve every
   // language variant of the page — the text next to them stays localized in

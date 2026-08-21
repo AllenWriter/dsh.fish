@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "dsh-fish",
   "main": "./workers/app.ts",
-  "compatibility_date": "2026-08-01",
+  "compatibility_date": "2026-08-21",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./build/client",
@@ -34,6 +34,9 @@
     // snippet. Production HTML loads it; local/e2e builds do not send hits.
     "GA_MEASUREMENT_ID": "G-Q5QS4DS9F5",
     "ARTIFACT_ASK_ENABLED": "true",
+    // Deploy migration/backfill first, then enable independently for rollback.
+    "CATALOG_FTS_SEARCH": "false",
+    "SEO_LOCALE_GATING": "false",
   },
   "d1_databases": [
     {

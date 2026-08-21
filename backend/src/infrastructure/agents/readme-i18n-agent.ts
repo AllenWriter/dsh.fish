@@ -27,7 +27,7 @@ export interface EnqueueReadmeInput extends ScheduleReadmeLocalizationInput {
 interface TranslateLocaleTask {
   readonly artifactId: string
   readonly locale: string
-  readonly sourceHash: string
+  readonly sourceHash?: string
   readonly summaryHash: string
 }
 
@@ -53,16 +53,23 @@ export class ReadmeI18nAgent extends Agent<HubEnv> {
       throw new Error('README localization needs valid target locales.')
     }
 
-    const sourceHash = await readmeDigest(input.markdown)
+    const sourceHash =
+      input.markdown === undefined ? undefined : await readmeDigest(input.markdown)
     const summaryHash = await readmeDigest(input.summary)
+    // Also advances the source hashes, topic membership and base FTS document;
+    // the stock backfill therefore prepares search before its rollout flag is enabled.
+    await this.artifactRepository().refreshSearchMetadata(artifactId)
     const translations = this.translationRepository()
     const summaries = this.summaryRepository()
 
     for (const locale of locales) {
       const task: TranslateLocaleTask = { artifactId, locale, sourceHash, summaryHash }
-      const readmeStale = await this.isStale(translations, task)
+      const readmeStale = sourceHash !== undefined && (await this.isStale(translations, task))
       const summaryStale = await this.isStale(summaries, task)
-      if (!readmeStale && !summaryStale) continue
+      if (!readmeStale && !summaryStale) {
+        await this.artifactRepository().refreshLocalizedSearchDocument(artifactId, locale)
+        continue
+      }
 
       if (readmeStale) await translations.save(readmeRecord(task, 'pending'))
       if (summaryStale) await summaries.save(summaryRecord(task, 'pending'))
@@ -118,6 +125,7 @@ export class ReadmeI18nAgent extends Agent<HubEnv> {
     }
 
     if (failures.length > 0) throw new Error(failures.join('; '))
+    await this.artifactRepository().refreshLocalizedSearchDocument(artifactId, task.locale)
   }
 
   /**
@@ -148,7 +156,7 @@ export class ReadmeI18nAgent extends Agent<HubEnv> {
   ): Promise<boolean> {
     const existing = await repository.find(slug(task.artifactId), task.locale)
     const hash = repository instanceof D1SummaryTranslationRepository ? task.summaryHash : task.sourceHash
-    return existing?.sourceHash !== hash || existing.status === 'failed'
+    return existing?.sourceHash !== hash || existing?.status === 'failed'
   }
 
   private artifactRepository(): D1ArtifactRepository {
@@ -169,6 +177,7 @@ function readmeRecord(
   status: ReadmeTranslation['status'],
   result: { readonly markdown?: string; readonly error?: string } = {},
 ): ReadmeTranslation {
+  if (task.sourceHash === undefined) throw new Error('README task has no source hash.')
   return {
     artifactId: slug(task.artifactId),
     locale: task.locale,

@@ -37,3 +37,18 @@ __START_FRONTEND__
 ```
 
 Replace these with real commands when the stack is selected.
+
+## SEO/search rollout
+
+1. Apply D1 migration `0009_flimsy_machine_man` with both rollout variables
+   false.
+2. Let the localization backfill traverse the full catalog; it refreshes source
+   hashes, topics and search documents as well as translations.
+3. Compare document/topic counts with non-deprecated artifact counts and test
+   representative Latin and CJK queries.
+4. Set `CATALOG_FTS_SEARCH=true`; revert the variable if D1 errors or query
+   quality regress.
+5. Check current locale coverage, then set `SEO_LOCALE_GATING=true`; this switch
+   is independently reversible.
+6. Purge the edge cache, sample the sitemap files, and submit the sitemap index
+   through verified webmaster properties.

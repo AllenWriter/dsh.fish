@@ -40,9 +40,9 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
     }),
     // Page two of a listing is a real page, but it is not the page anyone
     // should land on for the term — the first page is, and it is canonical.
-    index: offset === 0,
+    index: offset === 0 && results.total > 0,
     jsonLd:
-      offset > 0
+      offset > 0 || results.total === 0
         ? []
         : [
             breadcrumbLd(origin, locale, [

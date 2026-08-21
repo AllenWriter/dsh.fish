@@ -36,9 +36,9 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
       category: name,
       count: results.total,
     }),
-    index: offset === 0,
+    index: offset === 0 && results.total > 0,
     jsonLd:
-      offset > 0
+      offset > 0 || results.total === 0
         ? []
         : [
             breadcrumbLd(origin, locale, [

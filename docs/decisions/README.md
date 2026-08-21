@@ -18,6 +18,7 @@ Write an ADR when the decision:
 - [`adr-0003-locale-prefix-with-preference-cookie.md`](adr-0003-locale-prefix-with-preference-cookie.md) — language prefixes, plus a cookie that remembers the reader's choice.
 - [`adr-0004-artifact-ask-via-ada.md`](adr-0004-artifact-ask-via-ada.md) — anonymous Ada-backed Q&A on GitHub artifact pages.
 - [`adr-0005-product-docs-with-fumadocs.md`](adr-0005-product-docs-with-fumadocs.md) — grow `/docs` into a section; adopt Fumadocs (`core` + `mdx`, custom shell) for that section only. Accepted.
+- [`adr-0006-locale-gated-fts-search.md`](adr-0006-locale-gated-fts-search.md) — derived D1 FTS5 documents and hash-current locale gates.
 
 ## Naming
 

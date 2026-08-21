@@ -1,5 +1,6 @@
 import type { Slug } from '../shared/slug.js'
 import { CATEGORIES, knownCategories, normalizeCategories } from './category.js'
+import { normalizeSearchText } from './topic.js'
 
 /**
  * What a row can be categorised from when its author declared nothing.
@@ -105,9 +106,8 @@ for (const [categoryId, tokens] of Object.entries(TOKENS)) {
 }
 
 function tokenize(raw: string): readonly string[] {
-  return raw
-    .toLowerCase()
-    .split(/[^a-z0-9+-]+/)
+  return normalizeSearchText(raw)
+    .split(/[^\p{L}\p{N}+#-]+/u)
     .flatMap((word) => (word.includes('-') ? [word, ...word.split('-')] : [word]))
     .filter((word) => word.length > 1 && !STOP_TOKENS.has(word))
 }

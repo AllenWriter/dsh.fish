@@ -3,8 +3,15 @@ import migrationSql from '../../../migrations/0004_artifact_source_commit_sha.sq
 import readmeMigrationSql from '../../../migrations/0005_minor_ultimo.sql?raw'
 import reviewsMigrationSql from '../../../migrations/0006_lucky_firestar.sql?raw'
 import popularityMigrationSql from '../../../migrations/0008_artifact_popularity.sql?raw'
+import searchMigrationSql from '../../../migrations/0009_flimsy_machine_man.sql?raw'
 import journal from '../../../migrations/meta/_journal.json'
-import { artifactReadmeTranslations, artifactReviews, artifacts } from './catalog-schema.js'
+import {
+  artifactReadmeTranslations,
+  artifactReviews,
+  artifactSearchDocuments,
+  artifactTopics,
+  artifacts,
+} from './catalog-schema.js'
 
 /**
  * The schema, the migration and the journal are written by hand and must
@@ -54,5 +61,18 @@ describe('artifact reviews', () => {
     expect(reviewsMigrationSql).toContain('CREATE TABLE `artifact_reviews`')
     expect(reviewsMigrationSql).toContain('PRIMARY KEY(`artifact_id`, `account_id`)')
     expect(journal.entries.map((entry) => entry.tag)).toContain('0006_lucky_firestar')
+  })
+})
+
+describe('locale-aware catalog search', () => {
+  it('keeps exportable documents and derived FTS objects in one migration', () => {
+    expect(artifactSearchDocuments.locale.notNull).toBe(true)
+    expect(artifactTopics.topicId.notNull).toBe(true)
+    expect(artifacts.summaryHash.name).toBe('summary_hash')
+    expect(searchMigrationSql).toContain('CREATE TABLE `artifact_search_documents`')
+    expect(searchMigrationSql).toContain('CREATE VIRTUAL TABLE `artifact_search_fts` USING fts5')
+    expect(searchMigrationSql).toContain('CREATE TRIGGER `artifact_search_documents_au`')
+    expect(searchMigrationSql).toContain("VALUES ('rebuild')")
+    expect(journal.entries.map((entry) => entry.tag)).toContain('0009_flimsy_machine_man')
   })
 })

@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { ARTIFACT_KINDS } from '../../../domain/artifact/artifact-kind.js'
+import { TOPIC_IDS } from '../../../domain/artifact/topic.js'
 import type { HubBindings } from '../app.js'
 
 const searchQuery = z.object({
@@ -12,6 +13,7 @@ const searchQuery = z.object({
     .optional(),
   kind: z.array(z.enum(ARTIFACT_KINDS)).optional(),
   category: z.array(z.string()).optional(),
+  topic: z.array(z.enum(TOPIC_IDS)).optional(),
   sort: z.enum(['relevance', 'popular', 'recent', 'name', 'rising']).optional(),
   verified: z.coerce.boolean().optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
@@ -45,11 +47,13 @@ export function catalogRoutes() {
       ...context.req.query(),
       kind: context.req.queries('kind'),
       category: context.req.queries('category'),
+      topic: context.req.queries('topic'),
     })
     const result = await context.get('container').useCases.searchArtifacts.execute({
       ...(parsed.q === undefined ? {} : { text: parsed.q }),
       ...(parsed.kind === undefined ? {} : { kinds: parsed.kind }),
       ...(parsed.category === undefined ? {} : { categories: parsed.category }),
+      ...(parsed.topic === undefined ? {} : { topics: parsed.topic }),
       ...(parsed.sort === undefined ? {} : { sort: parsed.sort }),
       ...(parsed.verified === undefined ? {} : { verifiedOnly: parsed.verified }),
       ...(parsed.limit === undefined ? {} : { limit: parsed.limit }),

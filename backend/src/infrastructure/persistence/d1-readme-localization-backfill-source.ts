@@ -1,4 +1,4 @@
-import { and, asc, eq, exists, gt, isNotNull, lt, notExists, or, sql } from 'drizzle-orm'
+import { and, asc, eq, exists, gt, lt, notExists, or, sql } from 'drizzle-orm'
 import type { DrizzleD1Database } from 'drizzle-orm/d1'
 import type { ReadmeLocalizationBackfillSource } from '../../application/port/readme-localization.js'
 import type { Slug } from '../../domain/shared/slug.js'
@@ -26,8 +26,7 @@ export class D1ReadmeLocalizationBackfillSource implements ReadmeLocalizationBac
       .from(artifacts)
       .where(
         and(
-          isNotNull(artifacts.readmeMarkdown),
-          sql`trim(${artifacts.readmeMarkdown}) <> ''`,
+          eq(artifacts.deprecated, false),
           ...(afterArtifactId === undefined ? [] : [gt(artifacts.id, afterArtifactId)]),
         ),
       )
@@ -75,8 +74,7 @@ export class D1ReadmeLocalizationBackfillSource implements ReadmeLocalizationBac
       .from(artifacts)
       .where(
         and(
-          isNotNull(artifacts.readmeMarkdown),
-          sql`trim(${artifacts.readmeMarkdown}) <> ''`,
+          eq(artifacts.deprecated, false),
           or(exists(failedReadme), exists(failedSummary), notExists(anySummary)),
         ),
       )
@@ -88,8 +86,9 @@ export class D1ReadmeLocalizationBackfillSource implements ReadmeLocalizationBac
 }
 
 function readmeRow(row: { artifactId: string; markdown: string | null; summary: string }) {
-  if (row.markdown === null) {
-    throw new Error('README backfill projection returned a null README.')
+  return {
+    artifactId: slug(row.artifactId),
+    ...(row.markdown === null || row.markdown.trim() === '' ? {} : { markdown: row.markdown }),
+    summary: row.summary,
   }
-  return { artifactId: slug(row.artifactId), markdown: row.markdown, summary: row.summary }
 }

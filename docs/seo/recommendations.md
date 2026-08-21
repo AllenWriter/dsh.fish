@@ -25,6 +25,12 @@ Then, in Search Console, check the **International Targeting** report. It is the
 only place a broken `hreflang` cluster shows up as an error rather than as
 silence.
 
+The current Google account does not have access to a `dsh.fish` Search Console
+property. The operator must verify the domain property, submit
+`https://dsh.fish/sitemap.xml`, request validation of stale HTTP and retired
+locale URLs, and compare indexed pages by locale after the locale gate rolls
+out.
+
 ### Confirm `PUBLIC_BASE_URL` is the production origin
 
 Every canonical URL and every sitemap `<loc>` is built from
@@ -131,14 +137,12 @@ worse than no guide.
 reuses the collection page machinery. Worth doing once the catalog has enough
 authors with more than one artifact for the pages not to be near-empty.
 
-### Search-result pages for high-intent queries
+### Search-result pages for high-intent queries — implemented
 
-`/browse?q=postgres` is `noindex` and should stay that way. But a small,
-curated set of paths like `/for/postgres` — hand-picked term, hand-written
-intro, machine-generated listing — is a different thing from an auto-generated
-search page, and is what directories that rank actually do. Only worth it if
-someone will curate them; auto-generating them is how a site earns a thin-content
-penalty.
+`/browse?q=postgres` remains `noindex`. Six curated `/for/<topic>` pages cover
+memory, code review, web search, vision/OCR, multi-agent systems and UI themes.
+They use a bounded taxonomy rather than turning arbitrary searches into URLs,
+and require at least three results before indexing.
 
 ### `IndexNow` — done
 

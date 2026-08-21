@@ -12,11 +12,13 @@ import { slug } from '../../domain/shared/slug.js'
 import type { ArtifactSummaryDto, PageDto } from '../dto/artifact-dto.js'
 import { toPageDto, toSummaryDto } from '../dto/artifact-dto.js'
 import { readmeDigest } from '../lib/readme-digest.js'
+import { isTopic } from '../../domain/artifact/topic.js'
 
 export interface SearchArtifactsInput {
   readonly text?: string
   readonly kinds?: readonly string[]
   readonly categories?: readonly string[]
+  readonly topics?: readonly string[]
   readonly verifiedOnly?: boolean
   readonly includeDeprecated?: boolean
   readonly sort?: string
@@ -50,6 +52,10 @@ export class SearchArtifacts {
       ...(input.categories === undefined || input.categories.length === 0
         ? {}
         : { categories: input.categories.map(assertCategory) }),
+      ...(input.topics === undefined || input.topics.length === 0
+        ? {}
+        : { topics: input.topics.map(assertTopic) }),
+      ...(input.locale === undefined ? {} : { locale: input.locale }),
       ...(input.verifiedOnly === undefined ? {} : { verifiedOnly: input.verifiedOnly }),
       ...(input.includeDeprecated === undefined
         ? {}
@@ -83,6 +89,13 @@ export class SearchArtifacts {
       summary: summaryByArtifact.get(String(artifact.id)) ?? artifact.summary,
     }))
   }
+}
+
+function assertTopic(raw: string) {
+  if (!isTopic(raw)) {
+    throw DomainError.invalid('Unknown topic.', { raw })
+  }
+  return raw
 }
 
 function assertCategory(raw: string) {

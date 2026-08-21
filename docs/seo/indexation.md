@@ -13,6 +13,7 @@ canonical home of something.
 | `/a/:artifactId`                    | ✅                   | The reason the site exists. One per indexed plugin, per language.                                                                                                               |
 | `/kind/:kind`                       | ✅ (page 1)          | "MCP servers for DeepSeek Harness" is a phrase people type.                                                                                                                     |
 | `/category/:category`               | ✅ (page 1)          | The "what is it for" axis people search along.                                                                                                                                  |
+| `/for/:topic`                       | ✅ (page 1, ≥3 rows) | Curated workflow pages; thin and paginated variants remain `noindex, follow`.                                                                                                   |
 | `/browse` (bare)                    | ✅                   | The catalog itself.                                                                                                                                                             |
 | `/browse?…` any query               | ❌ `noindex, follow` | A view of a listing that already has a canonical home.                                                                                                                          |
 | `/kind/…?offset=`                   | ❌ `noindex, follow` | Page two is a real page but not the page to land on for the term.                                                                                                               |
@@ -44,6 +45,14 @@ Three mechanisms, together:
 
 Keyword links on a plugin page point at `/browse?q=<keyword>` and are
 `nofollow` for the same reason.
+
+## Locale quality gate
+
+Artifact translations are indexable only when the translated summary and, when
+the artifact has one, translated README are both `completed` and match the
+current policy-aware source hashes. `availableLocales` exposes that decision to
+the page head and sitemap. `SEO_LOCALE_GATING=false` preserves the previous
+all-locale behavior during backfill; enable it only after checking coverage.
 
 ## Pagination
 

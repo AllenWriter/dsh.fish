@@ -5,6 +5,7 @@ export interface SitemapEntryDto {
   readonly id: string
   /** ISO 8601. `xml.ts` emits this as W3C Datetime `<lastmod>`. */
   readonly updatedAt: string
+  readonly locales: readonly { locale: string; updatedAt: string }[]
 }
 
 export interface SitemapPageDto {
@@ -38,7 +39,11 @@ export const SITEMAP_PAGE_SIZE = 1_000
  * make every browse page pay for a projection it does not use.
  */
 export class ListSitemapEntries {
-  constructor(private readonly artifacts: ArtifactRepository) {}
+  constructor(
+    private readonly artifacts: ArtifactRepository,
+    private readonly supportedLocales: readonly string[] = ['en'],
+    private readonly localeGating = false,
+  ) {}
 
   async execute(pageNumber = 0): Promise<SitemapPageDto> {
     if (!Number.isInteger(pageNumber) || pageNumber < 0) {
@@ -54,6 +59,18 @@ export class ListSitemapEntries {
       items: result.items.map((entry) => ({
         id: entry.id as string,
         updatedAt: entry.updatedAt.toISOString(),
+        locales: this.localeGating
+          ? [
+              { locale: 'en', updatedAt: entry.updatedAt.toISOString() },
+              ...(entry.locales ?? []).map((locale) => ({
+                locale: locale.locale,
+                updatedAt: locale.updatedAt.toISOString(),
+              })),
+            ]
+          : this.supportedLocales.map((locale) => ({
+              locale,
+              updatedAt: entry.updatedAt.toISOString(),
+            })),
       })),
       total: result.total,
       // At least one file even when the catalog is empty: a sitemap index that

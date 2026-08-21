@@ -10,6 +10,7 @@ import {
   sourceUrl,
 } from '../../domain/artifact/source-ref.js'
 import type { Page } from '../../domain/shared/pagination.js'
+import { inferTopics } from '../../domain/artifact/topic.js'
 
 /**
  * Transport shapes. Entities never cross the interface boundary: a DTO is JSON
@@ -22,6 +23,7 @@ export interface ArtifactSummaryDto {
   readonly summary: string
   readonly keywords: readonly string[]
   readonly categories: readonly string[]
+  readonly topics: readonly string[]
   readonly sourceOrigin: string
   readonly sourceUrl: string
   readonly author?: { name: string; url?: string }
@@ -42,6 +44,8 @@ export interface ArtifactSummaryDto {
 }
 
 export interface ArtifactDetailDto extends ArtifactSummaryDto {
+  /** Locales whose summary and, when present, README are current. */
+  readonly availableLocales: readonly string[]
   readonly payload: ArtifactPayload
   readonly readmeMarkdown?: string
   /** Locale of the generated README returned for this request. */
@@ -102,6 +106,10 @@ export function toSummaryDto(artifact: Artifact): ArtifactSummaryDto {
     summary: artifact.summary,
     keywords: artifact.keywords,
     categories: artifact.categories.map(String),
+    topics: inferTopics({
+      keywords: artifact.keywords,
+      text: [artifact.displayName, artifact.summary, artifact.readmeMarkdown ?? ''].join(' '),
+    }),
     sourceOrigin: artifact.source.origin,
     sourceUrl: sourceUrl(artifact.source),
     ...(artifact.author === undefined ? {} : { author: artifact.author }),
@@ -124,6 +132,7 @@ export function toDetailDto(
   localizedReadme?: { readonly markdown: string; readonly locale: string },
   localizedSummary?: string,
   askEnabled = false,
+  availableLocales: readonly string[] = ['en'],
 ): ArtifactDetailDto {
   const docBase = sourceDocBase(artifact.source)
   const assetBase = sourceAssetBase(artifact.source)
@@ -133,6 +142,7 @@ export function toDetailDto(
     ...toSummaryDto(artifact),
     ...(localizedSummary === undefined ? {} : { summary: localizedSummary }),
     payload: artifact.payload,
+    availableLocales,
     ...(localizedReadme !== undefined
       ? {
           readmeMarkdown: localizedReadme.markdown,

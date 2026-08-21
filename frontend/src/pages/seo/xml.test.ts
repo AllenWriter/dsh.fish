@@ -109,6 +109,24 @@ describe('urlSetXml', () => {
     expect(englishOnly).not.toContain(`${ORIGIN}/ja/docs`)
     expect(englishOnly).not.toContain('<xhtml:link')
   })
+
+  it('omits x-default when the available locale set has no English document', () => {
+    const localized = urlSetXml(ORIGIN, [{ path: '/a/example', locales: ['ja', 'ko'] }])
+    expect(localized).not.toContain('hreflang="x-default"')
+  })
+
+  it('uses locale-specific lastmod values', () => {
+    const localized = urlSetXml(ORIGIN, [
+      {
+        path: '/a/example',
+        locales: ['en', 'ja'],
+        lastModified: '2026-01-01T00:00:00.000Z',
+        localeLastModified: { ja: '2026-02-02T00:00:00.000Z' },
+      },
+    ])
+    expect(localized).toContain('<lastmod>2026-01-01T00:00:00Z</lastmod>')
+    expect(localized).toContain('<lastmod>2026-02-02T00:00:00Z</lastmod>')
+  })
 })
 
 describe('sitemapIndexXml', () => {
