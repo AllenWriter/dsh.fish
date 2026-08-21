@@ -30,8 +30,13 @@ catalog tables and the Better Auth tables, so one migration set covers both.
 ```sh
 pnpm --filter @dsh-fish/backend run db:generate   # only after a schema change
 pnpm run db:migrate:local                          # local dev database
-pnpm run db:migrate:remote                         # production
+pnpm run db:migrate:remote                         # production recovery/manual use
 ```
+
+Normal production releases do not run the remote migration command separately.
+`pnpm run deploy` applies every pending D1 migration after a successful build
+and before it uploads the new Worker. Keeping the standalone command is useful
+for incident recovery and for inspecting a migration outside the release path.
 
 Regenerating the auth half after changing `createAuth`:
 
@@ -123,12 +128,37 @@ pnpm --filter @dsh-fish/frontend run cf-typegen
 pnpm run deploy
 ```
 
-This builds the client assets and the SSR bundle, then runs `wrangler deploy`.
+This is the only production deploy command. It runs these steps in order:
+
+1. Build the client assets and SSR bundle.
+2. Apply pending migrations to the remote D1 database.
+3. Run `wrangler deploy` only if both earlier steps succeeded.
+
+Wrangler captures a D1 backup before applying migrations and rolls back a
+failing migration. The deployment orchestrator also stops before uploading the
+Worker when the build or migration command exits unsuccessfully. Its unit tests
+pin both the step order and this fail-closed behavior. Because the migration
+runs before the new Worker, every production migration must be
+backward-compatible with the currently deployed version; use
+expand-and-contract changes when a schema transition needs more than one
+release.
 
 The checked-in GitHub Actions workflow runs validation only; it does not deploy
 and has no Cloudflare credential. A push starts production deployment only when
 the repository is connected through Cloudflare Workers Builds (configured
-outside this repository). Without that integration, run `pnpm run deploy`
+outside this repository). Its production deploy command must be
+`pnpm --filter @dsh-fish/frontend run deploy:built`, never a bare
+`wrangler deploy`, because the bare command bypasses migrations. Configure the
+Workers Builds stages as:
+
+- Build command: `pnpm run build`.
+- Deploy command: `pnpm --filter @dsh-fish/frontend run deploy:built`.
+- Preview version command: `pnpm --filter @dsh-fish/frontend exec wrangler versions upload`.
+
+`deploy:built` deliberately skips the build that Workers Builds already
+completed; it applies remote D1 migrations and deploys the resulting Worker.
+Workers Builds uses the separate preview command on other branches, so previews
+do not mutate production D1. Without the integration, run `pnpm run deploy`
 after the push. The README stock backfill begins on the first minutely Cron
 invocation after the new Worker and its trigger configuration are active.
 
