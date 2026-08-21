@@ -93,6 +93,12 @@ INSERT INTO artifacts (
   1750896000000, 1752192000000, 1752192000000
 );
 
+-- Same formula as `listRank` / migration 0008. Seed INSERTs omit the column so
+-- a pre-migration local DB still applies; this write is what listing sorts read.
+UPDATE artifacts SET popularity = (`installs` * 3 + `stars` + `downloads` / 10.0)
+  * (CASE WHEN `owner_account_id` IS NOT NULL THEN 1.25 ELSE 1 END)
+  * (CASE WHEN `deprecated` THEN 0.1 ELSE 1 END);
+
 INSERT INTO artifact_search (artifact_id, haystack)
 SELECT id, lower(display_name || ' ' || summary) FROM artifacts;
 

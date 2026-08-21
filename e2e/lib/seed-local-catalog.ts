@@ -2,6 +2,7 @@ import { writeFileSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { execSync } from 'node:child_process'
 import { kitchenSinkReadme, KITCHEN_SINK_ARTIFACT_ID } from './kitchen-sink-readme.ts'
+import { paginationFillerSql } from './pagination-fillers.ts'
 import { sqlString } from './sql.ts'
 import { E2E_ORIGIN } from './origin.ts'
 
@@ -21,6 +22,7 @@ export function seedLocalCatalog(root: string): void {
   const combined = [
     readFileSync(resolve(root, 'backend/scripts/seed-local.sql'), 'utf8'),
     `UPDATE artifacts SET readme_markdown = ${sqlString(kitchenSinkReadme())} WHERE id = ${sqlString(KITCHEN_SINK_ARTIFACT_ID)};`,
+    paginationFillerSql(),
     '',
   ].join('\n')
   const sqlPath = resolve(root, 'e2e/.generated-kitchen-sink.sql')

@@ -47,6 +47,14 @@ export default defineConfig({
   projects: [
     ...mobileProjects(),
     {
+      name: 'catalog-pagination',
+      testMatch: /catalog-pagination\/.*\.spec\.ts/,
+      use: {
+        viewport: { width: 1280, height: 900 },
+        defaultBrowserType: 'chromium',
+      },
+    },
+    {
       name: 'catalog-og',
       testMatch: /catalog-og\/.*\.spec\.ts/,
       use: {
