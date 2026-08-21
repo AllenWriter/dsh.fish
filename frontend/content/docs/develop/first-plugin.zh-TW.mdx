@@ -3,7 +3,9 @@ title: 開發第一個外掛程式
 description: 建立一個最小的 DeepSeek Harness 外掛程式，用原始碼 overlay 載入，並在 Web UI 中觀察它的執行。
 ---
 
-DeepSeek Harness 由外掛程式組合而成。外掛程式是一個匯出 `apply` 函式的 TypeScript 模組。harness 載入外掛程式時會呼叫 `apply`，並傳入一個 Cordis context，外掛程式註冊的一切都經過這個物件。
+DeepSeek Harness 由外掛程式組合而成。
+
+外掛程式是一個匯出 `apply` 函式的 TypeScript 模組。harness 載入外掛程式時會呼叫 `apply`，並傳入一個 Cordis context，外掛程式註冊的一切都經過這個物件。
 
 本教學會做一個最小的外掛程式，把它載入 Web UI，再把它移除。流程在 DeepSeek Harness 原始碼倉庫中執行，請先完成官方的原始碼啟動步驟。
 
@@ -62,7 +64,9 @@ pnpm dsh web --patch ./scratch-plugin/cordis.yml
 
 ## 在 Web UI 中驗證
 
-開啟 `http://127.0.0.1:3080`。啟動過程中終端會印出 `[hello-plugin] plugin loaded!`。發送一則訊息並觀察這次執行：Web UI 會列出每個步驟，包括模型的 Think 列和每次工具呼叫的輸入與輸出。
+開啟 `http://127.0.0.1:3080`。啟動過程中終端會印出 `[hello-plugin] plugin loaded!`。
+
+發送一則訊息並觀察這次執行：Web UI 會列出每個步驟，包括模型的 Think 列和每次工具呼叫的輸入與輸出。
 
 <DocsVideo
   src="/docs/video/develop-observe.zh-TW.mp4"

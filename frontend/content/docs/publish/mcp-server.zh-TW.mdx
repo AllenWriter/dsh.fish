@@ -40,4 +40,6 @@ Harness 沒有為這種構件定義清單慣例：MCP server 安裝為 profile p
 npx @dsh-fish/cli add <artifact-id> --profile <profile>
 ```
 
-目錄只存憑據參照，不存密鑰值。產生的設定列中，每個密鑰在載入時從處理程序環境解析（`!!js process.env.GITHUB_TOKEN`），而每個必要憑據的值都要在伺服器執行前填入。這就是目錄列可以公開提供的原因。
+目錄只存憑據參照，不存密鑰值。產生的設定列中，每個密鑰在載入時從處理程序環境解析（`!!js process.env.GITHUB_TOKEN`）。每個必要憑據的值都要在伺服器執行前填入。
+
+這就是目錄列可以公開提供的原因。

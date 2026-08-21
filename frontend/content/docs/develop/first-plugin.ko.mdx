@@ -3,7 +3,9 @@ title: 첫 플러그인 만들기
 description: 최소 DeepSeek Harness 플러그인을 만들고 소스 overlay로 불러온 뒤 Web UI에서 동작을 확인합니다.
 ---
 
-DeepSeek Harness는 플러그인으로 이루어져 있습니다. 플러그인은 `apply` 함수를 export하는 TypeScript 모듈입니다. harness는 플러그인을 불러올 때 `apply`를 호출하면서 Cordis context를 넘기고, 플러그인이 등록하는 모든 것이 이 객체를 거칩니다.
+DeepSeek Harness는 플러그인으로 이루어져 있습니다.
+
+플러그인은 `apply` 함수를 export하는 TypeScript 모듈입니다. harness는 플러그인을 불러올 때 `apply`를 호출하면서 Cordis context를 넘기고, 플러그인이 등록하는 모든 것이 이 객체를 거칩니다.
 
 이 튜토리얼에서는 가장 작은 플러그인을 만들어 Web UI에 불러온 뒤 다시 제거합니다. 과정은 DeepSeek Harness 소스 checkout에서 진행하므로, 먼저 공식 소스 실행 설정을 마치세요.
 
@@ -62,7 +64,9 @@ pnpm dsh web --patch ./scratch-plugin/cordis.yml
 
 ## Web UI에서 확인하기
 
-`http://127.0.0.1:3080`을 엽니다. 시작하는 동안 터미널에 `[hello-plugin] plugin loaded!`가 출력됩니다. 메시지를 전송하고 실행을 살펴 봅니다. Web UI에는 각 단계가 차례로 표시되고, 모델의 Think 행과 입력·출력이 있는 도구 호출도 볼 수 있습니다.
+`http://127.0.0.1:3080`을 엽니다. 시작하는 동안 터미널에 `[hello-plugin] plugin loaded!`가 출력됩니다.
+
+메시지를 전송하고 실행을 살펴 봅니다. Web UI에는 각 단계가 차례로 표시되고, 모델의 Think 행과 입력·출력이 있는 도구 호출도 볼 수 있습니다.
 
 <DocsVideo
   src="/docs/video/develop-observe.ko.mp4"

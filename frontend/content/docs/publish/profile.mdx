@@ -5,7 +5,9 @@ description: A profile artifact is an ordered bundle list for a complete harness
 
 A profile is an ordered list of bundles that together form a complete, runnable harness composition.
 
-The word names two different things. The artifact on this page is a published bundle list. The `--profile` runtime flag picks which local composition boots: `dsh --profile web` runs the profile stored under `$DSH_HOME/profiles/web`. Installing a profile artifact means adding its bundles, in order, to a local profile you choose; you then boot that profile with the flag.
+The word names two different things. The artifact on this page is a published bundle list. The `--profile` runtime flag picks which local composition boots: `dsh --profile web` runs the profile stored under `$DSH_HOME/profiles/web`.
+
+Installing a profile artifact means adding its bundles, in order, to a local profile you choose. You then boot that profile with the flag.
 
 ## Manifest contract
 
@@ -21,7 +23,7 @@ A package declares a profile through `dsh.profile.bundles`:
 }
 ```
 
-Every profile starts from `@deepseek-ai/dsh-base`, the shared core layer. Later layers win per row, and a patch replaces a row's whole config rather than deep-merging it, so order changes the result.
+Every profile starts from `@deepseek-ai/dsh-base`, the shared core layer. Later layers win per row. A patch replaces a row's whole config rather than deep-merging it, so order changes the result.
 
 A package that declares both `dsh.profile` and `dsh.bundle` classifies as a profile, because a profile is itself an ordered stack of bundles.
 

@@ -3,7 +3,9 @@ title: Register a tool
 description: Add a typed tool to a DeepSeek Harness plugin and verify its input, result, and cleanup behavior.
 ---
 
-A tool is an operation the model can request. Keep it narrow: one clear outcome, every input validated, useful evidence returned, no hidden side effects.
+A tool is an operation the model can request.
+
+Keep it narrow: one clear outcome, every input validated, useful evidence returned, no hidden side effects.
 
 ## Define the tool
 
@@ -39,7 +41,11 @@ export function apply(ctx: Context) {
 }
 ```
 
-`inject` declares the services the plugin needs; the framework waits for each one before running `apply`, so `ctx.tools` is ready here. `defineTool` infers and validates `args` from `parameters`. `execute` returns the value declared by `output.schema`, and `output.render` converts that value into content the model sees.
+`inject` declares the services the plugin needs; the framework waits for each one before running `apply`, so `ctx.tools` is ready here.
+
+`defineTool` infers and validates `args` from `parameters`.
+
+`execute` returns the value declared by `output.schema`, and `output.render` converts that value into content the model sees.
 
 Register inside `apply(ctx)`. Registrations through `ctx` are effects, so unloading the plugin removes the tool.
 

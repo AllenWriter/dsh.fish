@@ -45,7 +45,25 @@ Hook bridge は、あなたが Claude Code や Codex 用に書いた shell hook 
 }
 ```
 
-matcher が照合するのはツール名で、実行されるのは `type: "command"` の hook だけです。Claude Code 方言は 7 つのイベントをサポートします：`SessionStart`、`UserPromptSubmit`、`PreToolUse`、`PostToolUse`、`Stop`、`SubagentStart`、`SubagentStop`。Codex 方言は同じイベントマップ形式で、そのうち 5 つ（`SessionStart`、`UserPromptSubmit`、`PreToolUse`、`PostToolUse`、`Stop`）をサポートし、同期の command hook のみを実行します。
+matcher が照合するのはツール名で、実行されるのは `type: "command"` の hook だけです。
+
+Claude Code 方言は 7 つのイベントをサポートします：
+
+- `SessionStart`
+- `UserPromptSubmit`
+- `PreToolUse`
+- `PostToolUse`
+- `Stop`
+- `SubagentStart`
+- `SubagentStop`
+
+Codex 方言は同じイベントマップ形式で、そのうち 5 つをサポートし、同期の command hook のみを実行します：
+
+- `SessionStart`
+- `UserPromptSubmit`
+- `PreToolUse`
+- `PostToolUse`
+- `Stop`
 
 ## 導入の仕組み
 

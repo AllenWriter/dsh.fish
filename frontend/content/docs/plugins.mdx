@@ -3,7 +3,9 @@ title: Plugins
 description: DeepSeek Harness keeps a small core and ships every capability as a plugin. The six artifact kinds, and why dsh.fish lets you inspect before install.
 ---
 
-DeepSeek Harness runs on Cordis, a plugin framework. The model adapter, the tool registry, the session log, and the agent loop are all plugins mounted from configuration. There is no privileged core to patch: you extend the harness by mounting a plugin beside the others, and whatever a plugin registers is disposed when it unloads.
+DeepSeek Harness runs on Cordis, a plugin framework. The model adapter, the tool registry, the session log, and the agent loop are all plugins mounted from configuration.
+
+There is no privileged core to patch: you extend the harness by mounting a plugin beside the others. Whatever a plugin registers is disposed when it unloads.
 
 That is why the core stays small. When you want a new capability, you add a plugin; you do not wait for a harness upgrade.
 
@@ -20,8 +22,16 @@ dsh.fish catalogs six artifact kinds. Each has its own manifest contract:
 
 ## The trust problem
 
-A plugin is code that runs with the permissions you granted the harness. It acts inside your workspace, and a git install can run the package's build script outside the agent sandbox. A README tells you what the author claims, not what installing would do.
+A plugin is code that runs with the permissions you granted the harness.
 
-dsh.fish exists for that gap. The catalog reads each source's real manifest and files, and every artifact page shows the install plan (the files, packages, and patch rows an install would run) before you run anything. Inspect first, then install.
+It acts inside your workspace. A git install can run the package's build script outside the agent sandbox.
+
+A README tells you what the author claims, not what installing would do.
+
+dsh.fish exists for that gap.
+
+The catalog reads each source's real manifest and files. Every artifact page shows the install plan (the files, packages, and patch rows an install would run) before you run anything.
+
+Inspect first, then install.
 
 To build a plugin of your own, start with [Build your first plugin](/docs/develop/first-plugin).

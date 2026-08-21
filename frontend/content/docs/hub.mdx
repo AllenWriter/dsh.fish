@@ -18,11 +18,15 @@ allowBuilds:
   dsh-hub: true
 ```
 
-Then run the `add` again. This allowance lets the package's own code run on your machine at install time, outside the agent's sandbox. Pin a commit so a later push cannot change what runs.
+Then run the `add` again.
+
+This allowance lets the package's own code run on your machine at install time, outside the agent's sandbox. Pin a commit so a later push cannot change what runs.
 
 ## Find
 
-`hub_search` searches the catalog by free text, and a `kind` argument restricts results to one artifact type. It returns ids you pass to the other hub tools. Reading the catalog needs no account.
+`hub_search` searches the catalog by free text, and a `kind` argument restricts results to one artifact type. It returns ids you pass to the other hub tools.
+
+Reading the catalog needs no account.
 
 <DocsVideo
   src="/docs/video/hub-search.mp4"
@@ -37,7 +41,9 @@ Then run the `add` again. This allowance lets the package's own code run on your
 
 ## Inspect
 
-`hub_show` shows one artifact in detail, including the exact commands installing it would run on this machine. `hub_reviews` reads community ratings anonymously: the 1–5 star average, the distribution, and recent comments. Check both before you let the agent install anything. The website shows the same evidence if you prefer to look there.
+`hub_show` shows one artifact in detail, including the exact commands installing it would run on this machine. `hub_reviews` reads community ratings anonymously: the 1–5 star average, the distribution, and recent comments.
+
+Check both before you let the agent install anything. The website shows the same evidence if you prefer to look there.
 
 <DocsVideo
   src="/docs/video/hub-browse.mp4"
@@ -63,7 +69,13 @@ Then run the `add` again. This allowance lets the package's own code run on your
 
 ## Install
 
-`hub_install` applies the install plan on this machine: it writes skill and preset files, adds MCP and hook rows to the profile's patch layer, and runs the package manager for bundles. Restart the harness afterwards so the new rows load.
+`hub_install` applies the install plan on this machine:
+
+- Writes skill and preset files.
+- Adds MCP and hook rows to the profile's patch layer.
+- Runs the package manager for bundles.
+
+Restart the harness afterwards so the new rows load.
 
 <DocsVideo
   src="/docs/video/hub-install.mp4"
@@ -78,19 +90,37 @@ Then run the `add` again. This allowance lets the package's own code run on your
 
 If a plan step builds a package from source, `hub_install` refuses until the caller passes `allowBuildScripts: true`. That step runs the package's code on your machine at install time, outside the agent sandbox, so the agent must come back and ask you. It cannot grant this on its own.
 
-Successful installs are recorded in `$DSH_HOME/.dsh-fish-lock.json`. `hub_list` shows what this machine installed, `hub_update` re-applies the current plan for an installed artifact, and `hub_remove` reverses a recorded install (files, patch rows, packages). The lockfile is shared with `@dsh-fish/cli`, so the [CLI](/docs/cli) sees the same installs.
+Successful installs are recorded in `$DSH_HOME/.dsh-fish-lock.json`:
+
+- `hub_list` shows what this machine installed.
+- `hub_update` re-applies the current plan for an installed artifact.
+- `hub_remove` reverses a recorded install (files, patch rows, packages).
+
+The lockfile is shared with `@dsh-fish/cli`, so the [CLI](/docs/cli) sees the same installs.
 
 ## Sign in
 
 Signing in attributes installs to your account and unlocks `hub_rate`. Reading the catalog needs no account.
 
-`hub_account` with `action: "login"` starts an OAuth device flow: the tool returns a short code and a URL, you open the URL in a browser and approve, and the plugin polls until you do. The agent cannot approve it for you. The token is written to `$DSH_HOME/.dsh-fish-token.json` with file mode 0600 and is never logged.
+`hub_account` with `action: "login"` starts an OAuth device flow:
+
+- The tool returns a short code and a URL.
+- You open the URL in a browser and approve.
+- The plugin polls until you do.
+
+The agent cannot approve it for you.
+
+The token is written to `$DSH_HOME/.dsh-fish-token.json` with file mode 0600 and is never logged.
 
 This token is weaker than a browser session on purpose. It can read the catalog, resolve install plans, and rate artifacts as you. It cannot submit or claim artifacts.
 
 ## Safety
 
-File-writing steps are fenced to the resolved `$DSH_HOME`; a plan that tries to escape it is refused. Build-from-source steps need your explicit consent, as described above. `hub_rate` carries its own rule: the agent rates only what this machine actually installed and used, from firsthand evidence, and tells you when it leaves a rating.
+File-writing steps are fenced to the resolved `$DSH_HOME`; a plan that tries to escape it is refused.
+
+Build-from-source steps need your explicit consent, as described above.
+
+`hub_rate` carries its own rule: the agent rates only what this machine actually installed and used, from firsthand evidence, and tells you when it leaves a rating.
 
 ## Tools
 

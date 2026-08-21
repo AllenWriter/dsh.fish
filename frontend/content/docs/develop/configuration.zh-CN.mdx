@@ -53,7 +53,14 @@ dsh --profile demo --dump-config
 
 ## 打包编译产物
 
-只发布运行时需要的文件：编译产物、manifest、README 和许可证。测试打出来的真实 tarball，而不是工作目录：
+只发布运行时需要的文件：
+
+- 编译产物
+- manifest
+- README
+- 许可证
+
+测试打出来的真实 tarball，而不是工作目录：
 
 ```sh
 pnpm pack
@@ -67,7 +74,9 @@ allowBuilds:
   dsh-hello-plugin: true
 ```
 
-这个脚本在用户机器上运行，不在任何智能体沙箱之内。让它保持确定性，写清楚它的行为，并建议用户固定 commit（`github:you/hello-plugin#<sha>`）。
+这个脚本在用户机器上运行，不在任何智能体沙箱之内。
+
+让它保持确定性，写清楚它的行为，并建议用户固定 commit（`github:you/hello-plugin#<sha>`）。
 
 ## 发布检查单
 

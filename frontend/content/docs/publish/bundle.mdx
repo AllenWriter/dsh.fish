@@ -19,7 +19,13 @@ A package becomes a bundle by declaring `dsh.bundle.patch` in its `package.json`
 }
 ```
 
-The patch file lists the plugin rows the layer inserts. The declaration defines the bundle: a package without it still installs as a plain dependency, but the harness activates no layer for it, and the dsh.fish catalog does not list it as a plugin.
+The patch file lists the plugin rows the layer inserts.
+
+The declaration defines the bundle. A package without it:
+
+- still installs as a plain dependency,
+- the harness activates no layer for it, and
+- the dsh.fish catalog does not list it as a plugin.
 
 ## Install and publish
 
@@ -31,6 +37,8 @@ npx @dsh-fish/cli add dsh-hello-plugin --profile web
 dsh plugin --profile web add dsh-hello-plugin
 ```
 
-Publish to npm with prebuilt code so users need no build allowance. A git install fetches sources instead: ship a self-contained `prepare` script, and expect users to allowlist it, because pnpm runs that script at install time outside the agent sandbox.
+Publish to npm with prebuilt code so users need no build allowance.
+
+A git install fetches sources instead: ship a self-contained `prepare` script. Expect users to allowlist it, because pnpm runs that script at install time outside the agent sandbox.
 
 To publish, [submit](/docs/submit) the package or repository to dsh.fish. The registry re-reads the real manifest, so the declaration must be in the published `package.json`.

@@ -38,4 +38,6 @@ curl -s 'https://dsh.fish/api/v1/catalog/version'
 curl -s 'https://dsh.fish/api/v1/catalog/snapshot' -o catalog.json
 ```
 
-Store the snapshot with its version and `ETag`, and send `If-None-Match` on later downloads; an unchanged catalog costs a 304. Public reads do not require an account; authenticated write operations use the scopes described in OpenAPI.
+Store the snapshot with its version and `ETag`, and send `If-None-Match` on later downloads; an unchanged catalog costs a 304.
+
+Public reads do not require an account; authenticated write operations use the scopes described in OpenAPI.

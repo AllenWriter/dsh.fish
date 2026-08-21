@@ -19,7 +19,13 @@ Bundle 是把外掛以一層 patch 的形式帶入 Harness 的 npm 套件，是�
 }
 ```
 
-patch 檔案列出該層插入的外掛列。宣告定義了 bundle：沒有該宣告的套件仍可作為一般依賴安裝，但 Harness 不會為它啟用任何層，dsh.fish 目錄也不會把它列為外掛。
+patch 檔案列出該層插入的外掛列。
+
+宣告定義了 bundle。沒有該宣告的套件：
+
+- 仍可作為一般依賴安裝，
+- 但 Harness 不會為它啟用任何層，
+- dsh.fish 目錄也不會把它列為外掛。
 
 ## 安裝與發布
 
@@ -31,6 +37,8 @@ npx @dsh-fish/cli add dsh-hello-plugin --profile web
 dsh plugin --profile web add dsh-hello-plugin
 ```
 
-發布到 npm 時應附帶預先建置的程式碼，使用者就無需建置許可。git 安裝拉取的是原始碼：請提供自包含的 `prepare` 指令碼，並預期使用者會將其加入允許清單，因為 pnpm 會在安裝時、在代理沙箱之外執行該指令碼。
+發布到 npm 時應附帶預先建置的程式碼，使用者就無需建置許可。
+
+git 安裝拉取的是原始碼：請提供自包含的 `prepare` 指令碼。預期使用者會將其加入允許清單，因為 pnpm 會在安裝時、在代理沙箱之外執行該指令碼。
 
 要發布，向 dsh.fish [提交](/docs/submit)套件或儲存庫。註冊表會重新讀取真實清單，所以宣告必須存在於已發布的 `package.json` 中。

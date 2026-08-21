@@ -18,32 +18,64 @@ description: 每頁都會用到的詞彙：agent harness、$DSH_HOME、配置檔
 
 ## 代理執行框架（agent harness）
 
-代理執行框架是把 AI 模型變成代理的程式。它為模型接上工具，把工具結果送回模型進行下一步，並限制代理可以做什麼。DeepSeek Harness 是 DeepSeek AI 的開源框架，設計上讓每個能力都是外掛程式。使用位置：[快速開始](/docs/quickstart)。
+代理執行框架是把 AI 模型變成代理的程式。它為模型接上工具，把工具結果送回模型進行下一步，並限制代理可以做什麼。
+
+DeepSeek Harness 是 DeepSeek AI 的開源框架，設計上讓每個能力都是外掛程式。
+
+使用位置：[快速開始](/docs/quickstart)。
 
 ## `$DSH_HOME`
 
-Harness 把所有使用者資料（配置檔案、設定、憑證、工作階段日誌）放在同一個根目錄下。設定了環境變數 `$DSH_HOME` 就用它，否則用 `~/.dsh`。dsh.fish 的安裝計畫只寫入這個根目錄或其中的配置檔案目錄。使用位置：[Hub 外掛程式](/docs/hub)和 [CLI](/docs/cli) 的安裝。
+Harness 把所有使用者資料（配置檔案、設定、憑證、工作階段日誌）放在同一個根目錄下。設定了環境變數 `$DSH_HOME` 就用它，否則用 `~/.dsh`。
+
+dsh.fish 的安裝計畫只寫入這個根目錄或其中的配置檔案目錄。
+
+使用位置：[Hub 外掛程式](/docs/hub)和 [CLI](/docs/cli) 的安裝。
 
 ## 配置檔案（profile）
 
-配置檔案是 `$DSH_HOME/profiles/<name>` 下的一個目錄，裝著定義一套 Harness 執行設定的外掛套件和修補檔。啟動時用 `--profile <name>` 選擇；`web` 和 `headless` 兩個配置檔案會在首次使用時自動建立。dsh.fish 把每個外掛程式安裝到指定的配置檔案。使用位置：[CLI 安裝](/docs/cli)；發布配置檔案見 [profile 格式](/docs/publish/profile)。
+配置檔案是 `$DSH_HOME/profiles/<name>` 下的一個目錄，裝著定義一套 Harness 執行設定的外掛套件和修補檔。啟動時用 `--profile <name>` 選擇；`web` 和 `headless` 兩個配置檔案會在首次使用時自動建立。
+
+dsh.fish 把每個外掛程式安裝到指定的配置檔案。
+
+使用位置：[CLI 安裝](/docs/cli)；發布配置檔案見 [profile 格式](/docs/publish/profile)。
 
 ## 工作階段（session）
 
-工作階段是你和代理之間的一次對話。Harness 把它儲存為追加式事件日誌（訊息、工具呼叫、核准），模型看到的內容由日誌推導，因此工作階段可以重播、可以恢復。工作階段按工作區分組。使用位置：在工作階段內運作的 [Hub 外掛程式](/docs/hub)。
+工作階段是你和代理之間的一次對話。Harness 把它儲存為追加式事件日誌（訊息、工具呼叫、核准），模型看到的內容由日誌推導，因此工作階段可以重播、可以恢復。
+
+工作階段按工作區分組。
+
+使用位置：在工作階段內運作的 [Hub 外掛程式](/docs/hub)。
 
 ## 工作區（workspace）
 
-工作區是你明確交給 Harness 的專案目錄。選定之前，Web UI 的輸入框保持鎖定；之後每個工作階段都以該目錄作為工作目錄執行。把工作區當作信任邊界：預設權限允許代理寫入它下面的任何位置，所以選擇一個你檢查過的目錄。使用位置：[快速開始](/docs/quickstart)第 3 步。
+工作區是你明確交給 Harness 的專案目錄。選定之前，Web UI 的輸入框保持鎖定；之後每個工作階段都以該目錄作為工作目錄執行。
+
+把工作區當作信任邊界：預設權限允許代理寫入它下面的任何位置，所以選擇一個你檢查過的目錄。
+
+使用位置：[快速開始](/docs/quickstart)第 3 步。
 
 ## 模型和提供者
 
-模型是代理用來思考的 AI，提供者是提供模型服務的平台，例如 DeepSeek 或你自己新增的其他提供者。在 **Settings → Models** 中輸入一次提供者的 API 金鑰；金鑰儲存在本機的 `$DSH_HOME/.credentials.yaml`，不會傳送給 dsh.fish。使用位置：[快速開始](/docs/quickstart)第 2 步。
+模型是代理用來思考的 AI，提供者是提供模型服務的平台，例如 DeepSeek 或你自己新增的其他提供者。
+
+在 **Settings → Models** 中輸入一次提供者的 API 金鑰；金鑰儲存在本機的 `$DSH_HOME/.credentials.yaml`，不會傳送給 dsh.fish。
+
+使用位置：[快速開始](/docs/quickstart)第 2 步。
 
 ## 權限（permissions）
 
-權限決定代理可以用工具做什麼。權限以具名預設組合提供：預設的 `workspace-write` 把寫入限制在工作區內（外加一個暫存目錄），並在需要核准的操作前詢問你；`danger-full-access` 則移除沙箱且不再詢問。使用位置：[快速開始](/docs/quickstart)的權限說明。
+權限決定代理可以用工具做什麼。
+
+權限以具名預設組合提供：預設的 `workspace-write` 把寫入限制在工作區內（外加一個暫存目錄），並在需要核准的操作前詢問你。`danger-full-access` 則移除沙箱且不再詢問。
+
+使用位置：[快速開始](/docs/quickstart)的權限說明。
 
 ## 外掛程式（plugin）
 
-外掛程式是 Harness 唯一的擴充機制。核心刻意保持很小，工具、模型提供者、核准規則都以外掛形式載入並列在配置檔案中。已安裝的外掛程式以你授予 Harness 的權限行事，所以 dsh.fish 讓你先檢查外掛程式是什麼、會做什麼，再決定安裝。使用位置：[外掛程式是什麼](/docs/plugins)和[第一個外掛程式](/docs/develop/first-plugin)。
+外掛程式是 Harness 唯一的擴充機制。核心刻意保持很小，工具、模型提供者、核准規則都以外掛形式載入並列在配置檔案中。
+
+已安裝的外掛程式以你授予 Harness 的權限行事，所以 dsh.fish 讓你先檢查外掛程式是什麼、會做什麼，再決定安裝。
+
+使用位置：[外掛程式是什麼](/docs/plugins)和[第一個外掛程式](/docs/develop/first-plugin)。

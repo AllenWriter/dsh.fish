@@ -3,9 +3,13 @@ title: DeepSeek Harness and dsh.fish
 description: What DeepSeek Harness is, what dsh.fish is, and the order to read these docs.
 ---
 
-DeepSeek Harness (`dsh`) is an open-source agent harness from DeepSeek AI: a program that runs an AI agent on your own machine. It connects a model you choose to tools that read and edit files and run commands, and it records everything the agent does. You start it locally with `npx @deepseek-ai/dsh web`, which opens a Web UI.
+DeepSeek Harness (`dsh`) is an open-source agent harness from DeepSeek AI: a program that runs an AI agent on your own machine. It connects a model you choose to tools that read and edit files and run commands, and it records everything the agent does.
 
-dsh.fish is an independent catalog of extensions for the harness. It finds plugins, reads what they actually contain, and shows you an install plan before anything is written to your machine. The website, the dsh.fish CLI, and the hub plugin that runs inside a session all read the same plans.
+You start it locally with `npx @deepseek-ai/dsh web`, which opens a Web UI.
+
+dsh.fish is an independent catalog of extensions for the harness. It finds plugins, reads what they actually contain, and shows you an install plan before anything is written to your machine.
+
+The website, the dsh.fish CLI, and the hub plugin that runs inside a session all read the same plans.
 
 ## The learning path
 
@@ -19,8 +23,14 @@ The sidebar is one ordered path from zero to publishing your own plugin.
 
 ## Why you can trust an install
 
-The catalog reads the real repository or package manifest of everything it lists; a topic tag or a submission is only a discovery seed. Every install plan is a list of steps you can read before anything runs: packages to add, files to write, settings to change. A Git package that must run a build script asks for a separate, explicit approval, because that script executes outside the agent sandbox.
+The catalog reads the real repository or package manifest of everything it lists; a topic tag or a submission is only a discovery seed.
+
+Every install plan is a list of steps you can read before anything runs: packages to add, files to write, settings to change.
+
+A Git package that must run a build script asks for a separate, explicit approval, because that script executes outside the agent sandbox.
 
 ## Developer preview
 
-DeepSeek Harness is a developer preview and iterates quickly, with compatibility-breaking changes. These docs describe only behavior verified against the published npm release. For version-specific options, see the [official DeepSeek Harness guide](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart).
+DeepSeek Harness is a developer preview and iterates quickly, with compatibility-breaking changes. These docs describe only behavior verified against the published npm release.
+
+For version-specific options, see the [official DeepSeek Harness guide](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart).

@@ -45,7 +45,25 @@ A malformed declaration (a kind without its block, an unknown dialect, a path th
 }
 ```
 
-The matcher tests the tool name, and only `type: "command"` hooks run. The Claude Code dialect supports seven events: `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStart`, `SubagentStop`. The Codex dialect uses the same event-map shape and supports five of them (`SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`), running synchronous command hooks only.
+The matcher tests the tool name. Only `type: "command"` hooks run.
+
+The Claude Code dialect supports seven events:
+
+- `SessionStart`
+- `UserPromptSubmit`
+- `PreToolUse`
+- `PostToolUse`
+- `Stop`
+- `SubagentStart`
+- `SubagentStop`
+
+The Codex dialect uses the same event-map shape and supports five of them, running synchronous command hooks only:
+
+- `SessionStart`
+- `UserPromptSubmit`
+- `PreToolUse`
+- `PostToolUse`
+- `Stop`
 
 ## How it installs
 

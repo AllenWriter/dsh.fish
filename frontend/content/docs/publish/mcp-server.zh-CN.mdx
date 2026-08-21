@@ -40,4 +40,6 @@ Harness 没有为这种构件定义清单约定：MCP server 安装为 profile p
 npx @dsh-fish/cli add <artifact-id> --profile <profile>
 ```
 
-目录只存凭据引用，不存密钥值。生成的配置行里，每个密钥在加载时从进程环境解析（`!!js process.env.GITHUB_TOKEN`），而每个必需凭据的值都要在服务器运行前填入。这就是目录行可以公开提供的原因。
+目录只存凭据引用，不存密钥值。生成的配置行里，每个密钥在加载时从进程环境解析（`!!js process.env.GITHUB_TOKEN`）。每个必需凭据的值都要在服务器运行前填入。
+
+这就是目录行可以公开提供的原因。

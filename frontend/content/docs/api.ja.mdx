@@ -38,4 +38,6 @@ curl -s 'https://dsh.fish/api/v1/catalog/version'
 curl -s 'https://dsh.fish/api/v1/catalog/snapshot' -o catalog.json
 ```
 
-スナップショットはバージョンと `ETag` と一緒に保存し、以降のダウンロードでは `If-None-Match` を送ります。カタログに変更がなければ 304 が返ります。公開の読み取りにアカウントは不要です。認証が必要な書き込み操作は OpenAPI に記載されたスコープを使います。
+スナップショットはバージョンと `ETag` と一緒に保存し、以降のダウンロードでは `If-None-Match` を送ります。カタログに変更がなければ 304 が返ります。
+
+公開の読み取りにアカウントは不要です。認証が必要な書き込み操作は OpenAPI に記載されたスコープを使います。

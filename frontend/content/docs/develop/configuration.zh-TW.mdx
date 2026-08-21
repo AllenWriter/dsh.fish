@@ -53,7 +53,14 @@ dsh --profile demo --dump-config
 
 ## 封裝編譯產物
 
-只發布執行時需要的檔案：編譯產物、manifest、README 和授權。測試打出來的真實 tarball，而不是工作目錄：
+只發布執行時需要的檔案：
+
+- 編譯產物
+- manifest
+- README
+- 授權
+
+測試打出來的真實 tarball，而不是工作目錄：
 
 ```sh
 pnpm pack
@@ -67,7 +74,9 @@ allowBuilds:
   dsh-hello-plugin: true
 ```
 
-這個腳本在使用者機器上執行，不在任何代理沙箱之內。讓它保持可重現，寫清楚它的行為，並建議使用者固定 commit（`github:you/hello-plugin#<sha>`）。
+這個腳本在使用者機器上執行，不在任何代理沙箱之內。
+
+讓它保持可重現，寫清楚它的行為，並建議使用者固定 commit（`github:you/hello-plugin#<sha>`）。
 
 ## 發布檢查清單
 

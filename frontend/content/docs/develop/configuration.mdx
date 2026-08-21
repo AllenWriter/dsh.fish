@@ -53,7 +53,14 @@ Edits to the profile and home patch files hot-reload; adding, removing, or updat
 
 ## Package compiled output
 
-Publish only the files needed at runtime: compiled output, the manifest, README, and license. Test the exact tarball rather than the working tree:
+Publish only the files needed at runtime:
+
+- compiled output
+- the manifest
+- README
+- license
+
+Test the exact tarball rather than the working tree:
 
 ```sh
 pnpm pack
@@ -67,7 +74,9 @@ allowBuilds:
   dsh-hello-plugin: true
 ```
 
-That script runs on the user's machine, outside any agent sandbox. Keep it deterministic, document what it does, and recommend pinning a commit (`github:you/hello-plugin#<sha>`).
+That script runs on the user's machine, outside any agent sandbox.
+
+Keep it deterministic, document what it does, and recommend pinning a commit (`github:you/hello-plugin#<sha>`).
 
 ## Release checklist
 

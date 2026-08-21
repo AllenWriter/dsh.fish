@@ -3,7 +3,9 @@ title: Build your first plugin
 description: Create a minimal DeepSeek Harness plugin, load it with a source overlay, and watch it run in the Web UI.
 ---
 
-DeepSeek Harness is composed from plugins. A plugin is a TypeScript module that exports an `apply` function. When the harness loads the plugin it calls `apply` and hands it a Cordis context, the object through which the plugin registers everything it adds.
+DeepSeek Harness is composed from plugins.
+
+A plugin is a TypeScript module that exports an `apply` function. When the harness loads the plugin it calls `apply` and hands it a Cordis context, the object through which the plugin registers everything it adds.
 
 This tutorial builds the smallest possible plugin, loads it into the Web UI, and removes it again. The flow runs from a DeepSeek Harness source checkout, so complete the official run-from-source setup first.
 
@@ -62,7 +64,9 @@ pnpm dsh web --patch ./scratch-plugin/cordis.yml
 
 ## Verify in the Web UI
 
-Open `http://127.0.0.1:3080`. The terminal prints `[hello-plugin] plugin loaded!` during startup. Send a message and watch the run: the Web UI lists each step, including the model's Think row and every tool call with its input and output.
+Open `http://127.0.0.1:3080`. The terminal prints `[hello-plugin] plugin loaded!` during startup.
+
+Send a message and watch the run: the Web UI lists each step, including the model's Think row and every tool call with its input and output.
 
 <DocsVideo
   src="/docs/video/develop-observe.mp4"

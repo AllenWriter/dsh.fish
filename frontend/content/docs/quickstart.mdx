@@ -3,7 +3,11 @@ title: 'Quickstart: run DeepSeek Harness'
 description: Launch the DeepSeek Harness Web UI, connect a model, choose a workspace, and finish a first task in four steps.
 ---
 
-This tutorial takes you from an empty terminal to a working DeepSeek Harness session in four steps. DeepSeek Harness (`dsh`) is an [agent harness](/docs/concepts): a program that runs a language model in a loop with tools, so the model can read files, run commands, and edit code for you. A [session](/docs/concepts) is one conversation with that agent. Each new term links to Core concepts, where it is defined in full.
+This tutorial takes you from an empty terminal to a working DeepSeek Harness session in four steps.
+
+DeepSeek Harness (`dsh`) is an [agent harness](/docs/concepts): a program that runs a language model in a loop with tools, so the model can read files, run commands, and edit code for you. A [session](/docs/concepts) is one conversation with that agent.
+
+Each new term links to Core concepts, where it is defined in full.
 
 Your API key stays on your machine; dsh.fish is not involved in model requests.
 
@@ -13,7 +17,9 @@ Your API key stays on your machine; dsh.fish is not involved in model requests.
 npx @deepseek-ai/dsh web
 ```
 
-The command starts the Web UI at `http://127.0.0.1:3080` and opens it in your browser. If the browser does not open, visit that address yourself. The package is a developer preview, so read the npm prompt and release notes before using it on important work.
+The command starts the Web UI at `http://127.0.0.1:3080` and opens it in your browser. If the browser does not open, visit that address yourself.
+
+The package is a developer preview, so read the npm prompt and release notes before using it on important work.
 
 <DocsVideo
   src="/docs/video/quickstart-launch.mp4"
@@ -28,7 +34,11 @@ The command starts the Web UI at `http://127.0.0.1:3080` and opens it in your br
 
 ## 2. Connect a model
 
-The harness needs a [model](/docs/concepts): the LLM that does the thinking, supplied by a provider such as DeepSeek, Anthropic, or OpenAI. Open **Settings → Models** and enter a provider's API key, then save. The DeepSeek card needs only the key; other providers come from **Add provider**, and a company gateway or self-hosted server goes through **Add a custom provider**. The key is stored on your machine under the harness home directory (`$DSH_HOME`), never on dsh.fish. The next request uses the saved configuration; no restart is needed.
+The harness needs a [model](/docs/concepts): the LLM that does the thinking, supplied by a provider such as DeepSeek, Anthropic, or OpenAI.
+
+Open **Settings → Models** and enter a provider's API key, then save. The DeepSeek card needs only the key; other providers come from **Add provider**, and a company gateway or self-hosted server goes through **Add a custom provider**.
+
+The key is stored on your machine under the harness home directory (`$DSH_HOME`), never on dsh.fish. The next request uses the saved configuration; no restart is needed.
 
 For an OpenAI-compatible endpoint, check the base URL and model identifier exactly. A saved key does not prove the endpoint accepts the selected model, so run the small first task below before a long session.
 
@@ -45,7 +55,9 @@ For an OpenAI-compatible endpoint, check the base URL and model identifier exact
 
 ## 3. Choose a workspace
 
-A [workspace](/docs/concepts) is the project directory the agent is allowed to see and change. Select **Choose workspace** and open the repository you want the agent to inspect. The composer, the message input at the bottom, stays unavailable until a workspace is selected.
+A [workspace](/docs/concepts) is the project directory the agent is allowed to see and change.
+
+Select **Choose workspace** and open the repository you want the agent to inspect. The composer, the message input at the bottom, stays unavailable until a workspace is selected.
 
 Treat the workspace as a trust boundary: the agent reads and writes inside it. Review the repository first, and do not open a directory containing unrelated secrets.
 
@@ -68,7 +80,9 @@ Send a read-only request:
 Summarize this repository and identify its main packages.
 ```
 
-Check that the response names files that actually exist. Then ask for a small, verifiable action such as running one test target. Review each requested permission and the resulting diff.
+Check that the response names files that actually exist.
+
+Then ask for a small, verifiable action such as running one test target. Review each requested permission and the resulting diff.
 
 <DocsVideo
   src="/docs/video/quickstart-task.mp4"
@@ -83,7 +97,9 @@ Check that the response names files that actually exist. Then ask for a small, v
 
 ## Understand permissions
 
-[Permissions](/docs/concepts) control what the agent may do without asking first. A new session starts with the `workspace-write` preset: the agent may write inside the workspace, but this does not isolate every read, process, or network action. Approve only the operations you understand, keep credentials outside the workspace, and inspect changes before committing.
+[Permissions](/docs/concepts) control what the agent may do without asking first. A new session starts with the `workspace-write` preset: the agent may write inside the workspace, but this does not isolate every read, process, or network action.
+
+Approve only the operations you understand, keep credentials outside the workspace, and inspect changes before committing.
 
 ## Next
 

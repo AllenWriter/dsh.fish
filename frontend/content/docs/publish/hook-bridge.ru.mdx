@@ -45,7 +45,25 @@ Hook bridge запускает shell hooks, которые вы уже напи�
 }
 ```
 
-Matcher проверяет имя инструмента, и выполняются только hooks с `type: "command"`. Диалект Claude Code поддерживает семь событий: `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStart`, `SubagentStop`. Диалект Codex использует ту же структуру карты событий и поддерживает пять из них (`SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`), причём только синхронные command hooks.
+Matcher проверяет имя инструмента. Выполняются только hooks с `type: "command"`.
+
+Диалект Claude Code поддерживает семь событий:
+
+- `SessionStart`
+- `UserPromptSubmit`
+- `PreToolUse`
+- `PostToolUse`
+- `Stop`
+- `SubagentStart`
+- `SubagentStop`
+
+Диалект Codex использует ту же структуру карты событий и поддерживает пять из них, причём только синхронные command hooks:
+
+- `SessionStart`
+- `UserPromptSubmit`
+- `PreToolUse`
+- `PostToolUse`
+- `Stop`
 
 ## Как происходит установка
 

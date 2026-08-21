@@ -40,4 +40,6 @@ The install plan appends one `@deepseek-ai/dsh-mcp-client` row (row id `mcp-<ser
 npx @dsh-fish/cli add <artifact-id> --profile <profile>
 ```
 
-The registry stores credential references, never values. In the generated row each secret resolves at load time from the process environment (`!!js process.env.GITHUB_TOKEN`), and the install asks for every required credential's value before the server can run. That is what makes a catalog row safe to serve publicly.
+The registry stores credential references, never values. In the generated row each secret resolves at load time from the process environment (`!!js process.env.GITHUB_TOKEN`). The install asks for every required credential's value before the server can run.
+
+That is what makes a catalog row safe to serve publicly.

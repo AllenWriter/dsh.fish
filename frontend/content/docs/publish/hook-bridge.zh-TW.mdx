@@ -45,7 +45,25 @@ Hook bridge 把你為 Claude Code 或 Codex 寫好的 shell hooks 搬進 DeepSee
 }
 ```
 
-matcher 比對的是工具名稱，只有 `type: "command"` 的 hook 會執行。Claude Code 方言支援七個事件：`SessionStart`、`UserPromptSubmit`、`PreToolUse`、`PostToolUse`、`Stop`、`SubagentStart`、`SubagentStop`。Codex 方言使用相同的事件對應結構，支援其中五個（`SessionStart`、`UserPromptSubmit`、`PreToolUse`、`PostToolUse`、`Stop`），且只執行同步的 command hook。
+matcher 比對的是工具名稱。只有 `type: "command"` 的 hook 會執行。
+
+Claude Code 方言支援七個事件：
+
+- `SessionStart`
+- `UserPromptSubmit`
+- `PreToolUse`
+- `PostToolUse`
+- `Stop`
+- `SubagentStart`
+- `SubagentStop`
+
+Codex 方言使用相同的事件對應結構，支援其中五個，且只執行同步的 command hook：
+
+- `SessionStart`
+- `UserPromptSubmit`
+- `PreToolUse`
+- `PostToolUse`
+- `Stop`
 
 ## 安裝機制
 

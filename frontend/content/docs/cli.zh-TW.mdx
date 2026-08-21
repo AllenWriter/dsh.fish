@@ -13,9 +13,15 @@ npx @dsh-fish/cli add https://dsh.fish/a/release-notes --profile web
 npx @dsh-fish/cli add acme/notes
 ```
 
-`add` 把 Hub id、dsh.fish URL 或 `owner/repo` 解析到目錄中的構件，然後執行計畫：向 `$DSH_HOME` 寫檔案、用套件管理器加套件、寫入配置檔案補丁列。
+`add` 把 Hub id、dsh.fish URL 或 `owner/repo` 解析到目錄中的構件，然後執行計畫：
 
-從原始碼建置的 git 套件會被拒絕，直到你傳入 `--allow-build-scripts`。這個旗標允許該套件的 `prepare` 指令碼在這台機器上執行，處於代理沙箱之外。`--yes` 只會跳過確認提示，不會授予這項權限。
+- 向 `$DSH_HOME` 寫檔案
+- 用套件管理器加套件
+- 寫入配置檔案補丁列
+
+從原始碼建置的 git 套件會被拒絕，直到你傳入 `--allow-build-scripts`。這個旗標允許該套件的 `prepare` 指令碼在這台機器上執行，處於代理沙箱之外。
+
+`--yes` 只會跳過確認提示，不會授予這項權限。
 
 ## 其他命令
 

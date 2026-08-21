@@ -38,4 +38,6 @@ curl -s 'https://dsh.fish/api/v1/catalog/version'
 curl -s 'https://dsh.fish/api/v1/catalog/snapshot' -o catalog.json
 ```
 
-스냅숏은 버전 및 `ETag`와 함께 저장하고, 이후 다운로드에는 `If-None-Match`를 보내세요. 카탈로그가 바뀌지 않았다면 304만 돌아옵니다. 공개 읽기에는 계정이 필요 없으며, 인증이 필요한 쓰기 작업은 OpenAPI에 설명된 스코프를 사용합니다.
+스냅숏은 버전 및 `ETag`와 함께 저장하고, 이후 다운로드에는 `If-None-Match`를 보내세요. 카탈로그가 바뀌지 않았다면 304만 돌아옵니다.
+
+공개 읽기에는 계정이 필요 없으며, 인증이 필요한 쓰기 작업은 OpenAPI에 설명된 스코프를 사용합니다.

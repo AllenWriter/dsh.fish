@@ -3,9 +3,13 @@ title: DeepSeek Harness 与 dsh.fish
 description: DeepSeek Harness 是什么，dsh.fish 是什么，以及这套文档的阅读顺序。
 ---
 
-DeepSeek Harness（`dsh`）是 DeepSeek AI 开源的智能体运行框架，一个在你自己机器上运行 AI 智能体的程序。它把你选择的模型连接到读写文件、运行命令的工具上，并记录智能体的每一步操作。用 `npx @deepseek-ai/dsh web` 本地启动后会打开 Web UI。
+DeepSeek Harness（`dsh`）是 DeepSeek AI 开源的智能体运行框架，一个在你自己机器上运行 AI 智能体的程序。它把你选择的模型连接到读写文件、运行命令的工具上，并记录智能体的每一步操作。
 
-dsh.fish 是独立的 Harness 扩展目录。它负责发现插件、读取插件的真实内容，并在任何东西写入你的机器之前展示安装计划。网站、dsh.fish CLI 和在会话内运行的 Hub 插件读取的是同一份计划。
+用 `npx @deepseek-ai/dsh web` 本地启动后会打开 Web UI。
+
+dsh.fish 是独立的 Harness 扩展目录。它负责发现插件、读取插件的真实内容，并在任何东西写入你的机器之前展示安装计划。
+
+网站、dsh.fish CLI 和在会话内运行的 Hub 插件读取的是同一份计划。
 
 ## 学习路径
 
@@ -19,8 +23,14 @@ dsh.fish 是独立的 Harness 扩展目录。它负责发现插件、读取插�
 
 ## 安装为什么可信
 
-目录对它列出的每个条目都读取真实的仓库或包清单；主题标签和用户提交只是发现入口。安装计划是一份执行前就能阅读的步骤列表：要添加的包、要写入的文件、要修改的设置。需要运行构建脚本的 Git 包会要求单独明确授权，因为该脚本在智能体沙箱之外执行。
+目录对它列出的每个条目都读取真实的仓库或包清单；主题标签和用户提交只是发现入口。
+
+安装计划是一份执行前就能阅读的步骤列表：要添加的包、要写入的文件、要修改的设置。
+
+需要运行构建脚本的 Git 包会要求单独明确授权，因为该脚本在智能体沙箱之外执行。
 
 ## 开发者预览
 
-DeepSeek Harness 处于开发者预览阶段，迭代很快，包括破坏兼容性的变更。本文档只描述已发布的 npm 版本中验证过的行为。版本相关的选项请查阅[官方指南](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart)。
+DeepSeek Harness 处于开发者预览阶段，迭代很快，包括破坏兼容性的变更。本文档只描述已发布的 npm 版本中验证过的行为。
+
+版本相关的选项请查阅[官方指南](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart)。

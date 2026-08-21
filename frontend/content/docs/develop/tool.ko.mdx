@@ -3,7 +3,9 @@ title: 도구 등록
 description: DeepSeek Harness 플러그인에 타입이 있는 도구를 추가하고 입력, 결과, 정리 동작을 검증합니다.
 ---
 
-도구는 모델이 요청할 수 있는 연산입니다. 하나의 분명한 결과에 집중하고, 모든 입력을 검증하고, 유용한 근거를 반환하며, 숨은 부작용을 피하세요.
+도구는 모델이 요청할 수 있는 연산입니다.
+
+하나의 분명한 결과에 집중하고, 모든 입력을 검증하고, 유용한 근거를 반환하며, 숨은 부작용을 피하세요.
 
 ## 도구 정의하기
 
@@ -39,7 +41,11 @@ export function apply(ctx: Context) {
 }
 ```
 
-`inject`는 플러그인이 필요로 하는 서비스를 선언합니다. 프레임워크는 각 서비스가 준비될 때까지 `apply` 실행을 기다리므로 여기서 `ctx.tools`를 쓸 수 있습니다. `defineTool`은 `parameters`로부터 `args`를 추론하고 검증합니다. `execute`는 `output.schema`가 선언한 값을 반환하고, `output.render`가 그 값을 모델이 보는 콘텐츠로 변환합니다.
+`inject`는 플러그인이 필요로 하는 서비스를 선언합니다. 프레임워크는 각 서비스가 준비될 때까지 `apply` 실행을 기다리므로 여기서 `ctx.tools`를 쓸 수 있습니다.
+
+`defineTool`은 `parameters`로부터 `args`를 추론하고 검증합니다.
+
+`execute`는 `output.schema`가 선언한 값을 반환하고, `output.render`가 그 값을 모델이 보는 콘텐츠로 변환합니다.
 
 `apply(ctx)` 안에서 등록하세요. `ctx`를 통한 등록은 effect이므로 플러그인을 언로드하면 도구도 제거됩니다.
 

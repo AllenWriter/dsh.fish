@@ -45,7 +45,25 @@ Hook bridge는 Claude Code나 Codex용으로 작성해 둔 shell hook을 DeepSee
 }
 ```
 
-matcher가 검사하는 대상은 도구 이름이며 `type: "command"` hook만 실행됩니다. Claude Code 방언은 일곱 가지 이벤트를 지원합니다: `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStart`, `SubagentStop`. Codex 방언은 같은 이벤트 맵 형태로 그중 다섯 가지(`SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`)를 지원하며 동기 command hook만 실행합니다.
+matcher가 검사하는 대상은 도구 이름이며 `type: "command"` hook만 실행됩니다.
+
+Claude Code 방언은 일곱 가지 이벤트를 지원합니다:
+
+- `SessionStart`
+- `UserPromptSubmit`
+- `PreToolUse`
+- `PostToolUse`
+- `Stop`
+- `SubagentStart`
+- `SubagentStop`
+
+Codex 방언은 같은 이벤트 맵 형태로 그중 다섯 가지를 지원하며 동기 command hook만 실행합니다:
+
+- `SessionStart`
+- `UserPromptSubmit`
+- `PreToolUse`
+- `PostToolUse`
+- `Stop`
 
 ## 설치 방식
 

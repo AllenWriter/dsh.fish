@@ -3,7 +3,9 @@ title: 注册工具
 description: 为 DeepSeek Harness 插件添加一个类型化的工具，并验证它的输入、结果和清理行为。
 ---
 
-工具是模型可以请求的操作。让它保持窄小：一个明确的结果，验证所有输入，返回有用的证据，不留隐藏副作用。
+工具是模型可以请求的操作。
+
+让它保持窄小：一个明确的结果，验证所有输入，返回有用的证据，不留隐藏副作用。
 
 ## 定义工具
 
@@ -39,7 +41,11 @@ export function apply(ctx: Context) {
 }
 ```
 
-`inject` 声明插件依赖的服务；框架会等每个服务就绪后才运行 `apply`，所以这里的 `ctx.tools` 已经可用。`defineTool` 根据 `parameters` 推断并校验 `args`。`execute` 返回 `output.schema` 声明的值，`output.render` 把这个值转换成模型看到的内容。
+`inject` 声明插件依赖的服务；框架会等每个服务就绪后才运行 `apply`，所以这里的 `ctx.tools` 已经可用。
+
+`defineTool` 根据 `parameters` 推断并校验 `args`。
+
+`execute` 返回 `output.schema` 声明的值，`output.render` 把这个值转换成模型看到的内容。
 
 在 `apply(ctx)` 内注册。通过 `ctx` 的注册都是 effect，卸载插件时工具也会随之移除。
 

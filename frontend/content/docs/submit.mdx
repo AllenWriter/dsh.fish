@@ -11,7 +11,9 @@ Submitting needs a signed-in browser session. A device token, which is what a ha
 
 ## Fill in the form
 
-The form asks for the type, the source, and an optional note for reviewers. The type is the kind you believe the source is: bundle, profile, skill, MCP server, agent preset, or hook bridge. The source is `npm:<package>` or `github:<owner>/<repo>[/<path>]`. The note is only read if your submission goes to a human reviewer.
+The form asks for the type, the source, and an optional note for reviewers.
+
+The type is the kind you believe the source is: bundle, profile, skill, MCP server, agent preset, or hook bridge. The source is `npm:<package>` or `github:<owner>/<repo>[/<path>]`. The note is only read if your submission goes to a human reviewer.
 
 ## What the registry checks
 
@@ -19,7 +21,11 @@ The type you pick tells the reader which manifest to check first — a skill che
 
 ## Approved at once, or queued for review
 
-A submission the registry can read, from a source you demonstrably own, is approved immediately. Ownership means the repository's owner id matches the GitHub account you signed in with. The two are compared as GitHub's numeric ids, so a renamed account cannot fake it. npm packages have no equivalent check, and an organisation's repositories belong to the organisation rather than to you, so both queue for review.
+A submission the registry can read, from a source you demonstrably own, is approved immediately.
+
+Ownership means the repository's owner id matches the GitHub account you signed in with. The two are compared as GitHub's numeric ids, so a renamed account cannot fake it.
+
+npm packages have no equivalent check, and an organisation's repositories belong to the organisation rather than to you, so both queue for review.
 
 An approved submission links you straight to the published artifact. A queued one appears once a maintainer reviews it. If the artifact is already claimed by another account, the submission is refused as a conflict.
 

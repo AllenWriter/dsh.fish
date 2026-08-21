@@ -5,7 +5,9 @@ description: 配置档案（profile）构件是用于完整 Harness 组合的有
 
 配置档案（profile）是一个有序的 bundle 列表，合起来构成完整、可运行的 Harness 组合。
 
-这个词指代两个不同的东西。本页讲的构件是发布出来的 bundle 列表。运行时 `--profile` 标志选择启动哪个本地组合：`dsh --profile web` 运行存放在 `$DSH_HOME/profiles/web` 的配置档案。安装 profile 构件，是把它的 bundle 按顺序加入你选定的一个本地配置档案，之后用该标志启动它。
+这个词指代两个不同的东西。本页讲的构件是发布出来的 bundle 列表。运行时 `--profile` 标志选择启动哪个本地组合：`dsh --profile web` 运行存放在 `$DSH_HOME/profiles/web` 的配置档案。
+
+安装 profile 构件，是把它的 bundle 按顺序加入你选定的一个本地配置档案，之后用该标志启动它。
 
 ## 清单契约
 
@@ -21,7 +23,7 @@ description: 配置档案（profile）构件是用于完整 Harness 组合的有
 }
 ```
 
-每个 profile 都从 `@deepseek-ai/dsh-base`（共享核心层）开始。后面的层按行胜出，patch 会整体替换一行的配置而不是深度合并，所以顺序会改变结果。
+每个 profile 都从 `@deepseek-ai/dsh-base`（共享核心层）开始。后面的层按行胜出。patch 会整体替换一行的配置而不是深度合并，所以顺序会改变结果。
 
 同时声明 `dsh.profile` 和 `dsh.bundle` 的包会被归类为 profile，因为 profile 本身就是一个有序的 bundle 栈。
 

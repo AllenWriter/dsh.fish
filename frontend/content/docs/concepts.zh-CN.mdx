@@ -18,32 +18,64 @@ description: 每页都会用到的词汇：agent harness、$DSH_HOME、配置档
 
 ## 智能体运行框架（agent harness）
 
-智能体运行框架是把 AI 模型变成智能体的程序。它为模型接上工具，把工具结果送回模型进行下一步，并限制智能体可以做什么。DeepSeek Harness 是 DeepSeek AI 的开源框架，设计上让每个能力都是插件。使用位置：[快速开始](/docs/quickstart)。
+智能体运行框架是把 AI 模型变成智能体的程序。它为模型接上工具，把工具结果送回模型进行下一步，并限制智能体可以做什么。
+
+DeepSeek Harness 是 DeepSeek AI 的开源框架，设计上让每个能力都是插件。
+
+使用位置：[快速开始](/docs/quickstart)。
 
 ## `$DSH_HOME`
 
-Harness 把所有用户数据（配置档案、设置、凭据、会话日志）放在同一个根目录下。设置了环境变量 `$DSH_HOME` 就用它，否则用 `~/.dsh`。dsh.fish 的安装计划只写入这个根目录或其中的配置档案目录。使用位置：[Hub 插件](/docs/hub)和 [CLI](/docs/cli) 的安装。
+Harness 把所有用户数据（配置档案、设置、凭据、会话日志）放在同一个根目录下。设置了环境变量 `$DSH_HOME` 就用它，否则用 `~/.dsh`。
+
+dsh.fish 的安装计划只写入这个根目录或其中的配置档案目录。
+
+使用位置：[Hub 插件](/docs/hub)和 [CLI](/docs/cli) 的安装。
 
 ## 配置档案（profile）
 
-配置档案是 `$DSH_HOME/profiles/<name>` 下的一个目录，装着定义一套 Harness 运行配置的插件包和补丁文件。启动时用 `--profile <name>` 选择；`web` 和 `headless` 两个配置档案会在首次使用时自动创建。dsh.fish 把每个插件安装到指定的配置档案。使用位置：[CLI 安装](/docs/cli)；发布配置档案见 [profile 格式](/docs/publish/profile)。
+配置档案是 `$DSH_HOME/profiles/<name>` 下的一个目录，装着定义一套 Harness 运行配置的插件包和补丁文件。启动时用 `--profile <name>` 选择；`web` 和 `headless` 两个配置档案会在首次使用时自动创建。
+
+dsh.fish 把每个插件安装到指定的配置档案。
+
+使用位置：[CLI 安装](/docs/cli)；发布配置档案见 [profile 格式](/docs/publish/profile)。
 
 ## 会话（session）
 
-会话是你和智能体之间的一次对话。Harness 把它保存为追加式事件日志（消息、工具调用、审批），模型看到的内容由日志推导，因此会话可以重放、可以恢复。会话按工作区分组。使用位置：在会话内工作的 [Hub 插件](/docs/hub)。
+会话是你和智能体之间的一次对话。Harness 把它保存为追加式事件日志（消息、工具调用、审批），模型看到的内容由日志推导，因此会话可以重放、可以恢复。
+
+会话按工作区分组。
+
+使用位置：在会话内工作的 [Hub 插件](/docs/hub)。
 
 ## 工作区（workspace）
 
-工作区是你明确交给 Harness 的项目目录。选定之前，Web UI 的输入框保持锁定；之后每个会话都以该目录作为工作目录运行。把工作区当作信任边界：默认权限允许智能体写入它下面的任何位置，所以选择一个你检查过的目录。使用位置：[快速开始](/docs/quickstart)第 3 步。
+工作区是你明确交给 Harness 的项目目录。选定之前，Web UI 的输入框保持锁定；之后每个会话都以该目录作为工作目录运行。
+
+把工作区当作信任边界：默认权限允许智能体写入它下面的任何位置，所以选择一个你检查过的目录。
+
+使用位置：[快速开始](/docs/quickstart)第 3 步。
 
 ## 模型和提供商
 
-模型是智能体用来思考的 AI，提供商是提供模型服务的平台，比如 DeepSeek 或你自己添加的其他提供商。在 **Settings → Models** 中输入一次提供商的 API 密钥；密钥保存在本机的 `$DSH_HOME/.credentials.yaml`，不会发送给 dsh.fish。使用位置：[快速开始](/docs/quickstart)第 2 步。
+模型是智能体用来思考的 AI，提供商是提供模型服务的平台，比如 DeepSeek 或你自己添加的其他提供商。
+
+在 **Settings → Models** 中输入一次提供商的 API 密钥；密钥保存在本机的 `$DSH_HOME/.credentials.yaml`，不会发送给 dsh.fish。
+
+使用位置：[快速开始](/docs/quickstart)第 2 步。
 
 ## 权限（permissions）
 
-权限决定智能体可以用工具做什么。权限以命名预设提供：默认的 `workspace-write` 预设把写入限制在工作区内（外加一个临时目录），并在需要批准的操作前询问你；`danger-full-access` 则去掉沙箱且不再询问。使用位置：[快速开始](/docs/quickstart)的权限说明。
+权限决定智能体可以用工具做什么。
+
+权限以命名预设提供：默认的 `workspace-write` 预设把写入限制在工作区内（外加一个临时目录），并在需要批准的操作前询问你。`danger-full-access` 则去掉沙箱且不再询问。
+
+使用位置：[快速开始](/docs/quickstart)的权限说明。
 
 ## 插件（plugin）
 
-插件是 Harness 唯一的扩展机制。核心刻意保持很小，工具、模型提供商、审批规则都以插件形式加载并列在配置档案中。已安装的插件以你授予 Harness 的权限行事，所以 dsh.fish 让你先检查插件是什么、会做什么，再决定安装。使用位置：[插件是什么](/docs/plugins)和[第一个插件](/docs/develop/first-plugin)。
+插件是 Harness 唯一的扩展机制。核心刻意保持很小，工具、模型提供商、审批规则都以插件形式加载并列在配置档案中。
+
+已安装的插件以你授予 Harness 的权限行事，所以 dsh.fish 让你先检查插件是什么、会做什么，再决定安装。
+
+使用位置：[插件是什么](/docs/plugins)和[第一个插件](/docs/develop/first-plugin)。

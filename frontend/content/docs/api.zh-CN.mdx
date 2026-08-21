@@ -38,4 +38,6 @@ curl -s 'https://dsh.fish/api/v1/catalog/version'
 curl -s 'https://dsh.fish/api/v1/catalog/snapshot' -o catalog.json
 ```
 
-快照连同版本号和 `ETag` 一起保存，之后的下载带上 `If-None-Match`；目录没变时只会收到 304。公开读取不需要账户；需要认证的写操作使用 OpenAPI 里描述的 scope。
+快照连同版本号和 `ETag` 一起保存，之后的下载带上 `If-None-Match`；目录没变时只会收到 304。
+
+公开读取不需要账户；需要认证的写操作使用 OpenAPI 里描述的 scope。

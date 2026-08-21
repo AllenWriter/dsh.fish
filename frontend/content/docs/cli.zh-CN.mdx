@@ -13,9 +13,15 @@ npx @dsh-fish/cli add https://dsh.fish/a/release-notes --profile web
 npx @dsh-fish/cli add acme/notes
 ```
 
-`add` 把 Hub id、dsh.fish URL 或 `owner/repo` 解析到目录中的构件，然后执行计划：向 `$DSH_HOME` 写文件、用包管理器加包、写入配置档案补丁行。
+`add` 把 Hub id、dsh.fish URL 或 `owner/repo` 解析到目录中的构件，然后执行计划：
 
-从源码构建的 git 包会被拒绝，直到你传入 `--allow-build-scripts`。这个标志允许该包的 `prepare` 脚本在这台机器上运行，处于智能体沙箱之外。`--yes` 只会跳过确认提示，不会授予这项权限。
+- 向 `$DSH_HOME` 写文件
+- 用包管理器加包
+- 写入配置档案补丁行
+
+从源码构建的 git 包会被拒绝，直到你传入 `--allow-build-scripts`。这个标志允许该包的 `prepare` 脚本在这台机器上运行，处于智能体沙箱之外。
+
+`--yes` 只会跳过确认提示，不会授予这项权限。
 
 ## 其他命令
 

@@ -3,7 +3,9 @@ title: 註冊工具
 description: 為 DeepSeek Harness 外掛程式新增一個型別化的工具，並驗證它的輸入、結果和清理行為。
 ---
 
-工具是模型可以請求的操作。讓它保持窄小：一個明確的結果，驗證所有輸入，回傳有用的證據，不留隱藏副作用。
+工具是模型可以請求的操作。
+
+讓它保持窄小：一個明確的結果，驗證所有輸入，回傳有用的證據，不留隱藏副作用。
 
 ## 定義工具
 
@@ -39,7 +41,11 @@ export function apply(ctx: Context) {
 }
 ```
 
-`inject` 宣告外掛程式依賴的服務；框架會等每個服務就緒後才執行 `apply`，所以這裡的 `ctx.tools` 已經可用。`defineTool` 根據 `parameters` 推斷並驗證 `args`。`execute` 回傳 `output.schema` 宣告的值，`output.render` 把這個值轉換成模型看到的內容。
+`inject` 宣告外掛程式依賴的服務；框架會等每個服務就緒後才執行 `apply`，所以這裡的 `ctx.tools` 已經可用。
+
+`defineTool` 根據 `parameters` 推斷並驗證 `args`。
+
+`execute` 回傳 `output.schema` 宣告的值，`output.render` 把這個值轉換成模型看到的內容。
 
 在 `apply(ctx)` 內註冊。透過 `ctx` 的註冊都是 effect，卸載外掛程式時工具也會隨之移除。
 

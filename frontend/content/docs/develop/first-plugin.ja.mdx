@@ -3,7 +3,9 @@ title: 最初のプラグインを作る
 description: 最小の DeepSeek Harness プラグインを作成し、ソース overlay で読み込み、Web UI で動作を確認します。
 ---
 
-DeepSeek Harness はプラグインで構成されています。プラグインとは `apply` 関数をエクスポートする TypeScript モジュールです。harness はプラグインの読み込み時に `apply` を呼び、Cordis context を渡します。プラグインが登録するものはすべてこのオブジェクトを通ります。
+DeepSeek Harness はプラグインで構成されています。
+
+プラグインとは `apply` 関数をエクスポートする TypeScript モジュールです。harness はプラグインの読み込み時に `apply` を呼び、Cordis context を渡します。プラグインが登録するものはすべてこのオブジェクトを通ります。
 
 このチュートリアルでは最小のプラグインを作り、Web UI に読み込み、最後に取り除きます。手順は DeepSeek Harness のソース checkout 上で実行するので、先に公式の run-from-source セットアップを済ませてください。
 
@@ -62,7 +64,9 @@ pnpm dsh web --patch ./scratch-plugin/cordis.yml
 
 ## Web UI で確認する
 
-`http://127.0.0.1:3080` を開きます。起動時にターミナルへ `[hello-plugin] plugin loaded!` と表示されます。メッセージを送って実行を見てみましょう。Web UI には各ステップが並び、モデルの Think 行や、入出力を伴うツール呼び出しも確認できます。
+`http://127.0.0.1:3080` を開きます。起動時にターミナルへ `[hello-plugin] plugin loaded!` と表示されます。
+
+メッセージを送って実行を見てみましょう。Web UI には各ステップが並び、モデルの Think 行や、入出力を伴うツール呼び出しも確認できます。
 
 <DocsVideo
   src="/docs/video/develop-observe.ja.mp4"
