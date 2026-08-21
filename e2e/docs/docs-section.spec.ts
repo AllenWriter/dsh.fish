@@ -195,7 +195,11 @@ test.describe('product docs on a desktop', () => {
     const video = page.locator('article video')
     await expect(video).toHaveCount(1)
     await expect(video).toHaveAttribute('controls', '')
-    await expect(video).toHaveAttribute('poster', '/docs/video/quickstart-poster.jpg')
+    await expect(video).toHaveAttribute('poster', '/docs/video/quickstart.zh-CN-poster.jpg')
+    await expect(video.locator('source')).toHaveAttribute(
+      'src',
+      '/docs/video/quickstart.zh-CN.mp4',
+    )
     await page.getByText('视频文字稿').click()
     await expect(page.getByText('从小处提问，逐项验证。')).toBeVisible()
   })

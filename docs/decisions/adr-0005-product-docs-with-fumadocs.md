@@ -285,7 +285,7 @@ Harder:
 | Markdown          | `import.meta.glob('…mdx?raw')` in `pages/docs/raw.ts`; Worker has no `content/docs`                           |
 | Search JSON       | `/docs/search` — titles and descriptions only; Orama and Shiki stay out of the Worker                         |
 | Code fences       | `rehypeCodeOptions: false` — no GitHub-themed token spans; fences match the catalog readme                    |
-| Video             | `widgets/docs-media` + `public/docs/video` — controls, poster, localized caption and transcript               |
+| Video             | `widgets/docs-media` + `public/docs/video` — per-locale mp4 + poster, localized caption and transcript      |
 
 Every shipped guide has a physical file for all six locales. English fallback
 remains a route-safety mechanism; metadata and sitemap alternates are limited to
