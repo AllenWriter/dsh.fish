@@ -1,24 +1,11 @@
 ---
 title: クイックスタート：DeepSeek Harness を実行する
-description: DeepSeek Harness Web UI を起動し、モデルとワークスペースを設定して最初のリポジトリタスクを完了します。
+description: DeepSeek Harness Web UI を起動し、モデルとワークスペースを設定して、4 ステップで最初のタスクを完了します。
 ---
 
-API キーはローカルに保存され、モデルへのリクエストは dsh.fish を経由しません。
+このチュートリアルでは、空のターミナルから DeepSeek Harness のセッションまで 4 つの手順で進みます。DeepSeek Harness（`dsh`）は[エージェントハーネス](/docs/concepts)です。言語モデルがツールを持ってループで動作し、ファイルの読み取り、コマンドの実行、コードの編集を代行します。[セッション](/docs/concepts)とは、そのエージェントとの一回の会話です。新しい用語は初出の場所から基本概念ページにリンクしています。
 
-<DocsVideo
-  src="/docs/video/quickstart.ja.mp4"
-  poster="/docs/video/quickstart.ja-poster.jpg"
-  title="起動から最初のタスクまで"
-  caption="実際の UI を使った Web UI 設定フローを 27 秒で紹介します。"
-  transcriptLabel="動画の文字起こし"
->
-  <p>DeepSeek Harness — ゼロから最初のタスクへ。</p>
-  <p>Web UI を起動。コマンドは一つ。既定はローカルのみ。</p>
-  <p>モデルを接続。API キーは自分のマシンに保存。</p>
-  <p>ワークスペースを一つ選ぶ。選択するまで入力は使えない。</p>
-  <p>小さな最初のタスクを送る。読み取り専用。検証しやすい。</p>
-  <p>次の一歩 — 小さく問い、すべて検証する。</p>
-</DocsVideo>
+API キーはローカルに保存され、モデルへのリクエストは dsh.fish を経由しません。
 
 ## 1. Web UI を起動する
 
@@ -26,22 +13,82 @@ API キーはローカルに保存され、モデルへのリクエストは dsh
 npx @deepseek-ai/dsh web
 ```
 
-ブラウザが開かなければ `http://127.0.0.1:3080` にアクセスします。
+このコマンドは `http://127.0.0.1:3080` で Web UI を起動し、ブラウザで開きます。ブラウザが開かない場合は、そのアドレスに手動でアクセスしてください。このパッケージは開発者プレビュー版です。重要な作業に使う前に、npm のプロンプトとリリースノートを確認してください。
+
+<DocsVideo
+  src="/docs/video/quickstart-launch.ja.mp4"
+  poster="/docs/video/quickstart-launch.ja-poster.jpg"
+  title="Web UI の起動"
+  caption="起動コマンドの入力と、実際の起動ログ。"
+  transcriptLabel="動画の文字起こし"
+>
+  <p>ターミナルに起動コマンドを入力する。</p>
+  <p>起動ログが出力され、UI がポート 3080 で待ち受ける。</p>
+</DocsVideo>
 
 ## 2. モデルを接続する
 
-**Settings → Models** を開き、プロバイダー、モデル名、API キーを入力して保存します。次のリクエストから反映され、再起動は不要です。OpenAI 互換エンドポイントでは base URL とモデル識別子を正確に確認してください。
+Harness には[モデル](/docs/concepts)が必要です。モデルは思考を担当する LLM で、DeepSeek、Anthropic、OpenAI などのプロバイダーが提供します。**Settings → Models** を開き、プロバイダーの API キーを入力して保存します。DeepSeek のカードはキーだけで足ります。他のプロバイダーは **Add provider** から、社内ゲートウェイや自前のサーバーは **Add a custom provider** から追加します。キーはマシン上の harness ホームディレクトリ（`$DSH_HOME`）に保存され、dsh.fish には送信されません。次のリクエストから新しい設定が使われ、再起動は不要です。
+
+OpenAI 互換エンドポイントでは、base URL とモデル識別子を一字ずつ確認してください。キーの保存に成功しても、エンドポイントがそのモデルを受け付けるとは限りません。長いセッションの前に、下の小さな最初のタスクを実行してください。
+
+<DocsVideo
+  src="/docs/video/quickstart-model.ja.mp4"
+  poster="/docs/video/quickstart-model.ja-poster.jpg"
+  title="モデルの接続"
+  caption="Settings → Models でキーとモデルを入力し、Apply で保存。"
+  transcriptLabel="動画の文字起こし"
+>
+  <p>Settings → Models を開き、キーとモデルを入力する。</p>
+  <p>Apply を押すと、プロバイダーが保存済みの行に現れる。</p>
+</DocsVideo>
 
 ## 3. ワークスペースを選ぶ
 
-**Choose workspace** から対象リポジトリを選びます。ワークスペースは信頼境界です。無関係な秘密情報や個人ファイルを含む上位ディレクトリは開かないでください。
+[ワークスペース](/docs/concepts)は、エージェントが閲覧と変更を許可されるプロジェクトディレクトリです。**Choose workspace** を選び、調べたいリポジトリを開きます。ワークスペースを選ぶまで、composer（下部のメッセージ入力欄）は使えません。
 
-## 4. 最初のタスク
+ワークスペースは信頼境界として扱ってください。エージェントはその中で読み書きします。先にリポジトリを確認し、無関係な秘密情報を含むディレクトリは開かないでください。
+
+<DocsVideo
+  src="/docs/video/quickstart-workspace.ja.mp4"
+  poster="/docs/video/quickstart-workspace.ja-poster.jpg"
+  title="ワークスペースの選択"
+  caption="ピッカーが開き、フォルダーを選ぶと入力欄が有効になる。"
+  transcriptLabel="動画の文字起こし"
+>
+  <p>ワークスペースピッカーが開き、プロジェクトフォルダーを選ぶ。</p>
+  <p>composer が有効になり、質問を送れる。</p>
+</DocsVideo>
+
+## 4. 最初のタスクを実行する
+
+まず読み取り専用のリクエストを送ります。
 
 ```text
 Summarize this repository and identify its main packages.
 ```
 
-回答に出たファイルが実在することを確かめ、次に小さなテストを一つ実行します。権限要求と差分を個別に確認してください。`workspace-write` は書き込みを制御しますが、すべての読み取り、プロセス、ネットワークを隔離するものではありません。
+回答に出たファイルが実在することを確かめます。次に、テストを一つ実行するような、検証できる小さな操作を頼みます。要求された権限と最終的な diff を一つずつ確認してください。
 
-次は [Hub プラグイン](/docs/hub)を導入するか、[最初のプラグイン](/docs/develop/first-plugin)を作ります。
+<DocsVideo
+  src="/docs/video/quickstart-task.ja.mp4"
+  poster="/docs/video/quickstart-task.ja-poster.jpg"
+  title="最初の読み取り専用タスク"
+  caption="質問を送信すると、Read 行が入出力を見せる。"
+  transcriptLabel="動画の文字起こし"
+>
+  <p>読み取り専用の質問を入力して送信する。</p>
+  <p>Read ツール行が呼び出しの入力と出力を表示する。</p>
+</DocsVideo>
+
+## 権限を理解する
+
+[権限](/docs/concepts)は、エージェントが確認なしで実行してよい操作を決めます。新しいセッションは `workspace-write` で始まります。エージェントはワークスペース内に書き込めますが、すべての読み取り、プロセス、ネットワーク動作が隔離されるわけではありません。理解した操作だけを承認し、認証情報はワークスペースの外に置き、コミット前に変更を確認してください。
+
+## 次のステップ
+
+- [dsh.fish Hub プラグイン](/docs/hub)でカタログ検索とインストールを追加します。
+- headless プロファイルで端末作業を自動化します。`dsh --profile headless "run the tests"` は一つのセッションを実行し、最終回答を表示して終了します。
+- [最初のプラグイン](/docs/develop/first-plugin)で機能を作ります。
+
+公式のバージョン別リファレンス: [Use the Web UI](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart)。

@@ -3,9 +3,7 @@ title: CLI
 description: Install dsh.fish artifacts from a terminal. The command on an artifact page is this binary.
 ---
 
-Install [dsh.fish](https://dsh.fish) artifacts from a terminal. The command on an artifact page is this binary; it applies the same install plan the website renders and the `dsh-hub` plugin executes.
-
-Command names follow the skills CLI (`add`, `find`, `list`, `remove`, `update`, `init`) so the vocabulary is the one people already use to install agent skills. This CLI writes into DeepSeek Harness (`$DSH_HOME`), not into `.claude/skills` or other agent trees.
+`@dsh-fish/cli` installs [dsh.fish](https://dsh.fish) artifacts from a terminal. The install command on an artifact page is this binary: it applies the same install plan the website renders and the `dsh-hub` plugin executes. Everything it writes goes into DeepSeek Harness (`$DSH_HOME`).
 
 ## Install an artifact
 
@@ -17,7 +15,7 @@ npx @dsh-fish/cli add acme/notes
 
 `add` resolves a hub id, a dsh.fish URL, or `owner/repo` against the catalog, then runs the plan: files under `$DSH_HOME`, package-manager adds, and profile patch rows.
 
-Git packages that build from source are refused until you pass `--allow-build-scripts`. That flag is permission to run the package's `prepare` script on this machine, outside the agent sandbox — the CLI will not grant it because you passed `--yes`.
+Git packages that build from source are refused until you pass `--allow-build-scripts`. That flag permits the package's `prepare` script to run on this machine, outside the agent sandbox. `--yes` skips confirmation prompts but never grants this permission.
 
 ## Other commands
 
@@ -29,7 +27,7 @@ Git packages that build from source are refused until you pass `--allow-build-sc
 | `remove <id>`                      | Reverse the recorded files, patch rows and packages.                |
 | `update [id]`                      | Re-apply the current plan.                                          |
 | `init [name]`                      | Write a `SKILL.md` the hub indexer will accept.                     |
-| `login` / `logout` / `whoami`      | Device-grant account, same token as the hub plugin.                 |
+| `login` / `logout` / `whoami`      | Device sign-in account, same token as the hub plugin.               |
 | `rate <source> <1-5> [comment...]` | Rate an artifact; replaces your previous rating. Needs `login`.     |
 | `reviews <source>`                 | Average rating, 5-to-1 distribution and recent comments.            |
 
@@ -43,7 +41,7 @@ npx @dsh-fish/cli rate dsh-postgres-mcp 5 "installed and queried in minutes"
 
 ## Ratings
 
-The site uses a 1–5 star scale: 1 is broken or misleading, 5 is excellent. `reviews` is anonymous; `rate` needs `login` and always speaks for the signed-in account — rating again overwrites the earlier one, never stacks.
+The site uses a 1–5 star scale: 1 is broken or misleading, 5 is excellent. `reviews` is anonymous; `rate` needs `login` and always speaks for the signed-in account. Rating again overwrites the earlier one.
 
 An agent driving this CLI should follow the same rule the hub plugin's `hub_rate` tool states: rate only what it actually installed and used, from firsthand evidence, and tell its user when it leaves a rating.
 

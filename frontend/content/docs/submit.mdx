@@ -1,22 +1,28 @@
 ---
-title: Submit and claim
-description: Submit a source, not a description. The registry re-reads the real manifest. Ownership is checked against the GitHub account linked to the session.
+title: Submit a plugin
+description: Publish a plugin on dsh.fish by pointing the registry at its npm package or GitHub repository. The registry re-reads the real manifest, so no catalog field is written by hand.
 ---
 
-The [submit form](/submit) takes a source, not a description: `npm:<package>` or `github:<owner>/<repo>[/<path>]`, plus the kind you believe it is. The registry re-reads the real manifest, so a submitter cannot hand-write catalog fields the crawler would not itself have produced.
+To list a plugin on dsh.fish, you submit a source, not a description. The [submit form](/submit) points the registry at an npm package or a GitHub repository, and the registry reads the real manifest itself, with the same reader the crawler uses. What lands in the catalog is exactly what the harness would load; no catalog field is written by hand.
 
-A `kindHint` rotates probe order (a skill hint reads `SKILL.md` first) but never substitutes for proof. A snapshot whose detected kind differs from the submitted kind is rejected.
+## Sign in first
 
-## Who can submit
+Submitting needs a signed-in browser session. A device token, which is what a harness holds, can search, install and rate, but it cannot publish on your behalf. If you open `/submit` signed out, the page asks you to sign in and then returns you to the form.
 
-Submitting needs a browser session. A harness device token can search, install and rate, but it cannot publish on a user's behalf.
+## Fill in the form
 
-## Immediate approval vs review
+The form asks for the type, the source, and an optional note for reviewers. The type is the kind you believe the source is: bundle, profile, skill, MCP server, agent preset, or hook bridge. The source is `npm:<package>` or `github:<owner>/<repo>[/<path>]`. The note is only read if your submission goes to a human reviewer.
 
-A submission the indexer can read **and** that the submitter demonstrably owns is approved immediately. Ownership is the GitHub account linked through OAuth, compared to the repository owner at the moment of the claim — it is not stored on the hub `Account`. Everything else queues for review.
+## What the registry checks
 
-An artifact already claimed by another account is a conflict. npm has no equivalent identity check; GitHub-backed sources do.
+The type you pick tells the reader which manifest to check first — a skill checks `SKILL.md` before anything else — but it is not proof. If the registry finds a different kind than the one you picked, the submission is rejected. If it finds no harness manifest at all, it is rejected too; a bundle, for example, must declare `dsh.bundle` in its package.json.
+
+## Approved at once, or queued for review
+
+A submission the registry can read, from a source you demonstrably own, is approved immediately. Ownership means the repository's owner id matches the GitHub account you signed in with. The two are compared as GitHub's numeric ids, so a renamed account cannot fake it. npm packages have no equivalent check, and an organisation's repositories belong to the organisation rather than to you, so both queue for review.
+
+An approved submission links you straight to the published artifact. A queued one appears once a maintainer reviews it. If the artifact is already claimed by another account, the submission is refused as a conflict.
 
 ## After it lands
 
-When an artifact is created or its README Markdown changes, localization work is queued per site locale. Generated Markdown is served only while its source hash still matches the catalog row; pending, failed and stale translations expose the original README instead.
+When an artifact is created or its README changes, the site queues a translation per locale. A translation is served only while it still matches the current README; pending, failed and outdated translations show the original instead.

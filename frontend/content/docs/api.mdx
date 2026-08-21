@@ -27,15 +27,15 @@ curl -s 'https://dsh.fish/api/v1/artifacts/ARTIFACT_ID/reviews'
 curl -s 'https://dsh.fish/api/v1/scoring'
 ```
 
-The scoring endpoint returns the same model the [score guide](/docs/scoring) renders. Do not reproduce the formula as an independent constant.
+The scoring endpoint returns the same model the [score guide](/docs/scoring) renders. Do not reproduce the formula as an independent constant in your own code.
 
-## Mirror the catalog efficiently
+## Mirror the catalog
 
-Poll the lightweight version endpoint. Download a new snapshot only when `dataVersion` changes:
+Third-party directories and bots can keep a local copy of the whole catalog without crawling it. Poll the lightweight version endpoint and download a new snapshot only when `dataVersion` changes:
 
 ```sh
 curl -s 'https://dsh.fish/api/v1/catalog/version'
 curl -s 'https://dsh.fish/api/v1/catalog/snapshot' -o catalog.json
 ```
 
-Store the snapshot with its version and `ETag`. Send `If-None-Match` on later downloads. Public reads do not require an account; authenticated write operations use the scopes described in OpenAPI.
+Store the snapshot with its version and `ETag`, and send `If-None-Match` on later downloads; an unchanged catalog costs a 304. Public reads do not require an account; authenticated write operations use the scopes described in OpenAPI.

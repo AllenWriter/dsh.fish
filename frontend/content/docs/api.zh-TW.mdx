@@ -1,16 +1,41 @@
 ---
 title: REST API
-description: 使用公開 JSON API 搜尋 dsh.fish、檢查製品和安裝計畫、讀取評分並同步目錄。
+description: 使用公開 JSON API 搜尋 dsh.fish、檢查構件與安裝計畫、讀取評分並同步目錄。
 ---
 
-公開 API 用於探索和唯讀目錄整合。完整結構請查看 [OpenAPI 文件](/openapi.json)。
+公開 API 用於探索和唯讀的目錄整合。先看產生的 [OpenAPI 文件](/openapi.json)，本頁只給出最短可用路徑。
+
+## 搜尋構件
 
 ```sh
 curl -s 'https://dsh.fish/api/v1/artifacts?q=postgres&kind=mcp-server'
+```
+
+用回傳的穩定 `id` 呼叫詳細資料和安裝計畫端點：
+
+```sh
+curl -s 'https://dsh.fish/api/v1/artifacts/ARTIFACT_ID'
 curl -s 'https://dsh.fish/api/v1/artifacts/ARTIFACT_ID/install-plan?profile=web'
+```
+
+安裝計畫是資料，不應盲目執行。把每個檔案、套件和設定檔補丁顯示給使用者；套件需要建置許可時，另外再確認一次。
+
+## 讀取信任訊號
+
+```sh
+curl -s 'https://dsh.fish/api/v1/artifacts/ARTIFACT_ID/reviews'
 curl -s 'https://dsh.fish/api/v1/scoring'
 ```
 
-安裝計畫是資料，不應盲目執行。向使用者顯示每個檔案、套件與 profile patch，需要建置指令碼時另外確認。
+評分端點回傳的模型和[評分說明](/docs/scoring)呈現的是同一份。不要把公式抄成自己程式裡的常數。
 
-先輪詢 `/api/v1/catalog/version`，只在 `dataVersion` 變更時下載 `/api/v1/catalog/snapshot`，並保存 `ETag`。公開讀取不需帳戶；認證寫入與 scope 以 OpenAPI 為準。
+## 鏡像目錄
+
+第三方目錄和機器人可以在本地保存整份目錄的副本，無需爬取頁面。輪詢輕量的 version 端點，只在 `dataVersion` 變更時下載新的快照：
+
+```sh
+curl -s 'https://dsh.fish/api/v1/catalog/version'
+curl -s 'https://dsh.fish/api/v1/catalog/snapshot' -o catalog.json
+```
+
+快照連同版本號和 `ETag` 一起保存，之後的下載帶上 `If-None-Match`；目錄沒變時只會收到 304。公開讀取不需要帳戶；需要認證的寫入操作使用 OpenAPI 裡描述的 scope。

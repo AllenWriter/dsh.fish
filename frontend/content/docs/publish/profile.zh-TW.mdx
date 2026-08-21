@@ -1,16 +1,39 @@
 ---
 title: Profile
-description: 以有序 bundle 清單發布 DeepSeek Harness profile，並理解逐列覆寫規則。
+description: 配置檔案（profile）構件是用於完整 Harness 組合的有序 bundle 清單：dsh.profile.bundles 契約、層順序，以及與 --profile 旗標的區別。
 ---
 
-Profile 是有序的 `dsh.profile.bundles` 堆疊，索引器會依序安裝每個 bundle。
+配置檔案（profile）是一個有序的 bundle 清單，合起來構成完整、可運行的 Harness 組合。
+
+這個詞指代兩個不同的東西。本頁講的構件是發布出來的 bundle 清單。執行時 `--profile` 旗標選擇啟動哪個本機組合：`dsh --profile web` 執行存放在 `$DSH_HOME/profiles/web` 的配置檔案。安裝 profile 構件，是把它的 bundle 依序加入你選定的一個本機配置檔案，之後用該旗標啟動它。
+
+## 清單契約
+
+套件透過 `dsh.profile.bundles` 宣告 profile：
 
 ```json
 {
   "dsh": {
-    "profile": { "bundles": ["@deepseek-ai/dsh-base", "dsh-hello-plugin"] }
+    "profile": {
+      "bundles": ["@deepseek-ai/dsh-base", "dsh-hello-plugin"]
+    }
   }
 }
 ```
 
-後面的層依列勝出，patch 會整體取代一列設定而非深度合併。Profile 探針最先執行；同時像 profile 與 bundle 的套件會被歸類為 profile。
+每個 profile 都從 `@deepseek-ai/dsh-base`（共享核心層）開始。後面的層依列勝出，patch 會整體取代一列的設定而不是深度合併，所以順序會改變結果。
+
+同時宣告 `dsh.profile` 和 `dsh.bundle` 的套件會被歸類為 profile，因為 profile 本身就是一個有序的 bundle 堆疊。
+
+## 安裝與發布
+
+安裝計畫逐個接納 profile 的 bundle，依宣告順序每個執行一次安裝：
+
+```sh
+dsh plugin --profile web add @deepseek-ai/dsh-base
+dsh plugin --profile web add dsh-hello-plugin
+```
+
+`dsh plugin add` 在首次使用時建立本機配置檔案，以 `@deepseek-ai/dsh-base` 為第一個 bundle，然後依序追加其餘 bundle。
+
+要發布，向 dsh.fish [提交](/docs/submit)套件。註冊表讀取的是同一份 `dsh.profile.bundles` 清單。

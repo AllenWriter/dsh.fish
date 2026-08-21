@@ -1,46 +1,80 @@
 ---
 title: Configure, package, and install a plugin
-description: Validate plugin configuration, understand profile patch order, package compiled output, and test installation safely.
+description: Validate plugin configuration with a schema, understand patch layer order, package compiled output, and test installation safely.
 ---
 
-Configuration is part of your plugin's public contract. Reject invalid values with a useful message instead of silently inventing defaults.
+Configuration is part of your plugin's public contract. Reject invalid values with a clear error instead of silently inventing defaults.
 
 ## Define and validate configuration
 
-Keep a documented schema beside the plugin. Separate ordinary settings from credentials; managed credentials are not copied into `process.env`. Test missing fields, wrong types, and values at each boundary.
+Export a `Config` type and a same-named Schemastery schema, with defaults written directly on the schema fields. When the plugin loads, the harness validates the user's configuration against it; invalid values fail the load with an actionable error.
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+import Schema from '@deepseek-ai/schemastery'
+
+export const name = 'my-plugin'
+
+export interface Config {
+  greeting: string
+  maxRetries: number
+}
+
+export const Config: Schema<Config> = Schema.object({
+  greeting: Schema.string().default('Hello'),
+  maxRetries: Schema.number().default(3),
+})
+
+export function apply(ctx: Context, config: Config) {
+  console.log(config.greeting)  // User value or schema default.
+}
+```
+
+Keep secrets out of configuration values. Configuration carries only a reference, such as `apiKeyEnv: DEEPSEEK_API_KEY`; the plugin resolves the value through `ctx.credentials` when it needs it.
+
+Test missing fields, wrong types, and values at each boundary.
 
 ## Understand composition order
 
-The harness resolves configuration in this order:
+The harness composes the effective configuration over an empty root, in this order:
 
-1. bundles declared by the profile;
-2. the profile's `cordis.patch`;
-3. the home-level `cordis.patch`;
-4. command-line patches.
+1. each bundle's patch from the profile's `dsh.profile.bundles` list, in list order;
+2. the profile's own `cordis.patch.yml`;
+3. the home-level `$DSH_HOME/cordis.patch.yml`;
+4. each `--patch <path>` overlay, in argv order.
 
-Later configuration replaces a matching row as a whole; it is not a deep merge. Dump the resolved configuration whenever an override seems to disappear.
+Later layers win per row: a patch replaces a row's entire `config` value rather than deep-merging keys. When an override seems to disappear, dump the resolved configuration:
 
 ```sh
 dsh --profile demo --dump-config
 ```
 
+Edits to the profile and home patch files hot-reload; adding, removing, or updating a bundle requires a restart.
+
 ## Package compiled output
 
-Publish only files needed at runtime, including `lib/`, the manifest, README, and license. Test the exact tarball rather than the working tree:
+Publish only the files needed at runtime: compiled output, the manifest, README, and license. Test the exact tarball rather than the working tree:
 
 ```sh
 pnpm pack
-dsh plugin --profile demo add ./hello-harness-0.1.0.tgz
+dsh plugin --profile demo add ./hello-plugin-0.1.0.tgz
 ```
 
-If installation from Git runs `prepare`, that script executes on the user's machine outside the agent sandbox. Keep it deterministic, document it, and recommend pinning a commit. pnpm 10 and later may require an explicit `allowBuilds` entry.
+A Git install fetches sources, not built artifacts, so the package needs a `prepare` script that builds the published entry points after install. pnpm 10 and later refuse to run a git dependency's `prepare` until the user allowlists it in the profile's `pnpm-workspace.yaml`:
+
+```yaml
+allowBuilds:
+  dsh-hello-plugin: true
+```
+
+That script runs on the user's machine, outside any agent sandbox. Keep it deterministic, document what it does, and recommend pinning a commit (`github:you/hello-plugin#<sha>`).
 
 ## Release checklist
 
 - Install into a clean test profile.
 - Dump and inspect the resolved rows.
-- Exercise success, validation failure, and disposal.
-- Restart after bundle changes; use hot reload only for supported patch edits.
+- Exercise the success, validation-failure, and disposal paths.
+- Restart after bundle changes; rely on hot reload only for patch edits.
 - Remove the plugin and confirm no files, tools, or background resources remain.
 
 When the package is ready, choose the matching [dsh.fish publishing format](/docs/publish/bundle) and [submit the source](/docs/submit).

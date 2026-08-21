@@ -3,11 +3,11 @@ title: Register a tool
 description: Add a typed tool to a DeepSeek Harness plugin and verify its input, result, and cleanup behavior.
 ---
 
-A tool is an operation the model can request. Keep it narrow: give it one clear outcome, validate every input, return useful evidence, and avoid hidden side effects.
+A tool is an operation the model can request. Keep it narrow: one clear outcome, every input validated, useful evidence returned, no hidden side effects.
 
 ## Define the tool
 
-Use the tool API exposed by the harness version in your package. The essential shape is a stable name, a plain description, a schema, and an async handler:
+The essential shape is a stable name, a plain description, a schema, and an async handler. The example extends the scratch plugin from [Build your first plugin](/docs/develop/first-plugin):
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -39,16 +39,17 @@ export function apply(ctx: Context) {
 }
 ```
 
-Register the tool inside `apply(ctx)`, using the current official API rather than a global singleton. Registration should be tied to the plugin context so unloading the plugin removes the tool.
+`inject` declares the services the plugin needs; the framework waits for each one before running `apply`, so `ctx.tools` is ready here. `defineTool` infers and validates `args` from `parameters`. `execute` returns the value declared by `output.schema`, and `output.render` converts that value into content the model sees.
+
+Register inside `apply(ctx)`. Registrations through `ctx` are effects, so unloading the plugin removes the tool.
 
 ## Verify from both sides
 
-1. Run the plugin's unit test with valid, empty, and malformed input.
-2. Dump the profile and confirm the tool is present once.
-3. Start the Web UI and ask: `Use greet for Ada.`
-4. Inspect the tool row's input and output, not only the assistant's prose.
-5. Unload the plugin and verify that the tool disappears.
+1. Test the handler with valid, empty, and malformed input.
+2. Start the Web UI with the overlay and ask: `Use the greet tool to greet Ada.`
+3. Inspect the tool row's input and output, not only the assistant's reply.
+4. Remove the plugin and confirm the tool disappears.
 
-Do not place API keys in tool arguments or results. Read managed credentials through the documented harness mechanism and mask secrets in logs.
+Do not put API keys in tool arguments or results. Resolve managed credentials through `ctx.credentials` at the start of each operation, and mask secrets in logs.
 
 Official reference: [Build a tool](https://deepseek-harness.github.io/deepseek-harness/en/develop/basic/tool/).

@@ -277,7 +277,7 @@ Harder:
 
 | Piece             | Where                                                                                                         |
 | ----------------- | ------------------------------------------------------------------------------------------------------------- |
-| MDX (six locales) | `frontend/content/docs/` — onboarding, installation, development, six publish kinds, submission, scoring, API |
+| MDX (six locales) | `frontend/content/docs/` — sidebar groups: Start (quickstart, concepts), Plugins (why-plugins, six publish formats), Develop, Use dsh.fish (hub, cli, submit), Reference (scoring, api) |
 | Source loader     | `frontend/src/pages/docs/source.ts` — `defineDocs` rewritten by Vite; never `getText('raw')`                  |
 | Routes            | `:locale?/docs`, `:locale?/docs/*`, `:locale?/docs/search` (search **before** the splat)                      |
 | Shell             | `widgets/docs-shell` — in-column sidebar + TOC; mobile sheet uses `SPRING_PANEL`                              |
@@ -285,11 +285,19 @@ Harder:
 | Markdown          | `import.meta.glob('…mdx?raw')` in `pages/docs/raw.ts`; Worker has no `content/docs`                           |
 | Search JSON       | `/docs/search` — titles and descriptions only; Orama and Shiki stay out of the Worker                         |
 | Code fences       | `rehypeCodeOptions: false` — no GitHub-themed token spans; fences match the catalog readme                    |
-| Video             | `widgets/docs-media` + `public/docs/video` — per-locale mp4 + poster, localized caption and transcript      |
+| Video             | `widgets/docs-media` + `public/docs/video` — 11 short per-section clips × 6 locales (mp4 + poster), localized caption and transcript      |
 
 Every shipped guide has a physical file for all six locales. English fallback
 remains a route-safety mechanism; metadata and sitemap alternates are limited to
 translations that physically exist.
+
+The sidebar was later restructured into the reading journey above: the
+`install` group became `plugins` (why plugins matter, then one page per
+publish format — the `publish/` folder keeps its path but titles itself
+"Plugin formats") and `use` (hub, cli, submit). Separator titles stay i18n
+keys (`docs.nav.plugins`, `docs.nav.use` in `pages/docs/source.ts` and
+`widgets/docs-shell`), and each video page now embeds several ~20-second
+clips at the section they demonstrate rather than one long video at the top.
 
 ## Implementation order
 

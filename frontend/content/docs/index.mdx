@@ -1,23 +1,26 @@
 ---
-title: DeepSeek Harness, from first run to your own tools
-description: Start DeepSeek Harness, connect a model, install trusted extensions from dsh.fish, and build your first plugin.
+title: DeepSeek Harness and dsh.fish
+description: What DeepSeek Harness is, what dsh.fish is, and the order to read these docs.
 ---
 
-DeepSeek Harness is an open-source agent harness. dsh.fish is an independent catalog for finding, checking, and installing things the harness can load. This guide joins the two into one practical path.
+DeepSeek Harness (`dsh`) is an open-source agent harness from DeepSeek AI: a program that runs an AI agent on your own machine. It connects a model you choose to tools that read and edit files and run commands, and it records everything the agent does. You start it locally with `npx @deepseek-ai/dsh web`, which opens a Web UI.
 
-## Choose your path
+dsh.fish is an independent catalog of extensions for the harness. It finds plugins, reads what they actually contain, and shows you an install plan before anything is written to your machine. The website, the dsh.fish CLI, and the hub plugin that runs inside a session all read the same plans.
 
-- **New to the harness?** Follow [Quickstart](/docs/quickstart) to launch the Web UI, add a model, choose a workspace, and run a first task.
-- **Want a capability?** Use the [hub plugin](/docs/hub) inside a session or the [dsh.fish CLI](/docs/cli) in a terminal. Inspect the plan before installing.
-- **Building an integration?** Create a [first plugin](/docs/develop/first-plugin), add a [tool](/docs/develop/tool), then validate its [configuration](/docs/develop/configuration).
-- **Ready to share?** Pick the matching [publishing format](/docs/publish/bundle), submit the source, and review the public score.
+## The learning path
 
-## What dsh.fish verifies
+The sidebar is one ordered path from zero to publishing your own plugin.
 
-The catalog reads the repository or package manifest. A topic or submission is only a discovery seed; it does not decide what appears. Every artifact page shows the detected type, source, install plan, maintenance signals, and a reproducible score.
+1. **Start.** [Quickstart](/docs/quickstart) takes you from an empty terminal to a finished first task; [Core concepts](/docs/concepts) defines the words every later page uses.
+2. **Plugins.** [Why plugins](/docs/plugins) explains how the harness grows by installing plugins, and one page covers each format: [bundle](/docs/publish/bundle), [skill](/docs/publish/skill), [MCP server](/docs/publish/mcp-server), [agent preset](/docs/publish/agent-preset), [profile](/docs/publish/profile), [hook bridge](/docs/publish/hook-bridge).
+3. **Develop.** Build your own: a [first plugin](/docs/develop/first-plugin), a [tool](/docs/develop/tool), and its [configuration](/docs/develop/configuration).
+4. **Use dsh.fish.** Search and install from inside a session with the [hub plugin](/docs/hub) or from a terminal with the [CLI](/docs/cli), then [submit](/docs/submit) your own work.
+5. **Reference.** How [scoring](/docs/scoring) works, and the [API](/docs/api) the catalog exposes.
 
-The website, CLI, and hub plugin all consume the same install-plan API. A plan can write files under `$DSH_HOME`, add packages, or patch a profile. Git packages that run build scripts require a separate, explicit approval because those scripts execute outside the agent sandbox.
+## Why you can trust an install
 
-## Version note
+The catalog reads the real repository or package manifest of everything it lists; a topic tag or a submission is only a discovery seed. Every install plan is a list of steps you can read before anything runs: packages to add, files to write, settings to change. A Git package that must run a build script asks for a separate, explicit approval, because that script executes outside the agent sandbox.
 
-DeepSeek Harness is a developer preview. Commands in this guide are limited to behavior verified in the published npm release. For internals and version-specific options, use the [official DeepSeek Harness guide](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart).
+## Developer preview
+
+DeepSeek Harness is a developer preview and iterates quickly, with compatibility-breaking changes. These docs describe only behavior verified against the published npm release. For version-specific options, see the [official DeepSeek Harness guide](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart).

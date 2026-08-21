@@ -1,16 +1,39 @@
 ---
 title: Profile
-description: 순서가 있는 bundle 목록으로 DeepSeek Harness profile을 게시하고 행 단위 덮어쓰기를 이해합니다.
+description: 프로필(profile) 아티팩트는 완전한 Harness 구성을 위한 순서 있는 bundle 목록입니다. dsh.profile.bundles 계약, 레이어 순서, --profile 플래그와의 차이.
 ---
 
-Profile은 순서가 있는 `dsh.profile.bundles` 스택입니다.
+프로필(profile)은 합쳐서 완전하고 실행 가능한 Harness 구성을 이루는 순서 있는 bundle 목록입니다.
+
+이 단어는 서로 다른 두 가지를 가리킵니다. 이 페이지의 아티팩트는 게시된 bundle 목록입니다. 실행 시 `--profile` 플래그는 어떤 로컬 구성을 부팅할지 고릅니다. `dsh --profile web`은 `$DSH_HOME/profiles/web`에 저장된 프로필을 실행합니다. profile 아티팩트를 설치한다는 것은, 그 bundle들을 순서대로 당신이 정한 로컬 프로필에 추가하는 것입니다. 그다음 플래그로 그 프로필을 부팅합니다.
+
+## 매니페스트 계약
+
+패키지는 `dsh.profile.bundles`로 profile을 선언합니다.
 
 ```json
 {
   "dsh": {
-    "profile": { "bundles": ["@deepseek-ai/dsh-base", "dsh-hello-plugin"] }
+    "profile": {
+      "bundles": ["@deepseek-ai/dsh-base", "dsh-hello-plugin"]
+    }
   }
 }
 ```
 
-뒤의 레이어가 행 단위로 우선하며 patch는 행 전체를 교체하고 deep merge하지 않습니다. 순서가 결과를 바꿉니다. Profile 검사는 가장 먼저 실행되므로 profile과 bundle 모두처럼 보이는 패키지는 profile로 분류됩니다.
+모든 profile은 공유 코어 레이어인 `@deepseek-ai/dsh-base`에서 시작합니다. 뒤의 레이어가 행 단위로 우선하고, patch는 deep merge 대신 행의 설정 전체를 교체하므로 순서가 결과를 바꿉니다.
+
+`dsh.profile`과 `dsh.bundle`을 모두 선언한 패키지는 profile로 분류됩니다. profile 자체가 순서 있는 bundle 스택이기 때문입니다.
+
+## 설치와 게시
+
+설치 계획은 profile의 bundle을 하나씩 받아들여, 선언된 순서대로 각 항목을 한 번씩 추가합니다.
+
+```sh
+dsh plugin --profile web add @deepseek-ai/dsh-base
+dsh plugin --profile web add dsh-hello-plugin
+```
+
+`dsh plugin add`는 처음 사용할 때 로컬 프로필을 만들고 `@deepseek-ai/dsh-base`를 첫 번째 bundle로 둔 뒤, 나머지 bundle을 차례로 추가합니다.
+
+게시하려면 패키지를 dsh.fish에 [제출](/docs/submit)하세요. 레지스트리는 같은 `dsh.profile.bundles` 목록을 읽습니다.

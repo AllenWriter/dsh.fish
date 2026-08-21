@@ -1,9 +1,13 @@
 ---
 title: MCP servers
-description: The registry stores credential references, never values. Declare environment variable names; the harness resolves them through ctx.credentials.
+description: An MCP server is an external service mounted as native harness tools. Declare it in package.json under dsh.hub; credentials are variable references, never values.
 ---
 
-An MCP server is an external server mounted as native tools. The harness has no manifest convention for this kind — it installs as a `dsh-mcp-client` row in the profile patch — so `dsh.hub` in package.json is the source of truth.
+An MCP (Model Context Protocol) server is an external program or service whose tools the harness mounts as its own native tools. After install, the model calls them like any built-in tool, under names such as `mcp__github__create_issue`.
+
+The harness has no manifest convention for this kind: an MCP server installs as a plugin row in the profile patch, not as a package the harness loads. The `dsh.hub` declaration in `package.json` is the only source of truth, so it is what the catalog reads.
+
+## Manifest contract
 
 ```json
 {
@@ -22,6 +26,18 @@ An MCP server is an external server mounted as native tools. The harness has no 
 }
 ```
 
-`transport` may be `stdio` (with `command`) or `streamable-http` (with `url`). A stdio server without a command is rejected.
+- `serverName` namespaces the server's tools as `mcp__<serverName>__<tool>`. It must match `[A-Za-z0-9_-]{1,32}`.
+- `transport` is `stdio` or `streamable-http`. A stdio server needs `command` (`args` is optional); an HTTP server needs `url`.
+- `credentials` lists the secrets the server needs as POSIX environment variable names. `required` defaults to `false`.
 
-The registry stores credential _references_ — POSIX environment variable names — never values. The harness resolves them through `ctx.credentials`. That is what makes a catalog row safe to serve publicly.
+A `dsh.hub.mcp` block on its own already declares the kind. The reverse (`kind: "mcp-server"` with no `mcp` block) is a malformed declaration and is rejected, not skipped.
+
+## How it installs
+
+The install plan appends one `@deepseek-ai/dsh-mcp-client` row (row id `mcp-<serverName>`) to the profile's own `cordis.patch.yml` layer, where a later harness upgrade cannot overwrite it:
+
+```sh
+npx @dsh-fish/cli add <artifact-id> --profile <profile>
+```
+
+The registry stores credential references, never values. In the generated row each secret resolves at load time from the process environment (`!!js process.env.GITHUB_TOKEN`), and the install asks for every required credential's value before the server can run. That is what makes a catalog row safe to serve publicly.

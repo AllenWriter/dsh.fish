@@ -1,9 +1,13 @@
 ---
 title: Bundles
-description: A package without dsh.bundle still installs, but the harness activates no layer — so the registry does not list it as a plugin either.
+description: A bundle is an npm package that adds a patch layer to a dsh profile. The dsh.bundle manifest contract and how bundles install.
 ---
 
-A bundle is an npm package that declares `dsh.bundle.patch`. That is the unit `dsh plugin add` installs.
+A bundle is an npm package that carries plugins into the harness as one patch layer. It is the standard unit for distributing harness capabilities.
+
+## Manifest contract
+
+A package becomes a bundle by declaring `dsh.bundle.patch` in its `package.json`, pointing at a Cordis patch file:
 
 ```json
 {
@@ -15,6 +19,18 @@ A bundle is an npm package that declares `dsh.bundle.patch`. That is the unit `d
 }
 ```
 
-A package without that declaration still installs, but the harness activates no layer for it — so the registry does not list it as a plugin either.
+The patch file lists the plugin rows the layer inserts. The declaration defines the bundle: a package without it still installs as a plain dependency, but the harness activates no layer for it, and the dsh.fish catalog does not list it as a plugin.
 
-Publishing to npm ships prebuilt code, so users need no build allowance. A git install fetches sources: add a self-contained `prepare` script, and expect users to allowlist it.
+## Install and publish
+
+The install plan for a bundle is one package-manager add into a profile:
+
+```sh
+npx @dsh-fish/cli add dsh-hello-plugin --profile web
+# harness-native equivalent:
+dsh plugin --profile web add dsh-hello-plugin
+```
+
+Publish to npm with prebuilt code so users need no build allowance. A git install fetches sources instead: ship a self-contained `prepare` script, and expect users to allowlist it, because pnpm runs that script at install time outside the agent sandbox.
+
+To publish, [submit](/docs/submit) the package or repository to dsh.fish. The registry re-reads the real manifest, so the declaration must be in the published `package.json`.

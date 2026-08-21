@@ -1,15 +1,29 @@
 ---
 title: Skill
-description: kebab-case の名前と必須説明を持つ SKILL.md でエージェントスキルを公開します。
+description: Skill はエージェントが必要に応じて読み込む Markdown 指示ファイルです。SKILL.md frontmatter 契約とインストール方法。
 ---
 
-Skill は frontmatter を持つ `SKILL.md` で、`$DSH_HOME/skills` に導入されます。
+Skill は、タスクが必要としたときにエージェントが読み込める Markdown 指示ファイルです。Skill にパッケージマネージャーは不要で、`$DSH_HOME/skills` 以下に通常のファイルとして導入されます。
+
+## マニフェスト契約
+
+Skill は、1 つの `SKILL.md` を収めたディレクトリか、単一のフラットな `.md` ファイルのどちらかです。どちらも YAML frontmatter を持ちます。
 
 ```md
 ---
 name: release-notes
 description: Draft release notes from a commit range.
 ---
+
+# Release notes
+
+Steps the agent should follow…
 ```
 
-`name` は kebab-case、`description` は必須です。`kindHint` は検出順を変えるだけで、有効なファイルの代わりにはなりません。
+`name` は kebab-case でなければならず、`description` は必須です。どちらかが欠けたファイルは、警告とともに skill provider から無視されます。
+
+## インストールと公開
+
+インストールプランは skill のファイルを `$DSH_HOME/skills` に書き込みます。ディレクトリ形式の skill はフォルダーを保持し、フラットな skill は `<name>.md` になります。ビルド手順も patch 行も関係しません。
+
+インデクサーは、パッケージマニフェストの検査の後で、ファイルそのものを読んで skill を証明します。提出では `skill` の `kindHint` を付けて `SKILL.md` を最初に読ませることができますが、ヒントは証拠の代わりにはなりません。有効な skill でないファイルは残りの検査に回されます。

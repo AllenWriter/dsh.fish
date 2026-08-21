@@ -1,22 +1,57 @@
 ---
 title: dsh.fish CLI
-description: 在终端中搜索、检查、安装、更新和移除 DeepSeek Harness 扩展。
+description: 在终端安装 dsh.fish 构件。构件页上的安装命令就是这个二进制。
 ---
 
-`@dsh-fish/cli` 执行制品页展示的同一份安装计划，并写入 DeepSeek Harness 的 `$DSH_HOME`。
+`@dsh-fish/cli` 在终端安装 [dsh.fish](https://dsh.fish) 构件。构件页上的安装命令就是这个二进制：它执行的安装计划与网站渲染、`dsh-hub` 插件执行的是同一份。所有写入都落在 DeepSeek Harness 的 `$DSH_HOME` 里。
+
+## 安装构件
+
+```sh
+npx @dsh-fish/cli add release-notes
+npx @dsh-fish/cli add https://dsh.fish/a/release-notes --profile web
+npx @dsh-fish/cli add acme/notes
+```
+
+`add` 把 Hub id、dsh.fish URL 或 `owner/repo` 解析到目录中的构件，然后执行计划：向 `$DSH_HOME` 写文件、用包管理器加包、写入配置档案补丁行。
+
+从源码构建的 git 包会被拒绝，直到你传入 `--allow-build-scripts`。这个标志允许该包的 `prepare` 脚本在这台机器上运行，处于智能体沙箱之外。`--yes` 只会跳过确认提示，不会授予这项权限。
+
+## 其他命令
+
+| 命令                               | 作用                                                         |
+| ---------------------------------- | ------------------------------------------------------------ |
+| `find [query]`                     | 搜索目录（`--kind` 限定一种类型）。                          |
+| `show <source>`                    | 展示一个构件和安装它会执行的命令。                           |
+| `list`                             | 列出这台机器通过 CLI 或 hub 插件安装的构件。                 |
+| `remove <id>`                      | 撤销已记录的文件、补丁行和包。                               |
+| `update [id]`                      | 重新执行当前计划。                                           |
+| `init [name]`                      | 写一个 hub 索引器能接受的 `SKILL.md`。                       |
+| `login` / `logout` / `whoami`      | 设备登录的账号，与 hub 插件共用同一个令牌。                  |
+| `rate <source> <1-5> [comment...]` | 给构件评分，覆盖你之前的评分。需要先 `login`。               |
+| `reviews <source>`                 | 平均分、5 到 1 星的分布和最近的评论。                        |
 
 ```sh
 npx @dsh-fish/cli find postgres --kind mcp-server
-npx @dsh-fish/cli show release-notes
-npx @dsh-fish/cli add release-notes --profile web
-npx @dsh-fish/cli list
-```
-
-`add` 接受 Hub id、dsh.fish URL 或 `owner/repo`。安装前检查文件、包和 profile patch。Git 包如需构建脚本，必须显式传入 `--allow-build-scripts`；`--yes` 不会授予这项高风险权限。
-
-常用命令包括 `find`、`show`、`add`、`list`、`update`、`remove` 和 `init`。`login` 后还可使用 `rate`；评分只能基于你实际安装并使用过的结果。
-
-```sh
+npx @dsh-fish/cli list --json
 npx @dsh-fish/cli remove release-notes
 npx @dsh-fish/cli init my-skill
+npx @dsh-fish/cli rate dsh-postgres-mcp 5 "installed and queried in minutes"
 ```
+
+## 评分
+
+站内采用 1–5 星制：1 星表示不能用或有误导，5 星表示出色。`reviews` 是匿名的；`rate` 需要先 `login`，且始终以登录账号的名义发表。再次评分会覆盖之前那次。
+
+驱动这个 CLI 的智能体应遵守 hub 插件 `hub_rate` 工具声明的同一条规则：只给实际安装并使用过的构件评分，依据第一手证据，并在评分时告知用户。
+
+## 选项
+
+| 选项                    | 说明                                                        |
+| ----------------------- | ----------------------------------------------------------- |
+| `--profile, -p`         | Harness 配置档案（默认 `$DSH_PROFILE` 或 `web`）。          |
+| `--registry`            | Hub 源（默认 `$DSH_FISH_URL` 或 `https://dsh.fish`）。      |
+| `--kind, -k`            | 把 `find` 限定到一种构件类型。                              |
+| `--allow-build-scripts` | 允许 git 包运行它的 prepare 脚本。                          |
+| `--json`                | 机器可读输出。                                              |
+| `--yes, -y`             | 跳过确认提示，不授予构建脚本权限。                          |

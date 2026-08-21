@@ -1,15 +1,29 @@
 ---
 title: Skill
-description: kebab-case 이름과 필수 설명이 있는 SKILL.md로 에이전트 스킬을 게시합니다.
+description: Skill은 에이전트가 필요할 때 불러오는 Markdown 지시 파일입니다. SKILL.md frontmatter 계약과 설치 방법.
 ---
 
-Skill은 frontmatter가 있는 `SKILL.md`이며 `$DSH_HOME/skills`에 설치됩니다.
+Skill은 작업이 필요로 할 때 에이전트가 불러올 수 있는 Markdown 지시 파일입니다. Skill에는 패키지 관리자가 필요 없고, `$DSH_HOME/skills` 아래에 일반 파일로 설치됩니다.
+
+## 매니페스트 계약
+
+Skill은 하나의 `SKILL.md`를 담은 디렉터리이거나 단일 플랫 `.md` 파일입니다. 둘 다 YAML frontmatter를 가집니다.
 
 ```md
 ---
 name: release-notes
 description: Draft release notes from a commit range.
 ---
+
+# Release notes
+
+Steps the agent should follow…
 ```
 
-`name`은 kebab-case여야 하고 `description`은 필수입니다. `kindHint`는 검사 순서만 바꿀 뿐 유효한 파일을 대신하지 않습니다.
+`name`은 kebab-case여야 하고 `description`은 필수입니다. 둘 중 하나라도 없는 파일은 skill provider가 경고와 함께 무시합니다.
+
+## 설치와 게시
+
+설치 계획은 skill의 파일을 `$DSH_HOME/skills`에 씁니다. 디렉터리 형태의 skill은 폴더를 유지하고, 플랫 skill은 `<name>.md`가 됩니다. 빌드 단계도 patch 행도 관여하지 않습니다.
+
+인덱서는 패키지 매니페스트 검사 다음에, 파일 자체를 읽어 skill을 증명합니다. 제출 시 `skill`의 `kindHint`를 달아 `SKILL.md`를 먼저 읽게 할 수 있지만, 힌트는 증거를 대신하지 않습니다. 유효한 skill이 아닌 파일은 나머지 검사로 넘어갑니다.

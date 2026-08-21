@@ -4,9 +4,10 @@ import type { MessageKey } from '@/shared/config/i18n'
 export type DocsSeparatorKey = Extract<
   MessageKey,
   | 'docs.nav.start'
-  | 'docs.nav.install'
+  | 'docs.nav.plugins'
   | 'docs.nav.develop'
   | 'docs.nav.publish'
+  | 'docs.nav.use'
   | 'docs.nav.reference'
 >
 

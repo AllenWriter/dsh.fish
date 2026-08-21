@@ -1,9 +1,13 @@
 ---
 title: Skill
-description: 用包含 kebab-case 名称和必填说明的 SKILL.md 发布智能体技能。
+description: Skill 是智能体按需加载的 Markdown 指令文件：SKILL.md frontmatter 契约与安装方式。
 ---
 
-Skill 是带 frontmatter 的 `SKILL.md`，安装到 `$DSH_HOME/skills`。
+Skill 是一个 Markdown 指令文件，智能体在任务需要时加载它。Skill 不需要包管理器：它们作为普通文件安装到 `$DSH_HOME/skills` 下。
+
+## 清单契约
+
+Skill 可以是一个仅含 `SKILL.md` 的目录，也可以是单个扁平的 `.md` 文件。两种形式都带 YAML frontmatter：
 
 ```md
 ---
@@ -12,6 +16,14 @@ description: Draft release notes from a commit range.
 ---
 
 # Release notes
+
+Steps the agent should follow…
 ```
 
-`name` 必须使用 kebab-case，`description` 必填；缺少任一项都不会被 provider 加载。提交时的 `kindHint` 只会调整探测顺序，不能代替有效文件。
+`name` 必须是 kebab-case，`description` 必填。缺少任一项的文件会被 skill provider 忽略，并记录一条警告。
+
+## 安装与发布
+
+安装计划把 skill 的文件写入 `$DSH_HOME/skills`：目录形式的 skill 保留其文件夹，扁平 skill 成为 `<name>.md`。不涉及构建步骤，也不涉及 patch 行。
+
+索引器在包清单检查之后，通过读取文件本身来证明 skill。提交可以携带 `skill` 的 `kindHint`，让 `SKILL.md` 最先被读取，但提示不能代替证据：不是有效 skill 的文件会落入其余检查。

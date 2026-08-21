@@ -1,32 +1,117 @@
 ---
 title: Hub 插件
-description: 在 DeepSeek Harness 会话中搜索 dsh.fish、检查安装计划并管理扩展。
+description: 在智能体会话中查找、检查并安装 dsh.fish 构件。
 ---
 
-Hub 插件让智能体无需离开会话即可搜索和安装目录制品。
+Hub 插件（`dsh-hub`）把 dsh.fish 目录带进正在运行的会话。智能体可以搜索构件、告诉你安装会执行什么，并在你同意后完成安装。你不需要离开会话。
 
-<DocsVideo
-  src="/docs/video/install.zh-CN.mp4"
-  poster="/docs/video/install.zh-CN-poster.jpg"
-  title="安装前先检查"
-  caption="用 24 秒了解发现、证据与生成的安装计划。"
-  transcriptLabel="视频文字稿"
->
-  <p>dsh.fish——安装前先检查。</p>
-  <p>找到需要的能力。在实时 dsh.fish 目录中搜索。</p>
-  <p>比较证据：类型、来源、维护状态和评分。</p>
-  <p>检查每个安装步骤：文件、软件包和 profile 补丁。</p>
-  <p>下一步——一个计划，三个界面。</p>
-</DocsVideo>
+## 添加插件
 
 ```sh
 dsh plugin --profile web add github:stvlynn/dsh.fish#main
 ```
 
-Git 安装会运行 `prepare`。pnpm 10 及以上版本可能要求在 profile 的 `pnpm-workspace.yaml` 中明确允许 `dsh-hub` 构建。该脚本运行在智能体沙箱之外，请固定 commit 后再授权。
+这个包是 TypeScript 写的，从 git 安装会运行它的 `prepare` 脚本来构建 `lib/`。pnpm 10 及以上版本默认拒绝，需要你明确允许。把 pnpm 打印出的包名复制到配置档案的 `pnpm-workspace.yaml` 里：
 
-核心工具为 `hub_search`、`hub_show`、`hub_install`、`hub_list`、`hub_update` 和 `hub_remove`。先用 `hub_show` 查看完整计划，再决定是否安装。需要构建脚本时，插件必须返回并请求用户明确批准。
+```yaml
+allowBuilds:
+  dsh-hub: true
+```
 
-成功安装记录在 `$DSH_HOME/.dsh-fish-lock.json`，与 CLI 共用。文件写入被限制在解析后的 `$DSH_HOME` 内；试图越界的计划会被拒绝。
+然后重新执行 `add`。这项允许意味着该包的代码会在安装时运行在你的机器上，处于智能体沙箱之外。请固定 commit，避免之后的推送改变要运行的内容。
 
-目录读取无需登录。`hub_account` 使用设备授权流程登录；令牌保存在 `$DSH_HOME/.dsh-fish-token.json`，不会写入日志。设备令牌可以评分，但不能提交或认领制品。
+## 查找
+
+`hub_search` 按自由文本搜索目录，也可以用 `kind` 参数限定一种构件类型。它返回的 id 可以传给其他 hub 工具。读取目录不需要账号。
+
+<DocsVideo
+  src="/docs/video/hub-search.zh-CN.mp4"
+  poster="/docs/video/hub-search.zh-CN-poster.jpg"
+  title="搜索 dsh.fish 目录"
+  caption="在 dsh.fish 首页输入查询，返回匹配的构件和结果数量。"
+  transcriptLabel="视频文字稿"
+>
+  <p>dsh.fish 首页，输入搜索查询。</p>
+  <p>显示匹配的构件和结果数量。</p>
+</DocsVideo>
+
+## 检查
+
+`hub_show` 展示一个构件的详情，包括安装将在这台机器上执行的确切命令。`hub_reviews` 匿名读取社区评分：1–5 星的平均分、分布和最近的评论。让智能体安装之前，先看这两项。网站上展示同样的证据，你可以在那里核对。
+
+<DocsVideo
+  src="/docs/video/hub-browse.zh-CN.mp4"
+  poster="/docs/video/hub-browse.zh-CN-poster.jpg"
+  title="浏览目录"
+  caption="用筛选条件缩小范围，构件卡片上带有证据标记。"
+  transcriptLabel="视频文字稿"
+>
+  <p>用筛选条件缩小目录范围。</p>
+  <p>构件卡片上带有证据标记。</p>
+</DocsVideo>
+
+<DocsVideo
+  src="/docs/video/hub-artifact.zh-CN.mp4"
+  poster="/docs/video/hub-artifact.zh-CN-poster.jpg"
+  title="构件详情页"
+  caption="评分、星标、许可证和安装面板集中在一页。"
+  transcriptLabel="视频文字稿"
+>
+  <p>构件页打开，顶部是评分、星标和许可证。</p>
+  <p>安装面板列出安装将执行的内容。</p>
+</DocsVideo>
+
+## 安装
+
+`hub_install` 在这台机器上执行安装计划：写入 skill 和 preset 文件，把 MCP 和 hook 行加入配置档案的补丁层，并为 bundle 运行包管理器。完成后重启 harness，新配置才会加载。
+
+<DocsVideo
+  src="/docs/video/hub-install.zh-CN.mp4"
+  poster="/docs/video/hub-install.zh-CN-poster.jpg"
+  title="一个计划，三个入口"
+  caption="同一份安装计划可以在网页、CLI 和会话中执行。"
+  transcriptLabel="视频文字稿"
+>
+  <p>一份安装计划。</p>
+  <p>同一份计划，在网页、CLI 和会话中执行。</p>
+</DocsVideo>
+
+如果计划中有从源码构建的包，`hub_install` 会拒绝执行，直到调用方传入 `allowBuildScripts: true`。这一步会在安装时把该包的代码运行在你的机器上，处于智能体沙箱之外，所以智能体必须回来问你，不能自行授权。
+
+安装成功后记录在 `$DSH_HOME/.dsh-fish-lock.json`。`hub_list` 列出这台机器已安装的构件，`hub_update` 为已安装的构件重新执行当前计划，`hub_remove` 撤销一次已记录的安装（文件、补丁行、包）。这个锁文件与 `@dsh-fish/cli` 共用，所以 [CLI](/docs/cli) 看到的是同一份安装记录。
+
+## 登录
+
+登录后安装会记到你的账号下，并解锁 `hub_rate`。读取目录不需要账号。
+
+`hub_account` 使用 `action: "login"` 发起一次 OAuth 设备流程登录：工具返回一个短码和一个 URL，你在浏览器里打开 URL 并批准，插件会一直等待到你完成。智能体无法替你批准。令牌写入 `$DSH_HOME/.dsh-fish-token.json`，文件权限为 0600，不会写入日志。
+
+这个令牌刻意弱于浏览器会话。它能以你的身份读取目录、解析安装计划、给构件评分，但不能提交或认领构件。
+
+## 安全
+
+写文件的步骤被限制在解析后的 `$DSH_HOME` 内，试图越界的计划会被拒绝。从源码构建的步骤需要你的明确同意，如上所述。`hub_rate` 自带一条规则：智能体只给这台机器实际安装并使用过的构件评分，依据第一手证据，并在评分时告知你。
+
+## 工具
+
+| 工具          | 作用                                                   |
+| ------------- | ------------------------------------------------------ |
+| `hub_search`  | 按文本和构件类型搜索注册表。                           |
+| `hub_show`    | 展示一个构件的详情，包括安装会执行的内容。             |
+| `hub_install` | 在这台机器上执行安装计划。                             |
+| `hub_list`    | 列出这台机器通过 hub 安装的构件。                      |
+| `hub_remove`  | 撤销一次已记录的安装（文件、补丁行、包）。             |
+| `hub_update`  | 为已安装的构件重新执行当前计划。                       |
+| `hub_account` | 通过 OAuth 设备流程登录、查看状态或退出。              |
+| `hub_reviews` | 社区评分：站内 1–5 星制、平均分、分布和评论。          |
+| `hub_rate`    | 给已安装的构件打 1–5 星，可附公开评论。                |
+
+## 配置
+
+```yaml
+- id: hub
+  name: dsh-hub
+  config:
+    baseUrl: https://dsh.fish # 自托管部署只需要改这一项
+    targetProfile: current # 或者具体的配置档案名
+```

@@ -1,28 +1,117 @@
 ---
 title: Hub 外掛程式
-description: 在 DeepSeek Harness 工作階段中搜尋 dsh.fish、檢查安裝計畫並管理擴充功能。
+description: 在代理工作階段中查找、檢查並安裝 dsh.fish 構件。
 ---
 
-<DocsVideo
-  src="/docs/video/install.zh-TW.mp4"
-  poster="/docs/video/install.zh-TW-poster.jpg"
-  title="安裝前先檢查"
-  caption="用 24 秒了解探索、證據與產生的安裝計畫。"
-  transcriptLabel="影片文字稿"
->
-  <p>dsh.fish——安裝前先檢查。</p>
-  <p>找到需要的能力，在即時 dsh.fish 目錄中搜尋。</p>
-  <p>比較證據：類型、來源、維護狀態和評分。</p>
-  <p>檢查每個安裝步驟：檔案、套件和 profile patch。</p>
-  <p>下一步——一個計畫，三個介面。</p>
-</DocsVideo>
+Hub 外掛程式（`dsh-hub`）把 dsh.fish 目錄帶進正在執行的工作階段。代理可以搜尋構件、告訴你安裝會執行什麼，並在你同意後完成安裝。你不需要離開工作階段。
+
+## 新增外掛程式
 
 ```sh
 dsh plugin --profile web add github:stvlynn/dsh.fish#main
 ```
 
-Git 安裝會執行 `prepare`。pnpm 10 以上版本可能要求在 profile 的 `pnpm-workspace.yaml` 明確允許 `dsh-hub` 建置。該指令碼在代理沙箱之外執行，請固定 commit 後再授權。
+這個套件是 TypeScript 寫的，從 git 安裝會執行它的 `prepare` 指令碼來建置 `lib/`。pnpm 10 以上版本預設拒絕，需要你明確允許。把 pnpm 印出的套件名稱複製到配置檔案的 `pnpm-workspace.yaml` 裡：
 
-核心工具為 `hub_search`、`hub_show`、`hub_install`、`hub_list`、`hub_update` 和 `hub_remove`。先用 `hub_show` 檢視完整計畫。成功安裝會記錄在 `$DSH_HOME/.dsh-fish-lock.json`，並與 CLI 共用。
+```yaml
+allowBuilds:
+  dsh-hub: true
+```
 
-讀取目錄不需登入。`hub_account` 使用裝置授權流程；token 儲存在 `$DSH_HOME/.dsh-fish-token.json`，不會寫入記錄。裝置 token 可以評分，但不能提交或認領製品。
+然後重新執行 `add`。這項允許意味著該套件的程式碼會在安裝時執行在你的機器上，處於代理沙箱之外。請固定 commit，避免之後的推送改變要執行的內容。
+
+## 查找
+
+`hub_search` 按自由文字搜尋目錄，也可以用 `kind` 參數限定一種構件類型。它回傳的 id 可以傳給其他 hub 工具。讀取目錄不需要帳號。
+
+<DocsVideo
+  src="/docs/video/hub-search.zh-TW.mp4"
+  poster="/docs/video/hub-search.zh-TW-poster.jpg"
+  title="搜尋 dsh.fish 目錄"
+  caption="在 dsh.fish 首頁輸入查詢，回傳符合的構件和結果數量。"
+  transcriptLabel="影片文字稿"
+>
+  <p>dsh.fish 首頁，輸入搜尋查詢。</p>
+  <p>顯示符合的構件和結果數量。</p>
+</DocsVideo>
+
+## 檢查
+
+`hub_show` 展示一個構件的詳情，包括安裝將在這台機器上執行的確切命令。`hub_reviews` 匿名讀取社群評分：1–5 星的平均分、分布和最近的評論。讓代理安裝之前，先看這兩項。網站上展示同樣的證據，你可以在那裡核對。
+
+<DocsVideo
+  src="/docs/video/hub-browse.zh-TW.mp4"
+  poster="/docs/video/hub-browse.zh-TW-poster.jpg"
+  title="瀏覽目錄"
+  caption="用篩選條件縮小範圍，構件卡片上帶有證據標記。"
+  transcriptLabel="影片文字稿"
+>
+  <p>用篩選條件縮小目錄範圍。</p>
+  <p>構件卡片上帶有證據標記。</p>
+</DocsVideo>
+
+<DocsVideo
+  src="/docs/video/hub-artifact.zh-TW.mp4"
+  poster="/docs/video/hub-artifact.zh-TW-poster.jpg"
+  title="構件詳情頁"
+  caption="評分、星標、授權條款和安裝面板集中在一頁。"
+  transcriptLabel="影片文字稿"
+>
+  <p>構件頁開啟，頂部是評分、星標和授權條款。</p>
+  <p>安裝面板列出安裝將執行的內容。</p>
+</DocsVideo>
+
+## 安裝
+
+`hub_install` 在這台機器上執行安裝計畫：寫入 skill 和 preset 檔案，把 MCP 和 hook 列加入配置檔案的補丁層，並為 bundle 執行套件管理器。完成後重新啟動 harness，新設定才會載入。
+
+<DocsVideo
+  src="/docs/video/hub-install.zh-TW.mp4"
+  poster="/docs/video/hub-install.zh-TW-poster.jpg"
+  title="一個計畫，三個入口"
+  caption="同一份安裝計畫可以在網頁、CLI 和工作階段中執行。"
+  transcriptLabel="影片文字稿"
+>
+  <p>一份安裝計畫。</p>
+  <p>同一份計畫，在網頁、CLI 和工作階段中執行。</p>
+</DocsVideo>
+
+如果計畫中有從原始碼建置的套件，`hub_install` 會拒絕執行，直到呼叫方傳入 `allowBuildScripts: true`。這一步會在安裝時把該套件的程式碼執行在你的機器上，處於代理沙箱之外，所以代理必須回來問你，不能自行授權。
+
+安裝成功後記錄在 `$DSH_HOME/.dsh-fish-lock.json`。`hub_list` 列出這台機器已安裝的構件，`hub_update` 為已安裝的構件重新執行目前計畫，`hub_remove` 撤銷一次已記錄的安裝（檔案、補丁列、套件）。這個鎖定檔案與 `@dsh-fish/cli` 共用，所以 [CLI](/docs/cli) 看到的是同一份安裝記錄。
+
+## 登入
+
+登入後安裝會記到你的帳號下，並解鎖 `hub_rate`。讀取目錄不需要帳號。
+
+`hub_account` 使用 `action: "login"` 發起一次 OAuth 裝置流程登入：工具回傳一個短碼和一個 URL，你在瀏覽器裡開啟 URL 並批准，外掛程式會一直等待到你完成。代理無法替你批准。token 寫入 `$DSH_HOME/.dsh-fish-token.json`，檔案權限為 0600，不會寫入記錄。
+
+這個 token 刻意弱於瀏覽器工作階段。它能以你的身分讀取目錄、解析安裝計畫、給構件評分，但不能提交或認領構件。
+
+## 安全
+
+寫檔案的步驟被限制在解析後的 `$DSH_HOME` 內，試圖越界的計畫會被拒絕。從原始碼建置的步驟需要你的明確同意，如上所述。`hub_rate` 自帶一條規則：代理只給這台機器實際安裝並使用過的構件評分，依據第一手證據，並在評分時告知你。
+
+## 工具
+
+| 工具          | 作用                                                   |
+| ------------- | ------------------------------------------------------ |
+| `hub_search`  | 按文字和構件類型搜尋註冊表。                           |
+| `hub_show`    | 展示一個構件的詳情，包括安裝會執行的內容。             |
+| `hub_install` | 在這台機器上執行安裝計畫。                             |
+| `hub_list`    | 列出這台機器透過 hub 安裝的構件。                      |
+| `hub_remove`  | 撤銷一次已記錄的安裝（檔案、補丁列、套件）。           |
+| `hub_update`  | 為已安裝的構件重新執行目前計畫。                       |
+| `hub_account` | 透過 OAuth 裝置流程登入、查看狀態或登出。              |
+| `hub_reviews` | 社群評分：站內 1–5 星制、平均分、分布和評論。          |
+| `hub_rate`    | 給已安裝的構件打 1–5 星，可附公開評論。                |
+
+## 設定
+
+```yaml
+- id: hub
+  name: dsh-hub
+  config:
+    baseUrl: https://dsh.fish # 自架部署只需要改這一項
+    targetProfile: current # 或者具體的配置檔案名
+```

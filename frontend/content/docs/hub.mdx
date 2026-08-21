@@ -1,38 +1,96 @@
 ---
 title: Hub plugin
-description: Search dsh.fish and install any harness artifact from inside your agent.
+description: Find, inspect, and install dsh.fish artifacts from inside an agent session.
 ---
 
-Search dsh.fish and install any harness artifact without leaving the session.
+The hub plugin (`dsh-hub`) puts the dsh.fish catalog inside a running session. The agent can search for an artifact, show you what installing it would do, and install it once you agree. You never leave the session.
 
-<DocsVideo
-  src="/docs/video/install.mp4"
-  poster="/docs/video/install-poster.jpg"
-  title="Inspect before install"
-  caption="A 24-second tour of discovery, evidence, and the generated install plan."
-  transcriptLabel="Video transcript"
->
-  <p>dsh.fish — Inspect before install.</p>
-  <p>Find the capability. Search the live dsh.fish catalog.</p>
-  <p>Compare the evidence: type, source, maintenance, and score.</p>
-  <p>Inspect every install step: files, packages, and profile patches.</p>
-  <p>Next step — One plan. Three surfaces.</p>
-</DocsVideo>
-
-## Install
+## Add the plugin
 
 ```sh
 dsh plugin --profile web add github:stvlynn/dsh.fish#main
 ```
 
-This package is TypeScript, so a git install runs its `prepare` script to build `lib/`. pnpm ≥10 refuses that until you allow it — copy the package key pnpm prints into your profile's `pnpm-workspace.yaml`:
+The package is TypeScript, so a git install runs its `prepare` script to build `lib/`. pnpm 10 and later refuse that until you allow it. Copy the package key pnpm prints into your profile's `pnpm-workspace.yaml`:
 
 ```yaml
 allowBuilds:
   dsh-hub: true
 ```
 
-Then re-run the `add`. That allowance is permission to execute this package's code on your machine at install time, outside the agent's sandbox — pin a commit so a later push cannot change what runs.
+Then run the `add` again. This allowance lets the package's own code run on your machine at install time, outside the agent's sandbox. Pin a commit so a later push cannot change what runs.
+
+## Find
+
+`hub_search` searches the catalog by free text, and a `kind` argument restricts results to one artifact type. It returns ids you pass to the other hub tools. Reading the catalog needs no account.
+
+<DocsVideo
+  src="/docs/video/hub-search.mp4"
+  poster="/docs/video/hub-search-poster.jpg"
+  title="Search the dsh.fish catalog"
+  caption="A query on the dsh.fish home page returns matching artifacts and a result count."
+  transcriptLabel="Video transcript"
+>
+  <p>The dsh.fish home page. A search query types in.</p>
+  <p>Matching artifacts appear, with the result count.</p>
+</DocsVideo>
+
+## Inspect
+
+`hub_show` shows one artifact in detail, including the exact commands installing it would run on this machine. `hub_reviews` reads community ratings anonymously: the 1–5 star average, the distribution, and recent comments. Check both before you let the agent install anything. The website shows the same evidence if you prefer to look there.
+
+<DocsVideo
+  src="/docs/video/hub-browse.mp4"
+  poster="/docs/video/hub-browse-poster.jpg"
+  title="Browse the catalog"
+  caption="Facets narrow the catalog; cards carry evidence chips for each artifact."
+  transcriptLabel="Video transcript"
+>
+  <p>Browse facets narrow the catalog.</p>
+  <p>Cards carry evidence chips for each artifact.</p>
+</DocsVideo>
+
+<DocsVideo
+  src="/docs/video/hub-artifact.mp4"
+  poster="/docs/video/hub-artifact-poster.jpg"
+  title="The artifact page"
+  caption="Score, stars, license, and the install panel in one place."
+  transcriptLabel="Video transcript"
+>
+  <p>An artifact page opens with its score, stars, and license.</p>
+  <p>The install panel lists what installing would run.</p>
+</DocsVideo>
+
+## Install
+
+`hub_install` applies the install plan on this machine: it writes skill and preset files, adds MCP and hook rows to the profile's patch layer, and runs the package manager for bundles. Restart the harness afterwards so the new rows load.
+
+<DocsVideo
+  src="/docs/video/hub-install.mp4"
+  poster="/docs/video/hub-install-poster.jpg"
+  title="One plan, three surfaces"
+  caption="The same install plan runs on the web, in the CLI, and inside a session."
+  transcriptLabel="Video transcript"
+>
+  <p>One install plan.</p>
+  <p>The same plan on the web, in the CLI, and in the session.</p>
+</DocsVideo>
+
+If a plan step builds a package from source, `hub_install` refuses until the caller passes `allowBuildScripts: true`. That step runs the package's code on your machine at install time, outside the agent sandbox, so the agent must come back and ask you. It cannot grant this on its own.
+
+Successful installs are recorded in `$DSH_HOME/.dsh-fish-lock.json`. `hub_list` shows what this machine installed, `hub_update` re-applies the current plan for an installed artifact, and `hub_remove` reverses a recorded install (files, patch rows, packages). The lockfile is shared with `@dsh-fish/cli`, so the [CLI](/docs/cli) sees the same installs.
+
+## Sign in
+
+Signing in attributes installs to your account and unlocks `hub_rate`. Reading the catalog needs no account.
+
+`hub_account` with `action: "login"` starts an OAuth device flow: the tool returns a short code and a URL, you open the URL in a browser and approve, and the plugin polls until you do. The agent cannot approve it for you. The token is written to `$DSH_HOME/.dsh-fish-token.json` with file mode 0600 and is never logged.
+
+This token is weaker than a browser session on purpose. It can read the catalog, resolve install plans, and rate artifacts as you. It cannot submit or claim artifacts.
+
+## Safety
+
+File-writing steps are fenced to the resolved `$DSH_HOME`; a plan that tries to escape it is refused. Build-from-source steps need your explicit consent, as described above. `hub_rate` carries its own rule: the agent rates only what this machine actually installed and used, from firsthand evidence, and tells you when it leaves a rating.
 
 ## Tools
 
@@ -47,22 +105,6 @@ Then re-run the `add`. That allowance is permission to execute this package's co
 | `hub_account` | Sign in via the OAuth device flow, check status, or sign out.             |
 | `hub_reviews` | Community ratings: the site's 1–5 scale, average, distribution, comments. |
 | `hub_rate`    | Rate an installed artifact 1–5 stars, optionally with a public comment.   |
-
-## Signing in
-
-Reading the catalog needs no account. Signing in attributes installs to you and is required for anything account-shaped later.
-
-`hub_account` with `action: "login"` starts an RFC 8628 device grant: the plugin requests a code, shows you a URL, and polls until you approve in a browser. The token is written to `$DSH_HOME/.dsh-fish-token.json` with mode 0600 and is never logged.
-
-A device token is deliberately weaker than a browser session — it can read the catalog, resolve install plans and rate artifacts as you, but it cannot submit or claim artifacts.
-
-## Safety
-
-`hub_install` refuses any plan whose package step needs a build allowance unless the caller passes `allowBuildScripts: true`. That step runs the package's own code at install time, outside the agent sandbox, so the agent must not grant it on your behalf — it has to come back and ask.
-
-File-writing steps are fenced to the resolved `$DSH_HOME`; a plan that tries to escape it is refused.
-
-Successful installs are recorded in `$DSH_HOME/.dsh-fish-lock.json`, which is what `hub_list`, `hub_remove` and `hub_update` (and the matching [CLI](/docs/cli) commands) read. The same lockfile is shared with `@dsh-fish/cli`.
 
 ## Configuration
 

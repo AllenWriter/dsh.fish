@@ -62,11 +62,13 @@ test.describe('product docs on a desktop', () => {
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: 'DeepSeek Harness, from first run to your own tools',
+        name: 'DeepSeek Harness and dsh.fish',
       }),
     ).toBeVisible()
     await expect(page.locator('article h1')).toHaveCount(1)
     await expect(menu.getByRole('link', { name: 'Hook bridges' })).toBeVisible()
+    await expect(menu.getByRole('link', { name: 'Core concepts' })).toBeVisible()
+    await expect(menu.getByRole('link', { name: 'Plugins' })).toBeVisible()
     await expect(menu.getByRole('link', { name: 'CLI' })).toBeVisible()
     await expect(menu.getByRole('link', { name: 'Quickstart: run DeepSeek Harness' })).toBeVisible()
     await expect(menu.getByRole('link', { name: 'Build your first plugin' })).toBeVisible()
@@ -133,7 +135,7 @@ test.describe('product docs on a desktop', () => {
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: 'DeepSeek Harness 入門から独自ツール開発まで',
+        name: 'DeepSeek Harness と dsh.fish',
       }),
     ).toBeVisible()
     await expect(page.getByRole('searchbox', { name: 'ドキュメントを検索' })).toBeVisible()
@@ -152,7 +154,7 @@ test.describe('product docs on a desktop', () => {
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: 'DeepSeek Harness, from first run to your own tools',
+        name: 'DeepSeek Harness and dsh.fish',
       }),
     ).toBeVisible()
     await shot(page, 'docs-home-dark')
@@ -190,17 +192,18 @@ test.describe('product docs on a desktop', () => {
     expect(await localized.text()).toContain('启动 Web UI')
   })
 
-  test('quickstart embeds a controlled video with a localized transcript', async ({ page }) => {
+  test('quickstart embeds controlled videos with localized transcripts', async ({ page }) => {
     await openDocs(page, '/zh-CN/docs/quickstart')
-    const video = page.locator('article video')
-    await expect(video).toHaveCount(1)
-    await expect(video).toHaveAttribute('controls', '')
-    await expect(video).toHaveAttribute('poster', '/docs/video/quickstart.zh-CN-poster.jpg')
-    await expect(video.locator('source')).toHaveAttribute(
+    const videos = page.locator('article video')
+    await expect(videos).toHaveCount(4)
+    const first = videos.first()
+    await expect(first).toHaveAttribute('controls', '')
+    await expect(first).toHaveAttribute('poster', '/docs/video/quickstart-launch.zh-CN-poster.jpg')
+    await expect(first.locator('source')).toHaveAttribute(
       'src',
-      '/docs/video/quickstart.zh-CN.mp4',
+      '/docs/video/quickstart-launch.zh-CN.mp4',
     )
-    await page.getByText('视频文字稿').click()
-    await expect(page.getByText('从小处提问，逐项验证。')).toBeVisible()
+    await page.getByText('视频文字稿').first().click()
+    await expect(page.getByText('终端里输入启动命令。')).toBeVisible()
   })
 })

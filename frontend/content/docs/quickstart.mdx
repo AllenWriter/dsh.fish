@@ -1,24 +1,11 @@
 ---
 title: 'Quickstart: run DeepSeek Harness'
-description: Launch the DeepSeek Harness Web UI, connect a model, choose a workspace, and complete your first repository task.
+description: Launch the DeepSeek Harness Web UI, connect a model, choose a workspace, and finish a first task in four steps.
 ---
 
-This tutorial takes you from an empty terminal to a working DeepSeek Harness session. Your API key stays on your machine; dsh.fish is not involved in model requests.
+This tutorial takes you from an empty terminal to a working DeepSeek Harness session in four steps. DeepSeek Harness (`dsh`) is an [agent harness](/docs/concepts): a program that runs a language model in a loop with tools, so the model can read files, run commands, and edit code for you. A [session](/docs/concepts) is one conversation with that agent. Each new term links to Core concepts, where it is defined in full.
 
-<DocsVideo
-  src="/docs/video/quickstart.mp4"
-  poster="/docs/video/quickstart-poster.jpg"
-  title="From launch to first task"
-  caption="A 27-second source-backed tour of the Web UI setup flow."
-  transcriptLabel="Video transcript"
->
-  <p>DeepSeek Harness — Zero to first task.</p>
-  <p>Start the Web UI. One command. Local by default.</p>
-  <p>Connect a model. Your API key stays on your machine.</p>
-  <p>Choose one workspace. The composer waits for one.</p>
-  <p>Send a small first task. Read-only. Easy to verify.</p>
-  <p>Next step — Ask small. Verify everything.</p>
-</DocsVideo>
+Your API key stays on your machine; dsh.fish is not involved in model requests.
 
 ## 1. Start the Web UI
 
@@ -26,17 +13,52 @@ This tutorial takes you from an empty terminal to a working DeepSeek Harness ses
 npx @deepseek-ai/dsh web
 ```
 
-Open `http://127.0.0.1:3080` if the browser does not open automatically. The package is a developer preview, so read the npm prompt and release notes before using it on important work.
+The command starts the Web UI at `http://127.0.0.1:3080` and opens it in your browser. If the browser does not open, visit that address yourself. The package is a developer preview, so read the npm prompt and release notes before using it on important work.
+
+<DocsVideo
+  src="/docs/video/quickstart-launch.mp4"
+  poster="/docs/video/quickstart-launch-poster.jpg"
+  title="Starting the Web UI"
+  caption="The launch command types out and real startup lines print."
+  transcriptLabel="Video transcript"
+>
+  <p>The launch command is typed into a terminal.</p>
+  <p>Startup lines print; the UI serves on port 3080.</p>
+</DocsVideo>
 
 ## 2. Connect a model
 
-Open **Settings → Models**, choose a provider, enter the model name and API key, then save. The next request uses the saved configuration; no restart is needed.
+The harness needs a [model](/docs/concepts): the LLM that does the thinking, supplied by a provider such as DeepSeek, Anthropic, or OpenAI. Open **Settings → Models** and enter a provider's API key, then save. The DeepSeek card needs only the key; other providers come from **Add provider**, and a company gateway or self-hosted server goes through **Add a custom provider**. The key is stored on your machine under the harness home directory (`$DSH_HOME`), never on dsh.fish. The next request uses the saved configuration; no restart is needed.
 
-For an OpenAI-compatible endpoint, check the provider's base URL and model identifier exactly. A successful credential save does not prove that the endpoint accepts the selected model, so run the small first task below before a long session.
+For an OpenAI-compatible endpoint, check the base URL and model identifier exactly. A saved key does not prove the endpoint accepts the selected model, so run the small first task below before a long session.
+
+<DocsVideo
+  src="/docs/video/quickstart-model.mp4"
+  poster="/docs/video/quickstart-model-poster.jpg"
+  title="Connecting a model"
+  caption="Settings → Models: key and model in, Apply, saved row."
+  transcriptLabel="Video transcript"
+>
+  <p>Settings → Models opens; the key and model go in.</p>
+  <p>Apply saves; the provider appears as a saved row.</p>
+</DocsVideo>
 
 ## 3. Choose a workspace
 
-Select **Choose workspace** and open the repository you want the agent to inspect. The composer remains unavailable until a workspace is selected. Treat the workspace as a trust boundary: review the repository first, and do not open a directory containing unrelated secrets.
+A [workspace](/docs/concepts) is the project directory the agent is allowed to see and change. Select **Choose workspace** and open the repository you want the agent to inspect. The composer, the message input at the bottom, stays unavailable until a workspace is selected.
+
+Treat the workspace as a trust boundary: the agent reads and writes inside it. Review the repository first, and do not open a directory containing unrelated secrets.
+
+<DocsVideo
+  src="/docs/video/quickstart-workspace.mp4"
+  poster="/docs/video/quickstart-workspace-poster.jpg"
+  title="Choosing a workspace"
+  caption="The picker opens, a folder is chosen, the composer unlocks."
+  transcriptLabel="Video transcript"
+>
+  <p>The workspace picker opens; a project folder is chosen.</p>
+  <p>The composer unlocks for input.</p>
+</DocsVideo>
 
 ## 4. Run a first task
 
@@ -48,14 +70,25 @@ Summarize this repository and identify its main packages.
 
 Check that the response names files that actually exist. Then ask for a small, verifiable action such as running one test target. Review each requested permission and the resulting diff.
 
+<DocsVideo
+  src="/docs/video/quickstart-task.mp4"
+  poster="/docs/video/quickstart-task-poster.jpg"
+  title="A first read-only task"
+  caption="The question sends; a Read row shows its input and output."
+  transcriptLabel="Video transcript"
+>
+  <p>A read-only question is typed and sent.</p>
+  <p>A Read tool row shows the call's input and output.</p>
+</DocsVideo>
+
 ## Understand permissions
 
-A new session normally starts with `workspace-write`. This controls writes, but it does not mean every process, read, or network action is isolated. Approve only the operation you understand, keep credentials outside the workspace, and inspect changes before committing.
+[Permissions](/docs/concepts) control what the agent may do without asking first. A new session starts with the `workspace-write` preset: the agent may write inside the workspace, but this does not isolate every read, process, or network action. Approve only the operations you understand, keep credentials outside the workspace, and inspect changes before committing.
 
 ## Next
 
 - Add catalog search and installation with the [dsh.fish hub plugin](/docs/hub).
-- Automate terminal tasks with the official headless command: `dsh --profile headless "run the tests"`.
+- Automate terminal tasks with the headless profile: `dsh --profile headless "run the tests"` runs one session, prints the final answer, and exits.
 - Build a capability in [Your first plugin](/docs/develop/first-plugin).
 
 Official, version-specific reference: [Use the Web UI](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart).

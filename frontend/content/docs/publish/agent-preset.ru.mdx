@@ -1,17 +1,40 @@
 ---
 title: Agent Preset
-description: Опубликуйте многократно используемую конфигурацию агента DeepSeek Harness в одном agent.cordis.yml.
+description: Agent preset упаковывает одного агента (persona и набор инструментов) в один файл agent.cordis.yml.
 ---
 
-Agent preset — каталог с одним `agent.cordis.yml`. Он устанавливается в `$DSH_HOME/.agent-presets/<id>`, а имя каталога становится preset id.
+Agent preset — готовый агент: persona определяет, кто он, набор инструментов — что он умеет, и всё это упаковано в один файл `agent.cordis.yml`. Сессия выбирает preset по id и получает именно этого агента.
+
+Файл — список строк плагинов Cordis. Строка `@deepseek-ai/dsh-persona` задаёт идентичность, каждая строка инструмента добавляет одну возможность.
+
+## Контракт манифеста
+
+Preset — каталог с одним `agent.cordis.yml`, размещённым в корне репозитория или в отправленном подкаталоге.
 
 ```yaml
-- id: tools
-  name: 'dsh-tools'
-- id: prompt
-  name: 'dsh-system-prompt'
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
   config:
-    persona: ./persona.md
+    text: >-
+      You are a careful code reviewer powered by the {{model}} model.
+
+- id: tool-fs
+  name: '@deepseek-ai/dsh-tool-fs'
+
+- id: tool-fs-search
+  name: '@deepseek-ai/dsh-tool-fs-search'
 ```
 
-Разместите файл в корне репозитория или отправленном подкаталоге. Это последняя проверка: если раньше найден package или skill, используется более ранний тип.
+Preset id берётся из имени репозитория (каталога) и приводится к lowercase kebab-case: он должен соответствовать `[a-z0-9][a-z0-9-]*`.
+
+Проверка preset выполняется последней. Репозиторий, чей `package.json` объявляет bundle, profile, MCP server или hook bridge (или в котором есть `SKILL.md`), классифицируется более ранней проверкой.
+
+## Как происходит установка
+
+Установка preset записывает файл в `$DSH_HOME/.agent-presets/<id>/agent.cordis.yml`.
+
+```sh
+npx @dsh-fish/cli add <artifact-id> --profile <profile>
+```
+
+Harness сканирует этот каталог как корень preset, поэтому новые сессии могут сразу его выбрать. Preset работает с разрешениями всех перечисленных в нём плагинов — прочитайте файл перед установкой.

@@ -1,17 +1,26 @@
 ---
-title: DeepSeek Harness 入門から独自ツール開発まで
-description: DeepSeek Harness を起動し、モデルを接続し、dsh.fish から拡張を安全に導入して最初のプラグインを作ります。
+title: DeepSeek Harness と dsh.fish
+description: DeepSeek Harness とは何か、dsh.fish とは何か、このドキュメントを読む順番。
 ---
 
-DeepSeek Harness はオープンソースのエージェント実行基盤です。dsh.fish は、Harness が読み込める拡張を探し、内容を確認して導入するための独立したカタログです。
+DeepSeek Harness(`dsh`)は DeepSeek AI のオープンソースのエージェントハーネスで、自分のマシン上で AI エージェントを動かすプログラムです。選んだモデルにファイルの読み書きやコマンド実行のツールを接続し、エージェントの動作をすべて記録します。`npx @deepseek-ai/dsh web` でローカルに起動すると、Web UI が開きます。
 
-## 目的から選ぶ
+dsh.fish は Harness 拡張の独立カタログです。プラグインを見つけ、実際の内容を読み取り、マシンに何も書き込まれる前にインストールプランを確認できます。Web サイト、dsh.fish CLI、セッション内で動く Hub プラグインは、すべて同じプランを読みます。
 
-- **初めて使う:** [クイックスタート](/docs/quickstart)で Web UI、モデル、ワークスペース、最初のタスクを設定します。
-- **機能を追加する:** セッション内の [Hub プラグイン](/docs/hub)、またはターミナルの [dsh.fish CLI](/docs/cli)を使います。導入前に計画を確認してください。
-- **連携を開発する:** [最初のプラグイン](/docs/develop/first-plugin)を作り、[ツール](/docs/develop/tool)と[設定](/docs/develop/configuration)を追加します。
-- **公開する:** 適切な[公開形式](/docs/publish/bundle)を選び、ソースを送信して公開スコアを確認します。
+## 学習パス
 
-dsh.fish は実際のリポジトリまたはパッケージ manifest を読みます。Web サイト、CLI、Hub プラグインは同じインストール計画 API を利用します。Git パッケージのビルドスクリプトはエージェントのサンドボックス外で動くため、個別の明示的な許可が必要です。
+サイドバーは、ゼロから自分のプラグインを公開するまでの一連の順序になっています。
 
-Harness は開発者プレビューです。バージョン固有の詳細は[公式ガイド](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart)を参照してください。
+1. **はじめる**。[クイックスタート](/docs/quickstart)で空のターミナルから最初のタスク完了まで進み、[基本概念](/docs/concepts)で以降のページが使う語彙を定義します。
+2. **プラグイン**。[プラグインについて](/docs/plugins)で Harness がプラグインのインストールで拡張される仕組みを説明し、形式ごとに 1 ページずつ用意しています: [bundle](/docs/publish/bundle)、[skill](/docs/publish/skill)、[MCP server](/docs/publish/mcp-server)、[agent preset](/docs/publish/agent-preset)、[profile](/docs/publish/profile)、[hook bridge](/docs/publish/hook-bridge)。
+3. **開発**。自分で作ります: [最初のプラグイン](/docs/develop/first-plugin)、[ツール](/docs/develop/tool)、その[設定](/docs/develop/configuration)。
+4. **dsh.fish を使う**。セッション内の [Hub プラグイン](/docs/hub)またはターミナルの [CLI](/docs/cli)で検索・インストールし、自分の成果物を[登録](/docs/submit)します。
+5. **リファレンス**。[スコアリング](/docs/scoring)の仕組みと、カタログが公開する [API](/docs/api)。
+
+## インストールを信頼できる理由
+
+カタログは掲載するすべてのものについて、実際のリポジトリまたはパッケージ manifest を読みます。トピックタグや投稿は発見の入り口にすぎません。インストールプランは、実行前に読めるステップの一覧です。追加するパッケージ、書き込むファイル、変更する設定が含まれます。ビルドスクリプトが必要な Git パッケージは、そのスクリプトがエージェントのサンドボックス外で実行されるため、別途明示的な許可を求めます。
+
+## 開発者プレビュー
+
+DeepSeek Harness は開発者プレビューであり、互換性を壊す変更を含めて速いペースで更新されます。このドキュメントは公開された npm リリースで検証した動作だけを記載しています。バージョン固有の選択肢は[公式ガイド](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart)を参照してください。

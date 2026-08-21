@@ -1,24 +1,11 @@
 ---
 title: 快速開始：執行 DeepSeek Harness
-description: 啟動 DeepSeek Harness Web UI、連接模型、選擇工作區並完成第一個儲存庫任務。
+description: 啟動 DeepSeek Harness Web UI、連接模型、選擇工作區，四步完成第一個任務。
 ---
 
-本教學會帶你從空白終端進入可工作的 Harness 工作階段。API 金鑰保留在本機，模型請求不經過 dsh.fish。
+本教學帶你從空白終端走進一個可用的 DeepSeek Harness 工作階段，共四步。DeepSeek Harness（`dsh`）是一個 [agent harness](/docs/concepts)（智能體框架）：它讓語言模型帶著工具循環工作，模型因此可以讀檔案、跑指令、改程式碼。工作階段（[session](/docs/concepts)）就是你和這個智能體的一段對話。每個新術語在首次出現時都會連到核心概念頁，那裡有完整定義。
 
-<DocsVideo
-  src="/docs/video/quickstart.zh-TW.mp4"
-  poster="/docs/video/quickstart.zh-TW-poster.jpg"
-  title="從啟動到第一個任務"
-  caption="用 27 秒了解以真實介面呈現的 Web UI 設定流程。"
-  transcriptLabel="影片文字稿"
->
-  <p>DeepSeek Harness——從零到第一個任務。</p>
-  <p>啟動 Web UI。一行指令，預設只監聽本機。</p>
-  <p>連接模型。API 金鑰保存在你的機器上。</p>
-  <p>選擇一個工作區。選取前輸入框不可用。</p>
-  <p>發送一個小任務。唯讀，便於驗證。</p>
-  <p>下一步——從小處提問，逐項驗證。</p>
-</DocsVideo>
+API 金鑰保留在本機，模型請求不經過 dsh.fish。
 
 ## 1. 啟動 Web UI
 
@@ -26,22 +13,82 @@ description: 啟動 DeepSeek Harness Web UI、連接模型、選擇工作區並�
 npx @deepseek-ai/dsh web
 ```
 
-若瀏覽器沒有自動開啟，請前往 `http://127.0.0.1:3080`。
+指令會在 `http://127.0.0.1:3080` 啟動 Web UI 並自動開啟瀏覽器。瀏覽器沒開，就手動前往這個位址。套件目前是開發者預覽版，用於重要工作前請先閱讀 npm 提示與發行說明。
+
+<DocsVideo
+  src="/docs/video/quickstart-launch.zh-TW.mp4"
+  poster="/docs/video/quickstart-launch.zh-TW-poster.jpg"
+  title="啟動 Web UI"
+  caption="啟動指令逐字輸入，終端印出真實啟動紀錄。"
+  transcriptLabel="影片文字稿"
+>
+  <p>終端機裡輸入啟動指令。</p>
+  <p>啟動紀錄逐行印出，UI 在 3080 連接埠提供服務。</p>
+</DocsVideo>
 
 ## 2. 連接模型
 
-開啟 **Settings → Models**，選擇供應商，輸入模型名稱與 API 金鑰後儲存。下一次請求會直接使用新設定，不需重新啟動。OpenAI 相容端點的 base URL 與模型識別碼必須完全正確。
+Harness 需要一個[模型](/docs/concepts)：負責思考的 LLM，由 DeepSeek、Anthropic、OpenAI 這樣的供應商提供。開啟 **Settings → Models**，填入供應商的 API 金鑰後儲存。DeepSeek 卡片只需要金鑰；其他供應商從 **Add provider** 加入；公司閘道或自建服務走 **Add a custom provider**。金鑰保存在本機的 harness 主目錄（`$DSH_HOME`）下，不會傳到 dsh.fish。下一次請求直接使用新設定，不需重新啟動。
+
+OpenAI 相容端點的 base URL 與模型識別碼必須逐字正確。金鑰儲存成功不代表端點接受所選模型，開始長工作階段前先執行下面的第一個小任務。
+
+<DocsVideo
+  src="/docs/video/quickstart-model.zh-TW.mp4"
+  poster="/docs/video/quickstart-model.zh-TW-poster.jpg"
+  title="連接模型"
+  caption="Settings → Models：填入金鑰與模型，按 Apply，儲存成列。"
+  transcriptLabel="影片文字稿"
+>
+  <p>開啟 Settings → Models，填入金鑰與模型。</p>
+  <p>按下 Apply，供應商出現在已儲存清單。</p>
+</DocsVideo>
 
 ## 3. 選擇工作區
 
-按 **Choose workspace** 並選取要檢查的儲存庫。選取前輸入框不可用。請勿開啟包含無關密鑰或私人檔案的上層目錄。
+[工作區](/docs/concepts)（workspace）是智能體可以檢視與修改的專案目錄。按 **Choose workspace**，開啟你要檢查的儲存庫。選取工作區之前，輸入框（composer）無法使用。
+
+把工作區當作信任邊界：智能體在其中讀寫檔案。先審閱儲存庫，不要開啟包含無關密鑰的目錄。
+
+<DocsVideo
+  src="/docs/video/quickstart-workspace.zh-TW.mp4"
+  poster="/docs/video/quickstart-workspace.zh-TW-poster.jpg"
+  title="選擇工作區"
+  caption="開啟選擇器，選定資料夾，輸入框解鎖。"
+  transcriptLabel="影片文字稿"
+>
+  <p>工作區選擇器開啟，選定專案資料夾。</p>
+  <p>輸入框解鎖，可以開始提問。</p>
+</DocsVideo>
 
 ## 4. 完成第一個任務
+
+先發送一個唯讀請求：
 
 ```text
 Summarize this repository and identify its main packages.
 ```
 
-確認回覆提到的檔案確實存在，再嘗試執行一個小型測試。逐項檢查權限要求與最後的 diff。`workspace-write` 控制寫入，但不代表所有讀取、程序和網路行為都被隔離。
+確認回覆提到的檔案確實存在。然後讓它做一個可驗證的小動作，例如執行一個測試目標。逐項檢查它申請的權限與最後的 diff。
 
-下一步：[安裝 Hub 外掛程式](/docs/hub)，或[開發第一個外掛程式](/docs/develop/first-plugin)。
+<DocsVideo
+  src="/docs/video/quickstart-task.zh-TW.mp4"
+  poster="/docs/video/quickstart-task.zh-TW-poster.jpg"
+  title="第一個唯讀任務"
+  caption="問題送出後，Read 工具列顯示輸入與輸出。"
+  transcriptLabel="影片文字稿"
+>
+  <p>輸入一個唯讀問題並送出。</p>
+  <p>Read 工具列顯示呼叫的輸入與輸出。</p>
+</DocsVideo>
+
+## 了解權限
+
+[權限](/docs/concepts)決定智能體在哪些操作上可以不經詢問直接執行。新工作階段預設使用 `workspace-write`：智能體可以寫入工作區，但這不代表所有讀取、程序與網路行為都被隔離。只批准你理解的操作，把憑證放在工作區之外，提交前審閱修改。
+
+## 下一步
+
+- 用 [dsh.fish Hub 外掛程式](/docs/hub)為工作階段加入目錄搜尋與安裝功能。
+- 用 headless 配置檔案在終端機裡執行自動化任務：`dsh --profile headless "run the tests"` 會執行一個工作階段、印出最終答案並結束。
+- 在[你的第一個外掛程式](/docs/develop/first-plugin)裡建立自己的功能。
+
+官方的版本化參考：[使用 Web UI](https://deepseek-harness.github.io/deepseek-harness/guide/quickstart)。

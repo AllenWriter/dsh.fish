@@ -1,9 +1,11 @@
 ---
 title: Hook Bridge
-description: Запускайте существующие shell hooks Claude Code или Codex внутри DeepSeek Harness.
+description: Запускайте свои shell hooks для Claude Code или Codex внутри DeepSeek Harness.
 ---
 
-Hook bridge добавляется строкой bridge plugin в profile patch; источником служит `dsh.hub`.
+Hook bridge запускает shell hooks, которые вы уже написали для Claude Code или Codex, внутри DeepSeek Harness. Как и для MCP server, у Harness нет манифест-конвенции для этого вида (артефакт устанавливается строкой bridge-плагина в profile patch), поэтому источником данных служит объявление `dsh.hub` в `package.json`.
+
+## Контракт манифеста
 
 ```json
 {
@@ -19,4 +21,38 @@ Hook bridge добавляется строкой bridge plugin в profile patch
 }
 ```
 
-`dialect` — `claude-code` или `codex`. `settingsPath` задаётся относительно репозитория; выход за его пределы отклоняется. Неполная декларация или неверный тип возвращает явную ошибку.
+- `dialect` — `claude-code` или `codex`: в формате какого инструмента написан settings-файл.
+- `settingsPath` указывает на этот файл относительно репозитория. Абсолютный путь или путь за пределы репозитория отклоняется.
+
+Неполная декларация (kind без блока, неизвестный dialect, путь за пределы репозитория) — это domain error. Индексатор пропускает такой репозиторий и записывает ошибку; если вы отправили репозиторий сами, ошибка возвращается вам.
+
+## Settings-файл
+
+`settingsPath` указывает на обычный settings-файл Claude Code (`hooks.json` или любой settings-файл с ключом `hooks`).
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "bash",
+        "hooks": [
+          { "type": "command", "command": "./scripts/check-command.sh" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Matcher проверяет имя инструмента, и выполняются только hooks с `type: "command"`. Диалект Claude Code поддерживает семь событий: `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStart`, `SubagentStop`. Диалект Codex использует ту же структуру карты событий и поддерживает пять из них (`SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`), причём только синхронные command hooks.
+
+## Как происходит установка
+
+План установки добавляет одну строку bridge-плагина, `@deepseek-ai/dsh-hooks-claude-code` или `@deepseek-ai/dsh-hooks-codex`, в слой `cordis.patch.yml` профиля.
+
+```sh
+npx @dsh-fish/cli add <artifact-id> --profile <profile>
+```
+
+Hook bridge выполняет shell-команды из settings-файла с разрешениями агента. Прочитайте этот файл перед установкой.

@@ -1,16 +1,41 @@
 ---
 title: REST API
-description: 公開 JSON API で dsh.fish を検索し、成果物と導入計画を確認し、スコアとカタログを同期します。
+description: 公開 JSON API で dsh.fish を検索し、アーティファクトとインストールプランを確認し、レビューを読み、カタログをミラーします。
 ---
 
-公開 API は検索と読み取り専用のカタログ連携に使います。完全な仕様は [OpenAPI 文書](/openapi.json)にあります。
+公開 API は検索と読み取り専用のカタログ連携に使います。まず生成済みの [OpenAPI 文書](/openapi.json)を参照してください。このページでは最短の使い方だけを示します。
+
+## アーティファクトを検索する
 
 ```sh
 curl -s 'https://dsh.fish/api/v1/artifacts?q=postgres&kind=mcp-server'
+```
+
+返された安定した `id` を使って、詳細とインストールプランのエンドポイントを呼びます。
+
+```sh
+curl -s 'https://dsh.fish/api/v1/artifacts/ARTIFACT_ID'
 curl -s 'https://dsh.fish/api/v1/artifacts/ARTIFACT_ID/install-plan?profile=web'
+```
+
+インストールプランはデータであり、そのまま実行するものではありません。すべてのファイル、パッケージ、プロファイルパッチを利用者に見せてください。パッケージにビルド許可が必要な場合は、別途確認を取ります。
+
+## 信頼シグナルを読む
+
+```sh
+curl -s 'https://dsh.fish/api/v1/artifacts/ARTIFACT_ID/reviews'
 curl -s 'https://dsh.fish/api/v1/scoring'
 ```
 
-導入計画はデータです。盲目的に実行せず、各ファイル、パッケージ、profile patch を利用者に示し、ビルドスクリプトは別に確認してください。
+スコアリングエンドポイントが返すモデルは[スコアの説明](/docs/scoring)が表示するものと同じです。計算式を自分のコードに定数として複製しないでください。
 
-`/api/v1/catalog/version` を先に確認し、`dataVersion` が変わったときだけ snapshot を取得して `ETag` を保存します。公開読み取りにアカウントは不要です。
+## カタログをミラーする
+
+サードパーティのディレクトリやボットは、クロールせずにカタログ全体のコピーをローカルに保持できます。軽量な version エンドポイントをポーリングし、`dataVersion` が変わったときだけ新しいスナップショットを取得します。
+
+```sh
+curl -s 'https://dsh.fish/api/v1/catalog/version'
+curl -s 'https://dsh.fish/api/v1/catalog/snapshot' -o catalog.json
+```
+
+スナップショットはバージョンと `ETag` と一緒に保存し、以降のダウンロードでは `If-None-Match` を送ります。カタログに変更がなければ 304 が返ります。公開の読み取りにアカウントは不要です。認証が必要な書き込み操作は OpenAPI に記載されたスコープを使います。

@@ -39,7 +39,8 @@ const SEPARATOR_TITLE_KEY = {
   start: 'docs.nav.start',
   develop: 'docs.nav.develop',
   publish: 'docs.nav.publish',
-  install: 'docs.nav.install',
+  plugins: 'docs.nav.plugins',
+  use: 'docs.nav.use',
   reference: 'docs.nav.reference',
 } as const satisfies Record<string, DocsSeparatorKey>
 

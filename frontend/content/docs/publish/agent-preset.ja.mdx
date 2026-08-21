@@ -1,17 +1,40 @@
 ---
 title: Agent Preset
-description: 一つの agent.cordis.yml で再利用可能な DeepSeek Harness エージェント設定を公開します。
+description: Agent preset は一つのエージェント（persona とツール選択）を一つの agent.cordis.yml にまとめたものです。
 ---
 
-Agent preset は一つの `agent.cordis.yml` を持つディレクトリです。`$DSH_HOME/.agent-presets/<id>` に導入され、ディレクトリ名が preset id になります。
+Agent preset は出来合いのエージェントです。persona がエージェントの身分を決め、ツール選択ができることを決め、その両方が一つの `agent.cordis.yml` に入っています。セッションは id で preset を選び、まさにそのエージェントを得ます。
+
+このファイルは Cordis プラグイン行のリストです。`@deepseek-ai/dsh-persona` 行が身分を設定し、各ツール行が一つの機能を追加します。
+
+## マニフェスト規約
+
+preset は一つの `agent.cordis.yml` を持つディレクトリで、リポジトリのルートまたは送信したサブディレクトリに置きます。
 
 ```yaml
-- id: tools
-  name: 'dsh-tools'
-- id: prompt
-  name: 'dsh-system-prompt'
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
   config:
-    persona: ./persona.md
+    text: >-
+      You are a careful code reviewer powered by the {{model}} model.
+
+- id: tool-fs
+  name: '@deepseek-ai/dsh-tool-fs'
+
+- id: tool-fs-search
+  name: '@deepseek-ai/dsh-tool-fs-search'
 ```
 
-ファイルはリポジトリのルートまたは送信したサブディレクトリに置きます。これは最後のファイル検査なので、先に package や skill と判定された場合はその種類が使われます。
+preset id はリポジトリ（ディレクトリ）名から取られ、小文字の kebab-case に変換されます。`[a-z0-9][a-z0-9-]*` に一致する必要があります。
+
+preset の検査は最後に実行されます。`package.json` が bundle、profile、MCP server、hook bridge を宣言しているリポジトリ（または `SKILL.md` を持つリポジトリ）は、先の検査で分類されます。
+
+## 導入の仕組み
+
+preset の導入は、そのファイルを `$DSH_HOME/.agent-presets/<id>/agent.cordis.yml` に書き込みます。
+
+```sh
+npx @dsh-fish/cli add <artifact-id> --profile <profile>
+```
+
+Harness はそのディレクトリを preset のルートとして走査するので、新しいセッションがすぐにその preset を選べます。preset は列挙したプラグインと同じ権限で動くので、導入前にファイルを読んでください。

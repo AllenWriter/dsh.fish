@@ -1,9 +1,13 @@
 ---
 title: 註冊工具
-description: 為 DeepSeek Harness 外掛程式新增型別化工具，並驗證輸入、結果與清理行為。
+description: 為 DeepSeek Harness 外掛程式新增一個型別化的工具，並驗證它的輸入、結果和清理行為。
 ---
 
-每個工具只做一件事、驗證所有輸入、回傳可核對的證據，並避免隱藏副作用。
+工具是模型可以請求的操作。讓它保持窄小：一個明確的結果，驗證所有輸入，回傳有用的證據，不留隱藏副作用。
+
+## 定義工具
+
+基本結構是一個穩定的名字、一段平實的描述、一份 schema 和一個非同步處理函式。下面的例子基於[開發第一個外掛程式](/docs/develop/first-plugin)中的暫存外掛程式：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -35,6 +39,17 @@ export function apply(ctx: Context) {
 }
 ```
 
-在 `apply(ctx)` 內依目前官方 API 註冊，使卸載外掛程式時工具也會移除。測試有效、空白和錯誤輸入；dump profile 確認只註冊一次；在 Web UI 傳送 `Use greet for Ada.`，檢查工具列的 IN/OUT。
+`inject` 宣告外掛程式依賴的服務；框架會等每個服務就緒後才執行 `apply`，所以這裡的 `ctx.tools` 已經可用。`defineTool` 根據 `parameters` 推斷並驗證 `args`。`execute` 回傳 `output.schema` 宣告的值，`output.render` 把這個值轉換成模型看到的內容。
 
-不要把 API 金鑰放進工具參數或回傳值。透過 Harness 憑據機制讀取，並在記錄中遮蔽敏感資料。
+在 `apply(ctx)` 內註冊。透過 `ctx` 的註冊都是 effect，卸載外掛程式時工具也會隨之移除。
+
+## 從兩側驗證
+
+1. 用有效、空白和錯誤輸入測試處理函式。
+2. 帶 overlay 啟動 Web UI，送出：`Use the greet tool to greet Ada.`
+3. 檢查工具列的輸入和輸出，而不只看助手的回答。
+4. 移除外掛程式，確認工具消失。
+
+不要把 API 金鑰放進工具的參數或回傳值。在每次操作開始時透過 `ctx.credentials` 解析受管憑據，並在記錄中遮蔽敏感資料。
+
+官方參考：[Build a tool](https://deepseek-harness.github.io/deepseek-harness/en/develop/basic/tool/)

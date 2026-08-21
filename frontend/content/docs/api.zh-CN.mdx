@@ -1,22 +1,41 @@
 ---
 title: REST API
-description: 使用公开 JSON API 搜索 dsh.fish、检查制品与安装计划、读取评分并同步目录。
+description: 使用公开 JSON API 搜索 dsh.fish、检查构件与安装计划、读取评分并同步目录。
 ---
 
-公开 API 用于发现和只读目录集成。完整结构请查看 [OpenAPI 文档](/openapi.json)。
+公开 API 用于发现和只读的目录集成。先看生成的 [OpenAPI 文档](/openapi.json)，本页只给出最短可用路径。
+
+## 搜索构件
 
 ```sh
 curl -s 'https://dsh.fish/api/v1/artifacts?q=postgres&kind=mcp-server'
+```
+
+用返回的稳定 `id` 调用详情和安装计划端点：
+
+```sh
 curl -s 'https://dsh.fish/api/v1/artifacts/ARTIFACT_ID'
 curl -s 'https://dsh.fish/api/v1/artifacts/ARTIFACT_ID/install-plan?profile=web'
 ```
 
-安装计划是数据，不应盲目执行。向用户展示每个文件、包和 profile patch；需要构建脚本时单独确认。
+安装计划是数据，不应盲目执行。把每个文件、包和配置档案补丁展示给用户；包需要构建许可时，单独再确认一次。
+
+## 读取信任信号
 
 ```sh
+curl -s 'https://dsh.fish/api/v1/artifacts/ARTIFACT_ID/reviews'
 curl -s 'https://dsh.fish/api/v1/scoring'
+```
+
+评分端点返回的模型和[评分说明](/docs/scoring)渲染的是同一份。不要把公式抄成自己代码里的常量。
+
+## 镜像目录
+
+第三方目录和机器人可以在本地保存整份目录的副本，无需爬取页面。轮询轻量的 version 端点，只在 `dataVersion` 变化时下载新的快照：
+
+```sh
 curl -s 'https://dsh.fish/api/v1/catalog/version'
 curl -s 'https://dsh.fish/api/v1/catalog/snapshot' -o catalog.json
 ```
 
-先轮询轻量 version 端点，只在 `dataVersion` 变化时下载新 snapshot，并保存 `ETag`。公开读取无需账户；认证写操作和 scope 以 OpenAPI 为准。
+快照连同版本号和 `ETag` 一起保存，之后的下载带上 `If-None-Match`；目录没变时只会收到 304。公开读取不需要账户；需要认证的写操作使用 OpenAPI 里描述的 scope。

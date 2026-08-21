@@ -1,16 +1,36 @@
 ---
 title: Bundle
-description: dsh.bundle.patch로 DeepSeek Harness가 활성화할 수 있는 npm 플러그인 패키지를 선언합니다.
+description: Bundle은 dsh 프로필에 patch 레이어를 추가하는 npm 패키지입니다. dsh.bundle 매니페스트 계약과 설치 방법.
 ---
 
-Bundle은 `dsh.bundle.patch`를 선언하는 npm 패키지이며 `dsh plugin add`의 설치 단위입니다.
+Bundle은 플러그인을 하나의 patch 레이어로 Harness에 가져오는 npm 패키지로, Harness 기능을 배포하는 표준 단위입니다.
+
+## 매니페스트 계약
+
+패키지는 `package.json`에 `dsh.bundle.patch`를 선언해 Cordis patch 파일을 가리키면 bundle이 됩니다.
 
 ```json
 {
   "name": "dsh-hello-plugin",
+  "version": "0.1.0",
+  "type": "module",
   "files": ["index.js", "cordis.patch.yml"],
   "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
 }
 ```
 
-이 선언이 없으면 패키지가 설치되어도 Harness 레이어가 활성화되지 않습니다. npm에는 미리 빌드한 코드를 배포하세요. Git 설치에서 `prepare`를 쓰면 사용자가 빌드 스크립트를 명시적으로 허용해야 합니다.
+patch 파일은 해당 레이어가 삽입하는 플러그인 행을 나열합니다. 선언이 bundle을 정의합니다. 선언이 없는 패키지는 일반 의존성으로 설치할 수 있지만 Harness는 어떤 레이어도 활성화하지 않고, dsh.fish 카탈로그도 플러그인으로 올리지 않습니다.
+
+## 설치와 게시
+
+bundle의 설치 계획은 프로필에 패키지를 한 번 추가하는 것입니다.
+
+```sh
+npx @dsh-fish/cli add dsh-hello-plugin --profile web
+# Harness 네이티브 명령:
+dsh plugin --profile web add dsh-hello-plugin
+```
+
+npm에는 미리 빌드한 코드를 게시해 사용자가 빌드 허용을 필요로 하지 않게 하세요. git 설치는 소스를 가져옵니다. 자체 완결적인 `prepare` 스크립트를 제공하고, 사용자가 이를 허용 목록에 추가하리라 예상하세요. pnpm은 설치 시 에이전트 샌드박스 밖에서 그 스크립트를 실행하기 때문입니다.
+
+게시하려면 패키지나 저장소를 dsh.fish에 [제출](/docs/submit)하세요. 레지스트리는 실제 매니페스트를 다시 읽으므로, 선언은 게시된 `package.json`에 있어야 합니다.

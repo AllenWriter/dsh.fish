@@ -1,16 +1,39 @@
 ---
 title: Profile
-description: 順序付き bundle リストで DeepSeek Harness profile を公開し、行単位の上書きを理解します。
+description: プロファイル（profile）アーティファクトは、完全な Harness 構成のための順序付き bundle リストです。dsh.profile.bundles 契約、レイヤー順序、--profile フラグとの違い。
 ---
 
-Profile は順序付きの `dsh.profile.bundles` スタックです。
+プロファイル（profile）は、合わせて完全で実行可能な Harness 構成を成す、順序付きの bundle リストです。
+
+この語は 2 つの異なるものを指します。このページのアーティファクトは、公開された bundle リストです。実行時の `--profile` フラグは、どのローカル構成を起動するかを選びます。`dsh --profile web` は `$DSH_HOME/profiles/web` に保存されたプロファイルを実行します。profile アーティファクトの導入とは、その bundle を順序どおりに、自分で選んだローカルのプロファイルへ追加することです。その後、フラグでそのプロファイルを起動します。
+
+## マニフェスト契約
+
+パッケージは `dsh.profile.bundles` で profile を宣言します。
 
 ```json
 {
   "dsh": {
-    "profile": { "bundles": ["@deepseek-ai/dsh-base", "dsh-hello-plugin"] }
+    "profile": {
+      "bundles": ["@deepseek-ai/dsh-base", "dsh-hello-plugin"]
+    }
   }
 }
 ```
 
-後のレイヤーが行単位で優先され、patch は行全体を置換して deep merge しません。順序は結果に影響します。Profile の検査は最初に行われ、profile と bundle の両方に見えるパッケージは profile になります。
+すべての profile は共有コアレイヤーの `@deepseek-ai/dsh-base` から始まります。後のレイヤーが行単位で優先され、patch は deep merge ではなく行の設定全体を置換するので、順序が結果を変えます。
+
+`dsh.profile` と `dsh.bundle` の両方を宣言するパッケージは profile に分類されます。profile はそれ自体が順序付きの bundle スタックだからです。
+
+## インストールと公開
+
+インストールプランは profile の bundle を 1 つずつ取り込み、宣言順に各エントリーへ 1 回ずつ追加を実行します。
+
+```sh
+dsh plugin --profile web add @deepseek-ai/dsh-base
+dsh plugin --profile web add dsh-hello-plugin
+```
+
+`dsh plugin add` は初回使用時にローカルのプロファイルを作成し、`@deepseek-ai/dsh-base` を最初の bundle として、以降の bundle を順に追加します。
+
+公開するには、パッケージを dsh.fish に[提出](/docs/submit)します。レジストリは同じ `dsh.profile.bundles` リストを読みます。

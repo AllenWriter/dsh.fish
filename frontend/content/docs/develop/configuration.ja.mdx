@@ -1,16 +1,82 @@
 ---
 title: プラグインを設定、梱包、導入する
-description: 設定の検証、profile の上書き順序、ビルド成果物の安全な導入と削除を確認します。
+description: スキーマでプラグイン設定を検証し、patch 層の順序を理解し、ビルド成果物を梱包して安全に導入をテストします。
 ---
 
-無効な設定は明確なエラーにし、暗黙の既定値で問題を隠さないでください。
+設定はプラグインの公開契約の一部です。無効な値は明確なエラーで拒否し、暗黙の既定値で問題を隠さないでください。
 
-構成順序は profile bundles → profile `cordis.patch` → home `cordis.patch` → CLI patch です。後の層は一致した行全体を置換し、deep merge はしません。
+## 設定を定義して検証する
+
+`Config` 型と同名の Schemastery スキーマをエクスポートし、既定値はスキーマのフィールドに直接書きます。プラグインの読み込み時に harness がこのスキーマでユーザー設定を検証し、無効な値は読み込みを失敗させて対処可能なエラーになります。
+
+```ts
+import type { Context } from '@deepseek-ai/cordis'
+import Schema from '@deepseek-ai/schemastery'
+
+export const name = 'my-plugin'
+
+export interface Config {
+  greeting: string
+  maxRetries: number
+}
+
+export const Config: Schema<Config> = Schema.object({
+  greeting: Schema.string().default('Hello'),
+  maxRetries: Schema.number().default(3),
+})
+
+export function apply(ctx: Context, config: Config) {
+  console.log(config.greeting)  // User value or schema default.
+}
+```
+
+設定値に秘密を入れないでください。設定は `apiKeyEnv: DEEPSEEK_API_KEY` のような参照だけを持ち、プラグインは必要なときに `ctx.credentials` で値を解決します。
+
+欠落フィールド、型違い、各境界の値をテストします。
+
+## 構成順序を理解する
+
+harness は空のルートの上に、次の順序で有効な設定を重ねます。
+
+1. プロファイルの `dsh.profile.bundles` リストに並ぶ各バンドルの patch（リスト順）
+2. プロファイル自身の `cordis.patch.yml`
+3. home レベルの `$DSH_HOME/cordis.patch.yml`
+4. 各 `--patch <path>` overlay（引数順）
+
+後の層が行単位で勝ちます。patch は行の `config` 値を丸ごと置き換え、キー単位の deep merge はしません。上書きが消えたように見えるときは、解決済みの設定をダンプします。
 
 ```sh
 dsh --profile demo --dump-config
-pnpm pack
-dsh plugin --profile demo add ./hello-harness-0.1.0.tgz
 ```
 
-公開物には実行時に必要な `lib/`、manifest、README、license を含め、作業ツリーではなく実際の tarball をテストします。Git の `prepare` はサンドボックス外で動くため、再現可能にし、commit の固定を推奨します。削除後にツール、ファイル、バックグラウンド資源が残らないことも確認します。
+プロファイルと home の patch ファイルへの編集はホットリロードされます。バンドルの追加、削除、更新には再起動が必要です。
+
+## ビルド成果物を梱包する
+
+実行時に必要なファイルだけを公開します。ビルド成果物、manifest、README、license です。作業ツリーではなく、実際に作った tarball をテストします。
+
+```sh
+pnpm pack
+dsh plugin --profile demo add ./hello-plugin-0.1.0.tgz
+```
+
+Git からのインストールはビルド成果物ではなくソースを取得するので、インストール後にエントリーポイントをビルドする `prepare` スクリプトが必要です。pnpm 10 以降は git 依存の `prepare` を既定で実行せず、ユーザーがプロファイルの `pnpm-workspace.yaml` で明示的に許可する必要があります。
+
+```yaml
+allowBuilds:
+  dsh-hello-plugin: true
+```
+
+このスクリプトはユーザーのマシン上で、エージェントのサンドボックスの外で実行されます。決定的に保ち、動作を文書化し、commit の固定（`github:you/hello-plugin#<sha>`）を推奨してください。
+
+## リリースチェックリスト
+
+- クリーンなテストプロファイルにインストールする。
+- 解決済みの設定行をダンプして確認する。
+- 成功、検証失敗、dispose の各経路を試す。
+- バンドル変更後は再起動し、ホットリロードに頼るのは patch 編集だけにする。
+- プラグインを削除し、ファイル、ツール、バックグラウンドリソースが残っていないことを確認する。
+
+パッケージの準備ができたら、対応する [dsh.fish の公開形式](/docs/publish/bundle)を選び、[ソースを提出](/docs/submit)します。
+
+公式リファレンス: [Plugin configuration](https://deepseek-harness.github.io/deepseek-harness/en/develop/basic/config/) と [Package and install a plugin](https://deepseek-harness.github.io/deepseek-harness/en/develop/basic/publish/)

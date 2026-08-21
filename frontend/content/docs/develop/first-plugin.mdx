@@ -1,27 +1,15 @@
 ---
 title: Build your first plugin
-description: Create a minimal DeepSeek Harness plugin, load it as a source overlay, and verify its lifecycle in the Web UI.
+description: Create a minimal DeepSeek Harness plugin, load it with a source overlay, and watch it run in the Web UI.
 ---
 
-DeepSeek Harness is composed from plugins. A plugin receives a Cordis context and registers effects that the harness can later dispose cleanly.
+DeepSeek Harness is composed from plugins. A plugin is a TypeScript module that exports an `apply` function. When the harness loads the plugin it calls `apply` and hands it a Cordis context, the object through which the plugin registers everything it adds.
 
-<DocsVideo
-  src="/docs/video/develop.mp4"
-  poster="/docs/video/develop-poster.jpg"
-  title="One capability, fully visible"
-  caption="A 30-second source-backed development loop from apply function to observable result."
-  transcriptLabel="Video transcript"
->
-  <p>Plugin development — One capability. Fully visible.</p>
-  <p>Begin with one apply function. The official source defines the lifecycle.</p>
-  <p>Make the tool observable. The original UI exposes calls, reasoning, and results.</p>
-  <p>Verify. Remove. Repeat. A clean profile keeps the result legible.</p>
-  <p>Next step — Build the smallest useful thing.</p>
-</DocsVideo>
+This tutorial builds the smallest possible plugin, loads it into the Web UI, and removes it again. The flow runs from a DeepSeek Harness source checkout, so complete the official run-from-source setup first.
 
-## Start from the source checkout
+## Create the plugin
 
-The current official development flow runs from a DeepSeek Harness source checkout. Complete its run-from-source setup first, then create a scratch directory at the repository root:
+From the repository root, create a scratch directory:
 
 ```sh
 mkdir -p scratch-plugin/src
@@ -39,9 +27,24 @@ export function apply(ctx: Context): void {
 }
 ```
 
-## Load the source overlay
+Everything registered through `ctx` is an effect: the harness undoes it automatically when the plugin unloads, so nothing leaks between loads.
 
-Run `pwd`, then create `scratch-plugin/cordis.yml`. Replace the example root with the absolute source-checkout path:
+<DocsVideo
+  src="/docs/video/develop-write.mp4"
+  poster="/docs/video/develop-write-poster.jpg"
+  title="Write the apply function"
+  caption="The minimal plugin file, from name export to a working apply function."
+  transcriptLabel="Video transcript"
+>
+  <p>The plugin file opens: a name export and an empty apply function.</p>
+  <p>The context arrives in apply; every registration goes through it.</p>
+</DocsVideo>
+
+## Load it with a source overlay
+
+A source overlay is a patch file that inserts your plugin into the composed configuration without editing the profile itself.
+
+Run `pwd`, then create `scratch-plugin/cordis.yml`, replacing the example root with the absolute checkout path:
 
 ```yaml
 - insert:
@@ -49,17 +52,47 @@ Run `pwd`, then create `scratch-plugin/cordis.yml`. Replace the example root wit
       name: '/absolute/path/to/deepseek-harness/scratch-plugin/src/my-plugin.ts'
 ```
 
+The path must be absolute. A patch contributes configuration, but it does not change the directory the loader resolves modules from.
+
 Start the Web UI with the overlay:
 
 ```sh
 pnpm dsh web --patch ./scratch-plugin/cordis.yml
 ```
 
-Open `http://127.0.0.1:3080` and confirm that the terminal prints the plugin-loaded line. The absolute path matters: a patch contributes configuration but does not change the directory used to resolve modules.
+## Verify in the Web UI
 
-## Development loop
+Open `http://127.0.0.1:3080`. The terminal prints `[hello-plugin] plugin loaded!` during startup. Send a message and watch the run: the Web UI lists each step, including the model's Think row and every tool call with its input and output.
 
-Capabilities registered through `ctx` are effects and are removed when the plugin unloads. Use `ctx.effect()` with an explicit disposer for resources such as a timer or network connection. Source-overlay edits can hot-reload; adding, removing, or rebuilding a bundle normally requires a restart.
+<DocsVideo
+  src="/docs/video/develop-observe.mp4"
+  poster="/docs/video/develop-observe-poster.jpg"
+  title="Watch a run in the Web UI"
+  caption="A question goes in; the run shows what the harness did, row by row."
+  transcriptLabel="Video transcript"
+>
+  <p>A question is typed and sent in the Web UI.</p>
+  <p>The run shows a Think row and a tool call with its input and output.</p>
+</DocsVideo>
+
+## Iterate and remove
+
+Edit the plugin, save, and check the result again. Edits to the profile and home `cordis.patch.yml` files hot-reload; adding, removing, or rebuilding an installed bundle requires a restart.
+
+For a resource the context does not manage, such as a timer or a network connection, acquire it inside `ctx.effect()` and return a disposer. The harness runs the disposer when the plugin unloads.
+
+To remove the plugin, stop the command and restart without `--patch`. Its registrations disappear with it.
+
+<DocsVideo
+  src="/docs/video/develop-loop.mp4"
+  poster="/docs/video/develop-loop-poster.jpg"
+  title="Verify, remove, repeat"
+  caption="Check the result, unload the plugin cleanly, and iterate."
+  transcriptLabel="Video transcript"
+>
+  <p>Verify the result, then remove the plugin.</p>
+  <p>Nothing is left behind; the next change starts clean.</p>
+</DocsVideo>
 
 Next, [register a tool](/docs/develop/tool), then add [validated configuration](/docs/develop/configuration).
 

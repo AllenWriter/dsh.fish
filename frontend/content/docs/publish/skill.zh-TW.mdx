@@ -1,15 +1,29 @@
 ---
 title: Skill
-description: 使用具有 kebab-case 名稱及必填說明的 SKILL.md 發布代理技能。
+description: Skill 是代理按需載入的 Markdown 指令檔案：SKILL.md frontmatter 契約與安裝方式。
 ---
 
-Skill 是帶 frontmatter 的 `SKILL.md`，安裝至 `$DSH_HOME/skills`。
+Skill 是一個 Markdown 指令檔案，代理在任務需要時載入它。Skill 不需要套件管理器：它們作為一般檔案安裝到 `$DSH_HOME/skills` 下。
+
+## 清單契約
+
+Skill 可以是一個僅含 `SKILL.md` 的目錄，也可以是單個扁平的 `.md` 檔案。兩種形式都帶 YAML frontmatter：
 
 ```md
 ---
 name: release-notes
 description: Draft release notes from a commit range.
 ---
+
+# Release notes
+
+Steps the agent should follow…
 ```
 
-`name` 必須為 kebab-case，`description` 必填。`kindHint` 只調整探測順序，不能替代有效檔案。
+`name` 必須為 kebab-case，`description` 必填。缺少任一項的檔案會被 skill provider 忽略，並記錄一條警告。
+
+## 安裝與發布
+
+安裝計畫把 skill 的檔案寫入 `$DSH_HOME/skills`：目錄形式的 skill 保留其資料夾，扁平 skill 成為 `<name>.md`。不涉及建置步驟，也不涉及 patch 列。
+
+索引器在套件清單檢查之後，透過讀取檔案本身來證明 skill。提交可以攜帶 `skill` 的 `kindHint`，讓 `SKILL.md` 最先被讀取，但提示不能代替證據：不是有效 skill 的檔案會落入其餘檢查。

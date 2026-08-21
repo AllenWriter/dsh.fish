@@ -5,6 +5,8 @@ import { productDocsLocales, productDocsMarkdown, supportsProductDocsMarkdown } 
 const DOC_PATHS = [
   '/docs',
   '/docs/quickstart',
+  '/docs/concepts',
+  '/docs/plugins',
   '/docs/hub',
   '/docs/cli',
   '/docs/develop/first-plugin',

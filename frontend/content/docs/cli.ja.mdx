@@ -1,17 +1,57 @@
 ---
 title: dsh.fish CLI
-description: ターミナルから DeepSeek Harness 拡張を検索、確認、導入、更新、削除します。
+description: ターミナルから dsh.fish アーティファクトをインストールします。アーティファクトページのコマンドはこのバイナリです。
 ---
 
-`@dsh-fish/cli` は製品ページと同じインストール計画を実行し、DeepSeek Harness の `$DSH_HOME` に書き込みます。
+`@dsh-fish/cli` はターミナルから [dsh.fish](https://dsh.fish) アーティファクトをインストールします。アーティファクトページのインストールコマンドはこのバイナリで、ウェブサイトが表示し `dsh-hub` プラグインが実行するのと同じインストールプランを適用します。書き込み先はすべて DeepSeek Harness の `$DSH_HOME` です。
+
+## アーティファクトをインストールする
+
+```sh
+npx @dsh-fish/cli add release-notes
+npx @dsh-fish/cli add https://dsh.fish/a/release-notes --profile web
+npx @dsh-fish/cli add acme/notes
+```
+
+`add` は Hub id、dsh.fish URL、`owner/repo` をカタログのアーティファクトに解決し、プランを実行します。`$DSH_HOME` へのファイル書き込み、パッケージマネージャーによる追加、プロファイルのパッチ行です。
+
+ソースからビルドする git パッケージは `--allow-build-scripts` を渡すまで拒否されます。このフラグは、そのパッケージの `prepare` スクリプトをこのマシン上、エージェントのサンドボックス外で実行する許可です。`--yes` は確認プロンプトを飛ばすだけで、この許可は与えません。
+
+## その他のコマンド
+
+| コマンド                           | 機能                                                                      |
+| ---------------------------------- | ------------------------------------------------------------------------- |
+| `find [query]`                     | カタログを検索します（`--kind` で種類を一つに限定）。                     |
+| `show <source>`                    | 1 件のアーティファクトと、インストールが実行するコマンドを表示します。    |
+| `list`                             | このマシンが CLI または hub プラグインでインストールしたものを一覧します。 |
+| `remove <id>`                      | 記録されたファイル、パッチ行、パッケージを取り消します。                  |
+| `update [id]`                      | 現在のプランを再適用します。                                              |
+| `init [name]`                      | hub のインデクサが受け付ける `SKILL.md` を書きます。                      |
+| `login` / `logout` / `whoami`      | デバイスサインインのアカウント。hub プラグインと同じトークン。            |
+| `rate <source> <1-5> [comment...]` | アーティファクトを評価。前の評価を置き換えます。`login` が必要。          |
+| `reviews <source>`                 | 平均評価、5 から 1 の分布、最近のコメント。                               |
 
 ```sh
 npx @dsh-fish/cli find postgres --kind mcp-server
-npx @dsh-fish/cli show release-notes
-npx @dsh-fish/cli add release-notes --profile web
-npx @dsh-fish/cli list
+npx @dsh-fish/cli list --json
+npx @dsh-fish/cli remove release-notes
+npx @dsh-fish/cli init my-skill
+npx @dsh-fish/cli rate dsh-postgres-mcp 5 "installed and queried in minutes"
 ```
 
-`add` は Hub id、dsh.fish URL、`owner/repo` を受け取ります。Git パッケージがビルドを必要とする場合、`--allow-build-scripts` を明示してください。`--yes` だけではこの権限は与えられません。
+## 評価
 
-主なコマンドは `find`、`show`、`add`、`list`、`update`、`remove`、`init` です。評価は実際に導入して使った結果だけを根拠にしてください。
+サイトは 1〜5 つ星制です。1 は動かないか誤解を招く、5 は優れている、を意味します。`reviews` は匿名で読めます。`rate` は `login` が必要で、常にサインイン中のアカウントの評価として記録されます。再度評価すると前の評価を上書きします。
+
+この CLI を動かすエージェントは、hub プラグインの `hub_rate` ツールが定めるのと同じルールに従ってください。実際にインストールして使ったものだけを、直接の根拠に基づいて評価し、評価するときはユーザーに伝えます。
+
+## オプション
+
+| オプション              | 説明                                                                |
+| ----------------------- | ------------------------------------------------------------------- |
+| `--profile, -p`         | ハーネスのプロファイル（デフォルト `$DSH_PROFILE` または `web`）。  |
+| `--registry`            | Hub のオリジン（デフォルト `$DSH_FISH_URL` または `https://dsh.fish`）。 |
+| `--kind, -k`            | `find` を一つの種類に限定します。                                   |
+| `--allow-build-scripts` | git パッケージの prepare スクリプトの実行を許可します。             |
+| `--json`                | 機械可読な出力。                                                    |
+| `--yes, -y`             | 確認プロンプトを省略。ビルドスクリプトは許可しません。              |

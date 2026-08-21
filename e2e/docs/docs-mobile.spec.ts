@@ -27,7 +27,7 @@ test.describe('product docs on a phone', () => {
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: 'DeepSeek Harness, from first run to your own tools',
+        name: 'DeepSeek Harness and dsh.fish',
       }),
     ).toBeVisible()
     await expect(page.getByRole('button', { name: 'Documentation menu' })).toBeVisible()

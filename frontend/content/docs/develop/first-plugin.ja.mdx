@@ -1,35 +1,50 @@
 ---
 title: 最初のプラグインを作る
-description: 最小の DeepSeek Harness プラグインを作成し、ソース overlay として読み込み、Web UI でライフサイクルを確認します。
+description: 最小の DeepSeek Harness プラグインを作成し、ソース overlay で読み込み、Web UI で動作を確認します。
 ---
 
-Harness はプラグインから構成されます。プラグインは Cordis context を受け取り、アンロード時に破棄できる effect を登録します。
+DeepSeek Harness はプラグインで構成されています。プラグインとは `apply` 関数をエクスポートする TypeScript モジュールです。harness はプラグインの読み込み時に `apply` を呼び、Cordis context を渡します。プラグインが登録するものはすべてこのオブジェクトを通ります。
 
-<DocsVideo
-  src="/docs/video/develop.ja.mp4"
-  poster="/docs/video/develop.ja-poster.jpg"
-  title="一つの機能を完全に見える形で"
-  caption="apply 関数から観測可能な結果まで、実際の開発ループを 30 秒で紹介します。"
-  transcriptLabel="動画の文字起こし"
->
-  <p>プラグイン開発 — 一つの機能を完全に見える形で。</p>
-  <p>一つの apply 関数から始めます。公式ソースがライフサイクルを定義します。</p>
-  <p>ツールを観測可能にします。実際の UI が呼び出し、推論、結果を表示します。</p>
-  <p>検証、削除、反復。整理された profile が結果を読みやすく保ちます。</p>
-  <p>次の一歩 — 最小で役立つものを作る。</p>
-</DocsVideo>
+このチュートリアルでは最小のプラグインを作り、Web UI に読み込み、最後に取り除きます。手順は DeepSeek Harness のソース checkout 上で実行するので、先に公式の run-from-source セットアップを済ませてください。
 
-現在の公式開発フローは DeepSeek Harness のソース checkout から実行します。公式のソース起動手順を終え、リポジトリ直下に `scratch-plugin/src/my-plugin.ts` を作成します。
+## プラグインを作る
+
+リポジトリのルートで作業用ディレクトリを作ります。
+
+```sh
+mkdir -p scratch-plugin/src
+```
+
+`scratch-plugin/src/my-plugin.ts` を作成します。
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
-export const name = 'hello-harness'
+
+export const name = 'hello-plugin'
+
 export function apply(ctx: Context): void {
-  console.log('[hello-harness] plugin loaded!')
+  console.log('[hello-plugin] plugin loaded!')
 }
 ```
 
-絶対パスを使う `scratch-plugin/cordis.yml` を作成します。
+`ctx` を通して登録したものはすべて effect です。プラグインのアンロード時に harness が自動で取り消すので、読み込みの間で残りません。
+
+<DocsVideo
+  src="/docs/video/develop-write.ja.mp4"
+  poster="/docs/video/develop-write.ja-poster.jpg"
+  title="apply 関数を書く"
+  caption="最小のプラグインファイル。name エクスポートから動く apply 関数まで。"
+  transcriptLabel="動画の文字起こし"
+>
+  <p>プラグインファイルを開く。name エクスポートと空の apply 関数。</p>
+  <p>apply に context が渡され、すべての登録はここを通ります。</p>
+</DocsVideo>
+
+## ソース overlay で読み込む
+
+ソース overlay は、プロファイル本体を編集せずにプラグインを構成へ挿入する patch ファイルです。
+
+`pwd` を実行し、`scratch-plugin/cordis.yml` を作成します。例のパスは checkout の絶対パスに置き換えてください。
 
 ```yaml
 - insert:
@@ -37,8 +52,48 @@ export function apply(ctx: Context): void {
       name: '/absolute/path/to/deepseek-harness/scratch-plugin/src/my-plugin.ts'
 ```
 
+パスは絶対パスである必要があります。patch は設定を足すだけで、ローダーがモジュールを解決するディレクトリは変わりません。
+
+overlay を指定して Web UI を起動します。
+
 ```sh
 pnpm dsh web --patch ./scratch-plugin/cordis.yml
 ```
 
-`http://127.0.0.1:3080` を開き、ターミナルの読み込みログを確認します。`ctx` 経由の登録はアンロード時に自動で消えます。タイマーや接続には disposer を返す `ctx.effect()` を使います。
+## Web UI で確認する
+
+`http://127.0.0.1:3080` を開きます。起動時にターミナルへ `[hello-plugin] plugin loaded!` と表示されます。メッセージを送って実行を見てみましょう。Web UI には各ステップが並び、モデルの Think 行や、入出力を伴うツール呼び出しも確認できます。
+
+<DocsVideo
+  src="/docs/video/develop-observe.ja.mp4"
+  poster="/docs/video/develop-observe.ja-poster.jpg"
+  title="Web UI で実行を見る"
+  caption="質問を送ると、実行の内容が行ごとに表示されます。"
+  transcriptLabel="動画の文字起こし"
+>
+  <p>Web UI で質問を入力して送信します。</p>
+  <p>実行には Think 行と、入出力付きのツール呼び出しが表示されます。</p>
+</DocsVideo>
+
+## 反復と削除
+
+プラグインを編集して保存し、結果をもう一度確認します。プロファイルと home の `cordis.patch.yml` への編集はホットリロードされます。インストール済みバンドルの追加、削除、再ビルドには再起動が必要です。
+
+タイマーやネットワーク接続のように context が管理しないリソースは、`ctx.effect()` の中で取得して disposer を返します。harness はプラグインのアンロード時にその disposer を実行します。
+
+プラグインを取り除くには、コマンドを止めて `--patch` なしで再起動します。登録はプラグインと一緒に消えます。
+
+<DocsVideo
+  src="/docs/video/develop-loop.ja.mp4"
+  poster="/docs/video/develop-loop.ja-poster.jpg"
+  title="検証、削除、繰り返し"
+  caption="結果を確認し、プラグインをきれいにアンロードして、反復します。"
+  transcriptLabel="動画の文字起こし"
+>
+  <p>結果を検証してからプラグインを削除します。</p>
+  <p>残るものはなく、次の変更はクリーンな状態から始まります。</p>
+</DocsVideo>
+
+次は[ツールを登録](/docs/develop/tool)し、[検証付きの設定](/docs/develop/configuration)を追加します。
+
+公式リファレンス: [Your first plugin](https://deepseek-harness.github.io/deepseek-harness/en/develop/basic/)

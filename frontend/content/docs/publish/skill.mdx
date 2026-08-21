@@ -1,9 +1,13 @@
 ---
 title: Skills
-description: A skill is a SKILL.md with kebab-case name and a required description. The provider drops a skill missing either.
+description: A skill is a Markdown file of instructions the agent loads on demand. The SKILL.md frontmatter contract and how skills install.
 ---
 
-A skill is a `SKILL.md` bundle or a flat Markdown file with frontmatter. Files are written under `$DSH_HOME/skills`.
+A skill is a Markdown file of instructions the agent can load when a task calls for it. Skills need no package manager: they install as plain files under `$DSH_HOME/skills`.
+
+## Manifest contract
+
+A skill is either a directory holding one `SKILL.md` or a single flat `.md` file. Both carry YAML frontmatter:
 
 ```md
 ---
@@ -16,6 +20,10 @@ description: Draft release notes from a commit range.
 Steps the agent should follow…
 ```
 
-`name` must be kebab-case and `description` is required — the provider drops a skill missing either.
+`name` must be kebab-case and `description` is required. The skill provider ignores a file that misses either, with a warning.
 
-The indexer probes `SKILL.md` after package.json kinds unless a submission carries a `kindHint` of `skill`, which rotates that probe first. A hint never substitutes for proof: a file that is not a skill falls through to the rest of the probes.
+## Install and publish
+
+The install plan writes the skill's files under `$DSH_HOME/skills`: a directory skill keeps its folder, a flat skill becomes `<name>.md`. No build step and no patch row is involved.
+
+The indexer proves a skill by reading the file itself, after the package-manifest checks. A submission can carry a `kindHint` of `skill` to read `SKILL.md` first, but a hint never substitutes for proof: a file that is not a valid skill falls through to the remaining checks.

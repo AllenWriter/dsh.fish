@@ -1,35 +1,50 @@
 ---
 title: 開發第一個外掛程式
-description: 建立最小 DeepSeek Harness 外掛程式，以原始碼 overlay 載入，並在 Web UI 中驗證生命週期。
+description: 建立一個最小的 DeepSeek Harness 外掛程式，用原始碼 overlay 載入，並在 Web UI 中觀察它的執行。
 ---
 
-Harness 由外掛程式組合而成。外掛程式接收 Cordis context，並註冊可在卸載時完整清理的 effect。
+DeepSeek Harness 由外掛程式組合而成。外掛程式是一個匯出 `apply` 函式的 TypeScript 模組。harness 載入外掛程式時會呼叫 `apply`，並傳入一個 Cordis context，外掛程式註冊的一切都經過這個物件。
 
-<DocsVideo
-  src="/docs/video/develop.zh-TW.mp4"
-  poster="/docs/video/develop.zh-TW-poster.jpg"
-  title="一種能力，完整可見"
-  caption="用 30 秒了解從 apply 函式到可觀察結果的真實開發循環。"
-  transcriptLabel="影片文字稿"
->
-  <p>外掛程式開發——一種能力，完整可見。</p>
-  <p>從一個 apply 函式開始。官方原始碼定義生命週期。</p>
-  <p>讓工具可觀察。原始 UI 顯示呼叫、推理和結果。</p>
-  <p>驗證、移除、重複。乾淨的 profile 讓結果保持清晰。</p>
-  <p>下一步——建構最小而有用的東西。</p>
-</DocsVideo>
+本教學會做一個最小的外掛程式，把它載入 Web UI，再把它移除。流程在 DeepSeek Harness 原始碼倉庫中執行，請先完成官方的原始碼啟動步驟。
 
-目前官方開發流程從 DeepSeek Harness 原始碼倉庫執行。先完成官方的原始碼啟動步驟，再於倉庫根目錄建立 `scratch-plugin/src/my-plugin.ts`：
+## 建立外掛程式
+
+在倉庫根目錄建立一個暫存目錄：
+
+```sh
+mkdir -p scratch-plugin/src
+```
+
+建立 `scratch-plugin/src/my-plugin.ts`：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
-export const name = 'hello-harness'
+
+export const name = 'hello-plugin'
+
 export function apply(ctx: Context): void {
-  console.log('[hello-harness] plugin loaded!')
+  console.log('[hello-plugin] plugin loaded!')
 }
 ```
 
-建立 `scratch-plugin/cordis.yml`，並將路徑替換為原始碼倉庫的絕對路徑：
+透過 `ctx` 註冊的內容都是 effect：外掛程式卸載時 harness 會自動撤銷，不會在兩次載入之間留下殘留。
+
+<DocsVideo
+  src="/docs/video/develop-write.zh-TW.mp4"
+  poster="/docs/video/develop-write.zh-TW-poster.jpg"
+  title="撰寫 apply 函式"
+  caption="最小外掛程式檔案：從 name 匯出到可用的 apply 函式。"
+  transcriptLabel="影片文字稿"
+>
+  <p>開啟外掛程式檔案：name 匯出和一個空的 apply 函式。</p>
+  <p>context 隨 apply 傳入，所有註冊都經過它。</p>
+</DocsVideo>
+
+## 用原始碼 overlay 載入
+
+原始碼 overlay 是一個 patch 檔案，把外掛程式插入組合後的設定，而不改動配置檔案本身。
+
+執行 `pwd`，然後建立 `scratch-plugin/cordis.yml`，把範例路徑替換為原始碼倉庫的絕對路徑：
 
 ```yaml
 - insert:
@@ -37,8 +52,48 @@ export function apply(ctx: Context): void {
       name: '/absolute/path/to/deepseek-harness/scratch-plugin/src/my-plugin.ts'
 ```
 
+路徑必須是絕對路徑。patch 只提供設定，不改變載入器解析模組的目錄。
+
+用 overlay 啟動 Web UI：
+
 ```sh
 pnpm dsh web --patch ./scratch-plugin/cordis.yml
 ```
 
-開啟 `http://127.0.0.1:3080` 並確認終端輸出載入訊息。透過 `ctx` 註冊的能力會在卸載時自動清理；計時器或網路連線等外部資源應使用 `ctx.effect()` 回傳 disposer。
+## 在 Web UI 中驗證
+
+開啟 `http://127.0.0.1:3080`。啟動過程中終端會印出 `[hello-plugin] plugin loaded!`。發送一則訊息並觀察這次執行：Web UI 會列出每個步驟，包括模型的 Think 列和每次工具呼叫的輸入與輸出。
+
+<DocsVideo
+  src="/docs/video/develop-observe.zh-TW.mp4"
+  poster="/docs/video/develop-observe.zh-TW-poster.jpg"
+  title="在 Web UI 中觀察一次執行"
+  caption="送出一個問題，執行過程逐列呈現。"
+  transcriptLabel="影片文字稿"
+>
+  <p>在 Web UI 中輸入並送出一個問題。</p>
+  <p>執行中出現 Think 列和一次工具呼叫，含輸入與輸出。</p>
+</DocsVideo>
+
+## 迭代與移除
+
+修改外掛程式、儲存、再看結果。對配置檔案級和 home 級 `cordis.patch.yml` 檔案的修改會熱重載；新增、移除或重新建構已安裝的套件（bundle）則需要重新啟動。
+
+對於 context 不管的資源，例如計時器或網路連線，在 `ctx.effect()` 裡取得它並回傳一個 disposer。外掛程式卸載時 harness 會執行這個 disposer。
+
+要移除外掛程式，停掉指令，不帶 `--patch` 重新啟動即可。它的註冊會隨之消失。
+
+<DocsVideo
+  src="/docs/video/develop-loop.zh-TW.mp4"
+  poster="/docs/video/develop-loop.zh-TW-poster.jpg"
+  title="驗證、移除、重複"
+  caption="檢查結果，乾淨卸載外掛程式，然後繼續迭代。"
+  transcriptLabel="影片文字稿"
+>
+  <p>先驗證結果，再移除外掛程式。</p>
+  <p>沒有殘留，下一輪修改從乾淨狀態開始。</p>
+</DocsVideo>
+
+下一步：[註冊工具](/docs/develop/tool)，然後加入[可驗證的設定](/docs/develop/configuration)。
+
+官方參考：[Your first plugin](https://deepseek-harness.github.io/deepseek-harness/en/develop/basic/)

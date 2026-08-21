@@ -1,17 +1,40 @@
 ---
 title: Agent Preset
-description: 使用一個 agent.cordis.yml 發布可重複使用的 DeepSeek Harness 代理設定。
+description: Agent preset 將一個代理（persona 加工具選擇）打包進一個 agent.cordis.yml 檔案。
 ---
 
-Agent preset 是包含一個 `agent.cordis.yml` 的目錄，安裝至 `$DSH_HOME/.agent-presets/<id>`；目錄名稱就是 preset id。
+Agent preset 是一個現成的代理：persona 決定它是誰，工具選擇決定它能做什麼，兩者打包在一個 `agent.cordis.yml` 檔案裡。工作階段按 id 選用 preset，得到的就是這個代理。
+
+該檔案是一份 Cordis 外掛列清單。`@deepseek-ai/dsh-persona` 列設定身分，每個工具列增加一項能力。
+
+## 清單慣例
+
+preset 是只含一個 `agent.cordis.yml` 的目錄，檔案放在儲存庫根目錄或提交的子目錄中：
 
 ```yaml
-- id: tools
-  name: 'dsh-tools'
-- id: prompt
-  name: 'dsh-system-prompt'
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
   config:
-    persona: ./persona.md
+    text: >-
+      You are a careful code reviewer powered by the {{model}} model.
+
+- id: tool-fs
+  name: '@deepseek-ai/dsh-tool-fs'
+
+- id: tool-fs-search
+  name: '@deepseek-ai/dsh-tool-fs-search'
 ```
 
-將檔案放在儲存庫根目錄或提交的子目錄。這是最後一個檔案探針；若儲存庫已符合較早規則，將使用較早的類型。
+preset id 取自儲存庫（目錄）名稱，會轉換為小寫 kebab-case，必須符合 `[a-z0-9][a-z0-9-]*`。
+
+preset 探針最後執行。如果儲存庫的 `package.json` 已宣告 bundle、profile、MCP server 或 hook bridge（或者儲存庫帶有 `SKILL.md`），就會被更早的探針分類。
+
+## 安裝機制
+
+安裝 preset 會把檔案寫入 `$DSH_HOME/.agent-presets/<id>/agent.cordis.yml`：
+
+```sh
+npx @dsh-fish/cli add <artifact-id> --profile <profile>
+```
+
+Harness 會把該目錄當作 preset 根目錄掃描，新工作階段隨即可以選用這個 preset。preset 的權限與它列出的每個外掛相同，安裝前請先讀一遍檔案內容。
