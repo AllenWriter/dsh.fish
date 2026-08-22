@@ -50,9 +50,12 @@ deterministic unit test.
 **Product docs** (`e2e/docs/`) covers the Fumadocs section at one desktop
 viewport (1280×900) and one phone (Pixel 7). It asserts the sidebar, nested
 guides, live scoring, sidebar filter, indexable Japanese MDX, controlled video
-with a localized transcript, `/docs/search` JSON (not `/api/search`), and
-localized `Accept: text/markdown`. Unit tests also require every guide to have
-a physical file in every public locale. Fold
+with a localized transcript, `/docs/search` JSON (not `/api/search`),
+localized `Accept: text/markdown`, and the llms.txt v2 surface
+(`e2e/docs/llms-txt.spec.ts`): `/llms.txt`, `/docs/llms.txt`,
+`/docs/llms-full.txt`, `.md` aliases, covering `describedby` headers, and that
+every markdown link in the docs index is fetchable. Unit tests also require
+every guide to have a physical file in every public locale. Fold
 screenshots are written for inspection; they are not visual baselines.
 
 **Plugin-detail markdown** is an exception to "journeys only": a third-party
@@ -75,7 +78,10 @@ The tests assert:
   the readme; reviews is always in that rail, empty or not.
 
 Visual baselines of the first fold are stored for iPhone SE (3rd gen) and Pixel 7.
-Update them with `pnpm exec playwright test --update-snapshots`.
+The clip is the `#readme` box after `scrollIntoView({ block: 'start' })` — the
+element is taller than a phone viewport, so `scrollIntoViewIfNeeded` can land
+on the bottom of the article instead of the fold. Update baselines with
+`pnpm exec playwright test --update-snapshots`.
 
 Device projects force Chromium (`defaultBrowserType: 'chromium'`). Playwright's
 iPhone presets default to WebKit; CI only installs Chromium, and the suite is
@@ -153,8 +159,13 @@ as community-toasts / icons-touch, not the six-width readme matrix. The Worker
 under test has `ARTIFACT_ASK_ENABLED=true` (written into `.dev.vars` **before**
 the Worker boots); Playwright fulfills
 `**/api/v1/artifacts/*/ask` with an SSE fixture so **CI never hits Ada**
-(`api.devin.ai`). Assertions: GitHub toggle vs npm absence; stream then
-DeepWiki citation (favicon from deepwiki.com); follow-up reuses `queryId`; 429 copy; right column vs bottom sheet;
+(`api.devin.ai`), and fulfills `https://deepwiki.com/**` so citation favicons
+do not depend on that host. Each test waits for hydration and for
+`data-ask-layout` (column vs sheet) before clicking the toggle: the split is an
+effect, and opening too early puts the composer on the mobile sheet at 1280px.
+Assertions: GitHub toggle vs npm absence; stream then
+DeepWiki citation (the search URL; the favicon is decorative and CI stubs
+`https://deepwiki.com/**` so a 403 there cannot drop the `<img>`); follow-up reuses `queryId`; 429 copy; right column vs bottom sheet;
 `skipHtml` on a script delta; no transform drift under reduced motion; a
 suggested opener redraws on shuffle and posts the question it displays.
 
