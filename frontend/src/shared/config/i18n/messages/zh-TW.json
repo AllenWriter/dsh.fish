@@ -224,6 +224,7 @@
   "common.retry": "重試",
   "seo.home.title": "{name} — {tagline}",
   "seo.browse.description": "搜尋為 DeepSeek Harness 收錄的所有 bundle、技能、MCP 伺服器、Agent 預設、Hook 橋接與設定檔。",
+  "seo.artifact.title": "{name} — {summary}",
   "seo.artifact.description": "{summary} 為 DeepSeek Harness 打造的{kind}——複製一行指令即可安裝。",
   "seo.docs.description": "如何把外掛發布到 dsh.fish，用 CLI 或 hub 外掛安裝，以及公開的評分模型。",
   "artifact.maintenanceLabel": "維護狀態",

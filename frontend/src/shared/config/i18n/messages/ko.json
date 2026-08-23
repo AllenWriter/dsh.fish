@@ -224,6 +224,7 @@
   "common.retry": "다시 시도",
   "seo.home.title": "{name} — {tagline}",
   "seo.browse.description": "DeepSeek Harness용으로 수록된 모든 번들, 스킬, MCP 서버, 에이전트 프리셋, 훅 브리지, 프로필을 검색하세요.",
+  "seo.artifact.title": "{name} — {summary}",
   "seo.artifact.description": "{summary} DeepSeek Harness용 {kind} — 명령 한 줄을 복사해 설치하세요.",
   "seo.docs.description": "dsh.fish에 플러그인을 게시하고, CLI나 hub 플러그인으로 설치하며, 공개 점수 모델을 확인하는 방법.",
   "artifact.maintenanceLabel": "유지 관리",

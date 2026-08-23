@@ -25,11 +25,12 @@ Then, in Search Console, check the **International Targeting** report. It is the
 only place a broken `hreflang` cluster shows up as an error rather than as
 silence.
 
-The current Google account does not have access to a `dsh.fish` Search Console
-property. The operator must verify the domain property, submit
-`https://dsh.fish/sitemap.xml`, request validation of stale HTTP and retired
-locale URLs, and compare indexed pages by locale after the locale gate rolls
-out.
+The domain property is verified and the sitemap is submitted. The first export
+is in [`search-console.md`](search-console.md). Remaining operator work from
+that export: URL Inspection on `/`, `/browse`, `/docs`, and
+`/ko/a/dsh-better-edit`; the International Targeting report for `hreflang`
+errors. HTTP and retired-locale URLs already 301 — do not add a second
+redirect, wait for them to leave the page report.
 
 ### Confirm `PUBLIC_BASE_URL` is the production origin
 
@@ -47,6 +48,15 @@ unique text is a one-line summary has almost nothing to rank on; the same page
 with a readme has a few hundred words of it. The crawler already reads readmes —
 make sure the ingestion path is actually populating `readmeMarkdown` for the
 majority of rows, and treat a low fill rate as an SEO defect, not a cosmetic one.
+
+### Plugin titles say what the plugin does
+
+A result at position two with a kebab-case package name and a kind label
+("Bundle", "번들") does not get clicked. Artifact `<title>` is
+`{name} — {summary}`, clamped to 60 characters, built by `artifactSearchTitle`.
+Kind and the site name stay out of it: Google prints the sitename on its own
+line, and the kind is already in the meta description. The first Search
+Console export that forced this is in [`search-console.md`](search-console.md).
 
 ### Keep sitemap modification times truthful
 
@@ -86,12 +96,16 @@ and an editorial process. Do not start it without the second half.
 
 ### Measure which languages earn their keep
 
-Ten languages is a guess, not a measurement. After a quarter of data, look at
-impressions per language in Search Console. A language with no impressions is
-maintenance cost with no return — and removing one is a single entry in
-`LOCALES` plus a catalog file. Equally, a language with impressions and a poor
-click-through rate usually means the translated title pattern reads badly in it,
-which is a copy fix, not a technical one.
+Six languages is still a guess. The first export already shows the failure
+mode this item was for: South Korea produced 88 impressions at position 2.1
+and zero clicks, almost all of them on the English URL of one plugin. That is
+a title/`hreflang` problem, not evidence that Korean should be removed. Leave
+`SEO_LOCALE_GATING` off until the Korean cluster is associated; gating now
+would `noindex` incomplete translations and leave English as the only URL
+Korea can be shown. Revisit after the next crawl whether Korean, Japanese and
+Chinese CTR recovered. A language that still has impressions and a poor CTR
+after the title change is a copy fix. A language with no impressions after
+the catalog has been fully crawled is a candidate to drop.
 
 ### Core Web Vitals
 

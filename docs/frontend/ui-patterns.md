@@ -205,7 +205,10 @@ The dsh.fish brand uses the generated, faceless blue-whale assets in
 - Keep the image decorative when adjacent copy already names the product or
   state: use an empty `alt` and hide it from assistive technology.
 - Generate PNG favicon derivatives from `whale-brand.png`; do not maintain a
-  second hand-drawn logo in SVG.
+  second hand-drawn logo in SVG. Google Search ignores icons smaller than
+  48×48, so `favicon-48.png` and `favicon-96.png` sit next to the 32×32 file
+  in `root.tsx` `links`. Regenerate them from the 256×256 mark if the whale
+  changes.
 
 This rule is limited to brand artwork. Functional controls use Phosphor through
 `shared/ui/icon`, as above. Invisible SVG filter definitions and SVG

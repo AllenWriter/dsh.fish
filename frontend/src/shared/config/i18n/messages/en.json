@@ -224,6 +224,7 @@
   "common.retry": "Retry",
   "seo.home.title": "{name} — {tagline}",
   "seo.browse.description": "Search every bundle, skill, MCP server, agent preset, hook bridge and profile indexed for DeepSeek Harness.",
+  "seo.artifact.title": "{name} — {summary}",
   "seo.artifact.description": "{summary} A {kind} for DeepSeek Harness — copy one command to install it.",
   "seo.docs.description": "Publish plugins to dsh.fish, install them from the CLI or the hub plugin, and read the public scoring model.",
   "artifact.maintenanceLabel": "Maintenance",
