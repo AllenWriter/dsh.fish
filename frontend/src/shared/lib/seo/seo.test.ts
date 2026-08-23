@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { LOCALE_CODES } from '@/shared/config/i18n'
+import { TITLE_MAX } from '@/shared/config/site'
+import { LOCALE_CODES, translate } from '@/shared/config/i18n'
 import { pageMeta } from './meta'
-import { organizationLd } from './structured-data'
+import { organizationLd, websiteLd } from './structured-data'
+import { artifactSearchTitle } from './title'
 import {
   alternates,
   clampDescription,
@@ -46,6 +48,36 @@ describe('alternates', () => {
     expect(fromJapanese).toEqual(fromRussian)
     expect(fromJapanese).toContain(`${ORIGIN}/ja/a/dsh-hello`)
     expect(fromJapanese).toContain(`${ORIGIN}/ru/a/dsh-hello`)
+  })
+})
+
+describe('artifactSearchTitle', () => {
+  const summary =
+    'Hash-anchored read/edit/undo_last_edit tools for DeepSeek Harness (dsh).'
+
+  it('leads with the package name and still has room for what the plugin does', () => {
+    const title = artifactSearchTitle('en', 'dsh-better-edit', summary)
+    expect(title.startsWith('dsh-better-edit — ')).toBe(true)
+    expect(title.length).toBeLessThanOrEqual(TITLE_MAX)
+    expect(title.toLowerCase()).toContain('hash-anchored')
+    expect(title).not.toMatch(/bundle/i)
+    expect(title).not.toContain('dsh.fish')
+  })
+
+  it('puts the translated summary in a Korean title, not the kind label', () => {
+    const title = artifactSearchTitle(
+      'ko',
+      'dsh-better-edit',
+      'DeepSeek Harness(dsh)용 해시 기반 읽기/편집/마지막 편집 실행 취소 도구',
+    )
+    expect(title.startsWith('dsh-better-edit — ')).toBe(true)
+    expect(title).toContain('해시')
+    expect(title).not.toContain('번들')
+    expect(title.length).toBeLessThanOrEqual(TITLE_MAX)
+  })
+
+  it('uses the same pattern as the catalog string, so a missing placeholder fails here', () => {
+    expect(translate('en', 'seo.artifact.title', { name: 'x', summary: 'y' })).toBe('x — y')
   })
 })
 
@@ -230,6 +262,14 @@ describe('organizationLd', () => {
       width: 256,
       height: 256,
     })
+  })
+})
+
+describe('websiteLd', () => {
+  it('names the abbreviation people type as an alternate, without replacing the sitename', () => {
+    const site = websiteLd(ORIGIN, 'en')
+    expect(site.name).toBe('dsh.fish')
+    expect(site.alternateName).toBe('dsh')
   })
 })
 

@@ -25,6 +25,9 @@ export function websiteLd(origin: string, locale: Locale): Ld {
     '@type': 'WebSite',
     '@id': `${origin}/#website`,
     name: translate(locale, 'app.name'),
+    // The abbreviation people actually type. `name` stays the sitename Google
+    // prints on the result; this is the other string a brand query can match.
+    alternateName: 'dsh',
     url: absoluteUrl(origin, locale, '/'),
     description: clampDescription(translate(locale, 'app.description')),
     inLanguage: localeDefinition(locale).tag,

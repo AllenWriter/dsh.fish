@@ -1,5 +1,6 @@
 /** Public API of the SEO helpers. */
 export { pageMeta, documentLanguage, errorMeta, type PageMetaInput } from './meta'
+export { artifactSearchTitle } from './title'
 export {
   absoluteUrl,
   alternates,

@@ -55,3 +55,13 @@ export const HUB_PLUGIN_SPEC = 'github:stvlynn/dsh.fish#main'
  * on a word boundary rather than letting the crawler cut mid-word.
  */
 export const DESCRIPTION_MAX = 160
+
+/**
+ * How long a `<title>` may be before a search result truncates it.
+ *
+ * Engines measure pixels, not characters. Latin results usually show about
+ * this many glyphs; CJK glyphs are wider, so the same cap is the upper bound
+ * rather than a target. Plugin titles include a third-party summary of up to
+ * 300 characters, so the clamp is load-bearing rather than decorative.
+ */
+export const TITLE_MAX = 60

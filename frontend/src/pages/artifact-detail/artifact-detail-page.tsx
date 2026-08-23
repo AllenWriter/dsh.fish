@@ -33,7 +33,7 @@ import {
 import { isLocale, requireLocale, translate, useLocale, useT } from '@/shared/config/i18n'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { Markdown } from '@/shared/ui/markdown'
-import { breadcrumbLd, errorMeta, pageMeta } from '@/shared/lib/seo'
+import { artifactSearchTitle, breadcrumbLd, errorMeta, pageMeta } from '@/shared/lib/seo'
 import { relativeTime } from '@/shared/lib/format'
 import { AnimatedNumber } from '@/shared/ui/animated-number'
 
@@ -61,7 +61,7 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
     // A per-artifact social card drawn from the catalog row, served by the
     // `/a/<id>/og.png` route, instead of the site-wide default card.
     imagePath: `/a/${artifact.id}/og.png`,
-    title: `${artifact.displayName} — ${kindName} · ${translate(locale, 'app.name')}`,
+    title: artifactSearchTitle(locale, artifact.displayName, artifact.summary),
     description: translate(locale, 'seo.artifact.description', {
       summary: artifact.summary,
       kind: kindName,

@@ -28,7 +28,11 @@ import { HomeIcon, IconDefaults } from '@/shared/ui/icon'
 import './styles/app.css'
 
 export const links: Route.LinksFunction = () => [
+  // Google Search ignores favicons under 48×48. Keep 32px for old browsers;
+  // 48 and 96 are the sizes the result-page glyph is chosen from.
   { rel: 'icon', href: '/favicon-32.png', type: 'image/png', sizes: '32x32' },
+  { rel: 'icon', href: '/favicon-48.png', type: 'image/png', sizes: '48x48' },
+  { rel: 'icon', href: '/favicon-96.png', type: 'image/png', sizes: '96x96' },
   { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
   { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },

@@ -27,6 +27,12 @@ claim an identity it cannot back.
 referenced by `@id` from every other page (`isPartOf`, `publisher`). Repeating
 them on every page would restate the same facts a few thousand times per crawl.
 
+`WebSite.alternateName` is `dsh`, the abbreviation a brand query actually
+types. `name` stays `dsh.fish`, which is the sitename Google prints on a
+result. The first Search Console export had `dsh` at position 58; this alias
+does not invent a second brand, it tells the engine the two strings are the
+same site.
+
 ## Where the artifact node lives
 
 `artifactLd` is in `entities/artifact/lib/`, not in `shared/lib/seo/`. It is the

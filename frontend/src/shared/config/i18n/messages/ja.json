@@ -224,6 +224,7 @@
   "common.retry": "再試行",
   "seo.home.title": "{name} — {tagline}",
   "seo.browse.description": "DeepSeek Harness 向けに収録されたバンドル、スキル、MCP サーバー、エージェントプリセット、フックブリッジ、プロファイルをまとめて検索できます。",
+  "seo.artifact.title": "{name} — {summary}",
   "seo.artifact.description": "{summary} DeepSeek Harness 向けの{kind}。コマンドを 1 つコピーするだけで入ります。",
   "seo.docs.description": "dsh.fish へのプラグイン公開、CLI と hub プラグインからのインストール、公開されているスコアモデル。",
   "artifact.maintenanceLabel": "メンテナンス",
