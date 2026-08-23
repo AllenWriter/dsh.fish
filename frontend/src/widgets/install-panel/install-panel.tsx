@@ -74,6 +74,9 @@ export function InstallPanel({
             <CopyBlock text={`dsh plugin --profile ${plan.profile} add ${HUB_PLUGIN_SPEC}`} />
             <CopyBlock text={`install ${artifact.id} from the hub`} muted />
           </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {t('install.profileNote', { profile: plan.profile })}
+          </p>
         </TabsContent>
       </Tabs>
 

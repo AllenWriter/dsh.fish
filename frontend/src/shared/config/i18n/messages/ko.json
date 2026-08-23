@@ -152,6 +152,7 @@
   "install.viaPluginBody": "허브 플러그인을 설치해 두면 에이전트에게 이름만 말하면 됩니다. 여기 표시된 것과 같은 계획을 그대로 해석합니다.",
   "install.viaCliBody": "이 명령은 dsh.fish에 접속해 플러그인과 같은 설치 계획을 적용합니다. 하네스 런처가 설치하지 않는 skill, MCP 행, 프리셋도 포함합니다.",
   "install.profileLabel": "프로필",
+  "install.profileNote": "데스크톱 하네스는 자체 프로필로 부팅합니다. Local DSH에서는 {profile}을 local-dsh로 바꾸세요.",
   "install.credentials": "이 항목에 필요한 자격 증명",
   "install.credentialsBody": "환경 변수로 설정하거나 `ctx.credentials`로 전달하세요. 레지스트리는 참조만 저장하며 값은 저장하지 않습니다.",
   "install.warning.buildAllowance": "이 패키지는 설치 시 소스에서 빌드합니다. pnpm이 빌드 스크립트 허용을 요청하는데, 이는 에이전트 샌드박스 밖에서 여러분의 머신에 있는 패키지 코드를 실행할 권한입니다. 신뢰하는 소스에만 허용하세요.",

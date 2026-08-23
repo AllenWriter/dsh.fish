@@ -420,12 +420,32 @@ that would duplicate `SearchArtifacts` filters and drift from D1.
 
 `domain/artifact/install-plan.ts` is the single place that knows how each kind
 installs. It returns both `steps` (machine-executable) and `manualCommands`
-(copy-paste). The website renders the second; the `dsh-hub` plugin and
+(copy-paste). The website renders the second; the `@dsh-fish/hub` plugin and
 `@dsh-fish/cli` execute the first. The first manual command is always
 `npx @dsh-fish/cli add <id> --profile <p>`, so a copied line actually installs
 kinds the harness launcher does not cover (skills, MCP rows, presets, hooks).
 Because no surface authors its own commands, a documented command and an
 agent-driven install cannot drift apart.
+
+### The hub plugin has two halves, and only one of them writes
+
+`packages/dsh-plugin-hub` publishes as `@dsh-fish/hub` and ships both a host
+plugin and a browser one. The host half registers the `hub_*` tools and, in a
+composition that serves a client, a same-origin API under `/api/dsh-fish`; the
+browser half is a settings section (Browse, Installed, Account) that calls it.
+
+Every write in that section goes through the same `PlanInstaller` the tools and
+`@dsh-fish/cli` use, so there is one installer and one lockfile no matter which
+surface started the install. Two things stay host side on purpose. The device
+token lives in `$DSH_HOME/.dsh-fish-token.json` at mode 0600 and never appears
+in a response body, because a bundle running in a WebView must not be able to
+read a bearer credential for the reader's hub account. And sign-in returns only
+the user code and the verification URL, which the section renders as an external
+link — a desktop shell keeps its WebView on loopback and hands `https` links to
+the system browser, where the reader's session already is.
+
+`webServer` is reached through `ctx.inject` rather than the plugin's own `inject`
+list, so a profile that serves no browser client still loads the tools.
 
 ### Secrets are referenced, never stored
 

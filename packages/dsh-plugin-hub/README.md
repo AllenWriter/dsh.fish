@@ -1,4 +1,4 @@
-# dsh-hub
+# @dsh-fish/hub
 
 Search [dsh.fish](https://dsh.fish) and install any harness artifact from inside
 your agent.
@@ -6,21 +6,41 @@ your agent.
 ## Install
 
 ```sh
-dsh plugin --profile web add github:stvlynn/dsh.fish#main
+dsh plugin --profile <profile> add @dsh-fish/hub
 ```
 
-This package is TypeScript, so a git install runs its `prepare` script to build
-`lib/`. pnpm ≥10 refuses that until you allow it — copy the package key pnpm
-prints into your profile's `pnpm-workspace.yaml`:
+`<profile>` is whichever profile the harness boots — `web` for the stock
+launcher, `local-dsh` for [Local DSH](https://github.com/stvlynn/local-dsh),
+whose bundled launcher is the one to run:
 
-```yaml
-allowBuilds:
-  dsh-hub: true
+```sh
+dsh plugin --profile local-dsh add @dsh-fish/hub
 ```
 
-Then re-run the `add`. That allowance is permission to execute this package's
-code on your machine at install time, outside the agent's sandbox — pin a commit
-so a later push cannot change what runs.
+The published package ships `lib/` already built, so this install runs no build
+script and needs no `allowBuilds` entry.
+
+A git install is a development fallback and must name the subdirectory — the
+repository root is a private workspace, not this plugin:
+
+```sh
+dsh plugin --profile <profile> add github:stvlynn/dsh.fish#path:packages/dsh-plugin-hub
+```
+
+That checkout has no `lib/`, so it builds on install: pnpm ≥10 asks you to allow
+the build script, which is permission to execute this package's code on your
+machine outside the agent's sandbox.
+
+### Migrating from `dsh-hub`
+
+Earlier versions installed from the repository root under the name `dsh-hub`:
+
+```sh
+dsh plugin --profile <profile> remove dsh-hub
+dsh plugin --profile <profile> add @dsh-fish/hub
+```
+
+Installs already recorded in `$DSH_HOME/.dsh-fish-lock.json` survive the rename.
 
 ## Tools
 
@@ -35,6 +55,28 @@ so a later push cannot change what runs.
 | `hub_account` | Sign in via the OAuth device flow, check status, or sign out. |
 | `hub_reviews` | Community ratings: the site's 1–5 scale, average, distribution, comments. |
 | `hub_rate` | Rate an installed artifact 1–5 stars, optionally with a public comment. |
+
+## Settings section
+
+In a harness that serves a browser client, this bundle also adds a **dsh.fish**
+section to Settings, with Browse, Installed and Account. It is a second surface
+over the same installer, not a second installer: the browser half calls
+same-origin routes under `/api/dsh-fish`, and those call the very
+`PlanInstaller` the tools use, writing the same
+`$DSH_HOME/.dsh-fish-lock.json`. So Installed lists exactly what `hub_list`
+reports, and an artifact removed there disappears from the tools.
+
+Browse resolves and shows the install plan before anything runs. A package that
+would build from source is refused until you press the button that says so —
+that build runs the package's own code outside the agent sandbox.
+
+Account signs in with the same device flow: the section shows the user code and
+the verification URL as an ordinary external link. The device code and the
+resulting token never reach the browser, and a desktop shell can hand that
+`https` link to the system browser rather than navigating its own WebView.
+
+A profile that serves no client still loads the tools — the HTTP surface is
+registered only when the composition has a web server.
 
 ## Ratings and reviews
 
@@ -81,7 +123,7 @@ read. The same lockfile is shared with `@dsh-fish/cli`.
 
 ```yaml
 - id: hub
-  name: dsh-hub
+  name: '@dsh-fish/hub'
   config:
     baseUrl: https://dsh.fish   # a self-hosted deployment only changes this
     targetProfile: current      # or a specific profile name

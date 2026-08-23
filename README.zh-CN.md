@@ -62,12 +62,20 @@ npx @dsh-fish/cli add <artifact-id>
 **在 harness 内部** —— 只需添加一次 hub 插件:
 
 ```sh
-dsh plugin --profile web add github:stvlynn/dsh.fish#main
+dsh plugin --profile web add @dsh-fish/hub
 ```
 
 它会注册 `hub_search`、`hub_show`、`hub_install`、`hub_list`、`hub_remove`、
 `hub_update` 和 `hub_account`，让智能体无需离开会话即可发现并安装工件。
 登录使用 OAuth 设备流(device flow)。
+
+`<profile>` 就是 harness 启动的那个配置档。桌面端有自己的配置档：
+[Local DSH](https://github.com/stvlynn/local-dsh) 启动的是 `local-dsh`，
+因此要用它自带的 launcher，并写这个配置档名。
+
+```sh
+dsh plugin --profile local-dsh add @dsh-fish/hub
+```
 
 **要发布插件?** 为你的仓库打上 **`dsh-plugin`** 话题标签。每小时一次的
 抓取会检查其 `package.json`、`SKILL.md` 或 `agent.cordis.yml`，并分类出
@@ -90,7 +98,7 @@ harness 实际能加载的内容。
 backend/    领域驱动设计(DDD):domain、application、infrastructure、interfaces
 frontend/   特性切片设计(FSD):app、pages、widgets、features、entities、shared
 packages/
-  dsh-plugin-hub/   用户安装进 harness 的 `dsh-hub` bundle
+  dsh-plugin-hub/   `@dsh-fish/hub` —— 用户安装进 harness 的 bundle
   dsh-cli/          `@dsh-fish/cli` —— `npx @dsh-fish/cli add <id>`
 docs/       架构、分层约定、运维、ADR
 ```

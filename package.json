@@ -31,7 +31,8 @@
     "db:migrate:local": "pnpm --filter @dsh-fish/frontend run db:migrate:local",
     "db:migrate:remote": "pnpm --filter @dsh-fish/frontend run db:migrate:remote",
     "docs:check": "node scripts/check-doc-links.mjs",
-    "publish:cli": "pnpm --filter dsh-hub run build && pnpm --filter @dsh-fish/cli publish --access public"
+    "publish:cli": "pnpm --filter @dsh-fish/hub run build && pnpm --filter @dsh-fish/cli publish --access public",
+    "publish:hub": "pnpm --filter @dsh-fish/hub run build && pnpm --filter @dsh-fish/hub publish --access public"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",

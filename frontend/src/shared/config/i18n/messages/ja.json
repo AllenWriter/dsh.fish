@@ -152,6 +152,7 @@
   "install.viaPluginBody": "ハブプラグインを入れておけば、名前を伝えるだけでエージェントが入れてくれます。ここに表示されているのと同じ手順を解決します。",
   "install.viaCliBody": "このコマンドは dsh.fish に問い合わせ、プラグインと同じ手順を実行します。Harness のランチャーでは入らない skill、MCP 行、プリセットも含みます。",
   "install.profileLabel": "プロファイル",
+  "install.profileNote": "デスクトップのハーネスは独自のプロファイルで起動します。Local DSH では {profile} を local-dsh に置き換えてください。",
   "install.credentials": "この項目に必要な認証情報",
   "install.credentialsBody": "環境変数として設定するか、`ctx.credentials` 経由で渡してください。レジストリが保存するのは参照だけで、値は保存しません。",
   "install.warning.buildAllowance": "このパッケージはインストール時にソースからビルドします。pnpm がビルドスクリプトの許可を求めますが、それはエージェントのサンドボックス外で、あなたのマシン上でパッケージのコードを実行する許可です。信頼できるソースにのみ許可してください。",

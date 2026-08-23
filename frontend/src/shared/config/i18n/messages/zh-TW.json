@@ -152,6 +152,7 @@
   "install.viaPluginBody": "裝好中心外掛後，直接請你的 Agent 依名稱安裝——它解析的正是這裡顯示的同一套方案。",
   "install.viaCliBody": "這條命令會連到 dsh.fish，並套用與外掛相同的安裝方案，包括 Harness 啟動器不會安裝的 skill、MCP 列與預設。",
   "install.profileLabel": "設定檔",
+  "install.profileNote": "桌面版 harness 會啟動自己的設定檔——在 Local DSH 上把 {profile} 換成 local-dsh。",
   "install.credentials": "這個項目需要的憑證",
   "install.credentialsBody": "請將它們設為環境變數，或透過 `ctx.credentials` 提供。註冊表只會保存參照，絕不保存實際值。",
   "install.warning.buildAllowance": "這個套件會在安裝時從原始碼建置。pnpm 會請你允許它的建置指令碼——這等同允許在你的機器上、於 Agent 沙箱之外執行該套件的程式碼。請只允許你信任的來源。",

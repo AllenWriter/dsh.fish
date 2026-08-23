@@ -3,24 +3,50 @@ title: Hub プラグイン
 description: エージェントのセッション内で dsh.fish のアーティファクトを探し、確認してインストールします。
 ---
 
-Hub プラグイン（`dsh-hub`）は dsh.fish のカタログを実行中のセッションに持ち込みます。エージェントはアーティファクトを検索し、インストールで何が実行されるかを見せ、あなたが同意してからインストールします。セッションを離れる必要はありません。
+Hub プラグイン（`@dsh-fish/hub`）は dsh.fish のカタログを実行中のセッションに持ち込みます。エージェントはアーティファクトを検索し、インストールで何が実行されるかを見せ、あなたが同意してからインストールします。セッションを離れる必要はありません。
 
 ## プラグインを追加する
 
 ```sh
-dsh plugin --profile web add github:stvlynn/dsh.fish#main
+dsh plugin --profile <profile> add @dsh-fish/hub
 ```
 
-このパッケージは TypeScript なので、git からのインストールでは `lib/` をビルドする `prepare` スクリプトが動きます。pnpm 10 以降は許可するまでこれを拒否します。pnpm が表示するパッケージキーをプロファイルの `pnpm-workspace.yaml` にコピーしてください。
+`<profile>` はハーネスが起動するプロファイルです。標準のランチャーなら `web`、デスクトップ版ならそれが起動するプロファイルになります。npm で公開されるパッケージには `lib/` がビルド済みで含まれているため、このインストールはビルドスクリプトを実行せず、`allowBuilds` の指定も不要です。
 
-```yaml
-allowBuilds:
-  dsh-hub: true
+### Local DSH
+
+[Local DSH](https://github.com/stvlynn/local-dsh) は `local-dsh` で起動し、そのランチャーはグローバルな `PATH` ではなくアプリ同梱のランタイム内にあります。アプリが実際に起動するプロファイルへ入れるため、そのランチャーを使ってください。
+
+```sh
+APP_DATA="$HOME/Library/Application Support/com.localdsh.app"
+RUNTIME="$(find "$APP_DATA/runtime" -maxdepth 1 -type d ! -name runtime ! -name '.partial-*' | head -n 1)"
+export PATH="$RUNTIME/bin:$PATH"
+
+dsh plugin --profile local-dsh add @dsh-fish/hub
 ```
 
-その後 `add` をもう一度実行します。
+その後 DSH を再起動します。プラグインのツールは起動時に読み込まれます。アプリは起動ごとに管理対象のバンドル一覧を書き直しますが、あなたが追加したバンドルは保持するため、再起動後もプラグインは残ります。
 
-この許可は、パッケージ自身のコードをインストール時にエージェントのサンドボックス外で実行するものです。後の push で実行内容が変わらないよう、commit を固定してください。
+### git からインストールする
+
+git からのインストールは開発時のフォールバックで、サブディレクトリを指定する必要があります。リポジトリのルートは private な workspace であり、このプラグインではありません。
+
+```sh
+dsh plugin --profile <profile> add github:stvlynn/dsh.fish#path:packages/dsh-plugin-hub
+```
+
+このチェックアウトには `lib/` がないためインストール時にビルドが走り、pnpm 10 以降は許可するまでビルドスクリプトを拒否します。pnpm が表示するパッケージキーをプロファイルの `pnpm-workspace.yaml` にコピーし、`add` をもう一度実行してください。この許可は、パッケージ自身のコードをインストール時にエージェントのサンドボックス外で実行するものです。後の push で実行内容が変わらないよう、commit を固定してください。
+
+### `dsh-hub` からの移行
+
+以前のバージョンは `dsh-hub` という名前でリポジトリのルートからインストールしていました。
+
+```sh
+dsh plugin --profile <profile> remove dsh-hub
+dsh plugin --profile <profile> add @dsh-fish/hub
+```
+
+`$DSH_HOME/.dsh-fish-lock.json` に記録済みのインストールは改名の影響を受けません。
 
 ## 探す
 
@@ -114,6 +140,20 @@ allowBuilds:
 
 このトークンは意図的にブラウザセッションより弱くなっています。あなたとしてカタログの閲覧、インストールプランの解決、アーティファクトの評価はできますが、公開や所有権の申請はできません。
 
+## 設定画面のセクション
+
+ブラウザークライアントを提供するハーネスでは、このプラグインは設定画面に **dsh.fish** セクションを追加し、3 つのタブを持ちます。
+
+- **Browse**：カタログを検索し、何かを実行する前にアーティファクトのインストールプランを表示します。ソースからビルドするパッケージは、そのことを明記したボタンを押すまで拒否されます。
+- **Installed**：このプロファイルがハブ経由でインストールしたものを一覧し、そこから削除もできます。
+- **Account**：同じデバイスフローでサインインし、コードと検証 URL を通常のリンクとして表示します。
+
+これは同じインストーラーに対する 2 つ目の画面であり、2 つ目のインストーラーではありません。このセクションが呼ぶ同一オリジンのルートは `hub_*` ツールと同じコードを実行し、書き込み先も同じ `$DSH_HOME/.dsh-fish-lock.json` です。したがって Installed の一覧は `hub_list` の報告と完全に一致します。
+
+アカウントに関わるものはブラウザーに渡りません。デバイスコードと保存されたトークンはホスト側に留まります。だからこそデスクトップアプリは、検証リンクをアプリのウィンドウ内ではなくシステムブラウザーに渡せます。
+
+ブラウザークライアントを提供しないプロファイルでも、ツールは読み込まれます。
+
 ## 安全性
 
 ファイル書き込みは解決された `$DSH_HOME` の内側に制限され、外へ出ようとするプランは拒否されます。
@@ -140,7 +180,7 @@ allowBuilds:
 
 ```yaml
 - id: hub
-  name: dsh-hub
+  name: '@dsh-fish/hub'
   config:
     baseUrl: https://dsh.fish # セルフホストの場合はここだけ変えます
     targetProfile: current # または具体的なプロファイル名

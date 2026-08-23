@@ -267,8 +267,8 @@ curl -X POST https://dsh.fish/api/v1/admin/ingest \
 It is a public scoped package on the npm registry; the Worker deploy does not
 publish it.
 
-The binary bundles `dsh-hub/install` at build time, so a published tarball has
-no runtime dependency on the plugin package. Build the plugin first, then
+The binary bundles `@dsh-fish/hub/install` at build time, so a published tarball
+has no runtime dependency on the plugin package. Build the plugin first, then
 publish from the workspace root:
 
 ```sh
@@ -285,6 +285,34 @@ command or push a `cli-v*` tag (for `0.1.1`, `cli-v0.1.1`). The
 `publish-cli` workflow publishes with npm provenance when the repository is
 configured as a [trusted publisher](https://docs.npmjs.com/trusted-publishers)
 for `@dsh-fish/cli`.
+
+## 7. Publish the hub plugin
+
+`@dsh-fish/hub` is the bundle a user installs into a harness profile
+(`dsh plugin --profile <p> add @dsh-fish/hub`). It is published the same way:
+
+```sh
+pnpm run publish:hub
+```
+
+The tarball must already carry `lib/`, because an install that has to build
+first is one the harness makes the user allowlist. `prepublishOnly` builds it,
+and `prepare` is a no-op whenever `lib/index.js` exists — so the npm install
+path runs no build script. Verify a candidate tarball before publishing:
+
+```sh
+pnpm --filter @dsh-fish/hub pack
+tar -tf packages/dsh-plugin-hub/dsh-fish-hub-*.tgz
+```
+
+`lib/index.js`, `lib/install.js`, `lib/client.js` and `cordis.patch.yml` must be
+in that listing; `cordis.patch.yml` is what `dsh.bundle.patch` points at, so a
+tarball without it installs a package the loader cannot compose.
+
+Later versions: bump `packages/dsh-plugin-hub/package.json`, then run the same
+command or push a `hub-v*` tag. The plugin's Cordis row names the package
+(`name: '@dsh-fish/hub'`), so the published name and the patch cannot be
+renamed independently.
 
 ## Local development
 

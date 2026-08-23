@@ -53,7 +53,7 @@ import — so listing it as a plugin would be false.
 
 `buildInstallPlan(artifact, target)` returns machine-executable `steps` *and*
 copy-paste `manualCommands`. Three surfaces consume it: the website renders the
-commands, the `dsh-hub` plugin and `@dsh-fish/cli` execute the steps. The first
+commands, the `@dsh-fish/hub` plugin and `@dsh-fish/cli` execute the steps. The first
 command is always the hub CLI, so kinds the harness launcher cannot install
 still have a copy-pasteable line that does something.
 
@@ -145,7 +145,7 @@ never reads, which is how a registry ends up with an empty long tail.
   uses. It is published separately so `npx @dsh-fish/cli add <id>` works without
   a harness. Command names follow the skills CLI (`add`, `find`, `list`,
   `remove`, `update`, `init`).
-- The `dsh-hub` plugin binds to `@deepseek-ai/dsh-tools` as a peer dependency and
+- The `@dsh-fish/hub` plugin binds to `@deepseek-ai/dsh-tools` as a peer dependency and
   declares its types locally, because that package is not yet installable
   standalone from npm during the harness's developer preview. When it publishes
   completely, `packages/dsh-plugin-hub/src/harness.d.ts` should be deleted and

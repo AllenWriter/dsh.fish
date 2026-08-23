@@ -18,7 +18,7 @@ import {
   PlanInstaller,
   clearToken,
   renderArtifactReviews,
-} from 'dsh-hub/install'
+} from '@dsh-fish/hub/install'
 import { initSkill } from './init.js'
 import { parseArgv, UsageError, type CliFlags, type CliRequest } from './parse-args.js'
 import { resolveArtifact } from './resolve-source.js'
@@ -54,7 +54,8 @@ Community:
                      distribution, and recent comments
 
 Options:
-  --profile, -p      Harness profile (default: $DSH_PROFILE or web)
+  --profile, -p      Harness profile (default: $DSH_PROFILE or web).
+                     Local DSH boots "local-dsh", not "web"
   --registry         Hub origin (default: $DSH_FISH_URL or https://dsh.fish)
   --kind, -k         Restrict find to one artifact kind
   --allow-build-scripts
@@ -67,6 +68,8 @@ Options:
 Examples:
   npx @dsh-fish/cli add release-notes
   npx @dsh-fish/cli add https://dsh.fish/a/release-notes --profile web
+  npx @dsh-fish/cli add release-notes --profile local-dsh
+  DSH_PROFILE=local-dsh npx @dsh-fish/cli list
   npx @dsh-fish/cli find postgres --kind mcp-server
   npx @dsh-fish/cli list
   npx @dsh-fish/cli remove release-notes

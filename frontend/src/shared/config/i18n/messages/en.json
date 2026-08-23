@@ -152,6 +152,7 @@
   "install.viaPluginBody": "With the hub plugin installed, ask your agent to install it by name — it resolves the same plan shown here.",
   "install.viaCliBody": "This command talks to dsh.fish and applies the same plan the plugin would, including skills, MCP rows and presets the harness launcher does not install.",
   "install.profileLabel": "Profile",
+  "install.profileNote": "A desktop harness boots its own profile — on Local DSH, replace {profile} with local-dsh.",
   "install.credentials": "Credentials this artifact needs",
   "install.credentialsBody": "Set these as environment variables or through `ctx.credentials`. The registry only ever stores the reference, never the value.",
   "install.warning.buildAllowance": "This package builds from source on install. pnpm will ask you to allow its build script — that is permission to run the package’s code on your machine, outside the agent sandbox. Only allow sources you trust.",

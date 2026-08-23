@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { HubError, type ArtifactSummary, type HubClient } from 'dsh-hub/install'
+import { HubError, type ArtifactSummary, type HubClient } from '@dsh-fish/hub/install'
 import { artifactIdFromHubUrl, githubShorthand, resolveArtifact } from './resolve-source.js'
 
 function summary(overrides: Partial<ArtifactSummary> = {}): ArtifactSummary {

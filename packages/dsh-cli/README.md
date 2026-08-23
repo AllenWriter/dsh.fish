@@ -2,7 +2,7 @@
 
 Install [dsh.fish](https://dsh.fish) artifacts from a terminal. The command on
 an artifact page is this binary; it applies the same install plan the website
-renders and the `dsh-hub` plugin executes.
+renders and the `@dsh-fish/hub` plugin executes.
 
 Command names follow the [skills CLI](https://github.com/vercel-labs/skills)
 (`add`, `find`, `list`, `remove`, `update`, `init`) so the vocabulary is the
@@ -65,7 +65,7 @@ firsthand evidence, and tell its user when it leaves a rating.
 
 | Option | Description |
 |---|---|
-| `--profile, -p` | Harness profile (default `$DSH_PROFILE` or `web`). |
+| `--profile, -p` | Harness profile (default `$DSH_PROFILE` or `web`). Local DSH boots `local-dsh`. |
 | `--registry` | Hub origin (default `$DSH_FISH_URL` or `https://dsh.fish`). |
 | `--kind, -k` | Restrict `find` to one artifact kind. |
 | `--allow-build-scripts` | Permit a git package to run its prepare script. |

@@ -26,7 +26,7 @@ export interface HubBindings {
  *
  * Controllers stay thin on purpose: parse input, call one use case, format the
  * result. Every branch that decides anything lives in `application` or
- * `domain`, which is what lets the `dsh-hub` plugin and the website share
+ * `domain`, which is what lets the `@dsh-fish/hub` plugin and the website share
  * behavior rather than each re-implementing it against raw rows.
  */
 export function createApiApp(options: {
@@ -67,7 +67,7 @@ export function createApiApp(options: {
   })
 
   // Better Auth owns every `/api/auth/*` route: sign-in, OAuth callbacks,
-  // session reads, and the device grant the `dsh-hub` plugin polls.
+  // session reads, and the device grant the `@dsh-fish/hub` plugin polls.
   app.all('/auth/*', (context) => context.get('container').auth.handler(context.req.raw))
 
   app.route('/v1', catalogRoutes())

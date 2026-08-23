@@ -3,24 +3,50 @@ title: Hub 插件
 description: 在智能体会话中查找、检查并安装 dsh.fish 构件。
 ---
 
-Hub 插件（`dsh-hub`）把 dsh.fish 目录带进正在运行的会话。智能体可以搜索构件、告诉你安装会执行什么，并在你同意后完成安装。你不需要离开会话。
+Hub 插件（`@dsh-fish/hub`）把 dsh.fish 目录带进正在运行的会话。智能体可以搜索构件、告诉你安装会执行什么，并在你同意后完成安装。你不需要离开会话。
 
 ## 添加插件
 
 ```sh
-dsh plugin --profile web add github:stvlynn/dsh.fish#main
+dsh plugin --profile <profile> add @dsh-fish/hub
 ```
 
-这个包是 TypeScript 写的，从 git 安装会运行它的 `prepare` 脚本来构建 `lib/`。pnpm 10 及以上版本默认拒绝，需要你明确允许。把 pnpm 打印出的包名复制到配置档案的 `pnpm-workspace.yaml` 里：
+`<profile>` 就是 harness 启动的那个配置档：原版 launcher 是 `web`，桌面端则是它自己启动的那一个。发布到 npm 的包已经带好构建产物 `lib/`，因此这条安装不会运行构建脚本，也不需要 `allowBuilds`。
 
-```yaml
-allowBuilds:
-  dsh-hub: true
+### Local DSH
+
+[Local DSH](https://github.com/stvlynn/local-dsh) 启动的是 `local-dsh`，而它的 launcher 在应用自带的 runtime 里，不在你的全局 `PATH` 上。用那个 launcher，插件才会装进应用真正启动的配置档：
+
+```sh
+APP_DATA="$HOME/Library/Application Support/com.localdsh.app"
+RUNTIME="$(find "$APP_DATA/runtime" -maxdepth 1 -type d ! -name runtime ! -name '.partial-*' | head -n 1)"
+export PATH="$RUNTIME/bin:$PATH"
+
+dsh plugin --profile local-dsh add @dsh-fish/hub
 ```
 
-然后重新执行 `add`。
+然后重启 DSH——插件的工具在启动时加载。应用每次启动都会重写它自己管理的 bundle 列表，但会保留你添加的 bundle，所以插件在重启后仍然在。
 
-这项允许意味着该包的代码会在安装时运行在你的机器上，处于智能体沙箱之外。请固定 commit，避免之后的推送改变要运行的内容。
+### 从 git 安装
+
+从 git 安装只是开发时的兜底方式，而且必须写上子目录：仓库根是一个 private workspace，不是这个插件。
+
+```sh
+dsh plugin --profile <profile> add github:stvlynn/dsh.fish#path:packages/dsh-plugin-hub
+```
+
+这份检出没有 `lib/`，所以会在安装时构建，而 pnpm 10 及以上版本在你明确允许之前会拒绝运行构建脚本。把 pnpm 打印出的包名复制到配置档案的 `pnpm-workspace.yaml` 里，再重新执行 `add`。这项允许意味着该包的代码会在安装时运行在你的机器上，处于智能体沙箱之外——请固定 commit，避免之后的推送改变要运行的内容。
+
+### 从 `dsh-hub` 迁移
+
+早前的版本是以 `dsh-hub` 这个名字从仓库根安装的：
+
+```sh
+dsh plugin --profile <profile> remove dsh-hub
+dsh plugin --profile <profile> add @dsh-fish/hub
+```
+
+已经记录在 `$DSH_HOME/.dsh-fish-lock.json` 里的安装不受改名影响。
 
 ## 查找
 
@@ -114,6 +140,20 @@ allowBuilds:
 
 这个令牌刻意弱于浏览器会话。它能以你的身份读取目录、解析安装计划、给构件评分，但不能提交或认领构件。
 
+## 设置页里的插件站
+
+在带浏览器客户端的 harness 里，这个插件还会在设置页加一个 **dsh.fish** 分区，包含三个标签页。
+
+- **浏览**：搜索目录，并在执行任何操作之前先展示某个构件的安装计划。会从源码构建的包，必须由你按下明确写着这一点的按钮才会继续。
+- **已安装**：列出这个配置档通过 hub 安装的内容，也可以从这里移除。
+- **账号**：用同一套设备流登录，把设备码和验证 URL 以普通链接的形式展示出来。
+
+它是同一个安装器的第二个界面，而不是第二个安装器：这个分区调用的同源接口跑的就是 `hub_*` 工具跑的那段代码，写的也是同一份 `$DSH_HOME/.dsh-fish-lock.json`。所以「已安装」列出的内容与 `hub_list` 报告的完全一致。
+
+任何与你账号有关的东西都不会进入浏览器。设备码和已保存的令牌都留在 host 一侧，这也正是桌面应用能把验证链接交给系统浏览器、而不是在应用窗口里打开的原因。
+
+不提供浏览器客户端的配置档，仍然会加载这些工具。
+
 ## 安全
 
 写文件的步骤被限制在解析后的 `$DSH_HOME` 内，试图越界的计划会被拒绝。
@@ -140,7 +180,7 @@ allowBuilds:
 
 ```yaml
 - id: hub
-  name: dsh-hub
+  name: '@dsh-fish/hub'
   config:
     baseUrl: https://dsh.fish # 自托管部署只需要改这一项
     targetProfile: current # 或者具体的配置档案名

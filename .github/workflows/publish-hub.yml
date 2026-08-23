@@ -1,10 +1,10 @@
-name: Publish CLI
+name: Publish hub plugin
 
 on:
   workflow_dispatch:
   push:
     tags:
-      - 'cli-v*'
+      - 'hub-v*'
 
 permissions:
   contents: read
@@ -30,13 +30,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Test CLI
-        run: pnpm --filter @dsh-fish/cli run test
+      - name: Test plugin
+        run: pnpm --filter @dsh-fish/hub run test
 
-      - name: Build plugin then CLI
-        run: |
-          pnpm --filter @dsh-fish/hub run build
-          pnpm --filter @dsh-fish/cli run build
+      - name: Build plugin
+        run: pnpm --filter @dsh-fish/hub run build
 
       - name: Publish
-        run: pnpm --filter @dsh-fish/cli publish --access public --no-git-checks --provenance --report-summary
+        run: pnpm --filter @dsh-fish/hub publish --access public --no-git-checks --provenance --report-summary

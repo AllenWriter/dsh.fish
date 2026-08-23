@@ -67,13 +67,21 @@ npx @dsh-fish/cli add <artifact-id>
 **ハーネス内から** — ハブプラグインを一度だけ追加します：
 
 ```sh
-dsh plugin --profile web add github:stvlynn/dsh.fish#main
+dsh plugin --profile web add @dsh-fish/hub
 ```
 
 これにより `hub_search`、`hub_show`、`hub_install`、`hub_list`、`hub_remove`、
 `hub_update`、`hub_account` が登録され、エージェントはセッションを離れることなく
 アーティファクトを発見・インストールできます。サインインには OAuth デバイスフローを
 使用します。
+
+`<profile>` はハーネスが起動するプロファイルです。デスクトップ版は独自の
+プロファイルを持ちます。[Local DSH](https://github.com/stvlynn/local-dsh) は
+`local-dsh` で起動するため、同梱のランチャーを使い、そのプロファイル名を指定します。
+
+```sh
+dsh plugin --profile local-dsh add @dsh-fish/hub
+```
 
 **プラグインを公開したい場合は？** リポジトリに **`dsh-plugin`** トピックを付けてください。
 毎時実行されるクロールが `package.json`、`SKILL.md`、`agent.cordis.yml` を調べ、
@@ -100,7 +108,7 @@ dsh plugin --profile web add github:stvlynn/dsh.fish#main
 backend/    ドメイン駆動設計: domain, application, infrastructure, interfaces
 frontend/   Feature-Sliced Design: app, pages, widgets, features, entities, shared
 packages/
-  dsh-plugin-hub/   ユーザーがハーネスにインストールする `dsh-hub` バンドル
+  dsh-plugin-hub/   `@dsh-fish/hub` — ユーザーがハーネスにインストールするバンドル
   dsh-cli/          `@dsh-fish/cli` — `npx @dsh-fish/cli add <id>`
 docs/       アーキテクチャ、レイヤー規約、運用、ADR
 ```

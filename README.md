@@ -66,12 +66,20 @@ vocabulary and actually write skills, MCP rows, presets and hook bridges into
 **Inside the harness** — add the hub plugin once:
 
 ```sh
-dsh plugin --profile web add github:stvlynn/dsh.fish#main
+dsh plugin --profile web add @dsh-fish/hub
 ```
 
 It registers `hub_search`, `hub_show`, `hub_install`, `hub_list`, `hub_remove`,
 `hub_update` and `hub_account`, so an agent can discover and install artifacts
 without leaving the session. Signing in uses the OAuth device flow.
+
+`<profile>` is whichever profile the harness boots. A desktop build has its own:
+[Local DSH](https://github.com/stvlynn/local-dsh) runs `local-dsh`, so use its
+bundled launcher and name that profile.
+
+```sh
+dsh plugin --profile local-dsh add @dsh-fish/hub
+```
 
 **Publishing a plugin?** Tag your repository with the **`dsh-plugin`** topic. The
 hourly crawl inspects its `package.json`, `SKILL.md` or `agent.cordis.yml` and
@@ -98,7 +106,7 @@ for the manifest shape.
 backend/    Domain-Driven Design: domain, application, infrastructure, interfaces
 frontend/   Feature-Sliced Design: app, pages, widgets, features, entities, shared
 packages/
-  dsh-plugin-hub/   the `dsh-hub` bundle users install into their harness
+  dsh-plugin-hub/   `@dsh-fish/hub` — the bundle users install into their harness
   dsh-cli/          `@dsh-fish/cli` — `npx @dsh-fish/cli add <id>`
 docs/       architecture, layer conventions, operations, ADRs
 ```

@@ -1,9 +1,9 @@
 import { defineConfig } from 'tsdown'
 
 /**
- * Bundle the installer from `dsh-hub/install` (the plugin's built export).
- * The plugin package must be built first; the workspace `prepare` order
- * builds `dsh-hub` before this package.
+ * Bundle the installer from `@dsh-fish/hub/install` (the plugin's built
+ * export). The plugin package must be built first; the workspace `prepare`
+ * order builds `@dsh-fish/hub` before this package.
  */
 export default defineConfig({
   entry: ['src/cli.ts'],
@@ -13,6 +13,6 @@ export default defineConfig({
   clean: true,
   target: 'node20',
   deps: {
-    alwaysBundle: ['dsh-hub'],
+    alwaysBundle: ['@dsh-fish/hub'],
   },
 })

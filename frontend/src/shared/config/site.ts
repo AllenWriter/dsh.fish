@@ -44,8 +44,14 @@ export const MAINTAINER_GITHUB_URL = 'https://github.com/stvlynn'
 /** Where a bug report, a correction or a plugin nomination is read. */
 export const HUB_ISSUES_URL = `${HUB_REPO_URL}/issues`
 
-/** The spec a reader copies to install the hub's plugin into their harness. */
-export const HUB_PLUGIN_SPEC = 'github:stvlynn/dsh.fish#main'
+/**
+ * The spec a reader copies to install the hub's plugin into their harness.
+ *
+ * A published npm package rather than this repository: a git install lands on
+ * the private workspace root, and building from source would make the harness
+ * ask for a build allowance before the plugin could load at all.
+ */
+export const HUB_PLUGIN_SPEC = '@dsh-fish/hub'
 
 /**
  * How long a description may be before a search engine truncates it.

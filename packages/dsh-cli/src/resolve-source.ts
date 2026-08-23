@@ -1,4 +1,4 @@
-import { HubError, type ArtifactSummary, type HubClient } from 'dsh-hub/install'
+import { HubError, type ArtifactSummary, type HubClient } from '@dsh-fish/hub/install'
 
 const HUB_ARTIFACT_PATH =
   /(?:^|\/)(?:[a-z]{2}(?:-[A-Za-z]{2,4})?\/)?a\/([a-z0-9][a-z0-9-]*)\/?$/i

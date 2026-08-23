@@ -3,24 +3,50 @@ title: Hub plugin
 description: Find, inspect, and install dsh.fish artifacts from inside an agent session.
 ---
 
-The hub plugin (`dsh-hub`) puts the dsh.fish catalog inside a running session. The agent can search for an artifact, show you what installing it would do, and install it once you agree. You never leave the session.
+The hub plugin (`@dsh-fish/hub`) puts the dsh.fish catalog inside a running session. The agent can search for an artifact, show you what installing it would do, and install it once you agree. You never leave the session.
 
 ## Add the plugin
 
 ```sh
-dsh plugin --profile web add github:stvlynn/dsh.fish#main
+dsh plugin --profile <profile> add @dsh-fish/hub
 ```
 
-The package is TypeScript, so a git install runs its `prepare` script to build `lib/`. pnpm 10 and later refuse that until you allow it. Copy the package key pnpm prints into your profile's `pnpm-workspace.yaml`:
+`<profile>` is whichever profile the harness boots: `web` for the stock launcher, or whatever a desktop build starts. The published package ships `lib/` already built, so this install runs no build script and needs no `allowBuilds` entry.
 
-```yaml
-allowBuilds:
-  dsh-hub: true
+### Local DSH
+
+[Local DSH](https://github.com/stvlynn/local-dsh) boots `local-dsh`, and its launcher lives inside the app's own runtime rather than on your global `PATH`. Use that launcher, so the plugin lands in the profile the app actually starts:
+
+```sh
+APP_DATA="$HOME/Library/Application Support/com.localdsh.app"
+RUNTIME="$(find "$APP_DATA/runtime" -maxdepth 1 -type d ! -name runtime ! -name '.partial-*' | head -n 1)"
+export PATH="$RUNTIME/bin:$PATH"
+
+dsh plugin --profile local-dsh add @dsh-fish/hub
 ```
 
-Then run the `add` again.
+Then restart DSH — the plugin's tools load at boot. The app rewrites its managed bundle list on every start but keeps the bundles you added, so the plugin survives a restart.
 
-This allowance lets the package's own code run on your machine at install time, outside the agent's sandbox. Pin a commit so a later push cannot change what runs.
+### Installing from git
+
+A git install is a development fallback. Name the subdirectory: the repository root is a private workspace, not the plugin.
+
+```sh
+dsh plugin --profile <profile> add github:stvlynn/dsh.fish#path:packages/dsh-plugin-hub
+```
+
+That checkout has no `lib/`, so it builds on install, and pnpm 10 and later refuse to run a build script until you allow it. Copy the package key pnpm prints into your profile's `pnpm-workspace.yaml`, then run the `add` again. That allowance lets the package's own code run on your machine at install time, outside the agent's sandbox — pin a commit so a later push cannot change what runs.
+
+### Migrating from `dsh-hub`
+
+Earlier versions installed from the repository root under the name `dsh-hub`:
+
+```sh
+dsh plugin --profile <profile> remove dsh-hub
+dsh plugin --profile <profile> add @dsh-fish/hub
+```
+
+Installs already recorded in `$DSH_HOME/.dsh-fish-lock.json` survive the rename.
 
 ## Find
 
@@ -114,6 +140,20 @@ The token is written to `$DSH_HOME/.dsh-fish-token.json` with file mode 0600 and
 
 This token is weaker than a browser session on purpose. It can read the catalog, resolve install plans, and rate artifacts as you. It cannot submit or claim artifacts.
 
+## The settings section
+
+In a harness that serves a browser client, the plugin also adds a **dsh.fish** section to Settings with three tabs.
+
+- **Browse** searches the catalog and shows an artifact's install plan before anything runs. A package that builds from source is refused until you press the button that says so.
+- **Installed** lists what this profile installed through the hub, and can remove any of it.
+- **Account** signs you in with the same device flow, showing the code and the verification URL as an ordinary link.
+
+It is a second surface over the same installer, not a second installer: the section calls same-origin routes that run the very code the `hub_*` tools run, and writes the same `$DSH_HOME/.dsh-fish-lock.json`. Installed therefore lists exactly what `hub_list` reports.
+
+Nothing about your account reaches the browser. The device code and the stored token stay on the host, which is also what lets a desktop app hand the verification link to your system browser instead of opening it inside the app window.
+
+A profile that serves no browser client still loads the tools.
+
 ## Safety
 
 File-writing steps are fenced to the resolved `$DSH_HOME`; a plan that tries to escape it is refused.
@@ -140,7 +180,7 @@ Build-from-source steps need your explicit consent, as described above.
 
 ```yaml
 - id: hub
-  name: dsh-hub
+  name: '@dsh-fish/hub'
   config:
     baseUrl: https://dsh.fish # a self-hosted deployment only changes this
     targetProfile: current # or a specific profile name

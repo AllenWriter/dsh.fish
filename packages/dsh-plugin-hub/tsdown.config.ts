@@ -8,11 +8,19 @@ import { defineConfig } from 'tsdown'
  * config transpiles `src/` on its own, with no project references.
  */
 export default defineConfig({
-  entry: ['src/index.ts', 'src/install.ts'],
+  // Named so the two `index` entries do not collide, and so the client half
+  // lands on the `lib/client.js` path `dsh.client` resolves.
+  entry: {
+    index: 'src/index.ts',
+    install: 'src/install.ts',
+    client: 'src/client/index.tsx',
+  },
   outDir: 'lib',
   format: ['esm'],
-  dts: true,
+  dts: { emitDtsOnly: false },
   clean: true,
   target: 'node20',
-  external: [/^@deepseek-ai\//, /^node:/],
+  // React and the client packages come from the harness client bundle: a
+  // second React in this chunk would be a second renderer.
+  external: [/^@deepseek-ai\//, /^node:/, /^react(\/|$)/],
 })

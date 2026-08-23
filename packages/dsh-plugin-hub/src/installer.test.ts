@@ -206,6 +206,73 @@ describe('PlanInstaller', () => {
     expect(removed.steps[0]?.summary).toBe('dsh plugin --profile web remove dsh-hello')
   })
 
+  it('writes into the profile it was constructed with, not the plan default', async () => {
+    const home = await mkdtemp(join(tmpdir(), 'dsh-install-'))
+    const calls: string[][] = []
+    const installer = new PlanInstaller(client(), 'local-dsh', {
+      home,
+      run: async (_file, args) => {
+        calls.push([...args])
+        return { stdout: '', stderr: '' }
+      },
+    })
+
+    await installer.apply(
+      plan({
+        kind: 'bundle',
+        profile: 'local-dsh',
+        steps: [
+          {
+            type: 'add-package',
+            profile: 'local-dsh',
+            spec: 'dsh-hello@1.2.3',
+            requiresBuildAllowance: false,
+          },
+        ],
+      }),
+      { allowBuildScripts: false, signal: new AbortController().signal },
+    )
+
+    expect(calls[0]).toEqual(['plugin', '--profile', 'local-dsh', 'add', 'dsh-hello@1.2.3'])
+    expect(listLocked(await readLock(home), 'local-dsh')).toHaveLength(1)
+  })
+
+  it('names the searched PATH when the launcher is missing', async () => {
+    const home = await mkdtemp(join(tmpdir(), 'dsh-install-'))
+    const installer = new PlanInstaller(client(), 'local-dsh', {
+      home,
+      run: async () => {
+        throw Object.assign(new Error('spawn dsh ENOENT'), { code: 'ENOENT' })
+      },
+    })
+
+    const failure = await installer
+      .apply(
+        plan({
+          kind: 'bundle',
+          profile: 'local-dsh',
+          steps: [
+            {
+              type: 'add-package',
+              profile: 'local-dsh',
+              spec: '@dsh-fish/hub',
+              requiresBuildAllowance: false,
+            },
+          ],
+        }),
+        { allowBuildScripts: false, signal: new AbortController().signal },
+      )
+      .then(
+        () => undefined,
+        (error: unknown) => error as InstallRefused,
+      )
+
+    expect(failure?.code).toBe('PACKAGE_INSTALL_FAILED')
+    expect(failure?.message).toContain('dsh plugin --profile local-dsh add @dsh-fish/hub')
+    expect(failure?.message).toContain('is not on PATH')
+    expect(failure?.message).toContain(process.env['PATH'] ?? '(PATH unset)')
+  })
+
   it('refuses remove when the lockfile has no matching row', async () => {
     const home = await mkdtemp(join(tmpdir(), 'dsh-install-'))
     const installer = new PlanInstaller(client(), 'web', { home })

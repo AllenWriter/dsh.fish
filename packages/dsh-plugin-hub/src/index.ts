@@ -7,18 +7,19 @@
  * *what* to do — the same install plan the website renders — and this plugin
  * decides whether to do it, because it is the side that bears the consequences.
  *
- * @module dsh-hub
+ * @module @dsh-fish/hub
  */
 
 import type { Context } from '@deepseek-ai/cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { HubClient, HubError } from './hub-client.js'
 import type { ArtifactReviews } from './hub-client.js'
+import { registerHttpApi } from './http.js'
 import { InstallRefused, PlanInstaller } from './installer.js'
 import { renderArtifactReviews } from './review-text.js'
 import { clearToken, readToken } from './token-store.js'
 
-export const name = 'dsh-hub'
+export const name = '@dsh-fish/hub'
 export const inject = ['tools']
 
 export interface Config {
@@ -50,6 +51,8 @@ export function apply(ctx: Context, config: Config = Config): void {
   const client = new HubClient(baseUrl)
   const profile = resolveProfile(config.targetProfile)
   const installer = new PlanInstaller(client, profile)
+
+  registerHttpApi(ctx, { client, installer, baseUrl, profile })
 
   ctx.tools.register(
     defineTool({

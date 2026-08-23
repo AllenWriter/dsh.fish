@@ -96,7 +96,7 @@ export interface InstallPlan {
  * Domain service: turn one catalog row into the concrete steps that install it.
  *
  * This is the single place that knows how each artifact kind reaches a machine.
- * The website renders `manualCommands` from it; the `dsh-hub` plugin and the
+ * The website renders `manualCommands` from it; the `@dsh-fish/hub` plugin and the
  * `@dsh-fish/cli` binary execute `steps` from it. The first command is always
  * the hub CLI, so a copied line actually installs — kinds that the harness
  * launcher does not cover (skills, MCP rows, presets, hooks) used to ship only

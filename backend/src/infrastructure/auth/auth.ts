@@ -7,7 +7,7 @@ import type { D1Database, IncomingRequestCfProperties } from '@cloudflare/worker
 import * as schema from '../persistence/schema.js'
 import type { HubEnv } from '../config/env.js'
 
-/** The client id the `dsh-hub` plugin presents when it starts a device flow. */
+/** The client id the hub plugin presents when it starts a device flow. */
 export const HUB_PLUGIN_CLIENT_ID = 'dsh-hub-plugin'
 
 /** The client id `@dsh-fish/cli` presents for the same device grant. */

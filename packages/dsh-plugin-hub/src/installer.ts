@@ -221,7 +221,7 @@ export class PlanInstaller {
       // Surfacing the real command is the useful failure: the user can run it
       // themselves and see exactly what the package manager objected to.
       throw new InstallRefused(
-        `\`dsh ${args.join(' ')}\` failed: ${describe(error)}`,
+        `\`dsh ${args.join(' ')}\` failed: ${describeRun(error)}`,
         'PACKAGE_INSTALL_FAILED',
       )
     }
@@ -238,7 +238,7 @@ export class PlanInstaller {
       }
     } catch (error) {
       throw new InstallRefused(
-        `\`dsh ${args.join(' ')}\` failed: ${describe(error)}`,
+        `\`dsh ${args.join(' ')}\` failed: ${describeRun(error)}`,
         'PACKAGE_REMOVE_FAILED',
       )
     }
@@ -420,6 +420,27 @@ async function readText(path: string): Promise<string> {
   } catch {
     return ''
   }
+}
+
+/**
+ * Explain a failed launcher invocation.
+ *
+ * `dsh` is resolved through `PATH` and nowhere else — a desktop harness ships
+ * its own launcher under a versioned runtime directory, so a hardcoded
+ * `/usr/local/bin/dsh` would run a different version than the one that booted
+ * this profile. When the lookup fails, the searched `PATH` is the whole
+ * diagnosis, so it travels with the error.
+ */
+function describeRun(error: unknown): string {
+  if (isNotFound(error)) {
+    return `\`dsh\` is not on PATH. Searched: ${process.env['PATH'] ?? '(PATH unset)'}`
+  }
+  return describe(error)
+}
+
+function isNotFound(error: unknown): boolean {
+  if (!error || typeof error !== 'object' || !('code' in error)) return false
+  return (error as { code: unknown }).code === 'ENOENT'
 }
 
 function describe(error: unknown): string {

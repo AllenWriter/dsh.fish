@@ -32,7 +32,7 @@ const SORTS: readonly ArtifactSort[] = ['relevance', 'popular', 'recent', 'name'
 
 /**
  * The one read path behind the site's browse page, the home page rails, the
- * `dsh-hub` plugin's `hub_search` tool, and `@dsh-fish/cli find`. Sharing it is
+ * `@dsh-fish/hub` plugin's `hub_search` tool, and `@dsh-fish/cli find`. Sharing it is
  * what keeps the agent's view of the catalog identical to the human's.
  */
 export class SearchArtifacts {

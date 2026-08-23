@@ -39,8 +39,8 @@
     "prepublishOnly": "tsdown"
   },
   "devDependencies": {
+    "@dsh-fish/hub": "workspace:*",
     "@types/node": "^22.10.2",
-    "dsh-hub": "workspace:*",
     "tsdown": "^0.15.0",
     "typescript": "^5.7.2",
     "vitest": "^4.1.10"

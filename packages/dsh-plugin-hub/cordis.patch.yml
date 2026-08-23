@@ -5,7 +5,7 @@
 # keeps every default their profile already had.
 - insert:
     - id: hub
-      name: dsh-hub
+      name: '@dsh-fish/hub'
       config:
         # The registry this harness talks to. A self-hosted deployment of the
         # same Worker only needs this one value changed.

@@ -3,24 +3,50 @@ title: Hub 外掛程式
 description: 在代理工作階段中查找、檢查並安裝 dsh.fish 構件。
 ---
 
-Hub 外掛程式（`dsh-hub`）把 dsh.fish 目錄帶進正在執行的工作階段。代理可以搜尋構件、告訴你安裝會執行什麼，並在你同意後完成安裝。你不需要離開工作階段。
+Hub 外掛程式（`@dsh-fish/hub`）把 dsh.fish 目錄帶進正在執行的工作階段。代理可以搜尋構件、告訴你安裝會執行什麼，並在你同意後完成安裝。你不需要離開工作階段。
 
 ## 新增外掛程式
 
 ```sh
-dsh plugin --profile web add github:stvlynn/dsh.fish#main
+dsh plugin --profile <profile> add @dsh-fish/hub
 ```
 
-這個套件是 TypeScript 寫的，從 git 安裝會執行它的 `prepare` 指令碼來建置 `lib/`。pnpm 10 以上版本預設拒絕，需要你明確允許。把 pnpm 印出的套件名稱複製到配置檔案的 `pnpm-workspace.yaml` 裡：
+`<profile>` 就是 harness 啟動的那個設定檔：原版 launcher 是 `web`，桌面版則是它自己啟動的那一個。發布到 npm 的套件已經帶好建置產物 `lib/`，因此這條安裝不會執行建置指令碼，也不需要 `allowBuilds`。
 
-```yaml
-allowBuilds:
-  dsh-hub: true
+### Local DSH
+
+[Local DSH](https://github.com/stvlynn/local-dsh) 啟動的是 `local-dsh`，而它的 launcher 在應用自帶的 runtime 裡，不在你的全域 `PATH` 上。用那個 launcher，外掛程式才會裝進應用真正啟動的設定檔：
+
+```sh
+APP_DATA="$HOME/Library/Application Support/com.localdsh.app"
+RUNTIME="$(find "$APP_DATA/runtime" -maxdepth 1 -type d ! -name runtime ! -name '.partial-*' | head -n 1)"
+export PATH="$RUNTIME/bin:$PATH"
+
+dsh plugin --profile local-dsh add @dsh-fish/hub
 ```
 
-然後重新執行 `add`。
+然後重新啟動 DSH——外掛程式的工具在啟動時載入。應用每次啟動都會重寫它自己管理的 bundle 清單，但會保留你新增的 bundle，所以外掛程式在重新啟動後仍然在。
 
-這項允許意味著該套件的程式碼會在安裝時執行在你的機器上，處於代理沙箱之外。請固定 commit，避免之後的推送改變要執行的內容。
+### 從 git 安裝
+
+從 git 安裝只是開發時的備用方式，而且必須寫上子目錄：倉庫根是一個 private workspace，不是這個外掛程式。
+
+```sh
+dsh plugin --profile <profile> add github:stvlynn/dsh.fish#path:packages/dsh-plugin-hub
+```
+
+這份簽出沒有 `lib/`，所以會在安裝時建置，而 pnpm 10 以上版本在你明確允許之前會拒絕執行建置指令碼。把 pnpm 印出的套件名稱複製到配置檔案的 `pnpm-workspace.yaml` 裡，再重新執行 `add`。這項允許意味著該套件的程式碼會在安裝時執行在你的機器上，處於代理沙箱之外——請固定 commit，避免之後的推送改變要執行的內容。
+
+### 從 `dsh-hub` 遷移
+
+早前的版本是以 `dsh-hub` 這個名稱從倉庫根安裝的：
+
+```sh
+dsh plugin --profile <profile> remove dsh-hub
+dsh plugin --profile <profile> add @dsh-fish/hub
+```
+
+已經記錄在 `$DSH_HOME/.dsh-fish-lock.json` 裡的安裝不受改名影響。
 
 ## 查找
 
@@ -114,6 +140,20 @@ token 寫入 `$DSH_HOME/.dsh-fish-token.json`，檔案權限為 0600，不會寫
 
 這個 token 刻意弱於瀏覽器工作階段。它能以你的身分讀取目錄、解析安裝計畫、給構件評分，但不能提交或認領構件。
 
+## 設定頁裡的外掛站
+
+在帶瀏覽器用戶端的 harness 裡，這個外掛程式還會在設定頁加一個 **dsh.fish** 分區，包含三個標籤頁。
+
+- **瀏覽**：搜尋目錄，並在執行任何動作之前先展示某個構件的安裝計畫。會從原始碼建置的套件，必須由你按下明確寫著這一點的按鈕才會繼續。
+- **已安裝**：列出這個設定檔透過 hub 安裝的內容，也可以從這裡移除。
+- **帳號**：用同一套裝置流程登入，把裝置碼與驗證 URL 以一般連結的形式展示出來。
+
+它是同一個安裝器的第二個介面，而不是第二個安裝器：這個分區呼叫的同源介面跑的就是 `hub_*` 工具跑的那段程式碼，寫的也是同一份 `$DSH_HOME/.dsh-fish-lock.json`。所以「已安裝」列出的內容與 `hub_list` 回報的完全一致。
+
+任何與你帳號有關的東西都不會進入瀏覽器。裝置碼與已儲存的權杖都留在 host 一側，這也正是桌面應用能把驗證連結交給系統瀏覽器、而不是在應用視窗裡開啟的原因。
+
+不提供瀏覽器用戶端的設定檔，仍然會載入這些工具。
+
 ## 安全
 
 寫檔案的步驟被限制在解析後的 `$DSH_HOME` 內，試圖越界的計畫會被拒絕。
@@ -140,7 +180,7 @@ token 寫入 `$DSH_HOME/.dsh-fish-token.json`，檔案權限為 0600，不會寫
 
 ```yaml
 - id: hub
-  name: dsh-hub
+  name: '@dsh-fish/hub'
   config:
     baseUrl: https://dsh.fish # 自架部署只需要改這一項
     targetProfile: current # 或者具體的配置檔案名
