@@ -314,6 +314,21 @@ command or push a `hub-v*` tag. The plugin's Cordis row names the package
 (`name: '@dsh-fish/hub'`), so the published name and the patch cannot be
 renamed independently.
 
+`0.3.0` was first published from a laptop (`pnpm run publish:hub` + OTP). Later
+releases should go through `publish-hub.yml`. On
+[npm access for @dsh-fish/hub](https://www.npmjs.com/package/@dsh-fish/hub/access),
+under **Trusted Publisher → GitHub Actions**, set:
+
+| Field | Value |
+| --- | --- |
+| Organization or user | `stvlynn` |
+| Repository | `dsh.fish` |
+| Workflow filename | `publish-hub.yml` |
+| Environment | *(leave empty)* |
+| Allowed actions | `npm publish` |
+
+Enter only the filename, not `.github/workflows/`. After that, `git push origin hub-v*` is enough; do not send `NODE_AUTH_TOKEN`.
+
 ## Local development
 
 ```sh
