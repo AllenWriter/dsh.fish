@@ -90,7 +90,7 @@ describe('GetArtifactDetail README localization', () => {
     })
   })
 
-  it('keeps the upstream README when the stored translation is stale', async () => {
+  it('keeps the previous completed README until its replacement lands', async () => {
     const useCase = new GetArtifactDetail(
       artifactRepository(),
       translations({
@@ -106,8 +106,31 @@ describe('GetArtifactDetail README localization', () => {
 
     const detail = await useCase.execute(artifact.id, 'zh-CN')
 
-    expect(detail.readmeMarkdown).toBe('# Hello')
-    expect(detail.readmeMachineTranslated).toBeUndefined()
+    expect(detail).toMatchObject({
+      readmeMarkdown: '# 旧译文',
+      readmeLocale: 'zh-CN',
+      readmeMachineTranslated: true,
+    })
+  })
+
+  it('keeps the previous README while a replacement is pending', async () => {
+    const useCase = new GetArtifactDetail(
+      artifactRepository(),
+      translations({
+        artifactId: artifact.id,
+        locale: 'zh-CN',
+        sourceHash: 'new-policy',
+        status: 'pending',
+        markdown: '# 旧译文',
+        updatedAt: new Date(),
+      }),
+      summaryTranslations(),
+    )
+
+    const detail = await useCase.execute(artifact.id, 'zh-CN')
+
+    expect(detail.readmeMarkdown).toBe('# 旧译文')
+    expect(detail.readmeMachineTranslated).toBe(true)
   })
 
   it('serves the translated summary when it is current', async () => {
@@ -129,7 +152,7 @@ describe('GetArtifactDetail README localization', () => {
     expect(detail.summary).toBe('一个 bundle。')
   })
 
-  it('keeps the upstream summary when the stored translation is stale or failed', async () => {
+  it('keeps the previous summary until a current completed replacement lands', async () => {
     const stale = new GetArtifactDetail(
       artifactRepository(),
       translations(),
@@ -142,9 +165,9 @@ describe('GetArtifactDetail README localization', () => {
         updatedAt: new Date(),
       }),
     )
-    expect((await stale.execute(artifact.id, 'zh-CN')).summary).toBe('A bundle.')
+    expect((await stale.execute(artifact.id, 'zh-CN')).summary).toBe('过时的。')
 
-    const failed = new GetArtifactDetail(
+    const failedWithoutBody = new GetArtifactDetail(
       artifactRepository(),
       translations(),
       summaryTranslations({
@@ -152,11 +175,11 @@ describe('GetArtifactDetail README localization', () => {
         locale: 'zh-CN',
         sourceHash: await readmeDigest(artifact.summary),
         status: 'failed',
-        text: '不应出现。',
+        error: 'rate limited',
         updatedAt: new Date(),
       }),
     )
-    expect((await failed.execute(artifact.id, 'zh-CN')).summary).toBe('A bundle.')
+    expect((await failedWithoutBody.execute(artifact.id, 'zh-CN')).summary).toBe('A bundle.')
   })
 
   it('localizes the summary even when the artifact has no README', async () => {

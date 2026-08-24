@@ -216,9 +216,9 @@ export const artifactMetrics = sqliteTable(
 /**
  * Generated README translations, one current result per artifact and locale.
  *
- * The source hash makes stale generated prose unservable as soon as the
- * upstream README or translation policy changes. Status and error stay in D1
- * because the Agents SDK queue has no dead-letter queue after retries exhaust.
+ * The source hash identifies which upstream README and translation policy
+ * produced the row so a replacement can be queued. Readers keep the last
+ * completed body until that replacement finishes.
  */
 export const artifactReadmeTranslations = sqliteTable(
   'artifact_readme_translations',
@@ -242,9 +242,10 @@ export const artifactReadmeTranslations = sqliteTable(
 /**
  * Generated summary translations, one current result per artifact and locale.
  *
- * Same contract as the README table: the source hash ties the generated text
- * to the exact upstream summary and translation policy, and terminal failures
- * stay in D1 because the queue has no dead-letter queue.
+ * Same contract as the README table: the source hash identifies which
+ * upstream summary and policy produced the row. Readers keep the last
+ * completed body until a replacement finishes. Terminal failures stay in D1
+ * because the queue has no dead-letter queue.
  */
 export const artifactSummaryTranslations = sqliteTable(
   'artifact_summary_translations',

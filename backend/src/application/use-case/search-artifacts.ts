@@ -11,7 +11,7 @@ import { pageRequest } from '../../domain/shared/pagination.js'
 import { slug } from '../../domain/shared/slug.js'
 import type { ArtifactSummaryDto, PageDto } from '../dto/artifact-dto.js'
 import { toPageDto, toSummaryDto } from '../dto/artifact-dto.js'
-import { readmeDigest } from '../lib/readme-digest.js'
+import { translatedSummary } from '../lib/localized-prose.js'
 import { isTopic } from '../../domain/artifact/topic.js'
 
 export interface SearchArtifactsInput {
@@ -24,7 +24,7 @@ export interface SearchArtifactsInput {
   readonly sort?: string
   readonly limit?: number
   readonly offset?: number
-  /** When set, summaries are served in this locale where a current translation exists. */
+  /** When set, summaries use this locale's generated prose when any remains on the row. */
   readonly locale?: string
 }
 
@@ -74,15 +74,11 @@ export class SearchArtifacts {
       input.locale,
     )
     const byArtifact = new Map(translations.map((row) => [String(row.artifactId), row]))
-    const localized = await Promise.all(
-      result.items.map(async (artifact) => {
-        const row = byArtifact.get(String(artifact.id))
-        if (row?.status !== 'completed' || row.text === undefined) return artifact.summary
-        return row.sourceHash === (await readmeDigest(artifact.summary)) ? row.text : artifact.summary
-      }),
-    )
     const summaryByArtifact = new Map(
-      result.items.map((artifact, index) => [String(artifact.id), localized[index]!]),
+      result.items.map((artifact) => [
+        String(artifact.id),
+        translatedSummary(byArtifact.get(String(artifact.id))) ?? artifact.summary,
+      ]),
     )
     return toPageDto(result, (artifact) => ({
       ...toSummaryDto(artifact),

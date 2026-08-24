@@ -190,15 +190,7 @@ export class D1ArtifactRepository implements ArtifactRepository {
       .where(
         and(
           eq(artifactSummaryTranslations.artifactId, id),
-          eq(artifactSummaryTranslations.status, 'completed'),
-          eq(artifactSummaryTranslations.sourceHash, artifacts.summaryHash),
-          or(
-            sql`${artifacts.readmeHash} is null`,
-            and(
-              eq(artifactReadmeTranslations.status, 'completed'),
-              eq(artifactReadmeTranslations.sourceHash, artifacts.readmeHash),
-            ),
-          ),
+          displayableLocalizedProse(),
         ),
       )
     return rows.map((row) => ({
@@ -210,7 +202,7 @@ export class D1ArtifactRepository implements ArtifactRepository {
     }))
   }
 
-  /** Rebuild one locale document only when every localized source is current. */
+  /** Rebuild one locale document when that locale still has generated prose to show. */
   async refreshLocalizedSearchDocument(id: Slug, locale: string): Promise<void> {
     const artifact = await this.findById(id)
     if (!artifact) return
@@ -400,15 +392,7 @@ export class D1ArtifactRepository implements ArtifactRepository {
                 // emit XML. `json_each` keeps the complete page in one query
                 // while binding the id set as a single JSON value.
                 sql`${artifactSummaryTranslations.artifactId} in (select value from json_each(${JSON.stringify(ids)}))`,
-                eq(artifactSummaryTranslations.status, 'completed'),
-                eq(artifactSummaryTranslations.sourceHash, artifacts.summaryHash),
-                or(
-                  sql`${artifacts.readmeHash} is null`,
-                  and(
-                    eq(artifactReadmeTranslations.status, 'completed'),
-                    eq(artifactReadmeTranslations.sourceHash, artifacts.readmeHash),
-                  ),
-                ),
+                displayableLocalizedProse(),
               ),
             )
     const localesByArtifact = new Map<string, { locale: string; updatedAt: Date }[]>()
@@ -635,6 +619,17 @@ function popularityFromColumns(installs: typeof artifacts.installs | SQL = artif
     * (case when ${artifacts.ownerAccountId} is not null then 1.25 else 1 end)
     * (case when ${artifacts.deprecated} then 0.1 else 1 end)
   )`
+}
+
+/** A locale is shown when generated prose is still on the row, including a previous completed body. */
+function displayableLocalizedProse() {
+  return and(
+    sql`nullif(trim(${artifactSummaryTranslations.text}), '') is not null`,
+    or(
+      sql`${artifacts.readmeHash} is null`,
+      sql`nullif(trim(${artifactReadmeTranslations.markdown}), '') is not null`,
+    ),
+  )
 }
 
 /**

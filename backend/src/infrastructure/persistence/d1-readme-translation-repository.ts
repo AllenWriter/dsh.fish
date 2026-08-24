@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import type { DrizzleD1Database } from 'drizzle-orm/d1'
 import type {
   ReadmeTranslation,
@@ -46,7 +46,11 @@ export class D1ReadmeTranslationRepository implements ReadmeTranslationRepositor
       .values(values)
       .onConflictDoUpdate({
         target: [artifactReadmeTranslations.artifactId, artifactReadmeTranslations.locale],
-        set: values,
+        set: {
+          ...values,
+          // Keep the last completed body while a replacement is pending or failed.
+          markdown: sql`coalesce(excluded.markdown, ${artifactReadmeTranslations.markdown})`,
+        },
       })
   }
 }

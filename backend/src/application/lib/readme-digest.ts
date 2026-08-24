@@ -1,9 +1,10 @@
 /**
  * Bump when the model or translation policy changes.
  *
- * Including the revision in the digest makes every earlier generated README
- * stale immediately, so a backfill cannot accidentally keep output from a
- * previous provider or prompt.
+ * Including the revision in the digest makes stored rows stale for
+ * scheduling, so a backfill re-queues every earlier generated README.
+ * Readers keep seeing the previous completed body until the replacement
+ * finishes; see `translatedReadme`.
  */
 export const README_TRANSLATION_POLICY_VERSION = 'opencode-go-ox-alpha-free-v1'
 

@@ -318,9 +318,9 @@ human prose while preserving Markdown, code, links and identifiers, and stores t
 window does not stall the catalog.
 
 Every translation carries a SHA-256 hash of its upstream README plus an opaque
-translation-policy version. The detail
-use case serves generated Markdown only when that hash still matches the
-current catalog row; pending, failed and stale translations expose the original
+translation-policy version so a replacement can be queued. The detail
+use case keeps serving the last completed body until that replacement
+finishes; pending or failed rows without a retained body expose the original
 README instead. Queue acceptance is deduplicated by artifact, locale and hash.
 The Agent performs bounded retries itself and records terminal failures in D1,
 because the Agents SDK queue has no dead-letter queue.

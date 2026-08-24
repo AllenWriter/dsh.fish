@@ -25,8 +25,8 @@ README localization tests cover three boundaries without calling a paid model:
 
 - ingestion and ownership-verified submission schedule localization only after
   a catalog write with a non-empty README;
-- the detail use case serves only a completed translation whose source hash
-  matches the current README;
+- the detail use case serves generated README/summary prose still on the row,
+  including a previous completed body while its replacement is pending;
 - the OpenCode Go client pins the endpoint/model/auth request, walks the model
   fallback chain on 429/5xx, and rejects malformed, empty or failed
   chat-completions responses;

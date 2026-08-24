@@ -1,4 +1,4 @@
-import { and, eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray, sql } from 'drizzle-orm'
 import type { DrizzleD1Database } from 'drizzle-orm/d1'
 import type {
   SummaryTranslation,
@@ -60,7 +60,10 @@ export class D1SummaryTranslationRepository implements SummaryTranslationReposit
       .values(values)
       .onConflictDoUpdate({
         target: [artifactSummaryTranslations.artifactId, artifactSummaryTranslations.locale],
-        set: values,
+        set: {
+          ...values,
+          text: sql`coalesce(excluded.text, ${artifactSummaryTranslations.text})`,
+        },
       })
   }
 }

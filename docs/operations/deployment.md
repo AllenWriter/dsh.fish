@@ -248,8 +248,9 @@ commit. File reads go to `raw.githubusercontent.com` and never spend API quota.
 Every saved artifact with a non-empty README is also handed to its durable
 `ReadmeI18nAgent`. Repeated hourly sweeps are cheap at this boundary: the Agent
 deduplicates completed or pending work by README hash and locale. A changed
-README queues replacements; until each replacement completes, readers see the
-new upstream source rather than a stale translation. OpenCode Go failures are
+README queues replacements; until each replacement completes, readers keep the
+previous completed translation rather than dropping back to the upstream
+source. OpenCode Go failures are
 retried three times with bounded exponential backoff, then persisted as
 `failed`; the minutely backfill requeues them once they are six hours stale.
 

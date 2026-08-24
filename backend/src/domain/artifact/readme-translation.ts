@@ -6,8 +6,8 @@ export type ReadmeTranslationStatus = 'pending' | 'completed' | 'failed'
  * One derived README translation.
  *
  * `sourceHash` ties generated prose to the exact upstream Markdown and current
- * translation policy. Output from an older README, model or prompt must never
- * be served while its replacement is queued.
+ * translation policy so a replacement can be queued. Readers still see the last
+ * completed body until that replacement lands.
  */
 export interface ReadmeTranslation {
   readonly artifactId: Slug

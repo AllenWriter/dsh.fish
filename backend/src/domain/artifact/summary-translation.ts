@@ -6,9 +6,9 @@ export type SummaryTranslationStatus = 'pending' | 'completed' | 'failed'
  * One derived summary translation.
  *
  * Same contract as the README translation: `sourceHash` ties the generated
- * text to the exact upstream summary and current translation policy, so
- * output from an older summary, model or prompt is never served while its
- * replacement is queued.
+ * text to the exact upstream summary and current translation policy so a
+ * replacement can be queued. Readers still see the last completed body until
+ * that replacement lands.
  */
 export interface SummaryTranslation {
   readonly artifactId: Slug

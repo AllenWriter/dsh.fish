@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { SearchArtifacts } from './search-artifacts.js'
+import { Artifact } from '../../domain/artifact/artifact.js'
 import type { ArtifactQuery, ArtifactRepository } from '../../domain/artifact/artifact-repository.js'
+import { npmSource } from '../../domain/artifact/source-ref.js'
 import { page } from '../../domain/shared/pagination.js'
 import type { SummaryTranslationRepository } from '../../domain/artifact/summary-translation.js'
+import { SearchArtifacts } from './search-artifacts.js'
 
 /** No translations stored; every lookup comes back empty. */
 function emptySummaryTranslations(): SummaryTranslationRepository {
@@ -84,5 +86,37 @@ describe('SearchArtifacts sort resolution', () => {
     await new SearchArtifacts(repository, emptySummaryTranslations()).execute({ sort: 'relevance' })
 
     expect(queries[0]?.sort).toBe('popular')
+  })
+})
+
+describe('SearchArtifacts summary localization', () => {
+  it('keeps a previous summary while its replacement is pending', async () => {
+    const item = Artifact.create({
+      id: 'dsh-hello',
+      kind: 'bundle',
+      displayName: 'dsh-hello',
+      summary: 'A bundle.',
+      source: npmSource('dsh-hello', '1.0.0'),
+      payload: { kind: 'bundle', requiresBuild: false },
+    })
+    const { repository } = capturingRepository()
+    repository.search = async (query) => page([item], 1, query.page)
+
+    const result = await new SearchArtifacts(repository, {
+      find: async () => undefined,
+      listFor: async () => [
+        {
+          artifactId: item.id,
+          locale: 'zh-CN',
+          sourceHash: 'stale',
+          status: 'pending',
+          text: '上一版摘要',
+          updatedAt: new Date(),
+        },
+      ],
+      save: async () => {},
+    }).execute({ locale: 'zh-CN' })
+
+    expect(result.items[0]?.summary).toBe('上一版摘要')
   })
 })

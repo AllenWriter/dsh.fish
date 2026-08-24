@@ -48,9 +48,10 @@ Keyword links on a plugin page point at `/browse?q=<keyword>` and are
 
 ## Locale quality gate
 
-Artifact translations are indexable only when the translated summary and, when
-the artifact has one, translated README are both `completed` and match the
-current policy-aware source hashes. `availableLocales` exposes that decision to
+Artifact translations are indexable when generated summary (and README, when
+the artifact has one) prose is still on the row — the current completed
+translation, or the previous completed body retained while a replacement is
+queued. `availableLocales` exposes that decision to
 the page head and sitemap. `SEO_LOCALE_GATING=false` preserves the previous
 all-locale behavior during backfill; enable it only after checking coverage.
 

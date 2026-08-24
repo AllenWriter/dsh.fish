@@ -40,10 +40,10 @@ import { AnimatedNumber } from '@/shared/ui/animated-number'
 /**
  * A plugin page, which is the page this whole site exists to get indexed.
  *
- * The catalog row keeps the upstream README as its source of truth. A completed
- * Agent-generated translation is selected for this route's locale; while it is
- * pending or failed, the original remains visible. The rest of the page frame
- * is localized from the checked-in message catalogs.
+ * The catalog row keeps the upstream README as its source of truth. A generated
+ * translation is selected for this route's locale whenever that body is still
+ * stored, including the previous completed version while a replacement runs.
+ * The rest of the page frame is localized from the checked-in message catalogs.
  */
 export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
   // A 404 renders the error boundary, so loaderData is absent there.
