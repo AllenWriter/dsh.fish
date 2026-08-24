@@ -63,7 +63,8 @@ export async function auditIcons(page: Page): Promise<IconAudit> {
       audit.total += 1
       const where = svg.parentElement?.tagName.toLowerCase() ?? 'svg'
       const id = `${where}.${svg.getAttribute('class') ?? ''}`.trim()
-      // Phosphor's grid. A glyph from a second library would not be on it.
+      // Phosphor's grid, which brand marks are scaled onto. A glyph that did
+      // not go through `shared/ui/icon` would not have this viewBox.
       if (svg.getAttribute('viewBox') !== '0 0 256 256') audit.offGrid.push(id)
       // One SVG recoloured by CSS, never a variant per state.
       if (svg.getAttribute('fill') !== 'currentColor') audit.hardCoded.push(id)

@@ -10,7 +10,13 @@
  * One concept, one alias. Where two roles genuinely share a meaning they share
  * the alias too, rather than growing a synonym that would let the two drift
  * apart.
+ *
+ * GitHub and Discord are the exception: those two are official brand marks,
+ * wrapped in `brand-icons.tsx`, because Phosphor's redraws are not the logos
+ * a reader recognises. Everything else in this file is Phosphor.
  */
+export { GithubIcon, DiscordIcon } from './brand-icons'
+
 export {
   // Navigation and destinations.
   CompassIcon as BrowseIcon,
@@ -41,8 +47,6 @@ export {
   // Account, and the places the project and its maintainer can be reached.
   SignInIcon as SignInIcon,
   SignOutIcon as SignOutIcon,
-  GithubLogoIcon as GithubIcon,
-  DiscordLogoIcon as DiscordIcon,
   XLogoIcon as XIcon,
   EnvelopeSimpleIcon as EmailIcon,
 

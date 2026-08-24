@@ -23,6 +23,7 @@
     "@dsh-fish/backend": "workspace:*",
     "@number-flow/react": "^0.6.2",
     "@phosphor-icons/react": "^2.1.10",
+    "@primer/octicons-react": "^19.33.0",
     "@resvg/resvg-wasm": "^2.6.2",
     "better-auth": "^1.6.29",
     "clsx": "^2.1.1",
@@ -38,6 +39,7 @@
     "react-router": "^8.3.0",
     "remark-gfm": "^4",
     "satori": "^0.29.0",
+    "simple-icons": "^16.28.0",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {

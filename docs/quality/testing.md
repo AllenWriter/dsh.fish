@@ -107,8 +107,10 @@ reader can see therefore does not fail the suite.
 
 The suite asserts what only a browser can show:
 
-- One library reached the page: every icon with a non-zero box is on Phosphor's
-  256-unit grid, in `currentColor`, and hidden from assistive technology.
+- One contract reached the page: every icon with a non-zero box is on Phosphor's
+  256-unit grid, in `currentColor`, and hidden from assistive technology. GitHub
+  and Discord are official brand paths scaled onto that grid, not Phosphor
+  redraws.
 - A selected state changes the drawing and not merely the colour.
 - The same fact wears the same mark everywhere a reader meets it.
 - The footer covers the whole taxonomy in one page, with every mark distinct and

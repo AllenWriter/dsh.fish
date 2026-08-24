@@ -109,12 +109,19 @@ then regenerate the social cards with
 Every functional mark comes from [Phosphor](https://phosphoricons.com) through
 `shared/ui/icon`. No component imports `@phosphor-icons/react` directly.
 
+GitHub and Discord are destination logos, not functional glyphs. Phosphor redraws
+those two, so they come from the official packs instead — Primer Octicons
+(`@primer/octicons-react`, the 2026 Invertocat) and Simple Icons (`simple-icons`,
+Clyde) — wrapped in `shared/ui/icon/brand-icons.tsx` onto Phosphor’s 256-unit
+grid. Call sites still import `GithubIcon` / `DiscordIcon` from `shared/ui/icon`.
+Do not import Octicons or Simple Icons from a page or widget.
+
 ### One place names the marks
 
 `shared/ui/icon/icons.ts` re-exports each glyph under the name of what it means —
 `SearchIcon`, `VerifiedIcon`, `CliIcon`, `BundleIcon` — and is the only file that
-mentions the library. Reach for a semantic alias, add one there when a new concept
-needs a mark, and never introduce a second icon library.
+mentions the drawing library. Reach for a semantic alias, add one there when a new
+concept needs a mark, and never reach past `shared/ui/icon` for a second set.
 
 One concept, one alias. Where two roles share a meaning they share the alias too;
 a synonym would let the two drift apart. An install warning and a deprecated badge
@@ -133,6 +140,9 @@ rather than a judgement:
 
 `ICON_WEIGHT` in `shared/ui/icon/icon.tsx` names these three roles. `regular` is the
 document default; state the others at the call site.
+
+GitHub and Discord ignore `weight`. A trademarked silhouette is not an outline
+that can thicken; the `Icon` prop stays so call sites do not special-case them.
 
 `fill` is a state and not an emphasis. Colour must change with it, so a selected
 filter, an active tab, the current navigation link and a verified badge are each

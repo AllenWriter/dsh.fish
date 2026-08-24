@@ -1,6 +1,7 @@
-import { IconContext, type Icon, type IconProps, type IconWeight } from '@phosphor-icons/react'
+import { IconContext, IconBase, type Icon, type IconProps, type IconWeight } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 
+export { IconBase }
 export type { Icon, IconProps, IconWeight }
 
 /**

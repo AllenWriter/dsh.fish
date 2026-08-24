@@ -18,8 +18,8 @@ describe('the icon set', () => {
       expect(typeof Glyph, `${name} must be a component`).not.toBe('undefined')
       const html = render(<Glyph />)
       expect(html, name).toContain('<svg')
-      // Phosphor's own grid. A glyph from a second library would not have it,
-      // which is what makes this assertion a mixed-set guard.
+      // Phosphor's own grid. Brand marks are scaled onto it; a glyph that
+      // skipped `shared/ui/icon` would not have this viewBox.
       expect(html, name).toContain('viewBox="0 0 256 256"')
       expect(html, name).toMatch(/<path|<circle|<rect|<line|<polyline/)
     }
