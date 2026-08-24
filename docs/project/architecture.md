@@ -21,7 +21,7 @@ an agent drives.
 | Backend                   | Hono, layered DDD                                                               |
 | Database                  | Cloudflare D1 (SQLite) via Drizzle ORM                                          |
 | Cache / secondary storage | Cloudflare KV                                                                   |
-| README localization       | Cloudflare Agents SDK + OpenCode Go (`deepseek-v4-flash` → `hy3` → `mimo-v2.5`) |
+| README localization       | Cloudflare Agents SDK + OpenCode Go (`ox-alpha-free` → `hy3` → `mimo-v2.5`) |
 | Auth                      | Better Auth (`better-auth-cloudflare`), GitHub OAuth + OAuth device grant       |
 | Scheduled work            | Workers Cron Triggers                                                           |
 
@@ -314,7 +314,7 @@ the rest of the catalog. The task reads the current source Markdown from D1,
 uses OpenCode Go's chat-completions endpoint to translate
 human prose while preserving Markdown, code, links and identifiers, and stores the result in
 `artifact_readme_translations`. Requests walk an ordered model fallback chain
-(`deepseek-v4-flash`, `hy3`, `mimo-v2.5`) so one model's exhausted usage
+(`ox-alpha-free`, `hy3`, `mimo-v2.5`) so one model's exhausted usage
 window does not stall the catalog.
 
 Every translation carries a SHA-256 hash of its upstream README plus an opaque

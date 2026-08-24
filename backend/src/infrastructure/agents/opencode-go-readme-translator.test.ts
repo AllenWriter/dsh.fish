@@ -8,7 +8,7 @@ import {
 } from './opencode-go-readme-translator.js'
 
 describe('OpenCode Go README translation', () => {
-  it('calls DeepSeek V4 Flash through the documented chat-completions endpoint', async () => {
+  it('calls Ox Alpha Free through the documented chat-completions endpoint', async () => {
     const requests: { input: RequestInfo | URL; init?: RequestInit }[] = []
     const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       requests.push({ input, ...(init === undefined ? {} : { init }) })
@@ -24,7 +24,7 @@ describe('OpenCode Go README translation', () => {
     expect(request.input).toBe(OPENCODE_GO_CHAT_COMPLETIONS_URL)
     expect(request.init?.headers).toMatchObject({ authorization: 'Bearer test-key' })
     expect(JSON.parse(String(request.init?.body))).toMatchObject({
-      model: 'deepseek-v4-flash',
+      model: 'ox-alpha-free',
       messages: [{ role: 'system' }, { role: 'user' }],
     })
   })
@@ -53,7 +53,7 @@ describe('OpenCode Go README translation', () => {
     await expect(
       translateReadmeWithOpenCodeGo('test-key', '# Hello', 'fr', fetcher),
     ).rejects.toThrow(
-      'OpenCode Go translation failed: deepseek-v4-flash responded HTTP 429: rate limited',
+      'OpenCode Go translation failed: ox-alpha-free responded HTTP 429: rate limited',
     )
     expect(fetcher).toHaveBeenCalledTimes(OPENCODE_GO_MODELS.length)
   })
@@ -63,7 +63,7 @@ describe('OpenCode Go README translation', () => {
 
     await expect(
       translateReadmeWithOpenCodeGo('test-key', '# Hello', 'fr', fetcher),
-    ).rejects.toThrow('deepseek-v4-flash responded HTTP 401: unauthorized')
+    ).rejects.toThrow('ox-alpha-free responded HTTP 401: unauthorized')
     expect(fetcher).toHaveBeenCalledOnce()
   })
 
@@ -108,7 +108,7 @@ describe('OpenCode Go README translation', () => {
     expect(log).toHaveBeenCalledWith(
       'readme_i18n_usage',
       JSON.stringify({
-        model: 'deepseek-v4-flash',
+        model: 'ox-alpha-free',
         locale: 'zh-CN',
         promptTokens: 1_400,
         completionTokens: 9_000,

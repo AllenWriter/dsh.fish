@@ -60,7 +60,8 @@ pnpm dlx wrangler secret put GITHUB_CLIENT_SECRET
 pnpm dlx wrangler secret put GITHUB_TOKEN           # crawler, read-only
 pnpm dlx wrangler secret put ADMIN_EMAILS
 pnpm dlx wrangler secret put OPENCODE_GO_API_KEY     # README localization
-pnpm dlx wrangler secret put DEEPSEEK_API_KEY        # README localization, off-peak leg
+# Optional. Omit it so production stays on the OpenCode Go chain.
+# pnpm dlx wrangler secret put DEEPSEEK_API_KEY
 ```
 
 `PUBLIC_BASE_URL` must be the real origin. It is read by `readConfig`, which
@@ -97,20 +98,20 @@ at 20 Fast requests, aborts on 429/403, and is not a GitHub Actions job.
 Completing 20 requests does not prove Ada has no limiter. See
 [`adr-0004-artifact-ask-via-ada.md`](../decisions/adr-0004-artifact-ask-via-ada.md).
 
-README localization calls DeepSeek's official API first
-(`api.deepseek.com/chat/completions`, `deepseek-v4-flash` with thinking
-disabled) while its off-peak pricing applies; during the peak windows
-(Beijing 09:00-12:00 and 14:00-18:00) that leg suspends itself and the free
-fallback chain takes over. The user payload leads with the Markdown so the
-per-artifact locale calls share one prefix under DeepSeek's automatic context
-caching. Any DeepSeek failure also falls through to the fallback chain.
-That chain is OpenCode Go's OpenAI-compatible
+README localization uses OpenCode Go's OpenAI-compatible
 `/zen/go/v1/chat/completions` endpoint with an ordered model list
-(`deepseek-v4-flash`, then `hy3`, then `mimo-v2.5`) because the Go tier
-enforces a rolling per-model usage window: a 429 or provider-side 5xx falls
-through to the next model, while request or auth errors fail immediately.
-`OPENCODE_GO_API_KEY` and `DEEPSEEK_API_KEY` are Wrangler secrets; they must
-never appear in `wrangler.jsonc`, `.dev.vars` committed to Git, or logs.
+(`ox-alpha-free`, then `hy3`, then `mimo-v2.5`). Ox Alpha Free is the Go
+tier's limited-time free model (model id `ox-alpha-free`); the later models
+remain as fallbacks because the Go tier still enforces a rolling per-model
+usage window on paid models, and a 429 or provider-side 5xx falls through to
+the next model, while request or auth errors fail immediately.
+An optional `DEEPSEEK_API_KEY` still prefers DeepSeek's official API
+(`api.deepseek.com/chat/completions`, `deepseek-v4-flash` with thinking
+disabled) during off-peak hours when that secret is present. Production
+currently omits that secret so the Go chain carries every request.
+`OPENCODE_GO_API_KEY` is a Wrangler secret; `DEEPSEEK_API_KEY` is optional.
+They must never appear in `wrangler.jsonc`, `.dev.vars` committed to Git, or
+logs.
 Each successful translation logs a `readme_i18n_usage` line with the billed
 token counts (including reasoning and prompt cache hits) for spend tracking.
 `README_I18N_AGENT` is the Durable Object namespace in `frontend/wrangler.jsonc`.

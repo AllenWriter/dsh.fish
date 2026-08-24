@@ -5,7 +5,7 @@
  * stale immediately, so a backfill cannot accidentally keep output from a
  * previous provider or prompt.
  */
-export const README_TRANSLATION_POLICY_VERSION = 'opencode-go-deepseek-v4-flash-v1'
+export const README_TRANSLATION_POLICY_VERSION = 'opencode-go-ox-alpha-free-v1'
 
 /** Stable identity for the exact README bytes and translation policy. */
 export async function readmeDigest(markdown: string): Promise<string> {

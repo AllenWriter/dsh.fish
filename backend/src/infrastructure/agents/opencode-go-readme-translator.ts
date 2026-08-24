@@ -7,7 +7,7 @@
  * next model, while 4xx request or auth errors fail immediately because no
  * fallback can heal them.
  */
-export const OPENCODE_GO_MODELS = ['deepseek-v4-flash', 'hy3', 'mimo-v2.5'] as const
+export const OPENCODE_GO_MODELS = ['ox-alpha-free', 'hy3', 'mimo-v2.5'] as const
 export const OPENCODE_GO_CHAT_COMPLETIONS_URL = 'https://opencode.ai/zen/go/v1/chat/completions'
 
 type Fetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
