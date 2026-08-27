@@ -222,7 +222,7 @@ describe('supportsMarkdownNegotiation', () => {
     expect(supportsMarkdownNegotiation('/browse')).toBe(true)
     expect(supportsMarkdownNegotiation('/zh-CN/browse')).toBe(true)
     expect(supportsMarkdownNegotiation('/kind/bundle')).toBe(true)
-    expect(supportsMarkdownNegotiation('/category/coding')).toBe(true)
+    expect(supportsMarkdownNegotiation('/category/git')).toBe(true)
     expect(supportsMarkdownNegotiation('/a/dsh-hello')).toBe(true)
   })
 

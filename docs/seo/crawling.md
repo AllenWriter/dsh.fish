@@ -37,7 +37,7 @@ Responses are `text/plain; charset=utf-8` with `public, max-age=86400`.
 
 ```
 /sitemap.xml                       sitemapindex
-├── /sitemaps/pages.xml            home, browse, 6 kinds, 12 categories, every /docs slug, submit
+├── /sitemaps/pages.xml            home, browse, 6 kinds, 22 categories, every /docs slug, submit
 └── /sitemaps/artifacts/:n.xml     one page of the catalog, 1,000 artifacts each
 ```
 

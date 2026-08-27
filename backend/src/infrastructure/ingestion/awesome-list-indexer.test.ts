@@ -261,6 +261,12 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+describe('AWESOME_LISTS', () => {
+  it('reads the live awesome-dsh-plugin.com registry, not a fork', () => {
+    expect(AWESOME_LISTS[0]?.url).toBe('https://awesome-dsh-plugin.com/plugins.json')
+  })
+})
+
 describe('AwesomeListIndexer', () => {
   it('probes a repository listed by awesome-dsh-plugin and records the provenance', async () => {
     stubSources(
@@ -274,6 +280,7 @@ describe('AwesomeListIndexer', () => {
     expect(snapshots[0]).toMatchObject({
       id: 'dsh-hud',
       kind: 'bundle',
+      categories: ['ui'],
       source: { origin: 'github', owner: 'acme', repo: 'dsh-hud', via: ['awesome-dsh-plugin'] },
     })
   })
@@ -293,6 +300,8 @@ describe('AwesomeListIndexer', () => {
     expect(snapshots[0]).toMatchObject({
       id: 'acme-pg-schema-diff',
       kind: 'skill',
+      // Oh-My-DSH files this under `agent`, which aliases onto `tools`.
+      categories: ['tools'],
       source: { origin: 'github', via: ['oh-my-dsh'] },
     })
     // The application entry was probed for exactly the three manifests and

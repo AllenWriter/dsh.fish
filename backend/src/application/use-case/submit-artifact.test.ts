@@ -20,7 +20,7 @@ function snapshot(overrides: Partial<IndexedSnapshot> = {}): IndexedSnapshot {
     source: githubSource({ owner: 'ada', repo: 'dsh-hello-plugin' }),
     payload: { kind: 'bundle', requiresBuild: false },
     keywords: [],
-    categories: ['coding'],
+    categories: ['git'],
     sourceOwnerId: GITHUB_USER_ID,
     stats: { stars: 0, downloads: 0 },
     ...overrides,

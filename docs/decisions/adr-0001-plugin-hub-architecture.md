@@ -122,9 +122,12 @@ could set for itself through Better Auth's `update-user` endpoint.
 
 The taxonomy is the hub's, but nothing in the harness reads it, so an author has
 no reason to write `dsh.hub.categories` — and almost none do. Categories are
-therefore resolved in three steps: a declaration that names real categories wins
-outright, otherwise they are inferred from the row's own vocabulary (topics,
+therefore resolved in four steps: a declaration that names real categories wins
+outright, otherwise a curated-list label (awesome-dsh-plugin.com first, then
+Oh-My-DSH), otherwise they are inferred from the row's own vocabulary (topics,
 keywords, description) against a fixed token table, and `other` is the floor.
+Purpose ids follow the live awesome-dsh-plugin.com registry, plus `other`;
+Oh-My-DSH slugs and this hub's previous ids are aliases, not a second taxonomy.
 
 Two consequences are deliberate. A category name outside the taxonomy is dropped
 rather than rejected: the manifest block is advisory, and an artifact is what the

@@ -18,6 +18,7 @@ import {
   supportsMarkdownNegotiation,
 } from '@/pages/markdown'
 import { withEdgeCache } from './edge-cache'
+import { retiredCategoryRedirect } from '@/shared/lib/retired-category-path'
 
 /**
  * The Worker entry. One deployment serves both halves of the product.
@@ -74,6 +75,14 @@ async function handleRequest(
   const canonical = canonicalLocaleRedirect(url.pathname, url.search)
   if (canonical !== undefined) {
     return Response.redirect(new URL(canonical, url.origin).toString(), 301)
+  }
+
+  // Retired category slugs fold onto the live taxonomy before preferred-locale
+  // 302s, so `/category/coding` becomes `/category/git` rather than
+  // `/ja/category/coding` and then a later 404.
+  const retiredCategory = retiredCategoryRedirect(url.pathname, url.search)
+  if (retiredCategory !== undefined) {
+    return Response.redirect(new URL(retiredCategory, url.origin).toString(), 301)
   }
 
   // A reader who once picked a language is forwarded to it on bare-URL
@@ -144,8 +153,9 @@ export default {
   /**
    * Cron triggers. The minutely event advances a bounded stock-README
    * backfill; the hourly event refreshes the remote catalog from GitHub, npm
-   * and the curated awesome lists, and carries the backfill's stale-failure
-   * retry scan so the minutely event does not pay for a full-table read.
+   * and the curated awesome lists, pages a reclassify slice over stored rows,
+   * and carries the backfill's stale-failure retry scan so the minutely event
+   * does not pay for a full-table read.
    *
    * The limits are a subrequest budget, not a taste: a Worker invocation may
    * make 1000 subrequests, and one run costs roughly 200 GitHub repositories ×
@@ -189,6 +199,14 @@ export default {
           })
           .catch((error: unknown) => {
             console.error('catalog_ingest_failed', String(error))
+          }),
+        container.useCases.reclassifyCatalog
+          .execute({ limit: 100 })
+          .then((report) => {
+            console.log('catalog_reclassify', report)
+          })
+          .catch((error: unknown) => {
+            console.error('catalog_reclassify_failed', String(error))
           }),
         container.useCases.backfillReadmeLocalization
           // The off-peak DeepSeek leg is paid but cheap and unconstrained by

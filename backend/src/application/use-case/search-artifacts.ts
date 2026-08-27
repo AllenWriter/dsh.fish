@@ -4,11 +4,10 @@ import type {
   ArtifactSort,
 } from '../../domain/artifact/artifact-repository.js'
 import { artifactKind } from '../../domain/artifact/artifact-kind.js'
-import { isCategory } from '../../domain/artifact/category.js'
+import { category } from '../../domain/artifact/category.js'
 import type { SummaryTranslationRepository } from '../../domain/artifact/summary-translation.js'
 import { DomainError } from '../../domain/shared/error.js'
 import { pageRequest } from '../../domain/shared/pagination.js'
-import { slug } from '../../domain/shared/slug.js'
 import type { ArtifactSummaryDto, PageDto } from '../dto/artifact-dto.js'
 import { toPageDto, toSummaryDto } from '../dto/artifact-dto.js'
 import { translatedSummary } from '../lib/localized-prose.js'
@@ -95,10 +94,7 @@ function assertTopic(raw: string) {
 }
 
 function assertCategory(raw: string) {
-  if (!isCategory(raw)) {
-    throw DomainError.invalid('Unknown category.', { raw })
-  }
-  return slug(raw)
+  return category(raw).id
 }
 
 /**

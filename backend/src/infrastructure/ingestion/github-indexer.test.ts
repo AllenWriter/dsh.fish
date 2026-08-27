@@ -176,7 +176,7 @@ describe('GitHubIndexer.discover', () => {
       displayName: 'pg-schema-diff',
       // Nothing declared a category anywhere; before, this row landed with
       // none and no category filter could reach it.
-      categories: ['data'],
+      categories: ['docs', 'git'],
       ogImageUrl: 'https://opengraph.githubassets.com/c0ffee0000000000000000000000000000000000/acme/pg-tools',
       // The resolved default-branch HEAD rides along as scan provenance; it
       // costs nothing extra because the OG lookup already resolved it.

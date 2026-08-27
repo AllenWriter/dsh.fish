@@ -87,6 +87,25 @@ describe('SearchArtifacts sort resolution', () => {
 
     expect(queries[0]?.sort).toBe('popular')
   })
+
+  it('maps a retired category alias onto the live browse id', async () => {
+    const { repository, queries } = capturingRepository()
+
+    await new SearchArtifacts(repository, emptySummaryTranslations()).execute({
+      categories: ['coding'],
+    })
+
+    expect(queries[0]?.categories).toEqual(['git'])
+  })
+
+  it('rejects an unknown category', async () => {
+    const { repository } = capturingRepository()
+    await expect(
+      new SearchArtifacts(repository, emptySummaryTranslations()).execute({
+        categories: ['nope'],
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
+  })
 })
 
 describe('SearchArtifacts summary localization', () => {

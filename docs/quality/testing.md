@@ -184,7 +184,9 @@ stays one row per kind; the e2e D1 then inserts twenty filler bundles so
 `/browse` (page size 24) has a second page. The suite hits `GET /api/v1/artifacts`
 with `limit`/`offset` (disjoint slices, stored `popularity` order) and clicks
 the real prev/next anchors. The widget's caret/affordance cases stay in the
-unit test.
+unit test. The same project covers the category taxonomy: retired `/category/*`
+slugs 301 onto the live ids, unknown ids 404, and an alias filter matches the
+canonical browse id.
 
 Install the browser once with `pnpm exec playwright install --with-deps chromium`.
 

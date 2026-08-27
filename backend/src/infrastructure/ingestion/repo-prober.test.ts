@@ -177,4 +177,21 @@ describe('RepoProber.indexRepository', () => {
       'A stdio MCP server needs a command.',
     )
   })
+
+  it('files a row under a curated-list category when the author declared none', async () => {
+    stubRawHost({
+      'package.json': JSON.stringify({
+        name: 'dsh-hud',
+        version: '0.1.0',
+        description: 'A thing that does something.',
+        dsh: { bundle: {} },
+      }),
+    })
+
+    const snapshot = await new RepoProber().indexRepository(descriptor(), undefined, undefined, [
+      'memory',
+    ])
+
+    expect(snapshot?.categories).toEqual(['memory'])
+  })
 })

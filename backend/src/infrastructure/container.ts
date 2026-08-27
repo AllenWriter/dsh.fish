@@ -7,6 +7,7 @@ import { GetArtifactReviews } from '../application/use-case/get-artifact-reviews
 import { GetCatalogSnapshot } from '../application/use-case/get-catalog-snapshot.js'
 import { DescribeScoring } from '../application/use-case/describe-scoring.js'
 import { IngestCatalog } from '../application/use-case/ingest-catalog.js'
+import { ReclassifyCatalog } from '../application/use-case/reclassify-catalog.js'
 import { ListCatalogFacets } from '../application/use-case/list-catalog-facets.js'
 import { ListSitemapEntries } from '../application/use-case/list-sitemap-entries.js'
 import { RateArtifact } from '../application/use-case/rate-artifact.js'
@@ -26,6 +27,8 @@ import { GitHubIndexer } from './ingestion/github-indexer.js'
 import { GitHubSocialPreview } from './ingestion/github-social-preview.js'
 import { NpmIndexer } from './ingestion/npm-indexer.js'
 import { AwesomeListIndexer } from './ingestion/awesome-list-indexer.js'
+import { HttpCuratedCategoryOverlay } from './ingestion/http-curated-category-overlay.js'
+import { KvOffsetCursor, reclassifyCursorKey } from './ingestion/offset-cursor.js'
 import { KvListCursor, listCursorKey } from './ingestion/list-cursor.js'
 import { RepoProber } from './ingestion/repo-prober.js'
 import { KvSweepCursor, sweepCursorKey } from './ingestion/sweep-cursor.js'
@@ -60,6 +63,7 @@ export interface Container {
     readonly resolveInstallPlan: ResolveInstallPlan
     readonly submitArtifact: SubmitArtifact
     readonly ingestCatalog: IngestCatalog
+    readonly reclassifyCatalog: ReclassifyCatalog
     readonly backfillReadmeLocalization: BackfillReadmeLocalization
     readonly askArtifact: AskArtifact
   }
@@ -139,6 +143,11 @@ export function createContainer(env: HubEnv, options: ContainerOptions): Contain
         options.readmeLocalization,
       ),
       ingestCatalog: new IngestCatalog(artifacts, indexers, options.readmeLocalization),
+      reclassifyCatalog: new ReclassifyCatalog(
+        artifacts,
+        new HttpCuratedCategoryOverlay(),
+        new KvOffsetCursor(env.KV, reclassifyCursorKey()),
+      ),
       backfillReadmeLocalization: new BackfillReadmeLocalization(
         readmeBackfillSource,
         new KvReadmeLocalizationBackfillProgress(env.KV),

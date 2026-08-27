@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { FALLBACK_CATEGORY, knownCategories, normalizeCategories } from './category.js'
+import {
+  FALLBACK_CATEGORY,
+  canonicalCategoryId,
+  isCategory,
+  knownCategories,
+  normalizeCategories,
+  retiredCategoryTarget,
+} from './category.js'
 
 /**
  * Category lists arrive from third-party manifests, so this is a boundary, not
@@ -10,18 +17,19 @@ import { FALLBACK_CATEGORY, knownCategories, normalizeCategories } from './categ
  */
 describe('knownCategories', () => {
   it('keeps the taxonomy entries an author named', () => {
-    expect(knownCategories(['coding', 'testing'])).toEqual(['coding', 'testing'])
+    expect(knownCategories(['git', 'security'])).toEqual(['git', 'security'])
   })
 
   it('accepts the shapes people actually write', () => {
-    expect(knownCategories(['DevOps', ' security ', 'user_interface'])).toEqual([
-      'devops',
-      'security',
-    ])
+    expect(knownCategories(['Git', ' security ', 'user_interface'])).toEqual(['git', 'security'])
+  })
+
+  it('maps aliases from other catalogs onto canonical ids', () => {
+    expect(knownCategories(['webui', 'channel', 'coding'])).toEqual(['ui', 'git', 'notify'])
   })
 
   it('drops a name outside the taxonomy instead of rejecting the list', () => {
-    expect(knownCategories(['ai', 'coding'])).toEqual(['coding'])
+    expect(knownCategories(['ai', 'git'])).toEqual(['git'])
   })
 
   it('drops a name that is not even slug-shaped', () => {
@@ -33,7 +41,7 @@ describe('knownCategories', () => {
   })
 
   it('collapses duplicates and returns canonical order', () => {
-    expect(knownCategories(['testing', 'coding', 'TESTING'])).toEqual(['coding', 'testing'])
+    expect(knownCategories(['git', 'ui', 'GIT', 'coding'])).toEqual(['ui', 'git'])
   })
 
   it('is empty when nothing was recognised', () => {
@@ -48,6 +56,43 @@ describe('normalizeCategories', () => {
   })
 
   it('does not add the fallback to a row that is already categorised', () => {
-    expect(normalizeCategories(['data'])).toEqual(['data'])
+    expect(normalizeCategories(['docs'])).toEqual(['docs'])
+  })
+})
+
+describe('canonicalCategoryId', () => {
+  it('returns a browse id unchanged', () => {
+    expect(canonicalCategoryId('ui')).toBe('ui')
+  })
+
+  it('resolves a published alias', () => {
+    expect(canonicalCategoryId('coding')).toBe('git')
+    expect(canonicalCategoryId('models')).toBe('model')
+  })
+
+  it('is undefined for a name the taxonomy does not have', () => {
+    expect(canonicalCategoryId('agi')).toBeUndefined()
+    expect(canonicalCategoryId('not-a-category')).toBeUndefined()
+  })
+})
+
+describe('isCategory', () => {
+  it('is true only for a canonical browse id', () => {
+    expect(isCategory('git')).toBe(true)
+    expect(isCategory('coding')).toBe(false)
+    expect(isCategory('nope')).toBe(false)
+  })
+})
+
+describe('retiredCategoryTarget', () => {
+  it('leaves a canonical id in place', () => {
+    expect(retiredCategoryTarget('ui')).toBeUndefined()
+    expect(retiredCategoryTarget('other')).toBeUndefined()
+  })
+
+  it('names the canonical slug a retired hub id should 301 onto', () => {
+    expect(retiredCategoryTarget('coding')).toBe('git')
+    expect(retiredCategoryTarget('data')).toBe('docs')
+    expect(retiredCategoryTarget('communication')).toBe('notify')
   })
 })

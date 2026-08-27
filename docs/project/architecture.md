@@ -35,7 +35,7 @@ One Worker serves both halves of the product.
    harness ────────▶│                                          │
                     │   /api/*  → Hono app (interfaces layer)  │
                     │   /*      → React Router SSR handler     │
-                    │   cron    → IngestCatalog use case       │
+                    │   cron    → ingest + reclassify          │
                     └───────┬───────────┬───────────┬──────────┘
                             ▼           ▼           ▼
                      D1 (catalog)    KV (sessions,   README i18n Agent
@@ -64,7 +64,7 @@ Sharing an origin is a deliberate choice, not an accident of packaging:
 | Layer             | Contents                                                                                                                                                          |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `domain/`         | `Artifact` aggregate, `ArtifactKind`, `ArtifactPayload`, `InstallPlan`, `Submission`, `Account`, `ogImageUrl`, the `quality-score` value object, repository ports |
-| `application/`    | Use cases (`SearchArtifacts`, `ResolveInstallPlan`, `SubmitArtifact`, `IngestCatalog`, …), DTOs, indexer ports                                                    |
+| `application/`    | Use cases (`SearchArtifacts`, `ResolveInstallPlan`, `SubmitArtifact`, `IngestCatalog`, `ReclassifyCatalog`, …), DTOs, indexer ports |
 | `infrastructure/` | D1 repositories, Better Auth composition, GitHub/npm/awesome-list indexers, the container                                                                         |
 | `interfaces/`     | Hono routers, Zod request schemas, the domain-error → HTTP mapping                                                                                                |
 
@@ -287,12 +287,19 @@ artifact records the list in `source.via` (the `source` column is JSON, so
 this costs no migration), and a later refresh from any channel merges the set
 instead of replacing it. Both GitHub-backed channels persist a resume cursor
 in KV (`crawler:github:shard`, `crawler:awesome-list:list`), so each cron run
-spends only its own slice of the subrequest budget.
+spends only its own slice of the subrequest budget. The hourly trigger also
+pages `ReclassifyCatalog` over stored rows (KV `crawler:reclassify:offset`)
+so a taxonomy change does not wait for the crawler to re-find every artifact.
 
-Categories are resolved separately, and never block a row: a valid
-`dsh.hub.categories` declaration wins, otherwise `category-inference.ts` reads
-topics, keywords and the description against a fixed token table, and `other` is
-the floor. See ADR-0001 §8.
+Categories are a purpose axis, orthogonal to kind. Browse ids follow the live
+awesome-dsh-plugin.com registry (plus `other`); Oh-My-DSH slugs and this hub's
+previous ids are aliases. They are resolved in four steps, and never block a
+row: a valid `dsh.hub.categories` declaration wins, otherwise a curated-list
+label, otherwise `category-inference.ts` reads topics, keywords and the
+description against a fixed token table, and `other` is the floor. See
+ADR-0001 §8. Changing the taxonomy does not rewrite D1 on its own —
+`rehydrate` does not re-run `normalizeCategories` — so `ReclassifyCatalog`
+dual-writes `artifacts.categories` and `artifact_categories` through `save`.
 
 Every classified repository is also pinned to the exact commit it was scanned
 from: the indexer resolves the default-branch HEAD once per artifact (the same

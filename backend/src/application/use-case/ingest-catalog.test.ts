@@ -101,11 +101,11 @@ describe('IngestCatalog', () => {
     expect(rows.get('dsh-hello-plugin')?.categories).toEqual(['other'])
 
     // The author adds `dsh.hub.categories` and the next sweep picks it up.
-    const second = indexer('github', [snapshot({ categories: ['devops'] })])
+    const second = indexer('github', [snapshot({ categories: ['dev'] })])
     const report = await ingest(repository, [second.source]).execute()
 
     expect(report).toMatchObject({ updated: 1, created: 0 })
-    expect(rows.get('dsh-hello-plugin')?.categories).toEqual(['devops'])
+    expect(rows.get('dsh-hello-plugin')?.categories).toEqual(['dev'])
   })
 
   it('writes a Social preview onto a new row', async () => {

@@ -5,39 +5,33 @@ import type {
   SourceIndexer,
 } from '../../application/port/source-indexer.js'
 import type { ListCursor, ListPosition } from './list-cursor.js'
+import {
+  extractAwesomeDshPlugin,
+  extractOhMyDsh,
+  type ListCandidate,
+} from './list-candidates.js'
 import { RepoProber } from './repo-prober.js'
 
 /**
  * A machine-readable curated catalog of plugin repositories.
  *
- * `extract` pulls the GitHub URLs out of the list's own JSON shape; everything
- * after that — repository metadata, manifest probes, classification — is the
- * shared `RepoProber`, so a listed repository is held to exactly the standard
- * a topic-tagged one is.
+ * `extract` pulls GitHub URLs — and the list's own category, when it has one
+ * — out of the list's JSON shape. Everything after that is the shared
+ * `RepoProber`, so a listed repository is held to exactly the standard a
+ * topic-tagged one is.
  */
 export interface AwesomeList {
   /** Short id recorded in `source.via` for everything this list surfaces. */
   readonly id: string
   readonly url: string
-  readonly extract: (body: unknown) => readonly string[]
-}
-
-/** Pull one string field out of each entry of a JSON array, tolerating junk. */
-function urlsOf(body: unknown, key: 'plugins' | 'items'): readonly string[] {
-  const entries = (body as Record<string, unknown> | null)?.[key]
-  if (!Array.isArray(entries)) return []
-  return entries.flatMap((entry) => {
-    const url = (entry as Record<string, unknown> | null)?.url
-    return typeof url === 'string' ? [url] : []
-  })
+  readonly extract: (body: unknown) => readonly ListCandidate[]
 }
 
 /**
  * The curated lists the sweep aggregates. Both are community-maintained,
  * regenerated on a schedule, and stable in shape:
  *
- * - `awesome-dsh-plugin` — the catalog behind awesome-dsh-plugin.com, kept in
- *   the list repository itself.
+ * - `awesome-dsh-plugin` — the live registry behind awesome-dsh-plugin.com.
  * - `oh-my-dsh` — Oh-My-DSH's full scan. It deliberately lists applications
  *   and collections alongside plugins; the manifest gate, not the list,
  *   decides what the registry carries.
@@ -45,13 +39,13 @@ function urlsOf(body: unknown, key: 'plugins' | 'items'): readonly string[] {
 export const AWESOME_LISTS: readonly AwesomeList[] = [
   {
     id: 'awesome-dsh-plugin',
-    url: 'https://raw.githubusercontent.com/beancookie/awesome-dsh-plugin/main/docs/plugins.json',
-    extract: (body) => urlsOf(body, 'plugins'),
+    url: 'https://awesome-dsh-plugin.com/plugins.json',
+    extract: extractAwesomeDshPlugin,
   },
   {
     id: 'oh-my-dsh',
     url: 'https://raw.githubusercontent.com/like-study1/Oh-My-DSH/main/data/plugins.json',
-    extract: (body) => urlsOf(body, 'items'),
+    extract: extractOhMyDsh,
   },
 ]
 
@@ -64,7 +58,10 @@ export const AWESOME_LISTS: readonly AwesomeList[] = [
  * a loadable manifest through the same pipeline the topic crawl uses, and a
  * listed repository without one is skipped exactly like a topic repository
  * is. Provenance is recorded on the artifact's source as `via`, so a row the
- * list surfaced keeps saying so after later crawls refresh it.
+ * list surfaced keeps saying so after later crawls refresh it. The list's
+ * category, when present, is handed to the prober as a curated label — it
+ * fills in when the author declared nothing, and never overrides a real
+ * `dsh.hub.categories` block.
  */
 export class AwesomeListIndexer implements SourceIndexer {
   readonly origin = 'awesome-list' as const
@@ -89,33 +86,36 @@ export class AwesomeListIndexer implements SourceIndexer {
     const snapshots: IndexedSnapshot[] = []
     if (this.lists.length === 0 || limit <= 0) return snapshots
 
-    // The working copy of the cursor position; the stored shape stays immutable.
     const position: { list: number; offset: number } = await this.readCursor()
     let scanned = 0
     let listsRead = 0
 
     while (scanned < limit && listsRead < this.lists.length) {
       const list = this.lists[position.list % this.lists.length]!
-      const urls = await this.fetchList(list)
-      if (urls === undefined) {
-        // The list is unreachable: stop here and leave the cursor untouched,
-        // so the next run resumes this slice instead of losing it.
+      const candidates = await this.fetchList(list)
+      if (candidates === undefined) {
         break
       }
       listsRead += 1
 
       const seen = new Set<string>()
-      let offset = Math.min(position.offset, urls.length)
-      while (offset < urls.length && scanned < limit) {
-        const candidate = githubRepoFromUrl(urls[offset]!)
+      let offset = Math.min(position.offset, candidates.length)
+      while (offset < candidates.length && scanned < limit) {
+        const candidate = candidates[offset]!
         offset += 1
-        if (candidate === undefined) continue
-        const key = `${candidate.owner}/${candidate.repo}`.toLowerCase()
+        const repo = githubRepoFromUrl(candidate.url)
+        if (repo === undefined) continue
+        const key = `${repo.owner}/${repo.repo}`.toLowerCase()
         if (seen.has(key)) continue
         seen.add(key)
         scanned += 1
         try {
-          const snapshot = await this.indexCandidate(candidate.owner, candidate.repo, list.id)
+          const snapshot = await this.indexCandidate(
+            repo.owner,
+            repo.repo,
+            list.id,
+            candidate.category,
+          )
           if (snapshot) snapshots.push(snapshot)
         } catch {
           // One unreadable repository never fails the sweep.
@@ -123,7 +123,7 @@ export class AwesomeListIndexer implements SourceIndexer {
       }
 
       position.offset = offset
-      if (offset >= urls.length) {
+      if (offset >= candidates.length) {
         position.list = (position.list + 1) % this.lists.length
         position.offset = 0
       }
@@ -145,15 +145,21 @@ export class AwesomeListIndexer implements SourceIndexer {
     owner: string,
     repo: string,
     listId: string,
+    curatedCategory: string | undefined,
   ): Promise<IndexedSnapshot | undefined> {
     const descriptor = await this.prober.fetchRepo(owner, repo)
     if (!descriptor) return undefined
-    const snapshot = await this.prober.indexRepository(descriptor)
+    const snapshot = await this.prober.indexRepository(
+      descriptor,
+      undefined,
+      undefined,
+      curatedCategory === undefined ? [] : [curatedCategory],
+    )
     if (snapshot === undefined || snapshot.source.origin !== 'github') return snapshot
     return { ...snapshot, source: { ...snapshot.source, via: [listId] } }
   }
 
-  private async fetchList(list: AwesomeList): Promise<readonly string[] | undefined> {
+  private async fetchList(list: AwesomeList): Promise<readonly ListCandidate[] | undefined> {
     try {
       const response = await fetch(list.url, {
         headers: { accept: 'application/json', 'user-agent': 'dsh.fish-indexer' },
@@ -176,7 +182,6 @@ export class AwesomeListIndexer implements SourceIndexer {
         offset: stored.offset,
       }
     } catch {
-      // A cursor read that fails costs coverage, not correctness.
       return fresh
     }
   }

@@ -74,6 +74,19 @@ issues a 301 for two cases:
 A first segment that is not a language at all is left alone — that is a page
 path, and whether it exists is the router's question.
 
+Retired category slugs 301 onto the live taxonomy at the same layer, after
+locale folding and before the preferred-locale 302:
+
+| Requested | Redirects to |
+|---|---|
+| `/category/coding` | `/category/git` |
+| `/ja/category/models` | `/ja/category/model` |
+| `/category/communication` | `/category/notify` |
+
+Canonical ids (`/category/git`, `/category/other`) stay. An unknown id still
+404s. The aliases are the previous hub ids and Oh-My-DSH's slugs; they are
+not a second browse taxonomy.
+
 ## Canonical tags and alternates
 
 `pageMeta` emits, for every indexable page:

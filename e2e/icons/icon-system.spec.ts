@@ -21,7 +21,7 @@ const PAGES = [
   { name: 'home', path: '/' },
   { name: 'browse', path: '/browse' },
   { name: 'kind collection', path: '/kind/skill' },
-  { name: 'category collection', path: '/category/coding' },
+  { name: 'category collection', path: '/category/ui' },
   { name: 'plugin detail', path: '/a/dsh-postgres-mcp' },
   { name: 'docs', path: '/docs' },
   { name: 'submit', path: '/submit' },
@@ -160,13 +160,13 @@ test.describe('the catalog taxonomy', () => {
     await expect(trail.locator('svg')).toHaveCount(3)
     await expect(trail).not.toContainText('/')
 
-    const pill = page.locator('article > header').getByRole('link', { name: 'Data' })
+    const pill = page.locator('article > header').getByRole('link', { name: 'Docs' })
     await expect(pill.locator('svg')).toHaveCount(1)
     // The pill on the page and the link in the footer name one category, so they
     // cannot disagree about its mark.
     const footerCategory = page
       .getByRole('navigation', { name: 'Category' })
-      .getByRole('link', { name: 'Data' })
+      .getByRole('link', { name: 'Docs' })
     expect(await markOf(pill)).toEqual(await markOf(footerCategory))
   })
 })

@@ -205,9 +205,11 @@ re-running the submission. See [`../seo/crawling.md`](../seo/crawling.md#indexno
 
 ## Scheduled ingestion
 
-`wrangler.jsonc` registers two Cron Triggers. The hourly `0 * * * *` trigger runs the
-`IngestCatalog` use case, which sweeps the GitHub `dsh-plugin` topic, npm and
-the curated awesome lists, and folds the results into the catalog. It is
+`wrangler.jsonc` registers two Cron Triggers. The hourly `0 * * * *` trigger runs
+`IngestCatalog`, which sweeps the GitHub `dsh-plugin` topic, npm and the curated
+awesome lists, and folds the results into the catalog. The same firing pages
+`ReclassifyCatalog` over stored rows so a taxonomy change dual-writes categories
+without waiting for the crawler to re-find every artifact. Ingest is
 deliberately tolerant: one malformed
 package upstream must not abort a sweep. Each swept artifact also appends one
 `artifact_metrics` snapshot and has its `star_velocity_7d` / `star_velocity_30d`
@@ -240,13 +242,19 @@ rate-limited or failed search page stops the run without moving the cursor,
 so the next firing resumes where this one stalled instead of dropping a slice.
 
 The awesome-list sweep aggregates the machine-readable catalogs behind
-awesome-dsh-plugin.com (`beancookie/awesome-dsh-plugin`, `docs/plugins.json`)
+awesome-dsh-plugin.com (`https://awesome-dsh-plugin.com/plugins.json`)
 and Oh-My-DSH (`like-study1/Oh-My-DSH`, `data/plugins.json`). Each listed
 GitHub repository is probed for a loadable manifest through the same pipeline
 the topic crawl uses, so a curated entry that is an application rather than a
-plugin is skipped at the same three-read cost. Its resume cursor — which list,
-how far into it — lives in KV under `crawler:awesome-list:list`, and rows it
-surfaces record the list in `source.via`.
+plugin is skipped at the same three-read cost. The list's own `category` is
+kept and applied when the author declared nothing. Its resume cursor — which
+list, how far into it — lives in KV under `crawler:awesome-list:list`, and rows
+it surfaces record the list in `source.via`.
+
+The same hourly trigger pages `ReclassifyCatalog` over existing D1 rows
+(cursor `crawler:reclassify:offset`) so a taxonomy change dual-writes
+categories without waiting for the crawler to re-find every artifact. It does
+not probe GitHub; it reads keywords, summaries and the curated overlay.
 
 `GITHUB_TOKEN` matters more than the crawl's tolerance suggests: unauthenticated
 API calls are capped at 60/hour, which is well under one firing's commit
@@ -269,6 +277,15 @@ curl -X POST https://dsh.fish/api/v1/admin/ingest \
   -H 'content-type: application/json' \
   -H 'cookie: <your session cookie>' \
   -d '{"limitPerSource": 50}'
+```
+
+Refile stored rows against the current taxonomy without probing GitHub:
+
+```sh
+curl -X POST https://dsh.fish/api/v1/admin/reclassify \
+  -H 'content-type: application/json' \
+  -H 'cookie: <your session cookie>' \
+  -d '{"limit": 100}'
 ```
 
 ## 6. Publish the CLI

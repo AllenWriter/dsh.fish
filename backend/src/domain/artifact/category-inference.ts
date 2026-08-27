@@ -23,72 +23,103 @@ export interface CategoryHints {
  *
  * Deliberately concrete: tool names, ecosystem names and the nouns people
  * actually put in a repository description. A guess this table cannot support
- * is better left to `other` than invented.
+ * is better left to `other` than invented. Words that appear in almost every
+ * dsh plugin (`llm`, `theme` as a UI chrome word, `mcp`) stay out — they
+ * separate nothing.
  */
 const TOKENS: Readonly<Record<string, readonly string[]>> = {
-  coding: [
-    'code', 'coding', 'codegen', 'compiler', 'debug', 'debugger', 'editor', 'git',
-    'github', 'gitlab', 'ide', 'java', 'javascript', 'lint', 'linter', 'lsp',
-    'python', 'refactor', 'refactoring', 'repo', 'repository', 'rust', 'typescript',
+  ui: [
+    'command-palette', 'composer', 'dashboard', 'frontend', 'gui', 'hud',
+    'layout', 'sidebar', 'spotlight', 'statusbar', 'tui', 'ui', 'ux', 'widget',
+    'widgets',
   ],
-  research: [
-    'citation', 'crawler', 'doc', 'docs', 'documentation', 'knowledge', 'paper',
-    'papers', 'rag', 'reference', 'research', 'retrieval', 'scraper', 'scraping',
-    'search', 'summarize', 'wiki',
+  usage: [
+    'billing', 'cost', 'costs', 'meter', 'quota', 'quotas', 'token-usage',
+    'usage',
   ],
-  data: [
-    'analytics', 'csv', 'data', 'database', 'dataset', 'duckdb', 'etl', 'excel',
-    'mongodb', 'mysql', 'pandas', 'postgres', 'postgresql', 'redis', 'spreadsheet',
-    'sql', 'sqlite', 'warehouse',
+  theme: [
+    'appearance', 'catppuccin', 'palette', 'skin', 'skins', 'theme', 'themes',
   ],
-  devops: [
-    'ansible', 'aws', 'azure', 'ci', 'cloud', 'container', 'deploy', 'deployment',
-    'devops', 'docker', 'gcp', 'infra', 'infrastructure', 'k8s', 'kubernetes',
-    'monitoring', 'nginx', 'observability', 'serverless', 'terraform',
+  model: [
+    'anthropic', 'failover', 'gemini', 'inference', 'ollama', 'openai',
+    'provider', 'providers', 'routing',
   ],
-  productivity: [
-    'automation', 'calendar', 'memo', 'note', 'notes', 'notion', 'obsidian',
-    'planner', 'productivity', 'reminder', 'task', 'tasks', 'todo', 'workflow',
+  identity: [
+    'identity', 'persona', 'personas', 'profile-switch',
   ],
-  communication: [
-    'chat', 'dingtalk', 'discord', 'email', 'feishu', 'gmail', 'imap', 'mail',
-    'notification', 'notifications', 'slack', 'sms', 'telegram', 'wechat', 'whatsapp',
+  session: [
+    'chat-history', 'message-edit', 'rewind', 'session', 'sessions', 'transcript',
+    'turn', 'turns',
   ],
-  design: [
-    'animation', 'art', 'canvas', 'design', 'diagram', 'diagrams', 'figma', 'icon',
-    'icons', 'illustration', 'image', 'images', 'photo', 'sketch', 'svg', 'video',
+  memory: [
+    'knowledge-base', 'knowledge-graph', 'layered-memory', 'memento', 'memories',
+    'memory', 'rag', 'recall', 'remember',
+  ],
+  tools: [
+    'calculator', 'capability', 'capabilities', 'ops-kit', 'tavily', 'tooling',
+    'toolkit', 'tools',
+  ],
+  browser: [
+    'browser', 'crawler', 'playwright', 'scraper', 'scraping', 'web-search',
+    'webbrowser',
+  ],
+  vision: [
+    'image-understanding', 'multimodal', 'ocr', 'vision', 'vlm',
+  ],
+  voice: [
+    'audio', 'speech', 'stt', 'tts', 'voice',
+  ],
+  docs: [
+    'csv', 'database', 'dataset', 'docx', 'duckdb', 'excel', 'mongodb', 'mysql',
+    'pandas', 'pdf', 'postgres', 'postgresql', 'redis', 'spreadsheet', 'sql',
+    'sqlite', 'warehouse',
+  ],
+  skill: [
+    'skill-pack', 'skill-picker', 'skillpack',
+  ],
+  workflow: [
+    'auto-continue', 'automation', 'dag', 'orchestrate', 'orchestration', 'pipeline',
+    'task-dag', 'workflow', 'workflows',
+  ],
+  git: [
+    'code-review', 'commit', 'commits', 'diff', 'diffs', 'git', 'github',
+    'gitlab', 'pull-request', 'refactor', 'review',
+  ],
+  notify: [
+    'dingtalk', 'discord', 'feishu', 'im', 'notification', 'notifications',
+    'notify', 'slack', 'telegram', 'wechat', 'whatsapp',
+  ],
+  dev: [
+    'debugger', 'docker', 'ide', 'kubernetes', 'lsp', 'runtime', 'sysmon',
+    'terminal', 'terraform',
   ],
   security: [
-    'audit', 'auth', 'authentication', 'authorization', 'crypto', 'encryption',
-    'pentest', 'permission', 'permissions', 'sandbox', 'sast', 'secret', 'secrets',
+    'audit', 'encryption', 'mcpguard', 'pentest', 'permission', 'permissions',
+    'pii', 'redact', 'redaction', 'sandbox', 'sast', 'secret', 'secrets',
     'security', 'vulnerability',
   ],
-  testing: [
-    'coverage', 'cypress', 'e2e', 'fixture', 'jest', 'mock', 'playwright', 'pytest',
-    'tdd', 'test', 'testing', 'tests', 'vitest',
+  remote: [
+    'lan', 'mobile', 'remote', 'ssh',
   ],
-  models: [
-    'anthropic', 'embedding', 'embeddings', 'fine-tuning', 'gemini', 'gpt',
-    'inference', 'llm', 'llms', 'ollama', 'openai', 'prompt', 'prompts', 'token',
-    'tokenizer',
+  market: [
+    'marketplace', 'plugin-hub', 'plugin-manager', 'plugin-market',
   ],
-  ui: [
-    'component', 'components', 'css', 'dashboard', 'frontend', 'gui', 'react',
-    'skin', 'skins', 'svelte', 'tailwind', 'terminal', 'theme', 'themes', 'tui',
-    'ui', 'ux', 'vue', 'widget',
+  fun: [
+    'game', 'games', 'meme', 'memes', 'pet', 'pets',
   ],
 }
 
 /**
  * Words every row in this catalog carries, so they separate nothing.
  *
- * `claude` and `codex` sit here rather than under `models` on purpose: in a
- * DeepSeek Harness catalog they name what a plugin bridges *from*, not what it
- * is about, and they appear in a large share of descriptions.
+ * `claude` and `codex` name what a plugin bridges *from*, not what it is
+ * about. `llm` / `prompt` fire on almost every description. `mcp` is a kind,
+ * not a purpose. `skill` / `skills` collide with the kind of the same name.
  */
 const STOP_TOKENS: ReadonlySet<string> = new Set([
   'agent', 'agents', 'ai', 'claude', 'codex', 'cursor', 'deepseek', 'dsh',
-  'harness', 'hook', 'hooks', 'mcp', 'plugin', 'plugins', 'server', 'skill', 'skills',
+  'harness', 'hook', 'hooks', 'llm', 'llms', 'mcp', 'plugin', 'plugins',
+  'prompt', 'prompts', 'server', 'skill', 'skills',
 ])
 
 /** How many categories one row may be inferred into. */
@@ -146,14 +177,18 @@ export function inferCategories(hints: CategoryHints): readonly Slug[] {
 /**
  * The categories a crawled row lands in.
  *
- * A declaration the author actually wrote wins outright — they know what they
- * built — and inference only fills the gap it leaves. `normalizeCategories`
- * then guarantees the floor, so no path produces a row that no filter reaches.
+ * Author declaration wins, then a curated-list label, then inference from the
+ * row's own vocabulary. `normalizeCategories` is the floor, so no path
+ * produces a row that no filter reaches.
  */
 export function resolveCategories(
   declared: readonly string[],
   hints: CategoryHints,
+  curated: readonly string[] = [],
 ): readonly Slug[] {
   const authored = knownCategories(declared)
-  return authored.length > 0 ? authored : normalizeCategories(inferCategories(hints))
+  if (authored.length > 0) return authored
+  const fromList = knownCategories(curated)
+  if (fromList.length > 0) return fromList
+  return normalizeCategories(inferCategories(hints))
 }

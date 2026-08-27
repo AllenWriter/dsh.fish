@@ -2,22 +2,32 @@ import { type ArtifactKind } from './types'
 import {
   AgentPresetIcon,
   BundleIcon,
-  CodingCategoryIcon,
-  CommunicationCategoryIcon,
-  DataCategoryIcon,
-  DesignCategoryIcon,
-  DevopsCategoryIcon,
+  BrowserCategoryIcon,
+  DevCategoryIcon,
+  DocsCategoryIcon,
+  FunCategoryIcon,
+  GitCategoryIcon,
   HookBridgeIcon,
+  IdentityCategoryIcon,
+  MarketCategoryIcon,
   McpServerIcon,
-  ModelsCategoryIcon,
+  MemoryCategoryIcon,
+  ModelCategoryIcon,
+  NotifyCategoryIcon,
   OtherCategoryIcon,
-  ProductivityCategoryIcon,
   ProfileIcon,
-  ResearchCategoryIcon,
+  RemoteCategoryIcon,
   SecurityCategoryIcon,
+  SessionCategoryIcon,
+  SkillCategoryIcon,
   SkillIcon,
-  TestingCategoryIcon,
+  ThemeCategoryIcon,
+  ToolsCategoryIcon,
   UiCategoryIcon,
+  UsageCategoryIcon,
+  VisionCategoryIcon,
+  VoiceCategoryIcon,
+  WorkflowCategoryIcon,
   type Icon,
 } from '@/shared/ui/icon'
 
@@ -52,25 +62,37 @@ const KIND_ICON: Readonly<Record<ArtifactKind, Icon>> = Object.freeze({
  *
  * Categories answer "what is it for", and they arrive as a wall of small pills in
  * the filter rail, on a plugin page and in the footer. A pill a reader can find
- * by shape is the difference between scanning twelve of them and reading twelve
- * of them.
+ * by shape is the difference between scanning the taxonomy and reading it.
  *
  * A category id is a `Slug`, not a literal union, so this map cannot be made
  * exhaustive by type the way `KIND_ICON` is. `icons.test.ts` walks the taxonomy
  * instead and fails when it grows past this map.
+ *
+ * Kind `skill` and category `skill` share a word, not a mark: Lightning vs
+ * PuzzlePiece, so the chip and the pill still name different facts.
  */
 const CATEGORY_ICON: Readonly<Record<string, Icon>> = Object.freeze({
-  coding: CodingCategoryIcon,
-  research: ResearchCategoryIcon,
-  data: DataCategoryIcon,
-  devops: DevopsCategoryIcon,
-  productivity: ProductivityCategoryIcon,
-  communication: CommunicationCategoryIcon,
-  design: DesignCategoryIcon,
-  security: SecurityCategoryIcon,
-  testing: TestingCategoryIcon,
-  models: ModelsCategoryIcon,
   ui: UiCategoryIcon,
+  usage: UsageCategoryIcon,
+  theme: ThemeCategoryIcon,
+  model: ModelCategoryIcon,
+  identity: IdentityCategoryIcon,
+  session: SessionCategoryIcon,
+  memory: MemoryCategoryIcon,
+  tools: ToolsCategoryIcon,
+  browser: BrowserCategoryIcon,
+  vision: VisionCategoryIcon,
+  voice: VoiceCategoryIcon,
+  docs: DocsCategoryIcon,
+  skill: SkillCategoryIcon,
+  workflow: WorkflowCategoryIcon,
+  git: GitCategoryIcon,
+  notify: NotifyCategoryIcon,
+  dev: DevCategoryIcon,
+  security: SecurityCategoryIcon,
+  remote: RemoteCategoryIcon,
+  market: MarketCategoryIcon,
+  fun: FunCategoryIcon,
   other: OtherCategoryIcon,
 })
 

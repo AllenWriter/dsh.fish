@@ -18,15 +18,15 @@ const base = {
  */
 describe('Artifact categories', () => {
   it('keeps what the author declared', () => {
-    expect(Artifact.create({ ...base, categories: ['coding'] }).categories).toEqual(['coding'])
+    expect(Artifact.create({ ...base, categories: ['git'] }).categories).toEqual(['git'])
   })
 
   it('survives a category name the taxonomy does not have', () => {
     // Previously `slug()` threw here and the ingest sweep counted the whole
     // artifact as skipped: one bad advisory string removed a working plugin
     // from the catalog entirely.
-    const artifact = Artifact.create({ ...base, categories: ['AI Coding', 'coding'] })
-    expect(artifact.categories).toEqual(['coding'])
+    const artifact = Artifact.create({ ...base, categories: ['AI Coding', 'git'] })
+    expect(artifact.categories).toEqual(['git'])
   })
 
   it('never leaves a row uncategorised', () => {
@@ -44,11 +44,11 @@ describe('Artifact categories', () => {
       source: githubSource({ owner: 'acme', repo: 'hello' }),
       payload: artifact.payload,
       keywords: ['hello'],
-      categories: ['devops'],
+      categories: ['dev'],
       stats: { stars: 3, downloads: 0, installs: 0 },
     })
 
-    expect(refreshed.categories).toEqual(['devops'])
+    expect(refreshed.categories).toEqual(['dev'])
   })
 
   it('stores a GitHub Social preview and can clear it on refresh', () => {

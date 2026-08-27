@@ -95,6 +95,7 @@ export class RepoProber {
     repo: RepoDescriptor,
     subPath?: string,
     kindHint?: ArtifactKind,
+    curatedCategories: readonly string[] = [],
   ): Promise<IndexedSnapshot | undefined> {
     const ref = repo.default_branch
     const prefix = subPath === undefined || subPath === '' ? '' : `${subPath}/`
@@ -114,10 +115,10 @@ export class RepoProber {
     for (const probe of orderProbes(kindHint)) {
       const snapshot =
         probe === 'manifest'
-          ? await this.probeManifest(repo, prefix, ref, subPath, base, topics)
+          ? await this.probeManifest(repo, prefix, ref, subPath, base, topics, curatedCategories)
           : probe === 'skill'
-            ? await this.probeSkill(repo, prefix, ref, subPath, base, topics)
-            : await this.probePreset(repo, prefix, ref, subPath, base)
+            ? await this.probeSkill(repo, prefix, ref, subPath, base, topics, curatedCategories)
+            : await this.probePreset(repo, prefix, ref, subPath, base, curatedCategories)
       if (snapshot) return snapshot
     }
     return undefined
@@ -131,6 +132,7 @@ export class RepoProber {
     subPath: string | undefined,
     base: RepoFacts,
     topics: readonly string[],
+    curatedCategories: readonly string[],
   ): Promise<IndexedSnapshot | undefined> {
     const manifestText = await this.readFile(repo, `${prefix}${MANIFEST_FILE}`, ref)
     if (manifestText === undefined) return undefined
@@ -150,10 +152,14 @@ export class RepoProber {
       payload: classification.payload,
       ...base,
       keywords,
-      categories: resolveCategories(manifest.dsh?.hub?.categories?.map(String) ?? [], {
-        keywords,
-        text: `${manifest.name} ${manifest.description ?? repo.description ?? ''}`,
-      }),
+      categories: resolveCategories(
+        manifest.dsh?.hub?.categories?.map(String) ?? [],
+        {
+          keywords,
+          text: `${manifest.name} ${manifest.description ?? repo.description ?? ''}`,
+        },
+        curatedCategories,
+      ),
       ...(manifest.license ? { license: manifest.license } : {}),
       ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
       ogImageUrl: context.ogImageUrl,
@@ -169,6 +175,7 @@ export class RepoProber {
     subPath: string | undefined,
     base: RepoFacts,
     topics: readonly string[],
+    curatedCategories: readonly string[],
   ): Promise<IndexedSnapshot | undefined> {
     const skillText = await this.readFile(repo, `${prefix}${SKILL_FILE}`, ref)
     if (skillText === undefined) return undefined
@@ -197,10 +204,14 @@ export class RepoProber {
       ...base,
       // A skill declares no manifest, so its own name and description are
       // the whole vocabulary there is to file it by.
-      categories: resolveCategories([], {
-        keywords: topics,
-        text: `${parsed.name} ${parsed.description}`,
-      }),
+      categories: resolveCategories(
+        [],
+        {
+          keywords: topics,
+          text: `${parsed.name} ${parsed.description}`,
+        },
+        curatedCategories,
+      ),
       ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
       ogImageUrl: context.ogImageUrl,
       ...(context.head === undefined ? {} : { sourceCommitSha: context.head }),
@@ -214,6 +225,7 @@ export class RepoProber {
     ref: string,
     subPath: string | undefined,
     base: RepoFacts,
+    curatedCategories: readonly string[],
   ): Promise<IndexedSnapshot | undefined> {
     const presetText = await this.readFile(repo, `${prefix}${PRESET_FILE}`, ref)
     if (presetText === undefined) return undefined
@@ -232,10 +244,14 @@ export class RepoProber {
       source: context.source,
       payload,
       ...base,
-      categories: resolveCategories([], {
-        keywords: base.keywords,
-        text: `${repo.name} ${repo.description ?? ''}`,
-      }),
+      categories: resolveCategories(
+        [],
+        {
+          keywords: base.keywords,
+          text: `${repo.name} ${repo.description ?? ''}`,
+        },
+        curatedCategories,
+      ),
       ...(context.readme === undefined ? {} : { readmeMarkdown: context.readme }),
       ogImageUrl: context.ogImageUrl,
       ...(context.head === undefined ? {} : { sourceCommitSha: context.head }),

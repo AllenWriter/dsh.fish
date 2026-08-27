@@ -18,6 +18,11 @@ const ingestBody = z.object({
     .optional(),
 })
 
+const reclassifyBody = z.object({
+  limit: ingestLimit.optional(),
+  offset: z.number().int().min(0).optional(),
+})
+
 /**
  * Operator surface. Every route here re-checks administrator rights rather than
  * trusting the mount path, so moving the router cannot silently open it up.
@@ -29,6 +34,13 @@ export function adminRoutes() {
     requireAdmin(context.get('actor'))
     const body = ingestBody.parse(await context.req.json().catch(() => ({})))
     const report = await context.get('container').useCases.ingestCatalog.execute(body)
+    return context.json(report)
+  })
+
+  routes.post('/reclassify', async (context) => {
+    requireAdmin(context.get('actor'))
+    const body = reclassifyBody.parse(await context.req.json().catch(() => ({})))
+    const report = await context.get('container').useCases.reclassifyCatalog.execute(body)
     return context.json(report)
   })
 

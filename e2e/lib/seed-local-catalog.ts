@@ -27,7 +27,19 @@ export function seedLocalCatalog(root: string): void {
   ].join('\n')
   const sqlPath = resolve(root, 'e2e/.generated-kitchen-sink.sql')
   writeFileSync(sqlPath, combined)
-  wrangler(frontend, `d1 execute dsh-fish-db --local --file ${sqlPath}`)
+  // Vite already has the same SQLite file open. Wrangler loses the race unless
+  // we wait out SQLITE_BUSY rather than aborting the whole suite.
+  let last: unknown
+  for (let attempt = 1; attempt <= 8; attempt++) {
+    try {
+      wrangler(frontend, `d1 execute dsh-fish-db --local --file ${sqlPath}`)
+      return
+    } catch (error) {
+      last = error
+      execSync(`sleep ${attempt}`, { stdio: 'ignore' })
+    }
+  }
+  throw last
 }
 
 /**
