@@ -21,7 +21,7 @@ an agent drives.
 | Backend                   | Hono, layered DDD                                                               |
 | Database                  | Cloudflare D1 (SQLite) via Drizzle ORM                                          |
 | Cache / secondary storage | Cloudflare KV                                                                   |
-| README localization       | Cloudflare Agents SDK + OpenCode Go (`ox-alpha-free` → `hy3` → `mimo-v2.5`) |
+| README localization       | Cloudflare Agents SDK + OpenCode Go (`muse-spark-1.2-contributor` → `hy3` → `mimo-v2.5`) |
 | Auth                      | Better Auth (`better-auth-cloudflare`), GitHub OAuth + OAuth device grant       |
 | Scheduled work            | Workers Cron Triggers                                                           |
 
@@ -311,11 +311,12 @@ port to durably accept localization work. Its Cloudflare Agents SDK adapter
 addresses one `ReadmeI18nAgent` instance per artifact, then queues one task per
 site locale. Per-artifact sharding prevents one failing README from blocking
 the rest of the catalog. The task reads the current source Markdown from D1,
-uses OpenCode Go's chat-completions endpoint to translate
-human prose while preserving Markdown, code, links and identifiers, and stores the result in
+uses OpenCode Go to translate human prose while preserving Markdown, code,
+links and identifiers, and stores the result in
 `artifact_readme_translations`. Requests walk an ordered model fallback chain
-(`ox-alpha-free`, `hy3`, `mimo-v2.5`) so one model's exhausted usage
-window does not stall the catalog.
+(`muse-spark-1.2-contributor` on the Responses API, then `hy3` and
+`mimo-v2.5` on chat-completions) so one model's exhausted usage window,
+region block or retired id does not stall the catalog.
 
 Every translation carries a SHA-256 hash of its upstream README plus an opaque
 translation-policy version so a replacement can be queued. The detail

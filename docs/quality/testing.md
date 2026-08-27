@@ -27,9 +27,9 @@ README localization tests cover three boundaries without calling a paid model:
   a catalog write with a non-empty README;
 - the detail use case serves generated README/summary prose still on the row,
   including a previous completed body while its replacement is pending;
-- the OpenCode Go client pins the endpoint/model/auth request, walks the model
-  fallback chain on 429/5xx, and rejects malformed, empty or failed
-  chat-completions responses;
+- the OpenCode Go client pins the per-model endpoint (Responses for Muse Spark,
+  chat-completions for Hy3 and MiMo), walks the fallback chain on
+  403/404/429/5xx, and rejects malformed, empty or failed responses;
 - the stock backfill advances durable pages, becomes a no-op when complete,
   never advances its cursor after a scheduling failure, and reschedules stale
   terminal failures on every run;

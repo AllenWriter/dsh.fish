@@ -98,13 +98,14 @@ at 20 Fast requests, aborts on 429/403, and is not a GitHub Actions job.
 Completing 20 requests does not prove Ada has no limiter. See
 [`adr-0004-artifact-ask-via-ada.md`](../decisions/adr-0004-artifact-ask-via-ada.md).
 
-README localization uses OpenCode Go's OpenAI-compatible
-`/zen/go/v1/chat/completions` endpoint with an ordered model list
-(`ox-alpha-free`, then `hy3`, then `mimo-v2.5`). Ox Alpha Free is the Go
-tier's limited-time free model (model id `ox-alpha-free`); the later models
-remain as fallbacks because the Go tier still enforces a rolling per-model
-usage window on paid models, and a 429 or provider-side 5xx falls through to
-the next model, while request or auth errors fail immediately.
+README localization uses OpenCode Go with an ordered model list
+(`muse-spark-1.2-contributor` on `/zen/go/v1/responses`, then `hy3` and
+`mimo-v2.5` on `/zen/go/v1/chat/completions`). Muse Spark 1.2 Contributor is
+the high-quota Go model (heavily discounted because prompts and completions
+may train future Meta models, and availability is region-limited). The later
+models remain as fallbacks because the Go tier still enforces a rolling
+per-model usage window, and a 429, 403, 404 or provider-side 5xx falls through
+to the next model, while request or auth errors fail immediately.
 An optional `DEEPSEEK_API_KEY` still prefers DeepSeek's official API
 (`api.deepseek.com/chat/completions`, `deepseek-v4-flash` with thinking
 disabled) during off-peak hours when that secret is present. Production

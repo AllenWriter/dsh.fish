@@ -130,7 +130,7 @@ export class ReadmeI18nAgent extends Agent<HubEnv> {
 
   /**
    * Off-peak the paid DeepSeek leg runs first (thinking disabled, cached
-   * prefix); during its peak pricing hours it suspends itself and the free
+   * prefix); during its peak pricing hours it suspends itself and the
    * OpenCode Go chain carries the load. Any DeepSeek failure likewise falls
    * through to Go.
    */

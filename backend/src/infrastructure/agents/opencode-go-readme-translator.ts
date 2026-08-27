@@ -1,16 +1,21 @@
 /**
- * Ordered fallback chain on the OpenCode Go chat-completions endpoint.
+ * Ordered fallback chain on OpenCode Go.
  *
- * The Go tier enforces a rolling 5-hour usage limit per model, so a single
- * model would stall README localization whenever its window is exhausted.
- * Quotas are per model: a 429 (or a provider-side 5xx) falls through to the
- * next model, while 4xx request or auth errors fail immediately because no
- * fallback can heal them.
+ * Muse Spark 1.2 Contributor is documented on `/zen/go/v1/responses`; Hy3 and
+ * MiMo V2.5 stay on `/zen/go/v1/chat/completions`. The Go tier enforces a
+ * rolling 5-hour usage limit per model, so a single model would stall README
+ * localization whenever its window is exhausted. Quotas are per model: a 429
+ * or a provider-side 5xx falls through to the next model. Geographic refusals
+ * (403) and a missing model id (404) also fall through, because Muse Spark is
+ * region-limited and retired ids must not block the rest of the chain. Request
+ * or auth errors fail immediately because no fallback can heal them.
  */
-export const OPENCODE_GO_MODELS = ['ox-alpha-free', 'hy3', 'mimo-v2.5'] as const
+export const OPENCODE_GO_MODELS = ['muse-spark-1.2-contributor', 'hy3', 'mimo-v2.5'] as const
 export const OPENCODE_GO_CHAT_COMPLETIONS_URL = 'https://opencode.ai/zen/go/v1/chat/completions'
+export const OPENCODE_GO_RESPONSES_URL = 'https://opencode.ai/zen/go/v1/responses'
 
 type Fetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+type OpenCodeGoApi = 'responses' | 'chat-completions'
 
 const README_SYSTEM_PROMPT = [
   'You translate README Markdown for a software plugin catalog.',
@@ -63,29 +68,19 @@ async function callOpenCodeGo(
 
   const failures: string[] = []
   for (const model of OPENCODE_GO_MODELS) {
-    const response = await fetcher(OPENCODE_GO_CHAT_COMPLETIONS_URL, {
+    const api = apiFor(model)
+    const response = await fetcher(urlFor(api), {
       method: 'POST',
       headers: {
         authorization: `Bearer ${token}`,
         'content-type': 'application/json',
       },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          {
-            role: 'user',
-            content: JSON.stringify(payload),
-          },
-        ],
-        temperature: 0,
-        max_tokens: maxTokens,
-      }),
+      body: JSON.stringify(requestBody(api, model, systemPrompt, payload, maxTokens)),
     })
 
     if (response.ok) {
       const result: unknown = await response.json()
-      const markdown = extractTranslatedMarkdown(result)
+      const markdown = extractOutput(api, result)
       // Reasoning models bill their hidden chain-of-thought as output tokens;
       // without this line that spend is invisible until the quota is gone.
       console.log(
@@ -97,7 +92,7 @@ async function callOpenCodeGo(
 
     const detail = (await response.text()).slice(0, 1_000).trim()
     const failure = `${model} responded HTTP ${response.status}${detail === '' ? '' : `: ${detail}`}`
-    if (response.status === 429 || response.status >= 500) {
+    if (isRetryableStatus(response.status)) {
       failures.push(failure)
       continue
     }
@@ -105,6 +100,75 @@ async function callOpenCodeGo(
   }
 
   throw new Error(`OpenCode Go translation failed: ${failures.join('; ')}`)
+}
+
+function apiFor(model: (typeof OPENCODE_GO_MODELS)[number]): OpenCodeGoApi {
+  return model === 'muse-spark-1.2-contributor' ? 'responses' : 'chat-completions'
+}
+
+function urlFor(api: OpenCodeGoApi): string {
+  return api === 'responses' ? OPENCODE_GO_RESPONSES_URL : OPENCODE_GO_CHAT_COMPLETIONS_URL
+}
+
+function requestBody(
+  api: OpenCodeGoApi,
+  model: string,
+  systemPrompt: string,
+  payload: Record<string, string>,
+  maxTokens: number,
+): Record<string, unknown> {
+  if (api === 'responses') {
+    return {
+      model,
+      instructions: systemPrompt,
+      input: JSON.stringify(payload),
+      temperature: 0,
+      max_output_tokens: maxTokens,
+    }
+  }
+  return {
+    model,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: JSON.stringify(payload) },
+    ],
+    temperature: 0,
+    max_tokens: maxTokens,
+  }
+}
+
+function isRetryableStatus(status: number): boolean {
+  return status === 403 || status === 404 || status === 429 || status >= 500
+}
+
+function extractOutput(api: OpenCodeGoApi, result: unknown): string {
+  return api === 'responses' ? extractTranslatedResponses(result) : extractTranslatedMarkdown(result)
+}
+
+/** Parse the OpenAI Responses API output shape used by Muse Spark. */
+export function extractTranslatedResponses(result: unknown): string {
+  if (!isRecord(result)) {
+    throw new Error('OpenCode Go returned an invalid responses payload.')
+  }
+  if (typeof result.output_text === 'string' && result.output_text.trim() !== '') {
+    return result.output_text
+  }
+  if (!Array.isArray(result.output)) {
+    throw new Error('OpenCode Go returned an invalid responses payload.')
+  }
+  const parts: string[] = []
+  for (const item of result.output) {
+    if (!isRecord(item) || !Array.isArray(item.content)) continue
+    for (const part of item.content) {
+      if (!isRecord(part) || typeof part.text !== 'string') continue
+      if (part.type === 'output_text' || part.type === 'text') parts.push(part.text)
+    }
+  }
+  const text = parts.join('')
+  if (text.trim() === '') {
+    throw new Error('OpenCode Go returned no translated Markdown.')
+  }
+  return text
 }
 
 /** Parse the OpenAI-compatible chat-completions response shape. */
@@ -124,15 +188,17 @@ export function extractTranslatedMarkdown(result: unknown): string {
 export function usageSummary(result: unknown): Record<string, number> {
   if (!isRecord(result) || !isRecord(result.usage)) return {}
   const usage = result.usage
-  const details = isRecord(usage.completion_tokens_details)
+  const completionDetails = isRecord(usage.completion_tokens_details)
     ? usage.completion_tokens_details
     : {}
+  const outputDetails = isRecord(usage.output_tokens_details) ? usage.output_tokens_details : {}
+  const inputDetails = isRecord(usage.input_tokens_details) ? usage.input_tokens_details : {}
   const fields: Array<readonly [string, unknown]> = [
-    ['promptTokens', usage.prompt_tokens],
-    ['completionTokens', usage.completion_tokens],
+    ['promptTokens', usage.prompt_tokens ?? usage.input_tokens],
+    ['completionTokens', usage.completion_tokens ?? usage.output_tokens],
     ['totalTokens', usage.total_tokens],
-    ['reasoningTokens', details.reasoning_tokens],
-    ['promptCacheHitTokens', usage.prompt_cache_hit_tokens],
+    ['reasoningTokens', completionDetails.reasoning_tokens ?? outputDetails.reasoning_tokens],
+    ['promptCacheHitTokens', usage.prompt_cache_hit_tokens ?? inputDetails.cached_tokens],
     ['promptCacheMissTokens', usage.prompt_cache_miss_tokens],
   ]
   const summary: Record<string, number> = {}

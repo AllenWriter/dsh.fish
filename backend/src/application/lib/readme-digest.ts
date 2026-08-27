@@ -6,7 +6,7 @@
  * Readers keep seeing the previous completed body until the replacement
  * finishes; see `translatedReadme`.
  */
-export const README_TRANSLATION_POLICY_VERSION = 'opencode-go-ox-alpha-free-v1'
+export const README_TRANSLATION_POLICY_VERSION = 'opencode-go-muse-spark-1.2-contributor-v1'
 
 /** Stable identity for the exact README bytes and translation policy. */
 export async function readmeDigest(markdown: string): Promise<string> {

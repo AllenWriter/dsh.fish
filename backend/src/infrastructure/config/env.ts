@@ -18,7 +18,7 @@ export interface HubEnv {
   readonly OPENCODE_GO_API_KEY: string
   /**
    * DeepSeek official API key, stored as a Wrangler secret. Optional: without
-   * it README localization runs on the free OpenCode Go chain only.
+   * it README localization runs on the OpenCode Go chain only.
    */
   readonly DEEPSEEK_API_KEY?: string
   /** Absolute origin the site is served from, e.g. `https://dsh.fish`. */
