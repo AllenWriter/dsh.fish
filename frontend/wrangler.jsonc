@@ -33,6 +33,10 @@
     // GA4 measurement ID. Public by design — it appears in every page's gtag
     // snippet. Production HTML loads it; local/e2e builds do not send hits.
     "GA_MEASUREMENT_ID": "G-Q5QS4DS9F5",
+    // AdSense publisher ID. Public by design — it appears in every page's
+    // adsbygoogle snippet and in /ads.txt. Production HTML loads it;
+    // local/e2e builds do not request ads.
+    "ADSENSE_PUBLISHER_ID": "ca-pub-4028911961301674",
     "ARTIFACT_ASK_ENABLED": "true",
     // Deploy migration/backfill first, then enable independently for rollback.
     "CATALOG_FTS_SEARCH": "false",

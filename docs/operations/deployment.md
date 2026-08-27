@@ -49,8 +49,9 @@ pnpm dlx @better-auth/cli generate \
 
 ## 3. Set secrets
 
-Secrets are never committed. `PUBLIC_BASE_URL`, `INDEXNOW_KEY` and
-`GA_MEASUREMENT_ID` are plain vars in `wrangler.jsonc`; the rest are secrets:
+Secrets are never committed. `PUBLIC_BASE_URL`, `INDEXNOW_KEY`,
+`GA_MEASUREMENT_ID` and `ADSENSE_PUBLISHER_ID` are plain vars in
+`wrangler.jsonc`; the rest are secrets:
 
 ```sh
 cd frontend
@@ -84,6 +85,12 @@ fails the request rather than shipping an interpolatable string into an inline
 script. Local `react-router dev` and Playwright do not send hits even when the
 var is set — only `import.meta.env.PROD` builds do. Leave it unset on a preview
 that should not appear in the production reports.
+
+`ADSENSE_PUBLISHER_ID` is the AdSense client (`ca-pub-` and 16 digits). It is
+public by design: production HTML prints it in the official adsbygoogle
+snippet and in `/ads.txt`. A malformed value fails the request. Local and
+Playwright builds do not load the script even when the var is set. Leave it
+unset on a preview that should not serve ads.
 
 ### Artifact ask (`ARTIFACT_ASK_ENABLED`)
 

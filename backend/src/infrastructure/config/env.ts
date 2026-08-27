@@ -51,6 +51,12 @@ export interface HubEnv {
    */
   readonly GA_MEASUREMENT_ID?: string
   /**
+   * AdSense publisher ID (`ca-pub-…`). Public by design: the adsbygoogle
+   * snippet and `/ads.txt` print it. A plain var in `wrangler.jsonc`, not a
+   * secret. When unset, the site ships no ads and `/ads.txt` 404s.
+   */
+  readonly ADSENSE_PUBLISHER_ID?: string
+  /**
    * Artifact ask via Ada. `"true"` enables the panel and the POST stream.
    * Default off: unset or any other value keeps ask unavailable.
    */

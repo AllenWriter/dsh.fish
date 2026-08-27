@@ -1,4 +1,4 @@
-# Crawling: robots, sitemaps, internal links
+# Crawling: robots, ads.txt, sitemaps, internal links
 
 ## robots.txt
 
@@ -19,6 +19,19 @@ Search/retrieval agents (`OAI-SearchBot`, `ChatGPT-User`, `Claude-SearchBot`,
 `Claude-User`) may crawl public pages and the catalog snapshot; training
 crawlers (`GPTBot`, `ClaudeBot`) are denied. Public responses also send
 `Content-Signal: ai-train=no, search=yes, ai-input=yes, use=reference`.
+
+## ads.txt
+
+Served from `frontend/src/pages/seo/ads-txt.ts` at `/ads.txt`. IAB authorized
+digital sellers: Google is listed as a DIRECT seller for the AdSense publisher
+in `ADSENSE_PUBLISHER_ID`. Buyers fetch this exact path on the registrable
+domain; there is no locale prefix.
+
+The record is `google.com, pub-…, DIRECT, f08c47fec0942fa0` — the last token is
+Google's published certification authority ID for AdSense. When the Worker var
+is unset, the file 404s.
+
+Responses are `text/plain; charset=utf-8` with `public, max-age=86400`.
 
 ## The sitemap set
 

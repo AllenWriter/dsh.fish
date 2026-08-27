@@ -53,8 +53,10 @@ export default [
   route(':locale?/docs/*', './pages/docs/docs-page.tsx', { id: 'docs-splat' }),
 
   // Crawler-facing resources. No locale prefix: there is one robots.txt per
-  // origin, and one sitemap set that lists every language of every URL.
+  // origin, one ads.txt, and one sitemap set that lists every language of
+  // every URL.
   route('robots.txt', './pages/seo/robots.ts'),
+  route('ads.txt', './pages/seo/ads-txt.ts'),
   route('sitemap.xml', './pages/seo/sitemap-index.ts'),
   route('sitemaps/pages.xml', './pages/seo/pages-sitemap.ts'),
   route('sitemaps/artifacts/:page', './pages/seo/artifacts-sitemap.ts'),

@@ -83,7 +83,7 @@ is built **per request**, because D1 and KV bindings arrive per request.
 | `widgets/`  | `site-header`, `site-footer`, `catalog-grid`, `catalog-filters`, `catalog-pagination`, `install-panel`, `readme-badge`, `artifact-reviews`, `artifact-ask`, `community-toasts`, `docs-shell`, `docs-scoring`                                                                           |
 | `features/` | `account-menu` — the signed-in identity and the actions on it; `locale-switcher` — the language of the page you are on; `catalog-search` — the header palette's live query against `GET /api/v1/artifacts`; `ask-artifact` — POST `/api/v1/artifacts/:id/ask` and the streaming thread |
 | `entities/` | `artifact` — types re-exported from the backend DTO contract, plus `ArtifactCard`, `KindChip`, `AuthorCard`, `artifactLd`                                                                                                                                                              |
-| `shared/`   | beui components (`ui/motion/`, `ui/avatar`, `ui/animated-number`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, `lib/analytics`, auth client, `hub-context`                                                                                                         |
+| `shared/`   | beui components (`ui/motion/`, `ui/avatar`, `ui/animated-number`), motion tokens, `config/i18n` (locales and catalogs), `lib/seo`, `lib/analytics`, `lib/adsense`, auth client, `hub-context`                                                                                            |
 
 The account slot in the header is the whole signed-in affordance: signed out it
 is the sign-in call to action; signed in it is the portrait Better Auth cached
@@ -179,7 +179,7 @@ cookie, so a later bare-URL visit is forwarded to the reader's prefix with a 302
 pages, not query strings, because that is the form an engine will rank and the
 form the footer can link from every page on the site.
 
-**Resource routes.** `/robots.txt`, `/sitemap.xml` and the two sitemap files
+**Resource routes.** `/robots.txt`, `/ads.txt`, `/sitemap.xml` and the two sitemap files
 it indexes, plus `/llms.txt`, `/docs/llms.txt` and `/docs/llms-full.txt`, are
 React Router routes with a `loader` and no component, so they resolve their
 data through the same container as every page — the artifact sitemap reads
@@ -489,6 +489,19 @@ disabled so a client-side transition is not counted twice.
 Local and e2e builds do not load gtag even when the var is present. The
 anonymous HTML cache does not vary on User-Agent, so a crawler and a reader of
 the same URL see the same snippet.
+
+### AdSense is adsbygoogle, from a Worker var
+
+Production HTML loads AdSense via the official `adsbygoogle.js` snippet in
+`<head>`: `async`, `crossorigin="anonymous"`, and `client=ca-pub-…`. Google
+places Auto ads from the account settings; the site does not ship per-page
+`<ins>` units. The publisher ID is the `ADSENSE_PUBLISHER_ID` var in
+`frontend/wrangler.jsonc` — public, like `GA_MEASUREMENT_ID`, because it
+appears in every page source and in `/ads.txt`. The root loader reads it from
+the Worker env and the Layout emits the snippet plus the
+`google-adsense-account` meta Google uses to verify the site.
+
+Local and e2e builds do not load adsbygoogle even when the var is present.
 
 ### Theming is server-rendered from a cookie
 

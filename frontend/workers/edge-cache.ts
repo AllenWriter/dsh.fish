@@ -57,6 +57,7 @@ export function isMachineReadablePath(pathname: string): boolean {
     pathname.startsWith('/sitemaps/') ||
     pathname === '/feed.xml' ||
     pathname === '/robots.txt' ||
+    pathname === '/ads.txt' ||
     pathname === '/openapi.json' ||
     pathname === '/.well-known/api-catalog' ||
     pathname === '/llms.txt' ||

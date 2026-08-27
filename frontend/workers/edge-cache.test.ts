@@ -62,6 +62,7 @@ describe('isMachineReadablePath', () => {
     '/sitemaps/plugins-1.xml',
     '/feed.xml',
     '/robots.txt',
+    '/ads.txt',
     '/openapi.json',
     '/.well-known/api-catalog',
     '/llms.txt',

@@ -14,6 +14,9 @@
 - Stream display-clock tests (`frontend/src/shared/lib/stream-display-clock.test.ts`)
   pin grapheme boundaries, 60 Hz vs 120 Hz wall-clock progress, leftover budget,
   terminate flush, and the 4,096 / 512 caps. They do not drive `requestAnimationFrame`.
+- AdSense tests (`frontend/src/shared/lib/adsense/adsense.test.tsx`) pin the
+  official adsbygoogle URL, `crossorigin="anonymous"`, the ads.txt DIRECT
+  record, and that a malformed publisher ID cannot be interpolated.
 
 ## Integration tests
 

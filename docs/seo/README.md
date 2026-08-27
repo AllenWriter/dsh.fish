@@ -8,7 +8,7 @@ every page the site owns, including every plugin it indexes.
 - [`url-strategy.md`](url-strategy.md) — language prefixes, canonical URLs, redirects.
 - [`indexation.md`](indexation.md) — what is offered to the index and what is withheld.
 - [`structured-data.md`](structured-data.md) — the schema.org graph and where each node comes from.
-- [`crawling.md`](crawling.md) — robots.txt, the sitemap set, internal link graph.
+- [`crawling.md`](crawling.md) — robots.txt, ads.txt, the sitemap set, internal link graph.
 - [`search-console.md`](search-console.md) — first Google Search Console export, and what it changed.
 - [`recommendations.md`](recommendations.md) — prioritised follow-up work (P0/P1/P2).
 
@@ -43,7 +43,7 @@ That produces three requirements the rest of the product does not have:
 | Head tags: canonical, hreflang, OG, Twitter | `frontend/src/shared/lib/seo/meta.ts` |
 | schema.org nodes (site, breadcrumb, collection) | `frontend/src/shared/lib/seo/structured-data.ts` |
 | schema.org node for an artifact | `frontend/src/entities/artifact/lib/artifact-ld.ts` |
-| robots.txt, sitemaps, llms.txt | `frontend/src/pages/seo/` |
+| robots.txt, ads.txt, sitemaps, llms.txt | `frontend/src/pages/seo/` |
 | Sitemap read model | `backend/src/application/use-case/list-sitemap-entries.ts` |
 | Social card generator | `frontend/scripts/build-og-image.mjs` |
 | Per-artifact social card, README badge | `frontend/src/pages/artifact-og/`, `frontend/src/pages/artifact-badge/` |
@@ -71,6 +71,7 @@ Then, against `http://localhost:5173`:
 
 ```sh
 curl -s /robots.txt
+curl -s /ads.txt
 curl -s /llms.txt
 curl -s /docs/llms.txt
 curl -s /docs/cli.md | head

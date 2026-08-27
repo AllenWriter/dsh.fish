@@ -23,6 +23,7 @@ import {
 } from '@/shared/config/i18n'
 import { documentLanguage } from '@/shared/lib/seo'
 import { analyticsIdForDocument, GoogleAnalytics } from '@/shared/lib/analytics'
+import { adsensePublisherIdForDocument, GoogleAdsense } from '@/shared/lib/adsense'
 import { hubContext } from '@/shared/api/hub-context'
 import { HomeIcon, IconDefaults } from '@/shared/ui/icon'
 import { NotFoundRecovery } from '@/pages/not-found/not-found-recovery'
@@ -62,11 +63,12 @@ export const links: Route.LinksFunction = () => [
  * again: deciding here is what keeps a toast a reader has already closed out
  * of the markup entirely, rather than rendered and then hidden.
  *
- * The GA4 measurement ID is a Worker var, public by design. It is read here
- * rather than baked into the client bundle so a preview without the var ships
- * no gtag, and so local/e2e (`import.meta.env.PROD === false`) cannot pollute
- * production reports. The HTML that carries it is edge-cached anonymously, so
- * the snippet is the same for every visitor of a URL — including crawlers.
+ * The GA4 measurement ID and AdSense publisher ID are Worker vars, public by
+ * design. They are read here rather than baked into the client bundle so a
+ * preview without the var ships no gtag or adsbygoogle, and so local/e2e
+ * (`import.meta.env.PROD === false`) cannot pollute production reports or
+ * request ads. The HTML that carries them is edge-cached anonymously, so the
+ * snippet is the same for every visitor of a URL — including crawlers.
  */
 export function loader({ request, context }: Route.LoaderArgs) {
   const url = new URL(request.url)
@@ -83,6 +85,10 @@ export function loader({ request, context }: Route.LoaderArgs) {
       context.get(hubContext).env.GA_MEASUREMENT_ID,
       import.meta.env.PROD,
     ),
+    adsensePublisherId: adsensePublisherIdForDocument(
+      context.get(hubContext).env.ADSENSE_PUBLISHER_ID,
+      import.meta.env.PROD,
+    ),
   }
 }
 
@@ -91,6 +97,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const theme: ThemePreference = data?.theme ?? 'system'
   const locale: Locale = data?.locale ?? DEFAULT_LOCALE
   const gaMeasurementId = data?.gaMeasurementId
+  const adsensePublisherId = data?.adsensePublisherId
   const { lang, dir } = documentLanguage(locale)
 
   return (
@@ -102,6 +109,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
         {gaMeasurementId ? <GoogleAnalytics measurementId={gaMeasurementId} /> : null}
+        {adsensePublisherId ? <GoogleAdsense publisherId={adsensePublisherId} /> : null}
       </head>
       <body className="min-h-screen">
         <IconDefaults>
