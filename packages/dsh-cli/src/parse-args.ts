@@ -18,14 +18,7 @@ export interface CliRequest {
   readonly flags: CliFlags
 }
 
-const KINDS = new Set([
-  'bundle',
-  'profile',
-  'skill',
-  'mcp-server',
-  'agent-preset',
-  'hook-bridge',
-])
+const KINDS = new Set(['bundle', 'profile', 'skill', 'agent-preset'])
 
 /**
  * Parse `dsh-fish <command> [args…]` the way the skills CLI does: a small

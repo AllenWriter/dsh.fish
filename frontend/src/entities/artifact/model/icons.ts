@@ -7,10 +7,8 @@ import {
   DocsCategoryIcon,
   FunCategoryIcon,
   GitCategoryIcon,
-  HookBridgeIcon,
   IdentityCategoryIcon,
   MarketCategoryIcon,
-  McpServerIcon,
   MemoryCategoryIcon,
   ModelCategoryIcon,
   NotifyCategoryIcon,
@@ -34,16 +32,15 @@ import {
 /**
  * A glyph for every artifact kind.
  *
- * The kind chip has always been colourless on purpose — six hues encoded nothing
- * a reader could learn, and colour is spent on the verified badge and the primary
- * action instead. A glyph is the opposite trade: one mark per kind, it survives
- * translation into ten languages where the word does not, and it stays legible
- * without colour vision. Kinds gain a shape and still do not gain a hue.
+ * The kind chip has always been colourless on purpose — per-kind hues encoded
+ * nothing a reader could learn, and colour is spent on the verified badge and the
+ * primary action instead. A glyph is the opposite trade: one mark per kind, it
+ * survives translation into ten languages where the word does not, and it stays
+ * legible without colour vision. Kinds gain a shape and still do not gain a hue.
  *
  * Each mark names the install mechanism `install-plan.ts` owns for that kind,
  * which is the fact the chip exists to carry: a bundle is a package, a profile is
- * a stack of them, an MCP server is a connection to something external, a preset
- * is a configuration, a hook bridge spans two tools.
+ * a stack of them, a preset is a configuration.
  *
  * Keyed by the `ArtifactKind` union, so adding a kind to the taxonomy fails the
  * typecheck here rather than rendering a chip with a hole in it.
@@ -52,9 +49,7 @@ const KIND_ICON: Readonly<Record<ArtifactKind, Icon>> = Object.freeze({
   bundle: BundleIcon,
   profile: ProfileIcon,
   skill: SkillIcon,
-  'mcp-server': McpServerIcon,
   'agent-preset': AgentPresetIcon,
-  'hook-bridge': HookBridgeIcon,
 })
 
 /**

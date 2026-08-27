@@ -23,7 +23,7 @@ export function loader({ context }: Route.LoaderArgs) {
     },
   })
 }
-const ARTIFACT_KINDS = ['bundle', 'profile', 'skill', 'mcp-server', 'agent-preset', 'hook-bridge']
+const ARTIFACT_KINDS = ['bundle', 'profile', 'skill', 'agent-preset']
 
 const artifactSummarySchema = {
   type: 'object',
@@ -380,7 +380,7 @@ export function openApiDocument(baseUrl: string) {
                   type: 'array',
                   items: {
                     type: 'object',
-                    description: 'One of addPackage, writeFile, patchRow, requireCredential.',
+                    description: 'One of addPackage or writeFile.',
                   },
                 },
                 manualCommands: { type: 'array', items: { type: 'string' } },

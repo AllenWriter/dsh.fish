@@ -31,7 +31,7 @@ DeepSeek Harness は「すべてはプラグインである」という思想の
 
 ## 特徴
 
-- **型付きカタログ** — バンドル、プロファイル、スキル、MCP サーバー、エージェントプリセット、フックブリッジを、自己申告のタグではなく、ハーネスが実際にロードできるものをプローブして分類します。
+- **型付きカタログ** — バンドル、プロファイル、スキル、エージェントプリセットを、自己申告のタグではなく、ハーネスが実際にロードできるものをプローブして分類します。
 - **透明な信頼シグナル** — すべてのアーティファクトに、公開かつ再現可能な品質スコア（S/A/B/C）、メンテナンス状況、7 日 / 30 日のスター増加速度が付与されます。計算式は [`GET /api/v1/scoring`](https://dsh.fish/api/v1/scoring) で公開されており、ブログ記事に埋もれてはいません。
 - **人気だけでなく、上昇中も** — スイープごとのメトリクススナップショットをもとにした `rising` ソートで、今週スターを伸ばしているものを浮かび上がらせます。
 - **1 つのインストールプラン、3 つのサーフェス** — ドメインが所有する同一のプランが、Web 上ではコピー可能なコマンドとして表示され、CLI では実行され、ハブプラグイン経由でハーネス内でも動作します。互いにずれることはありません。
@@ -61,7 +61,7 @@ npx @dsh-fish/cli add <artifact-id>
 ```
 
 `add` / `find` / `list` / `remove` / `update` は [skills CLI](https://github.com/vercel-labs/skills)
-の語彙に合わせており、スキル、MCP の行、プリセット、フックブリッジを実際に
+の語彙に合わせており、スキル、プリセット、バンドル、プロファイルを実際に
 `$DSH_HOME` へ書き込みます。
 
 **ハーネス内から** — ハブプラグインを一度だけ追加します：
@@ -85,9 +85,7 @@ dsh plugin --profile local-dsh add @dsh-fish/hub
 
 **プラグインを公開したい場合は？** リポジトリに **`dsh-plugin`** トピックを付けてください。
 毎時実行されるクロールが `package.json`、`SKILL.md`、`agent.cordis.yml` を調べ、
-ハーネスが実際にロードできるものを分類します。MCP サーバーとフックブリッジは
-`package.json` の `dsh.hub.kind` と `dsh.hub.mcp` / `dsh.hub.hook` ブロックで宣言します。
-マニフェストの形式は
+ハーネスが実際にロードできるものを分類します。プローブの順序は
 [docs/project/architecture.md](docs/project/architecture.md#how-a-repository-becomes-a-row)
 を参照してください。
 
@@ -98,9 +96,7 @@ dsh plugin --profile local-dsh add @dsh-fish/hub
 | **Bundle**            | `dsh.bundle.patch` を宣言する npm パッケージ  | `dsh plugin --profile <p> add <spec>`         |
 | **Profile**           | 順序付きの `dsh.profile.bundles` スタック     | バンドルごとに 1 回の `add` を順番に実行      |
 | **Skill**             | `SKILL.md` バンドルまたはフラットな Markdown  | `$DSH_HOME/skills` 配下にファイルを書き込む   |
-| **MCP server**        | `dsh.hub.mcp` で宣言する外部 MCP サーバー     | プロファイルパッチに `dsh-mcp-client` の行    |
 | **Agent preset**      | 1 つの `agent.cordis.yml` を保持するディレクトリ | `$DSH_HOME/.agent-presets/<id>` へ書き込む |
-| **Hook bridge**       | `dsh.hub.hook` で宣言する Claude Code / Codex ブリッジ | プロファイルパッチにブリッジプラグインの行 |
 
 ## リポジトリ構成
 

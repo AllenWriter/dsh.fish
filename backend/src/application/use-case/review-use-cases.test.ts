@@ -11,17 +11,11 @@ import { RateArtifact } from './rate-artifact.js'
 
 const artifact = Artifact.create({
   id: 'dsh-postgres-mcp',
-  kind: 'mcp-server',
+  kind: 'bundle',
   displayName: 'Postgres MCP',
   summary: 'Query Postgres from the harness.',
   source: npmSource('dsh-postgres-mcp', '1.0.0'),
-  payload: {
-    kind: 'mcp-server',
-    serverName: 'postgres',
-    transport: 'streamable-http',
-    url: 'https://example.com/mcp',
-    credentials: [],
-  },
+  payload: { kind: 'bundle', requiresBuild: false },
   updatedAt: new Date('2025-06-01T00:00:00.000Z'),
 })
 

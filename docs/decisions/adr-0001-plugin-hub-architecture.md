@@ -9,9 +9,8 @@ DeepSeek Harness is built on the premise that *everything is a plugin*, but it
 ships no registry. Its README asks authors to add a `dsh-plugin` topic to their
 repository and leaves discovery there. Installing means knowing a package name
 in advance and typing `dsh plugin --profile <name> add <spec>` — and that only
-covers bundles. Skills, MCP servers, agent presets and hook bridges each reach a
-machine a different way, documented in different places, with no single surface
-that knows all of them.
+covers bundles. Skills and agent presets each reach a machine a different way,
+documented in different places, with no single surface that knows all of them.
 
 We need a service that indexes every artifact type, lets a person browse and
 install them, and lets an agent do the same from inside a running harness.
@@ -39,8 +38,9 @@ boundary. Accepted — the boundary is already explicit in the directory layout.
 
 ### 2. The taxonomy is derived from the harness, not invented
 
-`ArtifactKind` has exactly six members, each naming something the harness really
-loads. The temptation was a looser "plugin" concept with free-form metadata.
+`ArtifactKind` has exactly four members, each naming something the harness really
+loads. `mcp-server` and `hook-bridge` were members; nobody published them, so
+they left the catalog. The temptation was a looser "plugin" concept with free-form metadata.
 Rejected: a registry whose rows do not correspond to a real loading mechanism
 would list things that cannot be installed, which is the one failure a registry
 must not have.
@@ -78,10 +78,11 @@ an unpinned `github:owner/repo` lets a later push change what runs.
 
 ### 5. Credentials are references, never values
 
-An MCP server row carries `GITHUB_TOKEN` as a *name*; the harness resolves it
-through `ctx.credentials`. This mirrors the harness's own doctrine that
-configuration carries references to secrets. It is what lets the registry serve
-every row publicly without any per-row secrecy analysis.
+When a payload would need a secret, it carries a POSIX environment variable
+*name*, never a value. MCP-server rows used to do this; those kinds left the
+catalog, so no live payload carries a credential reference. The doctrine still
+holds: the registry serves every row publicly without any per-row secrecy
+analysis.
 
 ### 6. Device grant for harness authentication
 

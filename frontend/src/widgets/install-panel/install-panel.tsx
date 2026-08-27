@@ -4,7 +4,7 @@ import type { ArtifactDetail, InstallPlanDto } from '@/entities/artifact/model/t
 import { useT } from '@/shared/config/i18n'
 import { HUB_PLUGIN_SPEC } from '@/shared/config/site'
 import { cn } from '@/shared/lib/utils'
-import { AgentIcon, CliIcon, CredentialIcon, WarningIcon } from '@/shared/ui/icon'
+import { AgentIcon, CliIcon, WarningIcon } from '@/shared/ui/icon'
 
 /**
  * The install surface — the reason the site exists.
@@ -23,8 +23,6 @@ export function InstallPanel({
   plan: InstallPlanDto
 }) {
   const t = useT()
-  const credentials =
-    plan.steps.filter((step) => step.type === 'require-credential') ?? []
 
   return (
     <section className="rounded-xl border border-border bg-card p-5">
@@ -92,31 +90,6 @@ export function InstallPanel({
             </li>
           ))}
         </ul>
-      ) : null}
-
-      {credentials.length > 0 ? (
-        <div className="mt-5 border-t border-border pt-4">
-          <h3 className="flex items-center gap-1.5 text-xs font-medium text-foreground">
-            <CredentialIcon className="size-3.5" weight="bold" />
-            {t('install.credentials')}
-          </h3>
-          <ul className="mt-2 flex flex-wrap gap-1.5">
-            {credentials.map((step) =>
-              step.type === 'require-credential' ? (
-                <li
-                  key={step.envName}
-                  className="rounded-md border border-border bg-muted px-2 py-1 font-mono text-[11px]"
-                >
-                  {step.envName}
-                  {step.required ? null : <span className="text-muted-foreground"> ?</span>}
-                </li>
-              ) : null,
-            )}
-          </ul>
-          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-            {t('install.credentialsBody')}
-          </p>
-        </div>
       ) : null}
     </section>
   )

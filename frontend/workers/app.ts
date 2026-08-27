@@ -19,6 +19,7 @@ import {
 } from '@/pages/markdown'
 import { withEdgeCache } from './edge-cache'
 import { retiredCategoryRedirect } from '@/shared/lib/retired-category-path'
+import { retiredKindRedirect, retiredPublishDocsRedirect } from '@/shared/lib/retired-kind-path'
 
 /**
  * The Worker entry. One deployment serves both halves of the product.
@@ -83,6 +84,16 @@ async function handleRequest(
   const retiredCategory = retiredCategoryRedirect(url.pathname, url.search)
   if (retiredCategory !== undefined) {
     return Response.redirect(new URL(retiredCategory, url.origin).toString(), 301)
+  }
+
+  const retiredKind = retiredKindRedirect(url.pathname, url.search)
+  if (retiredKind !== undefined) {
+    return Response.redirect(new URL(retiredKind, url.origin).toString(), 301)
+  }
+
+  const retiredDocs = retiredPublishDocsRedirect(url.pathname, url.search)
+  if (retiredDocs !== undefined) {
+    return Response.redirect(new URL(retiredDocs, url.origin).toString(), 301)
   }
 
   // A reader who once picked a language is forwarded to it on bare-URL

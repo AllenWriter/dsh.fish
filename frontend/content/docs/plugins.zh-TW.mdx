@@ -1,6 +1,6 @@
 ---
 title: 外掛
-description: DeepSeek Harness 保持小巧核心，所有能力都以外掛形式提供：六種構件類型，以及 dsh.fish 為何支援安裝前檢查。
+description: DeepSeek Harness 保持小巧核心，所有能力都以外掛形式提供：四種構件類型，以及 dsh.fish 為何支援安裝前檢查。
 ---
 
 DeepSeek Harness 運行在 Cordis 外掛框架之上。模型轉接器、工具註冊表、工作階段日誌和代理迴圈都是從設定掛載的外掛。
@@ -11,14 +11,12 @@ DeepSeek Harness 運行在 Cordis 外掛框架之上。模型轉接器、工具�
 
 ## 外掛可以是什麼
 
-dsh.fish 目錄收錄六種構件類型，各有自己的清單契約：
+dsh.fish 目錄收錄四種構件類型，各有自己的清單契約：
 
 - [Bundle](/docs/publish/bundle)：向配置檔案新增一層外掛 patch 的 npm 套件。
 - [Skill](/docs/publish/skill)：代理按需載入的 Markdown 指令檔案。
-- [MCP server](/docs/publish/mcp-server)：掛載為原生工具的外部 Model Context Protocol 伺服器。
 - [Agent preset](/docs/publish/agent-preset)：一個 `agent.cordis.yml`，讓某個工作階段擁有自己的工具和提示詞。
 - [Profile](/docs/publish/profile)：構成完整組合的有序 bundle 堆疊。
-- [Hook bridge](/docs/publish/hook-bridge)：在 dsh 內運行現有的 Claude Code 或 Codex shell 鉤子。
 
 ## 信任問題
 
@@ -30,7 +28,7 @@ README 告訴你的是作者的宣告，不是安裝實際會做什麼。
 
 dsh.fish 正是為這一缺口而存在。
 
-目錄讀取每個來源真實的清單和檔案。每個構件頁面都在你執行任何命令之前展示安裝計畫（安裝將執行的檔案寫入、套件安裝和 patch 列）。
+目錄讀取每個來源真實的清單和檔案。每個構件頁面都在你執行任何命令之前展示安裝計畫（安裝將執行的檔案寫入和套件安裝）。
 
 先檢查，再安裝。
 

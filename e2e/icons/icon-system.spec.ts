@@ -132,11 +132,11 @@ test.describe('the catalog taxonomy', () => {
   }) => {
     await page.goto('/browse', { waitUntil: 'domcontentloaded' })
 
-    const rail = page.getByRole('link', { name: /^MCP server\b/ }).first()
+    const rail = page.getByRole('link', { name: /^Bundle\b/ }).first()
     const chip = page
       .getByRole('article')
       .filter({ hasText: 'Postgres MCP' })
-      .getByText('MCP server')
+      .getByText('Bundle')
 
     // Learning a mark once in the rail has to be worth something in the grid.
     expect(await markOf(chip)).toEqual(await markOf(rail))

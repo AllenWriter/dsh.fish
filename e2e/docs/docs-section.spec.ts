@@ -66,7 +66,7 @@ test.describe('product docs on a desktop', () => {
       }),
     ).toBeVisible()
     await expect(page.locator('article h1')).toHaveCount(1)
-    await expect(menu.getByRole('link', { name: 'Hook bridges' })).toBeVisible()
+    await expect(menu.getByRole('link', { name: 'Bundles' })).toBeVisible()
     await expect(menu.getByRole('link', { name: 'Core concepts' })).toBeVisible()
     await expect(menu.getByRole('link', { name: 'Plugins' })).toBeVisible()
     await expect(menu.getByRole('link', { name: 'CLI' })).toBeVisible()
@@ -97,11 +97,11 @@ test.describe('product docs on a desktop', () => {
     await shot(page, 'docs-cli-light')
   })
 
-  test('hook bridges and scoring are their own documents', async ({ page }) => {
-    await openDocs(page, '/docs/publish/hook-bridge')
-    await expect(page.getByRole('heading', { level: 1, name: 'Hook bridges' })).toBeVisible()
-    await expect(page.locator('article pre').first()).toContainText('"kind": "hook-bridge"')
-    await shot(page, 'docs-hook-bridge-light')
+  test('publishing a bundle and scoring are their own documents', async ({ page }) => {
+    await openDocs(page, '/docs/publish/bundle')
+    await expect(page.getByRole('heading', { level: 1, name: 'Bundles' })).toBeVisible()
+    await expect(page.locator('article pre').first()).toContainText('dsh.bundle.patch')
+    await shot(page, 'docs-bundle-light')
 
     await page
       .getByRole('navigation', { name: 'Documentation menu' })
@@ -122,8 +122,8 @@ test.describe('product docs on a desktop', () => {
   test('sidebar search filters the tree without a round trip', async ({ page }) => {
     await openDocs(page, '/docs')
     const menu = page.getByRole('navigation', { name: 'Documentation menu' })
-    await page.getByRole('searchbox', { name: 'Search docs' }).fill('hook')
-    await expect(menu.getByRole('link', { name: 'Hook bridges' })).toBeVisible()
+    await page.getByRole('searchbox', { name: 'Search docs' }).fill('bundle')
+    await expect(menu.getByRole('link', { name: 'Bundles' })).toBeVisible()
     await expect(menu.getByRole('link', { name: 'CLI' })).toHaveCount(0)
     await expect(page.getByText('No matching pages')).toHaveCount(0)
     await shot(page, 'docs-search-filter-light')

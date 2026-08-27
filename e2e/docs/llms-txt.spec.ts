@@ -9,7 +9,7 @@ import { E2E_ORIGIN } from '../lib/origin.ts'
  * Fumadocs nav, and the Worker entry agreeing.
  */
 
-const KINDS = ['bundle', 'profile', 'skill', 'mcp-server', 'agent-preset', 'hook-bridge'] as const
+const KINDS = ['bundle', 'profile', 'skill', 'agent-preset'] as const
 
 function header(response: APIResponse, name: string): string {
   return (

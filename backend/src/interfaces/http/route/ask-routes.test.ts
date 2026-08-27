@@ -14,11 +14,11 @@ import { askRoutes } from './ask-routes.js'
 
 const github = Artifact.create({
   id: 'dsh-postgres-mcp',
-  kind: 'mcp-server',
+  kind: 'bundle',
   displayName: 'Postgres MCP',
   summary: 'Query postgres.',
   source: githubSource({ owner: 'acme', repo: 'postgres-mcp' }),
-  payload: { kind: 'mcp-server', serverName: 'postgres', transport: 'stdio', command: 'npx', credentials: [] },
+  payload: { kind: 'bundle', requiresBuild: false },
 })
 
 const npm = Artifact.create({

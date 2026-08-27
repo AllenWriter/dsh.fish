@@ -27,7 +27,7 @@ dsh.fish 把这个话题变成了一个可搜索、多语言的目录，并附�
 
 ## 功能特性
 
-- **类型化目录** —— bundle、profile、skill、MCP server、agent 预设与 hook bridge，通过探测 harness 实际能加载的内容来分类，而不是依赖自报的标签。
+- **类型化目录** —— bundle、profile、skill 与 agent 预设，通过探测 harness 实际能加载的内容来分类，而不是依赖自报的标签。
 - **透明的信任信号** —— 每个工件都带有公开且可复现的质量评分(S/A/B/C)、维护状态，以及 7 天/30 天的 star 增速。评分公式由 [`GET /api/v1/scoring`](https://dsh.fish/api/v1/scoring) 直接提供，而不是藏在一篇博客文章里。
 - **不止于热门，更看崛起** —— 每次抓取的指标快照驱动 `rising` 排序，让本周 star 数正在上涨的项目浮出水面。
 - **一份安装计划，三个入口** —— 同一份由领域层拥有的计划，在网页上渲染为可复制的命令，在 CLI 中执行，并通过 hub 插件在 harness 内部运行。三者不可能彼此偏离。
@@ -56,7 +56,7 @@ npx @dsh-fish/cli add <artifact-id>
 ```
 
 `add` / `find` / `list` / `remove` / `update` 与 [skills CLI](https://github.com/vercel-labs/skills)
-的命令词汇一致，并会真正把 skill、MCP 配置项、预设和 hook bridge 写入
+的命令词汇一致，并会真正把 skill、预设、bundle 和 profile 写入
 `$DSH_HOME`。
 
 **在 harness 内部** —— 只需添加一次 hub 插件:
@@ -88,9 +88,7 @@ harness 实际能加载的内容。
 | **Bundle**       | 声明了 `dsh.bundle.patch` 的 npm 包      | `dsh plugin --profile <p> add <spec>`       |
 | **Profile**      | 有序的 `dsh.profile.bundles` 堆栈        | 按顺序为每个 bundle 执行一次 `add`          |
 | **Skill**        | `SKILL.md` bundle 或扁平的 Markdown      | 文件写入 `$DSH_HOME/skills` 之下            |
-| **MCP server**   | 外部的 Model Context Protocol 服务器     | profile patch 中的一条 `dsh-mcp-client` 配置 |
 | **Agent preset** | 存放一个 `agent.cordis.yml` 的目录       | 写入 `$DSH_HOME/.agent-presets/<id>`        |
-| **Hook bridge**  | Claude Code / Codex 的 hook 桥接          | profile patch 中的一条桥接插件配置           |
 
 ## 仓库结构
 

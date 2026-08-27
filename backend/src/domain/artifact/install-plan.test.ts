@@ -154,37 +154,6 @@ describe('buildInstallPlan', () => {
     expect(plan.steps[0]).toMatchObject({ relativePath: 'skills/quick-note.md' })
   })
 
-  it('emits an mcp-client row that references credentials rather than values', () => {
-    const plan = buildInstallPlan(
-      artifact('mcp-server', {
-        kind: 'mcp-server',
-        serverName: 'github',
-        transport: 'stdio',
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-github'],
-        credentials: [{ envName: 'GITHUB_TOKEN', required: true }],
-      }),
-      target,
-    )
-
-    const row = plan.steps.find((step) => step.type === 'patch-row')
-    expect(row).toBeDefined()
-    if (row?.type !== 'patch-row') throw new Error('expected a patch row')
-
-    expect(row.rowId).toBe('mcp-github')
-    expect(row.rowYaml).toContain("name: '@deepseek-ai/dsh-mcp-client'")
-    expect(row.rowYaml).toContain('serverName: github')
-    // The reference is resolved at load time; no secret is ever in the config.
-    expect(row.rowYaml).toContain('GITHUB_TOKEN: !!js process.env.GITHUB_TOKEN')
-
-    expect(plan.steps).toContainEqual({
-      type: 'require-credential',
-      envName: 'GITHUB_TOKEN',
-      required: true,
-    })
-    expect(plan.warningKeys).toContain('install.warning.credentialsNeeded')
-  })
-
   it('writes an agent preset to its composition path', () => {
     const plan = buildInstallPlan(
       artifact('agent-preset', {
@@ -199,22 +168,6 @@ describe('buildInstallPlan', () => {
       relativePath: '.agent-presets/reviewer/agent.cordis.yml',
       root: 'dsh-home',
     })
-  })
-
-  it('mounts the dialect-specific hook bridge', () => {
-    const plan = buildInstallPlan(
-      artifact('hook-bridge', {
-        kind: 'hook-bridge',
-        dialect: 'claude-code',
-        settingsPath: '~/.claude/settings.json',
-      }),
-      target,
-    )
-
-    const row = plan.steps[0]
-    if (row?.type !== 'patch-row') throw new Error('expected a patch row')
-    expect(row.rowYaml).toContain('@deepseek-ai/dsh-hooks-claude-code')
-    expect(plan.warningKeys).toContain('install.warning.hookExecutesShell')
   })
 
   it('refuses a bundle with no installable specifier', () => {

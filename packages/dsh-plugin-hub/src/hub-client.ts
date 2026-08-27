@@ -19,7 +19,7 @@ export interface ArtifactSummary {
 }
 
 export interface InstallStep {
-  type: 'add-package' | 'write-file' | 'patch-row' | 'require-credential'
+  type: 'add-package' | 'write-file'
   [key: string]: unknown
 }
 

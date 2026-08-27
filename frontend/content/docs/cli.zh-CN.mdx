@@ -17,7 +17,6 @@ npx @dsh-fish/cli add acme/notes
 
 - 向 `$DSH_HOME` 写文件
 - 用包管理器加包
-- 写入配置档案补丁行
 
 从源码构建的 git 包会被拒绝，直到你传入 `--allow-build-scripts`。这个标志允许该包的 `prepare` 脚本在这台机器上运行，处于智能体沙箱之外。
 
@@ -38,7 +37,7 @@ npx @dsh-fish/cli add acme/notes
 | `reviews <source>`                 | 平均分、5 到 1 星的分布和最近的评论。                        |
 
 ```sh
-npx @dsh-fish/cli find postgres --kind mcp-server
+npx @dsh-fish/cli find postgres --kind bundle
 npx @dsh-fish/cli list --json
 npx @dsh-fish/cli remove release-notes
 npx @dsh-fish/cli init my-skill

@@ -193,7 +193,7 @@ in [`../frontend/i18n.md`](../frontend/i18n.md).
 
 ## The artifact taxonomy
 
-Six kinds, each taken from something the harness actually loads, each with a
+Four kinds, each taken from something the harness actually loads, each with a
 distinct install mechanism. `ArtifactKind` names them; `buildInstallPlan` owns
 how each reaches a machine.
 
@@ -202,9 +202,11 @@ how each reaches a machine.
 | `bundle`       | npm package declaring `dsh.bundle.patch` | `dsh plugin --profile <p> add <spec>`       |
 | `profile`      | ordered `dsh.profile.bundles` stack      | one `add` per bundle, in order              |
 | `skill`        | `SKILL.md` bundle or flat Markdown       | files written under `$DSH_HOME/skills`      |
-| `mcp-server`   | external MCP server                      | a `dsh-mcp-client` row in the profile patch |
 | `agent-preset` | directory holding one `agent.cordis.yml` | written to `$DSH_HOME/.agent-presets/<id>`  |
-| `hook-bridge`  | Claude Code / Codex hook bridge          | a bridge plugin row in the profile patch    |
+
+`mcp-server` and `hook-bridge` used to be members. Nobody published them, so
+they left the catalog: leftover `dsh.hub.mcp` / `dsh.hub.hook` declarations are
+skipped, and `/kind/mcp-server` / `/kind/hook-bridge` 301 onto `/browse`.
 
 ## How a repository becomes a row
 
@@ -217,50 +219,19 @@ yields nothing — the harness would load nothing from it either.
 | --------------------------------------------------- | -------------- |
 | `package.json` with `dsh.profile.bundles`           | `profile`      |
 | `package.json` with `dsh.bundle`                    | `bundle`       |
-| `package.json` with `dsh.hub.kind` + `dsh.hub.mcp`  | `mcp-server`   |
-| `package.json` with `dsh.hub.kind` + `dsh.hub.hook` | `hook-bridge`  |
 | `SKILL.md` with `name` + `description` frontmatter  | `skill`        |
 | `agent.cordis.yml`                                  | `agent-preset` |
 
-The MCP server and hook bridge kinds have no manifest convention in the harness
-— they install as files and rows under `$DSH_HOME`, not as a package layer —
-so their `dsh.hub` declaration in package.json is the source of truth rather
-than advisory metadata. A declaration is a claim the package must back: the
-kind needs its block, and the block must satisfy the payload rules of
-`artifact-payload.ts` (`assertPayloadMatchesKind`). A declared-but-malformed
-manifest — a kind without its block, a stdio server without a command, a
-`settingsPath` escaping the repository, a `hub.kind` outside the six kinds or
-naming a content-proven kind whose proof is absent — is a `DomainError`, which
-the sweep records as skipped and the submission endpoint returns to the
-submitter. Minimal declarations:
+A leftover `dsh.hub.mcp` or `dsh.hub.hook` block, or a `hub.kind` of
+`mcp-server` / `hook-bridge`, classifies nothing. Those kinds are not catalog
+members. If the same package also proves a bundle, profile, skill, or
+agent-preset, that earlier probe still wins.
 
-```jsonc
-// mcp-server
-{
-  "dsh": {
-    "hub": {
-      "kind": "mcp-server",
-      "mcp": {
-        "serverName": "github",
-        "transport": "stdio", // or "streamable-http" with "url"
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-github"],
-        "credentials": [{ "envName": "GITHUB_TOKEN", "required": true }]
-      }
-    }
-  }
-}
-
-// hook-bridge
-{
-  "dsh": {
-    "hub": {
-      "kind": "hook-bridge",
-      "hook": { "dialect": "claude-code", "settingsPath": "hooks/settings.json" } // or "codex"
-    }
-  }
-}
-```
+A `hub.kind` naming a live kind is a claim the package must back. A
+declared-but-malformed manifest — a `hub.kind` of `bundle` or `profile` whose
+proof is absent, or a `hub.kind` outside the four kinds other than the two
+retired ids — is a `DomainError`, which the sweep records as skipped and the
+submission endpoint returns to the submitter.
 
 Those probes run before anything else is fetched, so a repository that is not a
 plugin costs three reads and no API quota — that ordering is what makes it
@@ -431,7 +402,7 @@ installs. It returns both `steps` (machine-executable) and `manualCommands`
 (copy-paste). The website renders the second; the `@dsh-fish/hub` plugin and
 `@dsh-fish/cli` execute the first. The first manual command is always
 `npx @dsh-fish/cli add <id> --profile <p>`, so a copied line actually installs
-kinds the harness launcher does not cover (skills, MCP rows, presets, hooks).
+kinds the harness launcher does not cover (skills and presets).
 Because no surface authors its own commands, a documented command and an
 agent-driven install cannot drift apart.
 
@@ -460,10 +431,9 @@ list, so a profile that serves no browser client still loads the tools.
 
 ### Secrets are referenced, never stored
 
-An MCP server's payload carries a credential _reference_ — a POSIX environment
-variable name — never a value, mirroring the harness's own credentials doctrine.
-That is what makes a catalog row safe to serve publicly and safe to render in a
-configuration UI.
+The catalog never stores secret values. Remaining kinds install as packages
+and files; their payloads carry no credential names. A leftover `dsh.hub.mcp`
+credentials list is ignored with the rest of that block.
 
 ### Two authentication channels, unequal trust
 
@@ -554,8 +524,8 @@ The social cards inline the same tokens, so regenerate them with
 ### One accent, and kinds are named not coloured
 
 Artifact kinds are distinguished by their label and their mark, not by a hue.
-Six per-kind colours competed with the accent and encoded nothing a reader could
-learn; the chip says "MCP server" in words and carries the kind's glyph, both of
+Per-kind colours competed with the accent and encoded nothing a reader could
+learn; the chip says "Skill" in words and carries the kind's glyph, both of
 which are unambiguous, translatable and readable without colour vision. Colour
 is reserved for the primary action and the verified badge.
 

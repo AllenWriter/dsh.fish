@@ -119,22 +119,6 @@ export class PlanInstaller {
           files.push(result.relativeToHome)
           break
         }
-        case 'patch-row': {
-          const result = await this.patchRow(step, options.replaceExisting === true)
-          applied.push(result.step)
-          rows.push(String(step['rowId']))
-          break
-        }
-        case 'require-credential': {
-          const envName = String(step['envName'])
-          credentials.push(envName)
-          applied.push({
-            summary: `Needs credential ${envName}`,
-            applied: false,
-            detail: 'Set this before the artifact will connect.',
-          })
-          break
-        }
       }
     }
 
@@ -269,51 +253,6 @@ export class PlanInstaller {
     return { summary: `Removed ${relativePath}`, applied: true }
   }
 
-  /**
-   * Append or replace one row in the profile's own patch layer.
-   *
-   * Writing to the *profile's* `cordis.patch.yml` rather than a bundle's is
-   * deliberate: it is the layer the user owns, applied after every bundle, so
-   * a harness upgrade cannot clobber it and the user can edit or delete the row
-   * by hand afterwards.
-   */
-  private async patchRow(
-    step: InstallStep,
-    replaceExisting: boolean,
-  ): Promise<{ step: AppliedStep }> {
-    const rowId = String(step['rowId'])
-    const rowYaml = String(step['rowYaml'])
-    const patchPath = join(this.profileDir(), 'cordis.patch.yml')
-    const existing = await readText(patchPath)
-    const marker = `# dsh-hub:${rowId}`
-
-    if (existing.includes(marker) && !replaceExisting) {
-      return {
-        step: {
-          summary: `Row ${rowId} already present`,
-          applied: false,
-          detail: 'Remove the marked block to re-add it.',
-        },
-      }
-    }
-
-    const without = existing.includes(marker) ? stripMarkedBlock(existing, marker) : existing
-    const block = `\n${marker}\n- insert:\n${indent(rowYaml, 4)}\n`
-    const next = without.trimEnd() === '' ? block.trimStart() : `${without.trimEnd()}\n${block}`
-
-    await mkdir(dirname(patchPath), { recursive: true })
-    await writeFile(patchPath, next, 'utf8')
-
-    return {
-      step: {
-        summary: existing.includes(marker)
-          ? `Replaced row ${rowId} in the profile patch`
-          : `Added row ${rowId} to the profile patch`,
-        applied: true,
-      },
-    }
-  }
-
   private async removePatchRow(rowId: string): Promise<AppliedStep> {
     const patchPath = join(this.profileDir(), 'cordis.patch.yml')
     const existing = await readText(patchPath)
@@ -402,13 +341,6 @@ function stripMarkedBlock(existing: string, marker: string): string {
   return lines.join('\n').trimEnd()
 }
 
-function indent(text: string, spaces: number): string {
-  const pad = ' '.repeat(spaces)
-  return text
-    .split('\n')
-    .map((line) => (line.trim() === '' ? line : `${pad}${line}`))
-    .join('\n')
-}
 
 function toPosix(path: string): string {
   return path.split(sep).join('/')

@@ -17,7 +17,6 @@ npx @dsh-fish/cli add acme/notes
 
 - files under `$DSH_HOME`
 - package-manager adds
-- profile patch rows
 
 Git packages that build from source are refused until you pass `--allow-build-scripts`. That flag permits the package's `prepare` script to run on this machine, outside the agent sandbox.
 
@@ -38,7 +37,7 @@ Git packages that build from source are refused until you pass `--allow-build-sc
 | `reviews <source>`                 | Average rating, 5-to-1 distribution and recent comments.            |
 
 ```sh
-npx @dsh-fish/cli find postgres --kind mcp-server
+npx @dsh-fish/cli find postgres --kind bundle
 npx @dsh-fish/cli list --json
 npx @dsh-fish/cli remove release-notes
 npx @dsh-fish/cli init my-skill

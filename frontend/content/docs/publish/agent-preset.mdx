@@ -27,7 +27,7 @@ A preset is a directory holding one `agent.cordis.yml`, placed at the repository
 
 The preset id comes from the repository (directory) name, slugified to lowercase kebab-case: it must match `[a-z0-9][a-z0-9-]*`.
 
-The preset probe runs last. A repository whose `package.json` declares a bundle, profile, MCP server, or hook bridge (or one that ships a `SKILL.md`) is classified by that earlier probe instead.
+The preset probe runs last. A repository whose `package.json` declares a bundle or profile (or one that ships a `SKILL.md`) is classified by that earlier probe instead.
 
 ## How it installs
 

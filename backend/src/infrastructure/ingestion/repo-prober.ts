@@ -56,7 +56,7 @@ type ProbeName = 'manifest' | 'skill' | 'preset'
  * The default probe order, rotated when a submission carries a kind hint. A
  * hint only changes what is read first — every kind still needs its content
  * proof, so a hinted probe that finds nothing falls through to the rest. Hints
- * for the package-manifest kinds (bundle, profile, mcp-server, hook-bridge)
+ * for the package-manifest kinds (bundle, profile)
  * change nothing: those are all decided by the same package.json read.
  */
 function orderProbes(kindHint: ArtifactKind | undefined): readonly ProbeName[] {
@@ -68,10 +68,8 @@ function orderProbes(kindHint: ArtifactKind | undefined): readonly ProbeName[] {
 /**
  * Classifies a GitHub repository by what it actually contains, not by what it
  * claims: a `package.json` with `dsh.bundle` is a bundle, a `SKILL.md` is a
- * skill, an `agent.cordis.yml` is a preset, and a `dsh.hub.kind` declaration
- * with its `dsh.hub.mcp` / `dsh.hub.hook` block is an MCP server or hook
- * bridge. A repository holding none of those yields nothing, because the
- * harness would load nothing from it either.
+ * skill, an `agent.cordis.yml` is a preset. A repository holding none of those
+ * yields nothing, because the harness would load nothing from it either.
  *
  * The probes run before anything else is fetched, and a repository that fails
  * all three costs three reads of `raw.githubusercontent.com` and no API quota
@@ -124,7 +122,7 @@ export class RepoProber {
     return undefined
   }
 
-  /** The package manifest: bundle, profile, or a declared mcp-server / hook-bridge. */
+  /** The package manifest: bundle or profile. */
   private async probeManifest(
     repo: RepoDescriptor,
     prefix: string,

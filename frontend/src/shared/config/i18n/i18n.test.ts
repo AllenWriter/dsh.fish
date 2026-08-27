@@ -115,40 +115,6 @@ describe('backend key coverage', () => {
         }),
         target,
       ),
-      // Credentials.
-      buildInstallPlan(
-        Artifact.create({
-          id: 'a-server',
-          kind: 'mcp-server',
-          displayName: 'Server',
-          summary: 'An MCP server.',
-          source: npmSource('dsh-server', '1.0.0'),
-          payload: {
-            kind: 'mcp-server',
-            serverName: 'demo',
-            transport: 'stdio',
-            command: 'npx',
-            credentials: [{ envName: 'DEMO_TOKEN', required: true }],
-          },
-        }),
-        target,
-      ),
-      // Hook bridge.
-      buildInstallPlan(
-        Artifact.create({
-          id: 'a-hook',
-          kind: 'hook-bridge',
-          displayName: 'Hooks',
-          summary: 'A bridge.',
-          source: npmSource('dsh-hooks', '1.0.0'),
-          payload: {
-            kind: 'hook-bridge',
-            dialect: 'claude-code',
-            settingsPath: '~/.claude/settings.json',
-          },
-        }),
-        target,
-      ),
     ]
 
     const emitted = new Set(plans.flatMap((plan) => plan.warningKeys))

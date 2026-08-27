@@ -17,7 +17,6 @@ npx @dsh-fish/cli add acme/notes
 
 - файлы в `$DSH_HOME`
 - добавление пакетов пакетным менеджером
-- строки патча профиля
 
 Git-пакеты, собираемые из исходников, отклоняются, пока вы не передадите `--allow-build-scripts`. Этот флаг разрешает запуск скрипта `prepare` пакета на этой машине, вне песочницы агента.
 
@@ -38,7 +37,7 @@ Git-пакеты, собираемые из исходников, отклоня
 | `reviews <source>`                 | Средняя оценка, распределение от 5 до 1 и свежие комментарии.         |
 
 ```sh
-npx @dsh-fish/cli find postgres --kind mcp-server
+npx @dsh-fish/cli find postgres --kind bundle
 npx @dsh-fish/cli list --json
 npx @dsh-fish/cli remove release-notes
 npx @dsh-fish/cli init my-skill

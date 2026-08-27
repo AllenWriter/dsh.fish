@@ -87,6 +87,16 @@ Canonical ids (`/category/git`, `/category/other`) stay. An unknown id still
 404s. The aliases are the previous hub ids and Oh-My-DSH's slugs; they are
 not a second browse taxonomy.
 
+Retired artifact kinds 301 onto `/browse` at the same layer. Their publish
+guides fold onto `/docs/plugins`:
+
+| Requested | Redirects to |
+|---|---|
+| `/kind/mcp-server` | `/browse` |
+| `/kind/hook-bridge` | `/browse` |
+| `/docs/publish/mcp-server` | `/docs/plugins` |
+| `/docs/publish/hook-bridge` | `/docs/plugins` |
+
 ## Canonical tags and alternates
 
 `pageMeta` emits, for every indexable page:

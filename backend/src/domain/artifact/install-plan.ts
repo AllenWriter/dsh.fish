@@ -46,24 +46,7 @@ export interface WriteFileStep {
   readonly downloadUrl: string
 }
 
-/** Append a plugin row to the profile's own `cordis.patch.yml` layer. */
-export interface PatchRowStep {
-  readonly type: 'patch-row'
-  readonly profile: string
-  /** Row id; re-running an install replaces the row with this id rather than duplicating it. */
-  readonly rowId: string
-  /** YAML fragment for one Cordis plugin row. */
-  readonly rowYaml: string
-}
-
-/** Ask the user for a credential *reference*'s value before the artifact can run. */
-export interface RequireCredentialStep {
-  readonly type: 'require-credential'
-  readonly envName: string
-  readonly required: boolean
-}
-
-export type InstallStep = AddPackageStep | WriteFileStep | PatchRowStep | RequireCredentialStep
+export type InstallStep = AddPackageStep | WriteFileStep
 
 /** npm package name of the hub CLI. `npx` runs its `dsh-fish` bin. */
 export const HUB_CLI_PACKAGE = '@dsh-fish/cli'
@@ -99,8 +82,8 @@ export interface InstallPlan {
  * The website renders `manualCommands` from it; the `@dsh-fish/hub` plugin and the
  * `@dsh-fish/cli` binary execute `steps` from it. The first command is always
  * the hub CLI, so a copied line actually installs — kinds that the harness
- * launcher does not cover (skills, MCP rows, presets, hooks) used to ship only
- * a comment, which is not a command.
+ * launcher does not cover (skills, presets) used to ship only a comment, which
+ * is not a command.
  */
 export function buildInstallPlan(artifact: Artifact, target: InstallTarget): InstallPlan {
   const steps: InstallStep[] = []
@@ -167,33 +150,6 @@ export function buildInstallPlan(artifact: Artifact, target: InstallTarget): Ins
       break
     }
 
-    case 'mcp-server': {
-      // One `dsh-mcp-client` plugin row per server, appended to the profile's
-      // own patch layer so a later harness upgrade cannot clobber it.
-      const rowId = `mcp-${payload.serverName}`
-      steps.push({
-        type: 'patch-row',
-        profile: target.profile,
-        rowId,
-        rowYaml: mcpRowYaml(rowId, payload),
-      })
-      for (const credential of payload.credentials) {
-        steps.push({
-          type: 'require-credential',
-          envName: credential.envName,
-          required: credential.required,
-        })
-      }
-      manualCommands.push(
-        `# Add this row to $DSH_HOME/profiles/${target.profile}/cordis.patch.yml`,
-        mcpRowYaml(rowId, payload),
-      )
-      if (payload.credentials.length > 0) {
-        warningKeys.push('install.warning.credentialsNeeded')
-      }
-      break
-    }
-
     case 'agent-preset': {
       steps.push({
         type: 'write-file',
@@ -204,26 +160,6 @@ export function buildInstallPlan(artifact: Artifact, target: InstallTarget): Ins
       manualCommands.push(
         `# Copy the composition to $DSH_HOME/.agent-presets/${payload.presetId}/agent.cordis.yml`,
       )
-      break
-    }
-
-    case 'hook-bridge': {
-      const bridgePackage =
-        payload.dialect === 'claude-code'
-          ? '@deepseek-ai/dsh-hooks-claude-code'
-          : '@deepseek-ai/dsh-hooks-codex'
-      const rowId = `hooks-${payload.dialect}`
-      steps.push({
-        type: 'patch-row',
-        profile: target.profile,
-        rowId,
-        rowYaml: hookRowYaml(rowId, bridgePackage, payload.settingsPath),
-      })
-      manualCommands.push(
-        `# Add this row to $DSH_HOME/profiles/${target.profile}/cordis.patch.yml`,
-        hookRowYaml(rowId, bridgePackage, payload.settingsPath),
-      )
-      warningKeys.push('install.warning.hookExecutesShell')
       break
     }
   }
@@ -239,42 +175,4 @@ export function buildInstallPlan(artifact: Artifact, target: InstallTarget): Ins
       ? {}
       : { scannedAtCommit: artifact.sourceCommitSha }),
   }
-}
-
-function mcpRowYaml(rowId: string, payload: Extract<Artifact['payload'], { kind: 'mcp-server' }>): string {
-  const lines = [`- id: ${rowId}`, `  name: '@deepseek-ai/dsh-mcp-client'`, '  config:']
-  lines.push(`    serverName: ${payload.serverName}`)
-  lines.push(`    transport: ${payload.transport}`)
-  if (payload.transport === 'stdio') {
-    lines.push(`    command: ${payload.command}`)
-    if (payload.args && payload.args.length > 0) {
-      lines.push(`    args: [${payload.args.map((arg) => JSON.stringify(arg)).join(', ')}]`)
-    }
-    if (payload.credentials.length > 0) {
-      lines.push('    env:')
-      for (const credential of payload.credentials) {
-        // `!!js` resolves the reference at load time; the value never ships in config.
-        lines.push(`      ${credential.envName}: !!js process.env.${credential.envName}`)
-      }
-    }
-  } else {
-    lines.push(`    url: ${payload.url}`)
-    const bearer = payload.credentials[0]
-    if (bearer) {
-      lines.push('    headers:')
-      lines.push(
-        `      Authorization: !!js \`Bearer \${process.env.${bearer.envName}}\``,
-      )
-    }
-  }
-  return lines.join('\n')
-}
-
-function hookRowYaml(rowId: string, bridgePackage: string, settingsPath: string): string {
-  return [
-    `- id: ${rowId}`,
-    `  name: '${bridgePackage}'`,
-    '  config:',
-    `    settingsPath: ${settingsPath}`,
-  ].join('\n')
 }

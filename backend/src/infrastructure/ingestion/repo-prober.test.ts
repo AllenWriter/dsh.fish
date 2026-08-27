@@ -63,7 +63,7 @@ afterEach(() => {
 })
 
 describe('RepoProber.indexRepository', () => {
-  it('indexes a package.json hub declaration as an mcp-server', async () => {
+  it('does not index a package.json that only declares a retired hub kind', async () => {
     const files = {
       'package.json': JSON.stringify({
         name: 'dsh-github-mcp',
@@ -77,7 +77,6 @@ describe('RepoProber.indexRepository', () => {
               transport: 'stdio',
               command: 'npx',
               args: ['-y', '@modelcontextprotocol/server-github'],
-              credentials: [{ envName: 'GITHUB_TOKEN', required: true }],
             },
           },
         },
@@ -85,22 +84,10 @@ describe('RepoProber.indexRepository', () => {
     }
     stubRawHost(files)
 
-    const snapshot = await new RepoProber().indexRepository(descriptor())
-
-    expect(snapshot).toMatchObject({
-      id: 'dsh-github-mcp',
-      kind: 'mcp-server',
-      payload: {
-        kind: 'mcp-server',
-        serverName: 'github',
-        transport: 'stdio',
-        command: 'npx',
-        credentials: [{ envName: 'GITHUB_TOKEN', required: true }],
-      },
-    })
+    expect(await new RepoProber().indexRepository(descriptor())).toBeUndefined()
   })
 
-  it('indexes a package.json hub declaration as a hook-bridge', async () => {
+  it('does not index a package.json that only declares a hook-bridge', async () => {
     const files = {
       'package.json': JSON.stringify({
         name: 'dsh-claude-hooks',
@@ -112,12 +99,7 @@ describe('RepoProber.indexRepository', () => {
     }
     stubRawHost(files)
 
-    const snapshot = await new RepoProber().indexRepository(descriptor())
-
-    expect(snapshot).toMatchObject({
-      kind: 'hook-bridge',
-      payload: { kind: 'hook-bridge', dialect: 'claude-code', settingsPath: 'hooks.json' },
-    })
+    expect(await new RepoProber().indexRepository(descriptor())).toBeUndefined()
   })
 
   it('lets a kind hint reorder the probes without replacing their proof', async () => {
@@ -160,7 +142,7 @@ describe('RepoProber.indexRepository', () => {
     expect(calls[1]).toBe('https://raw.githubusercontent.com/acme/widgets/main/package.json')
   })
 
-  it('surfaces a declared-but-malformed hub manifest instead of skipping it', async () => {
+  it('falls through a retired hub kind to a skill the repository also holds', async () => {
     const files = {
       'package.json': JSON.stringify({
         name: 'dsh-bad-mcp',
@@ -171,11 +153,8 @@ describe('RepoProber.indexRepository', () => {
     }
     stubRawHost(files)
 
-    // The error, not the skill the repository also holds: a malformed
-    // declaration is recorded by the sweep and shown to the submitter.
-    await expect(new RepoProber().indexRepository(descriptor())).rejects.toThrow(
-      'A stdio MCP server needs a command.',
-    )
+    const snapshot = await new RepoProber().indexRepository(descriptor())
+    expect(snapshot?.kind).toBe('skill')
   })
 
   it('files a row under a curated-list category when the author declared none', async () => {

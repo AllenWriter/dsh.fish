@@ -67,8 +67,6 @@ export {
   ChatTextIcon as AskIcon,
   SidebarSimpleIcon as AskPanelClosedIcon,
   SidebarIcon as AskPanelOpenIcon,
-  KeyIcon as CredentialIcon,
-
   // Outcomes and states.
   WarningIcon as WarningIcon,
   WarningCircleIcon as ErrorIcon,
@@ -81,9 +79,7 @@ export {
   PackageIcon as BundleIcon,
   StackIcon as ProfileIcon,
   LightningIcon as SkillIcon,
-  PlugsConnectedIcon as McpServerIcon,
   SlidersHorizontalIcon as AgentPresetIcon,
-  BridgeIcon as HookBridgeIcon,
 
   // Categories. One mark per browse id, none of them the same drawing as a kind.
   LayoutIcon as UiCategoryIcon,

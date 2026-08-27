@@ -108,50 +108,6 @@ describe('PlanInstaller', () => {
     ).rejects.toBeInstanceOf(InstallRefused)
   })
 
-  it('appends a marked patch row and can replace or remove it', async () => {
-    const home = await mkdtemp(join(tmpdir(), 'dsh-install-'))
-    const installer = new PlanInstaller(client(), 'web', { home })
-    const row: InstallStep = {
-      type: 'patch-row',
-      profile: 'web',
-      rowId: 'mcp-github',
-      rowYaml: '- id: mcp-github\n  name: test',
-    }
-
-    await installer.apply(plan({ kind: 'mcp-server', artifactId: 'github-mcp', steps: [row] }), {
-      allowBuildScripts: false,
-      signal: new AbortController().signal,
-    })
-
-    const first = await readFile(join(home, 'profiles/web/cordis.patch.yml'), 'utf8')
-    expect(first).toContain('# dsh-hub:mcp-github')
-    expect(first).toContain('name: test')
-
-    const skipped = await installer.apply(
-      plan({ kind: 'mcp-server', artifactId: 'github-mcp', steps: [row] }),
-      { allowBuildScripts: false, signal: new AbortController().signal },
-    )
-    expect(skipped.steps[0]?.applied).toBe(false)
-
-    const replacedRow: InstallStep = { ...row, rowYaml: '- id: mcp-github\n  name: updated' }
-    await installer.apply(
-      plan({ kind: 'mcp-server', artifactId: 'github-mcp', steps: [replacedRow] }),
-      { allowBuildScripts: false, signal: new AbortController().signal, replaceExisting: true },
-    )
-    const replaced = await readFile(join(home, 'profiles/web/cordis.patch.yml'), 'utf8')
-    expect(replaced).toContain('name: updated')
-    expect(replaced.match(/# dsh-hub:mcp-github/g)).toHaveLength(1)
-
-    const removed = await installer.remove('github-mcp', {
-      signal: new AbortController().signal,
-    })
-    expect(removed.steps.some((step) => step.summary.includes('Removed row'))).toBe(true)
-    expect(await readFile(join(home, 'profiles/web/cordis.patch.yml'), 'utf8')).not.toContain(
-      'mcp-github',
-    )
-    expect(listLocked(await readLock(home), 'web')).toEqual([])
-  })
-
   it('runs dsh plugin add and records the new dependency name', async () => {
     const home = await mkdtemp(join(tmpdir(), 'dsh-install-'))
     await mkdir(join(home, 'profiles/web'), { recursive: true })

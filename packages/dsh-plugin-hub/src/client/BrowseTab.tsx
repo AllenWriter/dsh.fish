@@ -10,7 +10,7 @@ import {
 } from './api.js'
 import type { HubLocaleKey, HubTranslate } from './locale.js'
 
-const KINDS = ['bundle', 'profile', 'skill', 'mcp-server', 'agent-preset', 'hook-bridge'] as const
+const KINDS = ['bundle', 'profile', 'skill', 'agent-preset'] as const
 
 /**
  * The catalog, and the confirmation in front of an install.

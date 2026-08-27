@@ -9,11 +9,11 @@ import { ASK_LIMITS, KvAskRateLimiter, MemoryKv } from './kv-ask-rate-limiter.js
 
 const artifact = Artifact.create({
   id: 'dsh-postgres-mcp',
-  kind: 'mcp-server',
+  kind: 'bundle',
   displayName: 'Postgres',
   summary: 'SQL.',
   source: githubSource({ owner: 'acme', repo: 'postgres-mcp' }),
-  payload: { kind: 'mcp-server', serverName: 'postgres', transport: 'stdio', command: 'npx', credentials: [] },
+  payload: { kind: 'bundle', requiresBuild: false },
 })
 
 const artifacts = {

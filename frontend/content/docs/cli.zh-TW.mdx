@@ -17,7 +17,6 @@ npx @dsh-fish/cli add acme/notes
 
 - 向 `$DSH_HOME` 寫檔案
 - 用套件管理器加套件
-- 寫入配置檔案補丁列
 
 從原始碼建置的 git 套件會被拒絕，直到你傳入 `--allow-build-scripts`。這個旗標允許該套件的 `prepare` 指令碼在這台機器上執行，處於代理沙箱之外。
 
@@ -38,7 +37,7 @@ npx @dsh-fish/cli add acme/notes
 | `reviews <source>`                 | 平均分、5 到 1 星的分布和最近的評論。                        |
 
 ```sh
-npx @dsh-fish/cli find postgres --kind mcp-server
+npx @dsh-fish/cli find postgres --kind bundle
 npx @dsh-fish/cli list --json
 npx @dsh-fish/cli remove release-notes
 npx @dsh-fish/cli init my-skill

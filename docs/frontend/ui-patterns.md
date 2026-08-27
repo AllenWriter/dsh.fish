@@ -72,7 +72,7 @@ weight or a glyph.
 ### Colour is scarce; shape is not
 
 The accent is spent on two things only: the primary action and a verified badge. Do
-not give a taxonomy entry a hue — six kind colours encode nothing a reader can learn
+not give a taxonomy entry a hue — per-kind colours encode nothing a reader can learn
 and compete with the one accent.
 
 A glyph is the opposite trade and is encouraged: it is one mark per entry, it

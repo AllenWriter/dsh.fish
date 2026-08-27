@@ -41,7 +41,7 @@ because you passed `--yes`.
 | `reviews <source>` | Average rating, 5-to-1 distribution and recent comments. |
 
 ```sh
-npx @dsh-fish/cli find postgres --kind mcp-server
+npx @dsh-fish/cli find postgres --kind bundle
 npx @dsh-fish/cli list --json
 npx @dsh-fish/cli remove release-notes
 npx @dsh-fish/cli init my-skill

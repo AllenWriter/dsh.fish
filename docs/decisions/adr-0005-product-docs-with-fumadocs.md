@@ -261,7 +261,7 @@ Easier:
   paragraphs.
 - Sidebar, TOC, and docs search come with the framework instead of being
   invented against FSD.
-- `/docs/cli`, `/docs/publish/hook-bridge`, `/ja/docs/cli` become real, indexable URLs.
+- `/docs/cli`, `/docs/publish/skill`, `/ja/docs/cli` become real, indexable URLs.
 
 Harder:
 

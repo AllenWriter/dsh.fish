@@ -1,4 +1,4 @@
 {
   "title": "Plugin formats",
-  "pages": ["bundle", "skill", "mcp-server", "agent-preset", "profile", "hook-bridge"]
+  "pages": ["bundle", "skill", "agent-preset", "profile"]
 }

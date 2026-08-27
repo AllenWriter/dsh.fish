@@ -30,7 +30,7 @@ catalog with a shared, machine-executable install plan.
 
 ## Features
 
-- **Typed catalog** — bundles, profiles, skills, MCP servers, agent presets and hook bridges, classified by probing what the harness can actually load, not by self-declared tags.
+- **Typed catalog** — bundles, profiles, skills, and agent presets, classified by probing what the harness can actually load, not by self-declared tags.
 - **Transparent trust signals** — every artifact carries a public, reproducible quality score (S/A/B/C), a maintenance status, and 7d/30d star velocity. The formula is served at [`GET /api/v1/scoring`](https://dsh.fish/api/v1/scoring), not buried in a blog post.
 - **Rising, not just popular** — per-sweep metrics snapshots power a `rising` sort that surfaces what is gaining stars this week.
 - **One install plan, three surfaces** — the same domain-owned plan renders as a copy-pasteable command on the web, executes in the CLI, and runs inside the harness via the hub plugin. They cannot drift apart.
@@ -60,7 +60,7 @@ npx @dsh-fish/cli add <artifact-id>
 ```
 
 `add` / `find` / `list` / `remove` / `update` match the [skills CLI](https://github.com/vercel-labs/skills)
-vocabulary and actually write skills, MCP rows, presets and hook bridges into
+vocabulary and actually write skills, presets, bundles and profiles into
 `$DSH_HOME`.
 
 **Inside the harness** — add the hub plugin once:
@@ -83,11 +83,9 @@ dsh plugin --profile local-dsh add @dsh-fish/hub
 
 **Publishing a plugin?** Tag your repository with the **`dsh-plugin`** topic. The
 hourly crawl inspects its `package.json`, `SKILL.md` or `agent.cordis.yml` and
-classifies what the harness can actually load. MCP servers and hook bridges are
-declared in `package.json` as `dsh.hub.kind` with a `dsh.hub.mcp` or
-`dsh.hub.hook` block — see
+classifies what the harness can actually load. See
 [docs/project/architecture.md](docs/project/architecture.md#how-a-repository-becomes-a-row)
-for the manifest shape.
+for the probe order.
 
 ## What it indexes
 
@@ -96,9 +94,7 @@ for the manifest shape.
 | **Bundle**       | npm package declaring `dsh.bundle.patch`          | `dsh plugin --profile <p> add <spec>`       |
 | **Profile**      | ordered `dsh.profile.bundles` stack               | one `add` per bundle, in order              |
 | **Skill**        | `SKILL.md` bundle or flat Markdown                | files written under `$DSH_HOME/skills`      |
-| **MCP server**   | external server declared via `dsh.hub.mcp`        | a `dsh-mcp-client` row in the profile patch |
 | **Agent preset** | directory holding one `agent.cordis.yml`          | written to `$DSH_HOME/.agent-presets/<id>`  |
-| **Hook bridge**  | Claude Code / Codex bridge declared via `dsh.hub.hook` | a bridge plugin row in the profile patch |
 
 ## Repository layout
 

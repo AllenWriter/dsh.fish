@@ -17,7 +17,7 @@ const PAGE_SIZE = 24
 /**
  * One artifact type, at a path a search engine will rank.
  *
- * "MCP servers for DeepSeek Harness" is a phrase people type; `/browse?kind=`
+ * "Skills for DeepSeek Harness" is a phrase people type; `/browse?kind=`
  * is not a page an engine is willing to treat as the answer to it. The listing
  * is the same one the browse page renders — the difference is that this URL is
  * a stable, linked, canonical document about one topic, so it can accumulate

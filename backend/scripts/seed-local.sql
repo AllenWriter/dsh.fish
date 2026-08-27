@@ -28,10 +28,10 @@ INSERT INTO artifacts (
   1754006400000, 1754697600000, 1754697600000
 ),
 (
-  'dsh-postgres-mcp', 'mcp-server', 'Postgres MCP',
+  'dsh-postgres-mcp', 'bundle', 'Postgres MCP',
   'Query and inspect PostgreSQL databases as native agent tools, with read-only mode by default.',
   '{"origin":"github","owner":"acme","repo":"postgres-mcp","commit":"9f3c1ab7d2e45b6c8f01a2b3c4d5e6f708192a3b"}', 'github',
-  '{"kind":"mcp-server","serverName":"postgres","transport":"stdio","command":"npx","args":["-y","@acme/postgres-mcp"],"credentials":[{"envName":"DATABASE_URL","required":true}]}',
+  '{"kind":"bundle","requiresBuild":false}',
   '["postgres","sql","database"]', '["docs"]', 'Apache-2.0',
   'acme', 'https://github.com/acme',
   '# Postgres MCP' || char(10) || char(10) || 'Exposes schema inspection and parameterised queries.',
@@ -61,10 +61,10 @@ INSERT INTO artifacts (
   1754265600000, 1754611200000, 1754611200000
 ),
 (
-  'claude-code-hooks', 'hook-bridge', 'Claude Code hooks',
+  'claude-code-hooks', 'bundle', 'Claude Code hooks',
   'Run your existing Claude Code shell hooks on harness lifecycle events, unchanged.',
   '{"origin":"npm","packageName":"dsh-claude-code-hooks","latestVersion":"0.2.0"}', 'npm',
-  '{"kind":"hook-bridge","dialect":"claude-code","settingsPath":"~/.claude/settings.json"}',
+  '{"kind":"bundle","requiresBuild":false}',
   '["hooks","lifecycle","claude-code"]', '["dev"]', 'MIT',
   'community', NULL,
   '# claude-code-hooks' || char(10) || char(10) || 'Bridges the Claude Code hook protocol.',
@@ -135,7 +135,7 @@ INSERT INTO artifact_reviews (
 ) VALUES
 (
   'dsh-postgres-mcp', 'seed-account', 'Turtle Maintainer', NULL, 5,
-  'Installed it into the web profile and ran read-only queries against a staging database within minutes. The credential reference flow is exactly what a registry row should do.',
+  'Installed it into the web profile and ran read-only queries against a staging database within minutes.',
   1754611200000, 1754611200000
 ),
 (

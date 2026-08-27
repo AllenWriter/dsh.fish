@@ -1,6 +1,6 @@
 ---
 title: Plugins
-description: DeepSeek Harness keeps a small core and ships every capability as a plugin. The six artifact kinds, and why dsh.fish lets you inspect before install.
+description: DeepSeek Harness keeps a small core and ships every capability as a plugin. The four artifact kinds, and why dsh.fish lets you inspect before install.
 ---
 
 DeepSeek Harness runs on Cordis, a plugin framework. The model adapter, the tool registry, the session log, and the agent loop are all plugins mounted from configuration.
@@ -11,14 +11,12 @@ That is why the core stays small. When you want a new capability, you add a plug
 
 ## What a plugin can be
 
-dsh.fish catalogs six artifact kinds. Each has its own manifest contract:
+dsh.fish catalogs four artifact kinds. Each has its own manifest contract:
 
 - [Bundle](/docs/publish/bundle): an npm package that adds a patch layer of plugins to a profile.
 - [Skill](/docs/publish/skill): a Markdown file of instructions the agent loads on demand.
-- [MCP server](/docs/publish/mcp-server): an external Model Context Protocol server mounted as native tools.
 - [Agent preset](/docs/publish/agent-preset): one `agent.cordis.yml` that gives a session its own tools and prompt.
 - [Profile](/docs/publish/profile): an ordered stack of bundles that forms a complete composition.
-- [Hook bridge](/docs/publish/hook-bridge): runs existing Claude Code or Codex shell hooks inside dsh.
 
 ## The trust problem
 
@@ -30,7 +28,7 @@ A README tells you what the author claims, not what installing would do.
 
 dsh.fish exists for that gap.
 
-The catalog reads each source's real manifest and files. Every artifact page shows the install plan (the files, packages, and patch rows an install would run) before you run anything.
+The catalog reads each source's real manifest and files. Every artifact page shows the install plan (the files and packages an install would run) before you run anything.
 
 Inspect first, then install.
 

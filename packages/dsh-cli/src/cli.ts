@@ -28,9 +28,8 @@ const VERSION = readVersion()
 const HELP = `
 Usage: dsh-fish <command> [options]
 
-Search dsh.fish and install harness artifacts — bundles, profiles, skills,
-MCP servers, agent presets and hook bridges — using the same plan the website
-shows.
+Search dsh.fish and install harness artifacts — bundles, profiles, skills
+and agent presets — using the same plan the website shows.
 
 Manage artifacts:
   add <source>       Install from a hub id, dsh.fish URL, or owner/repo
@@ -70,7 +69,7 @@ Examples:
   npx @dsh-fish/cli add https://dsh.fish/a/release-notes --profile web
   npx @dsh-fish/cli add release-notes --profile local-dsh
   DSH_PROFILE=local-dsh npx @dsh-fish/cli list
-  npx @dsh-fish/cli find postgres --kind mcp-server
+  npx @dsh-fish/cli find postgres --kind bundle
   npx @dsh-fish/cli list
   npx @dsh-fish/cli remove release-notes
   npx @dsh-fish/cli rate dsh-postgres-mcp 5 "installed and queried in minutes"

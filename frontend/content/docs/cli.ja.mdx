@@ -17,7 +17,6 @@ npx @dsh-fish/cli add acme/notes
 
 - `$DSH_HOME` へのファイル書き込み
 - パッケージマネージャーによる追加
-- プロファイルのパッチ行
 
 ソースからビルドする git パッケージは `--allow-build-scripts` を渡すまで拒否されます。このフラグは、そのパッケージの `prepare` スクリプトをこのマシン上、エージェントのサンドボックス外で実行する許可です。
 
@@ -38,7 +37,7 @@ npx @dsh-fish/cli add acme/notes
 | `reviews <source>`                 | 平均評価、5 から 1 の分布、最近のコメント。                               |
 
 ```sh
-npx @dsh-fish/cli find postgres --kind mcp-server
+npx @dsh-fish/cli find postgres --kind bundle
 npx @dsh-fish/cli list --json
 npx @dsh-fish/cli remove release-notes
 npx @dsh-fish/cli init my-skill

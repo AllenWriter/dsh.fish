@@ -13,9 +13,7 @@ const DOC_PATHS = [
   '/docs/develop/tool',
   '/docs/develop/configuration',
   '/docs/publish/skill',
-  '/docs/publish/mcp-server',
   '/docs/publish/agent-preset',
-  '/docs/publish/hook-bridge',
   '/docs/publish/profile',
   '/docs/publish/bundle',
   '/docs/submit',
@@ -28,9 +26,9 @@ describe('productDocsMarkdown', () => {
   it('bundles the index and nested publish pages', () => {
     expect(supportsProductDocsMarkdown('/docs')).toBe(true)
     expect(supportsProductDocsMarkdown('/docs/cli')).toBe(true)
-    expect(supportsProductDocsMarkdown('/docs/publish/hook-bridge')).toBe(true)
+    expect(supportsProductDocsMarkdown('/docs/publish/skill')).toBe(true)
     expect(productDocsMarkdown('/docs/cli')).toContain('npx @dsh-fish/cli')
-    expect(productDocsMarkdown('/docs/publish/hook-bridge')).toContain('hook-bridge')
+    expect(productDocsMarkdown('/docs/publish/skill')).toContain('SKILL.md')
     expect(productDocsMarkdown('/docs/developers')).toContain('dsh.fish developer resources')
   })
 

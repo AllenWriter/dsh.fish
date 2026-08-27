@@ -237,7 +237,7 @@ describe('supportsMarkdownNegotiation', () => {
     expect(supportsMarkdownNegotiation('/docs')).toBe(true)
     expect(supportsMarkdownNegotiation('/ja/docs')).toBe(true)
     expect(supportsMarkdownNegotiation('/docs/cli')).toBe(true)
-    expect(supportsMarkdownNegotiation('/zh-CN/docs/publish/hook-bridge')).toBe(true)
+    expect(supportsMarkdownNegotiation('/zh-CN/docs/publish/skill')).toBe(true)
   })
 })
 

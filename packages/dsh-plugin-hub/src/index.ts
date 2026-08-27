@@ -30,9 +30,7 @@ const KINDS = [
   'bundle',
   'profile',
   'skill',
-  'mcp-server',
   'agent-preset',
-  'hook-bridge',
 ] as const
 
 export function apply(ctx: Context, config: HubConfig = DEFAULT_CONFIG): void {
@@ -47,8 +45,8 @@ export function apply(ctx: Context, config: HubConfig = DEFAULT_CONFIG): void {
     defineTool({
       name: 'hub_search',
       description:
-        'Search dsh.fish for harness artifacts — bundles, profiles, skills, MCP servers, agent ' +
-        'presets and hook bridges. Use it before claiming a capability does not exist, and before ' +
+        'Search dsh.fish for harness artifacts — bundles, profiles, skills and agent ' +
+        'presets. Use it before claiming a capability does not exist, and before ' +
         'writing a plugin from scratch. Returns ids you can pass to hub_install.',
       parameters: {
         query: {
@@ -128,8 +126,8 @@ export function apply(ctx: Context, config: HubConfig = DEFAULT_CONFIG): void {
     defineTool({
       name: 'hub_install',
       description:
-        'Install a dsh.fish artifact into this harness. Writes skills and presets directly, adds ' +
-        'MCP and hook rows to the profile patch layer, and runs the package manager for bundles. ' +
+        'Install a dsh.fish artifact into this harness. Writes skills and presets directly and ' +
+        'runs the package manager for bundles. ' +
         'The harness must be restarted afterwards for new rows to load. If the artifact builds ' +
         'from source, this refuses until the user has seen the source and agreed.',
       parameters: {

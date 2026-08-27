@@ -41,7 +41,7 @@ test.describe('product docs on a phone', () => {
     await page.getByRole('button', { name: 'Documentation menu' }).click()
     const dialog = page.getByRole('dialog', { name: 'Documentation menu' })
     await expect(dialog).toBeVisible()
-    await expect(dialog.getByRole('link', { name: 'Hook bridges' })).toBeVisible()
+    await expect(dialog.getByRole('link', { name: 'Bundles' })).toBeVisible()
     await expect(dialog.locator(':focus')).toHaveCount(1)
     await page.keyboard.press('Shift+Tab')
     await expect(dialog.locator(':focus')).toHaveCount(1)

@@ -5,7 +5,7 @@ import type { MessageKey } from '@/shared/config/i18n'
  *
  * Every entry has to hold for any GitHub-sourced plugin, because nothing here
  * knows which repository it will be shown on. A question that only makes sense
- * for, say, an MCP server would render as noise on a skill.
+ * for, say, a bundle would render as noise on a skill.
  */
 export const SUGGESTED_QUESTION_KEYS: readonly MessageKey[] = [
   'ask.suggested.q1',
