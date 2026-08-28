@@ -28,7 +28,15 @@ export function AccountTab({ t }: { t: HubTranslate }): JSX.Element {
     request<HubState>('/state').then(
       (state) => {
         setAccount(state.account)
-        if (state.account.signedIn) setLogin(undefined)
+        if (state.account.signedIn) {
+          setLogin(undefined)
+          setError(undefined)
+          return
+        }
+        if (state.account.error !== undefined) {
+          setLogin(undefined)
+          setError(state.account.error)
+        }
       },
       (failure: unknown) => { setError(describe(failure, t)) },
     )

@@ -68,9 +68,11 @@ export function registerHttpApi(ctx: Context, deps: HttpDependencies): void {
 
     // The poll outlives the request that started it: the reader has to approve
     // in a browser, and an HTTP request held open for that long would time out
-    // in front of them. Progress is read back through `GET /account`.
+    // in front of them. Progress is read back through `GET /state`.
     void deps.client.pollForToken(grant, abort.signal).then(
-      () => undefined,
+      () => {
+        if (pending === login) pending = undefined
+      },
       (error: unknown) => {
         if (pending === login) login.error = message(error)
       },
@@ -243,6 +245,10 @@ async function account(
     if (me.account !== null) {
       return { signedIn: true, displayName: me.account.displayName }
     }
+    // A file on disk is not a session the hub recognises. Do not keep the
+    // waiting copy up — that is how Approve-in-browser-then-still-waiting
+    // looks when the token poll wrote a credential `/me` will not accept.
+    return { signedIn: false, error: 'The stored session was not accepted. Sign in again.' }
   }
   if (pending !== undefined && pending.expiresAt > Date.now() && pending.error === undefined) {
     return {

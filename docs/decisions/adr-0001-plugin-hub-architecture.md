@@ -158,4 +158,6 @@ never reads, which is how a registry ends up with an empty long tail.
   completely, `packages/dsh-plugin-hub/src/harness.d.ts` should be deleted and
   the real packages added as devDependencies.
 - D1 has no cross-statement transactions, so multi-table writes use `db.batch`,
-  which D1 applies atomically.
+  which D1 applies atomically. Better Auth's drizzle `consumeOne` is a same-table
+  `DELETE … IN (SELECT …)` that D1 refuses; the Worker wraps it as find-then-delete
+  by id so a device-grant token poll can redeem an approved code.

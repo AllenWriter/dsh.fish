@@ -20,6 +20,15 @@
 - Device-grant tests (`frontend/src/shared/api/device-grant.test.ts`) pin that
   `/device` claims a user code via `GET /api/auth/device` before approve/deny,
   and that an unclaimed approve is a failure (`DEVICE_CODE_NOT_CLAIMED`).
+- Device-token redemption (`backend/src/infrastructure/auth/d1-safe-consume.test.ts`)
+  pins that `consumeOne` is find-then-delete by id: D1 refuses Better Auth's
+  drizzle `DELETE … WHERE id IN (SELECT id FROM same table)` subquery, which is
+  what left the plugin waiting after a successful Authorize. Bearer lookup
+  (`request-session.test.ts`) pins that `Authorization: Bearer <access_token>`
+  uses the raw session token, not a signed cookie. The plugin settings API
+  (`packages/dsh-plugin-hub/src/http.test.ts`) surfaces a poll failure on
+  `GET /state` instead of keeping the waiting copy, and HubSection replaces
+  waiting with that error so Sign in is offered again.
 
 ## Integration tests
 

@@ -428,6 +428,15 @@ the system browser, where the reader's session already is. `/device` claims that
 code with `GET /api/auth/device` before it offers Authorize; Better Auth rejects
 `POST /device/approve` for an unclaimed code.
 
+After Authorize, the plugin polls `POST /api/auth/device/token`. Better Auth's
+drizzle `consumeOne` issues a same-table `DELETE … IN (SELECT …)` that D1
+refuses, so the Worker wraps the adapter as find-then-delete by id
+(`d1SafeConsumeOne`). The JSON `access_token` is the session token; `/api/v1/me`
+looks it up with `internalAdapter.findSession`, because the bearer plugin
+expects a signed cookie value and would otherwise leave `/me` anonymous. The
+settings Account tab treats a poll error on `GET /state` as a finished login,
+not as continued waiting.
+
 `webServer` is reached through `ctx.inject` rather than the plugin's own `inject`
 list, so a profile that serves no browser client still loads the tools.
 
@@ -442,7 +451,10 @@ credentials list is ignored with the rest of that block.
 A browser session cookie and a device-grant bearer token both resolve to the
 same account, but `Actor.channel` distinguishes them. `requireInteractiveSession`
 restricts account-shaped writes — submitting, claiming — to a real browser
-session, so a harness token cannot publish on a user's behalf.
+session, so a harness token cannot publish on a user's behalf. The device-grant
+`access_token` is Better Auth's session token presented as `Authorization:
+Bearer`; it is resolved through the session store, not by converting it into a
+signed session cookie.
 
 The `Account` the domain sees carries no source-host identity. Whether a
 submitter owns a repository is answered by `LinkedIdentityReader`, which reads

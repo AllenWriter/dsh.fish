@@ -5,6 +5,7 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { HubSection } from './HubSection.js'
+import { type HubState } from './api.js'
 import { dictionaries, type HubLocaleKey } from './locale.js'
 
 /** Renders English copy, and fails loudly on a key with no translation. */
@@ -61,6 +62,7 @@ describe('HubSection', () => {
   afterEach(() => {
     cleanup()
     vi.unstubAllGlobals()
+    vi.useRealTimers()
   })
 
   it('names the profile it will write into, so a desktop install is not mistaken for web', async () => {
@@ -124,6 +126,35 @@ describe('HubSection', () => {
     expect(link.getAttribute('href')).toBe('https://dsh.fish/device?user_code=WXYZ-1234')
     expect(link.getAttribute('target')).toBe('_blank')
     expect(await screen.findByText(/WXYZ-1234/)).toBeDefined()
+  })
+
+  it('replaces waiting with the host error when the token poll fails', async () => {
+    let account: HubState['account'] = { signedIn: false }
+    stubFetch({
+      'GET /state': () => ({
+        body: { ...STATE, account },
+      }),
+      'GET /catalog': { body: { total: 0, items: [] } },
+      'POST /account/login': {
+        body: {
+          userCode: '43085132',
+          verificationUrl: 'https://dsh.fish/device?user_code=43085132',
+          expiresAt: new Date(Date.now() + 600_000).toISOString(),
+        },
+      },
+    })
+    render(<HubSection t={translate} />)
+
+    screen.getByRole('tab', { name: 'Account' }).click()
+    ;(await screen.findByRole('button', { name: 'Sign in' })).click()
+    expect(await screen.findByText(/Waiting for you to approve/)).toBeDefined()
+
+    account = { signedIn: false, error: 'Device authorization failed.' }
+    expect(
+      await screen.findByText('Device authorization failed.', {}, { timeout: 4000 }),
+    ).toBeDefined()
+    expect(screen.queryByText(/Waiting for you to approve/)).toBeNull()
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeDefined()
   })
 })
 

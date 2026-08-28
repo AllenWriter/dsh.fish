@@ -7,6 +7,7 @@ import type { HubEnv } from '../../infrastructure/config/env.js'
 import type { ReadmeLocalizationScheduler } from '../../application/port/readme-localization.js'
 import { hintFor, toApiError, type ApiErrorBody } from './error-mapper.js'
 import { isDomainError } from '../../domain/shared/error.js'
+import { readRequestSession } from '../../infrastructure/auth/request-session.js'
 import { catalogRoutes } from './route/catalog-routes.js'
 import { askRoutes } from './route/ask-routes.js'
 import { reviewRoutes } from './route/review-routes.js'
@@ -103,16 +104,8 @@ async function resolveActor(container: Container, request: Request): Promise<Act
   // store hiccup must not take the catalog down; endpoints that do need an
   // account still reject, because `requireActor` sees no actor. The failure is
   // logged rather than swallowed, so the cause stays visible.
-  let session: Awaited<ReturnType<Container['auth']['api']['getSession']>>
-  try {
-    session = await container.auth.api.getSession({ headers: request.headers })
-  } catch (error) {
-    console.error('session_resolution_failed', {
-      message: error instanceof Error ? error.message : String(error),
-    })
-    return undefined
-  }
-  if (!session?.user) return undefined
+  const session = await readRequestSession(container.auth, request)
+  if (!session) return undefined
 
   const email = session.user.email?.toLowerCase()
   const account = {
@@ -127,11 +120,7 @@ async function resolveActor(container: Container, request: Request): Promise<Act
     isAdmin: email !== undefined && container.config.adminEmails.includes(email),
   }
 
-  const channel = request.headers.get('authorization')?.toLowerCase().startsWith('bearer ')
-    ? ('device-token' as const)
-    : ('session' as const)
-
-  return { account, channel }
+  return { account, channel: session.channel }
 }
 
 export type ApiApp = ReturnType<typeof createApiApp>

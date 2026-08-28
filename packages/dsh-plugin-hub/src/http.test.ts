@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import type { AddressInfo } from 'node:net'
 import type { Context, WebRoute } from '@deepseek-ai/cordis'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import type { HubClient } from './hub-client.js'
+import { HubError, type HubClient } from './hub-client.js'
 import { API_ROOT, registerHttpApi } from './http.js'
 import { PlanInstaller } from './installer.js'
 
@@ -93,6 +93,26 @@ describe('settings API', () => {
     ).not.toThrow()
   })
 
+  it('does not keep a stored token that /me rejects behind the waiting copy', async () => {
+    await writeFile(
+      join(home, '.dsh-fish-token.json'),
+      JSON.stringify({
+        baseUrl: 'https://dsh.fish',
+        accessToken: 'stale-token',
+        obtainedAt: new Date().toISOString(),
+      }),
+    )
+    process.env['DSH_HOME'] = home
+    const request = await listen({
+      client: { whoami: async () => ({ account: null }) },
+    })
+
+    const state = await request('/state')
+    expect(JSON.parse(state.body)).toMatchObject({
+      account: { signedIn: false, error: 'The stored session was not accepted. Sign in again.' },
+    })
+  })
+
   it('reports the booted profile and never echoes the stored token', async () => {
     await writeFile(
       join(home, '.dsh-fish-token.json'),
@@ -111,6 +131,37 @@ describe('settings API', () => {
       installed: [],
     })
     expect(state.body).not.toContain('super-secret-token')
+  })
+
+  it('surfaces a poll failure on GET /state instead of leaving the login waiting', async () => {
+    process.env['DSH_HOME'] = home
+    let fail: ((error: Error) => void) | undefined
+    const request = await listen({
+      client: {
+        requestDeviceCode: async () => ({
+          device_code: 'device-secret',
+          user_code: '43085132',
+          verification_uri: 'https://dsh.fish/device',
+          verification_uri_complete: 'https://dsh.fish/device?user_code=43085132',
+          expires_in: 600,
+          interval: 5,
+        }),
+        pollForToken: () =>
+          new Promise<never>((_resolve, reject) => {
+            fail = reject
+          }),
+      },
+    })
+
+    await request('/account/login', { method: 'POST' })
+    fail?.(new HubError('Device authorization failed.', 'FAILED'))
+    await new Promise<void>((done) => { setTimeout(done, 0) })
+
+    const state = await request('/state')
+    expect(JSON.parse(state.body)).toMatchObject({
+      account: { signedIn: false, error: 'Device authorization failed.' },
+    })
+    expect(state.body).not.toContain('43085132')
   })
 
   it('returns the user code and an https verification URL, keeping the device code', async () => {
