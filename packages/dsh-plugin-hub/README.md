@@ -66,12 +66,14 @@ same-origin routes under `/api/dsh-fish`, and those call the very
 `$DSH_HOME/.dsh-fish-lock.json`. So Installed lists exactly what `hub_list`
 reports, and an artifact removed there disappears from the tools.
 
-Browse resolves and shows the install plan before anything runs. A package that
-would build from source is refused until you press the button that says so —
-that build runs the package's own code outside the agent sandbox.
+Browse cards install in place: the button runs `/install` immediately and
+shows a spinner until the lockfile updates. An already-installed artifact
+shows Uninstall instead. Catalog search and the README modal send the host
+locale so hub i18n matches the harness. Clicking a card opens that README.
 
 Account signs in with the same device flow: the section shows the user code and
-the verification URL as an ordinary external link. The device code and the
+the verification URL as an ordinary external link. Once signed in, it shows
+the account avatar and a tooltip from `/me`. The device code and the
 resulting token never reach the browser, and a desktop shell can hand that
 `https` link to the system browser rather than navigating its own WebView.
 

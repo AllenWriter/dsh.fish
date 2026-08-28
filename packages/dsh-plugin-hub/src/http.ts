@@ -104,12 +104,24 @@ export function registerHttpApi(ctx: Context, deps: HttpDependencies): void {
         case '/catalog': {
           const query = url.searchParams.get('q')?.trim()
           const kind = url.searchParams.get('kind')?.trim()
+          const locale = url.searchParams.get('locale')?.trim()
           const result = await deps.client.search({
             ...(query === undefined || query === '' ? {} : { query }),
             ...(kind === undefined || kind === '' ? {} : { kind }),
+            ...(locale === undefined || locale === '' ? {} : { locale }),
             limit: SEARCH_LIMIT,
           })
           json(res, 200, { total: result.total, items: result.items.map(card) })
+          return
+        }
+        case '/detail': {
+          const artifactId = requireId(url.searchParams.get('artifactId'))
+          const locale = url.searchParams.get('locale')?.trim()
+          const detail = await deps.client.detail(
+            artifactId,
+            locale === undefined || locale === '' ? undefined : locale,
+          )
+          json(res, 200, detail)
           return
         }
         case '/plan': {
@@ -235,6 +247,7 @@ async function account(
 ): Promise<{
   signedIn: boolean
   displayName?: string
+  avatarUrl?: string | null
   pendingUserCode?: string
   pendingVerificationUrl?: string
   error?: string
@@ -243,7 +256,11 @@ async function account(
   if (stored !== undefined) {
     const me = await deps.client.whoami()
     if (me.account !== null) {
-      return { signedIn: true, displayName: me.account.displayName }
+      return {
+        signedIn: true,
+        displayName: me.account.displayName,
+        avatarUrl: me.account.avatarUrl ?? null,
+      }
     }
     // A file on disk is not a session the hub recognises. Do not keep the
     // waiting copy up — that is how Approve-in-browser-then-still-waiting
@@ -268,8 +285,10 @@ function card(item: ArtifactSummary): Record<string, unknown> {
     summary: item.summary,
     verified: item.verified,
     deprecated: item.deprecated,
-    installs: item.stats.installs,
+    installs: item.stats?.installs ?? 0,
     sourceUrl: item.sourceUrl,
+    author: item.author,
+    license: item.license,
   }
 }
 

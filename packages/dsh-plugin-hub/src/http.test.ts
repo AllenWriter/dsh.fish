@@ -120,17 +120,60 @@ describe('settings API', () => {
     )
     process.env['DSH_HOME'] = home
     const request = await listen({
-      client: { whoami: async () => ({ account: { displayName: 'Ada' } }) },
+      client: {
+        whoami: async () => ({
+          account: {
+            id: 'acc-1',
+            displayName: 'Ada',
+            avatarUrl: 'https://example.com/ada.png',
+            isAdmin: false,
+          },
+        }),
+      },
     })
 
     const state = await request('/state')
     expect(state.status).toBe(200)
     expect(JSON.parse(state.body)).toMatchObject({
       profile: 'local-dsh',
-      account: { signedIn: true, displayName: 'Ada' },
+      account: { signedIn: true, displayName: 'Ada', avatarUrl: 'https://example.com/ada.png' },
       installed: [],
     })
     expect(state.body).not.toContain('super-secret-token')
+  })
+
+  it('serves artifact detail with locale and readme', async () => {
+    process.env['DSH_HOME'] = home
+    let requestedLocale: string | undefined
+    const request = await listen({
+      client: {
+        detail: async (_artifactId: string, locale?: string) => {
+          requestedLocale = locale
+          return {
+            id: 'release-notes',
+            kind: 'bundle',
+            displayName: 'Release notes',
+            summary: 'Release notes summary',
+            keywords: [],
+            verified: true,
+            deprecated: false,
+            stats: { stars: 5, downloads: 10, installs: 2 },
+            sourceUrl: 'https://github.com/acme/release-notes',
+            readmeMarkdown: '# Hello from README',
+            readmeLocale: locale,
+          }
+        },
+      },
+    })
+
+    const detail = await request('/detail?artifactId=release-notes&locale=zh-CN')
+    expect(detail.status).toBe(200)
+    expect(requestedLocale).toBe('zh-CN')
+    expect(JSON.parse(detail.body)).toMatchObject({
+      id: 'release-notes',
+      displayName: 'Release notes',
+      readmeMarkdown: '# Hello from README',
+    })
   })
 
   it('surfaces a poll failure on GET /state instead of leaving the login waiting', async () => {

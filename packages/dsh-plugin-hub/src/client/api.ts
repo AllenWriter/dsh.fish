@@ -11,6 +11,7 @@ const API = '/api/dsh-fish'
 export interface AccountState {
   signedIn: boolean
   displayName?: string
+  avatarUrl?: string | null
   pendingUserCode?: string
   pendingVerificationUrl?: string
   error?: string
@@ -40,6 +41,18 @@ export interface CatalogItem {
   deprecated: boolean
   installs: number
   sourceUrl: string
+  author?: { name: string; url?: string }
+  license?: string
+}
+
+export interface ArtifactDetail extends CatalogItem {
+  readmeMarkdown?: string
+  readmeLocale?: string
+  readmeMachineTranslated?: boolean
+  sourceDocBase?: string
+  sourceAssetBase?: string
+  availableLocales?: readonly string[]
+  publishedAt?: string
 }
 
 export interface InstallPlanPreview {
@@ -85,10 +98,17 @@ export async function request<T>(path: string, body?: object): Promise<T> {
   return value
 }
 
-export function catalogQuery(query: string, kind: string): string {
+export function catalogQuery(query: string, kind: string, locale?: string): string {
   const params = new URLSearchParams()
   if (query.trim() !== '') params.set('q', query.trim())
   if (kind !== '') params.set('kind', kind)
+  if (locale !== undefined && locale.trim() !== '') params.set('locale', locale.trim())
   const suffix = params.toString()
   return suffix === '' ? '/catalog' : `/catalog?${suffix}`
+}
+
+export function detailQuery(artifactId: string, locale?: string): string {
+  const params = new URLSearchParams({ artifactId })
+  if (locale !== undefined && locale.trim() !== '') params.set('locale', locale.trim())
+  return `/detail?${params.toString()}`
 }

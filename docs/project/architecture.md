@@ -418,13 +418,18 @@ and the whole client fails to boot.
 
 Every write in that section goes through the same `PlanInstaller` the tools and
 `@dsh-fish/cli` use, so there is one installer and one lockfile no matter which
-surface started the install. Two things stay host side on purpose. The device
+surface started the install. Browse installs (or uninstalls) from the card
+without a plan confirmation; the button shows a spinner while the host writes.
+Clicking a card opens a README modal. Catalog search and that detail request
+forward the host locale so summaries and READMEs match the harness language.
+Two things stay host side on purpose. The device
 token lives in `$DSH_HOME/.dsh-fish-token.json` at mode 0600 and never appears
 in a response body, because a bundle running in a WebView must not be able to
 read a bearer credential for the reader's hub account. And sign-in returns only
 the user code and the verification URL, which the section renders as an external
 link — a desktop shell keeps its WebView on loopback and hands `https` links to
-the system browser, where the reader's session already is. `/device` claims that
+the system browser, where the reader's session already is. `/me` also returns
+`avatarUrl`; the Account tab shows it with a tooltip. `/device` claims that
 code with `GET /api/auth/device` before it offers Authorize; Better Auth rejects
 `POST /device/approve` for an unclaimed code.
 

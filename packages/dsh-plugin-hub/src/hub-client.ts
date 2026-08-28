@@ -16,6 +16,18 @@ export interface ArtifactSummary {
   deprecated: boolean
   stats: { stars: number; downloads: number; installs: number }
   sourceUrl: string
+  author?: { name: string; url?: string }
+  license?: string
+}
+
+export interface ArtifactDetail extends ArtifactSummary {
+  readmeMarkdown?: string
+  readmeLocale?: string
+  readmeMachineTranslated?: boolean
+  sourceDocBase?: string
+  sourceAssetBase?: string
+  availableLocales?: readonly string[]
+  publishedAt?: string
 }
 
 export interface InstallStep {
@@ -104,16 +116,21 @@ export class HubClient {
     query?: string
     kind?: string
     limit?: number
+    locale?: string
   }): Promise<{ items: ArtifactSummary[]; total: number }> {
     const params = new URLSearchParams()
     if (input.query) params.set('q', input.query)
     if (input.kind) params.set('kind', input.kind)
+    if (input.locale) params.set('locale', input.locale)
     params.set('limit', String(input.limit ?? 10))
     return this.request(`/api/v1/artifacts?${params.toString()}`)
   }
 
-  async detail(artifactId: string): Promise<ArtifactSummary & { readmeMarkdown?: string }> {
-    return this.request(`/api/v1/artifacts/${encodeURIComponent(artifactId)}`)
+  async detail(artifactId: string, locale?: string): Promise<ArtifactDetail> {
+    const params = new URLSearchParams()
+    if (locale) params.set('locale', locale)
+    const suffix = params.size > 0 ? `?${params.toString()}` : ''
+    return this.request(`/api/v1/artifacts/${encodeURIComponent(artifactId)}${suffix}`)
   }
 
   /**
@@ -136,7 +153,9 @@ export class HubClient {
     )
   }
 
-  async whoami(): Promise<{ account: { displayName: string } | null }> {
+  async whoami(): Promise<{
+    account: { id?: string; displayName: string; avatarUrl?: string | null; isAdmin?: boolean } | null
+  }> {
     return this.request('/api/v1/me')
   }
 

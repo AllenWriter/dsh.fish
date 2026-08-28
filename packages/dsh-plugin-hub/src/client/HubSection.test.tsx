@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { HubSection } from './HubSection.js'
 import { type HubState } from './api.js'
@@ -77,31 +77,104 @@ describe('HubSection', () => {
     }
   })
 
-  it('shows the plan before installing, and refuses a build without consent', async () => {
+  it('installs silently directly on Install button click and switches button to Uninstall', async () => {
+    let installedList: Array<{ artifactId: string; kind: string; installedAt: string; packages: string[]; files: string[] }> = []
+
+    stubFetch({
+      'GET /state': () => ({
+        body: {
+          ...STATE,
+          installed: installedList,
+        },
+      }),
+      'GET /catalog': { body: { total: 1, items: [CARD] } },
+      'POST /install': () => {
+        installedList = [{
+          artifactId: 'release-notes',
+          kind: 'bundle',
+          installedAt: new Date().toISOString(),
+          packages: ['@acme/release-notes'],
+          files: [],
+        }]
+        return {
+          body: {
+            artifactId: 'release-notes',
+            steps: [{ summary: 'installed', applied: true }],
+            restartRequired: false,
+          },
+        }
+      },
+    })
+    render(<HubSection t={translate} />)
+
+    const installBtn = await screen.findByRole('button', { name: 'Install' })
+    expect(installBtn).toBeDefined()
+
+    fireEvent.click(installBtn)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Uninstall' })).toBeDefined()
+    })
+  })
+
+  it('opens readme preview modal when clicking on a card and fetches detail', async () => {
     stubFetch({
       'GET /state': { body: STATE },
       'GET /catalog': { body: { total: 1, items: [CARD] } },
-      'GET /plan': {
+      'GET /detail': {
         body: {
-          artifactId: 'release-notes',
-          profile: 'local-dsh',
-          commands: ['dsh plugin --profile local-dsh add github:acme/release-notes'],
-          warnings: ['buildAllowance'],
-          requiresBuildAllowance: true,
+          ...CARD,
+          readmeMarkdown: '# Release Notes Plugin\n\nThis is the documentation for release notes plugin.',
+          readmeLocale: 'en',
+          readmeMachineTranslated: false,
         },
       },
     })
     render(<HubSection t={translate} />)
 
-    const plan = await screen.findByRole('button', { name: 'Show install plan' })
-    plan.click()
+    const card = await screen.findByRole('button', { name: 'Release notes' })
+    fireEvent.click(card)
 
-    const commands = await screen.findByText(/dsh plugin --profile local-dsh add/)
-    expect(commands).toBeDefined()
-    // The install button changes meaning when a build is involved: the reader
-    // has to press the one that says so.
-    expect(screen.getByRole('button', { name: 'Allow build scripts and install' })).toBeDefined()
-    expect(screen.queryByRole('button', { name: 'Install' })).toBeNull()
+    expect(await screen.findByRole('dialog')).toBeDefined()
+    expect(await screen.findByText('Release Notes Plugin')).toBeDefined()
+    expect(await screen.findByText(/This is the documentation/)).toBeDefined()
+
+    const closeBtn = screen.getByRole('button', { name: 'Close' })
+    fireEvent.click(closeBtn)
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull()
+    })
+  })
+
+  it('renders user avatar and tooltip when signed in', async () => {
+    const signedInState = {
+      ...STATE,
+      account: {
+        signedIn: true,
+        displayName: 'Alice Cooper',
+        avatarUrl: 'https://example.com/avatar.png',
+      },
+    }
+
+    stubFetch({
+      'GET /state': { body: signedInState },
+      'GET /catalog': { body: { total: 0, items: [] } },
+    })
+
+    render(<HubSection t={translate} />)
+
+    screen.getByRole('tab', { name: 'Account' }).click()
+
+    expect(await screen.findByText('Alice Cooper')).toBeDefined()
+    expect(screen.getByText('Connected dsh.fish account')).toBeDefined()
+    const avatar = screen.getByLabelText("Alice Cooper's avatar")
+    expect(avatar).toBeDefined()
+
+    // Hover avatar to trigger tooltip
+    fireEvent.mouseEnter(avatar.parentElement!)
+    expect(await screen.findByRole('tooltip')).toBeDefined()
+    expect(screen.getByText(/Signed in as Alice Cooper/)).toBeDefined()
   })
 
   it('offers the device verification URL as an external link, not an in-place navigation', async () => {
@@ -122,7 +195,7 @@ describe('HubSection', () => {
     const signIn = await screen.findByRole('button', { name: 'Sign in' })
     signIn.click()
 
-    const link = await screen.findByRole('link', { name: 'Open the verification page' })
+    const link = await screen.findByRole('link', { name: /Open the verification page/ })
     expect(link.getAttribute('href')).toBe('https://dsh.fish/device?user_code=WXYZ-1234')
     expect(link.getAttribute('target')).toBe('_blank')
     expect(await screen.findByText(/WXYZ-1234/)).toBeDefined()

@@ -28,7 +28,10 @@
   uses the raw session token, not a signed cookie. The plugin settings API
   (`packages/dsh-plugin-hub/src/http.test.ts`) surfaces a poll failure on
   `GET /state` instead of keeping the waiting copy, and HubSection replaces
-  waiting with that error so Sign in is offered again.
+  waiting with that error so Sign in is offered again. HubSection also pins
+  silent Install-to-Uninstall, a card click that opens the README dialog, and
+  the signed-in avatar tooltip. `/detail` forwards `locale` and returns
+  `readmeMarkdown`.
 
 ## Integration tests
 
