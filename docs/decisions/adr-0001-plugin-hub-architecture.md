@@ -156,7 +156,11 @@ never reads, which is how a registry ends up with an empty long tail.
   declares its types locally, because that package is not yet installable
   standalone from npm during the harness's developer preview. When it publishes
   completely, `packages/dsh-plugin-hub/src/harness.d.ts` should be deleted and
-  the real packages added as devDependencies.
+  the real packages added as devDependencies. Host-supplied peers
+  (`@deepseek-ai/cordis`, `@deepseek-ai/dsh-tools`, and the client inject
+  packages) are marked optional: `dsh plugin add` installs into an isolated
+  profile tree that never contains the harness copies, so a required peer
+  would print a pnpm `WARN` on every successful install.
 - D1 has no cross-statement transactions, so multi-table writes use `db.batch`,
   which D1 applies atomically. Better Auth's drizzle `consumeOne` is a same-table
   `DELETE … IN (SELECT …)` that D1 refuses; the Worker wraps it as find-then-delete

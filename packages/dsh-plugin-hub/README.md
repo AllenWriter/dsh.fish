@@ -20,6 +20,11 @@ dsh plugin --profile local-dsh add @dsh-fish/hub
 The published package ships `lib/` already built, so this install runs no build
 script and needs no `allowBuilds` entry.
 
+`@deepseek-ai/cordis` and `@deepseek-ai/dsh-tools` are supplied by the harness
+at runtime. They are optional peers so pnpm does not warn when the profile
+tree cannot see the host copies — a `WARN` about missing peers is not a
+failed install.
+
 A git install is a development fallback and must name the subdirectory — the
 repository root is a private workspace, not this plugin:
 

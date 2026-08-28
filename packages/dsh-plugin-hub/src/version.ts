@@ -1,4 +1,4 @@
-export const PLUGIN_VERSION = '0.4.1'
+export const PLUGIN_VERSION = '0.4.2'
 
 export function isNewerVersion(current: string, target: string): boolean {
   const currentParts = current.split('.').map((p) => parseInt(p, 10) || 0)

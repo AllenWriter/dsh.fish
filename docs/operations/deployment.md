@@ -348,7 +348,9 @@ Browse card without a plan confirmation, opens a README modal, forwards the
 host locale to catalog/detail, and shows the signed-in avatar on Account.
 `0.4.1` gives the README modal an opaque surface with a working Markdown
 renderer, and lets the settings section check npm and update `@dsh-fish/hub`
-itself. Later releases should go through `publish-hub.yml`. On
+itself. `0.4.2` marks host-supplied peers as optional so `dsh plugin add`
+does not print a pnpm missing-peer `WARN` on a successful install. Later
+releases should go through `publish-hub.yml`. On
 [npm access for @dsh-fish/hub](https://www.npmjs.com/package/@dsh-fish/hub/access),
 under **Trusted Publisher → GitHub Actions**, set:
 
