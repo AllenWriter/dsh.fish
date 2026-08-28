@@ -89,6 +89,9 @@ analysis.
 A harness on a developer's machine cannot receive an OAuth redirect. Better
 Auth's `deviceAuthorization()` plugin implements RFC 8628: the plugin requests a
 code, prints it, and polls; the human approves in a browser they already trust.
+The approval page must call `GET /api/auth/device?user_code=` while signed in
+**before** showing Authorize: that request binds the pending grant to the
+session. Skipping it is `DEVICE_CODE_NOT_CLAIMED`.
 
 User codes are generated as 8 digits rather than the default alphanumeric, so the
 approval page can use a one-time-code input and a terminal can print something

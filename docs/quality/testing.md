@@ -17,6 +17,9 @@
 - AdSense tests (`frontend/src/shared/lib/adsense/adsense.test.tsx`) pin the
   official adsbygoogle URL, `crossorigin="anonymous"`, the ads.txt DIRECT
   record, and that a malformed publisher ID cannot be interpolated.
+- Device-grant tests (`frontend/src/shared/api/device-grant.test.ts`) pin that
+  `/device` claims a user code via `GET /api/auth/device` before approve/deny,
+  and that an unclaimed approve is a failure (`DEVICE_CODE_NOT_CLAIMED`).
 
 ## Integration tests
 

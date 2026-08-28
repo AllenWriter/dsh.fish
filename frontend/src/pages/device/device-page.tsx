@@ -6,7 +6,8 @@ import { EASE_OUT } from '@/shared/lib/ease'
 import type { Route } from './+types/device-page'
 import { hubContext } from '@/shared/api/hub-context'
 import { OTPInput, type OTPStatus } from '@/shared/ui/motion/otp-input'
-import { authClient, useSession } from '@/shared/api/auth-client'
+import { useSession } from '@/shared/api/auth-client'
+import { claimDeviceCode, decideDeviceCode } from '@/shared/api/device-grant'
 import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { errorMeta, pageMeta } from '@/shared/lib/seo'
@@ -44,7 +45,11 @@ type Phase = 'entering' | 'confirming' | 'approved' | 'denied'
  * plugin asks for a short code, prints it, and polls. This page is where the
  * person — already signed in, in a browser they trust — turns that code into a
  * token. `verification_uri_complete` links straight here with the code
- * prefilled, so the common path is one click and one confirmation.
+ * prefilled.
+ *
+ * Better Auth binds the pending grant to this session on `GET /device`. The
+ * Authorize control is offered only after that claim succeeds; skipping it is
+ * `DEVICE_CODE_NOT_CLAIMED`.
  */
 export default function DevicePage() {
   const t = useT()
@@ -56,13 +61,35 @@ export default function DevicePage() {
   const [status, setStatus] = useState<OTPStatus>('idle')
   const [busy, setBusy] = useState(false)
 
-  // A prefilled complete-URI visit should land on the confirmation step rather
-  // than making the user re-type a code the link already carried.
   useEffect(() => {
-    if (code.length === CODE_LENGTH && phase === 'entering') setPhase('confirming')
-    // Runs once for the prefilled case; later transitions are driven by input.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    if (!session?.user || code.length !== CODE_LENGTH || phase !== 'entering' || status === 'error') {
+      return
+    }
+
+    let cancelled = false
+    setBusy(true)
+    void claimDeviceCode(code)
+      .then((result) => {
+        if (cancelled) return
+        if (!result.ok) {
+          setStatus('error')
+          return
+        }
+        if (result.status === 'approved') setPhase('approved')
+        else if (result.status === 'denied') setPhase('denied')
+        else setPhase('confirming')
+      })
+      .catch(() => {
+        if (!cancelled) setStatus('error')
+      })
+      .finally(() => {
+        if (!cancelled) setBusy(false)
+      })
+    return () => {
+      cancelled = true
+      setBusy(false)
+    }
+  }, [session?.user?.id, code, phase, status])
 
   if (isPending) {
     return <Shell>{t('common.loading')}</Shell>
@@ -102,11 +129,8 @@ export default function DevicePage() {
   const decide = async (approve: boolean) => {
     setBusy(true)
     try {
-      const result = approve
-        ? await authClient.device.approve({ userCode: code })
-        : await authClient.device.deny({ userCode: code })
-
-      if (result.error) {
+      const result = await decideDeviceCode(code, approve)
+      if (!result.ok) {
         setStatus('error')
         setPhase('entering')
         return
@@ -133,14 +157,17 @@ export default function DevicePage() {
           status={status}
           errorMessage={t('device.invalid')}
           autoFocus={code.length === 0}
+          disabled={busy}
           onChange={(value) => {
             setCode(value)
             if (status !== 'idle') setStatus('idle')
             if (value.length < CODE_LENGTH) setPhase('entering')
           }}
-          onComplete={() => setPhase('confirming')}
         />
       </div>
+      {busy && phase === 'entering' ? (
+        <p className="mt-5 text-sm text-muted-foreground">{t('common.loading')}</p>
+      ) : null}
 
       {/* The consent step is the one moment that matters here: it appears once,
           after the user has typed a code, and asks them to grant access. A hard

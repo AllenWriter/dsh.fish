@@ -424,7 +424,9 @@ in a response body, because a bundle running in a WebView must not be able to
 read a bearer credential for the reader's hub account. And sign-in returns only
 the user code and the verification URL, which the section renders as an external
 link — a desktop shell keeps its WebView on loopback and hands `https` links to
-the system browser, where the reader's session already is.
+the system browser, where the reader's session already is. `/device` claims that
+code with `GET /api/auth/device` before it offers Authorize; Better Auth rejects
+`POST /device/approve` for an unclaimed code.
 
 `webServer` is reached through `ctx.inject` rather than the plugin's own `inject`
 list, so a profile that serves no browser client still loads the tools.
