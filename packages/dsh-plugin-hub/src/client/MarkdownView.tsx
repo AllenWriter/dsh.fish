@@ -17,13 +17,9 @@ export function MarkdownView({
     return <div className={`dshFish__prose ${className}`} />
   }
 
-  const elements = parseMarkdownBlocks(source, docBase, assetBase)
+  const elements = parseMarkdown(source, docBase, assetBase)
 
-  return (
-    <div className={`dshFish__prose ${className}`}>
-      {elements}
-    </div>
-  )
+  return <div className={`dshFish__prose ${className}`}>{elements}</div>
 }
 
 function resolveUrl(url: string, base?: string): string {
@@ -41,27 +37,73 @@ function resolveUrl(url: string, base?: string): string {
   }
 }
 
-function renderInline(text: string, docBase?: string, assetBase?: string): ReactNode[] {
+/**
+ * Parses inline markdown:
+ * - Badges / Linked images: [![alt](imgUrl)](linkUrl)
+ * - Images: ![alt](imgUrl)
+ * - Links: [text](linkUrl)
+ * - Autolinks: https://...
+ * - Inline code: `code`
+ * - Bold: **text** / __text__
+ * - Italic: *text* / _text_
+ * - Strikethrough: ~~text~~
+ * - HTML tags & entities: <br/>, &amp;, &lt;, &gt;, etc.
+ */
+export function renderInline(text: string, docBase?: string, assetBase?: string): ReactNode[] {
   const nodes: ReactNode[] = []
   let index = 0
   let key = 0
 
   while (index < text.length) {
-    // 1. Inline code: `code`
-    if (text[index] === '`') {
-      const end = text.indexOf('`', index + 1)
-      if (end !== -1) {
-        nodes.push(
-          <code key={key++} className="dshFish__codeInline">
-            {text.slice(index + 1, end)}
-          </code>,
-        )
-        index = end + 1
-        continue
+    // 1. Linked Image Badge: [![alt](imgSrc)](linkUrl)
+    if (text.startsWith('[![', index)) {
+      const altClose = text.indexOf(']', index + 3)
+      if (altClose !== -1 && text[altClose + 1] === '(') {
+        const imgClose = text.indexOf(')', altClose + 2)
+        if (imgClose !== -1 && text.slice(imgClose + 1, imgClose + 3) === '](') {
+          const linkClose = text.indexOf(')', imgClose + 3)
+          if (linkClose !== -1) {
+            const alt = text.slice(index + 3, altClose)
+            const rawImg = text.slice(altClose + 2, imgClose).trim()
+            const rawLink = text.slice(imgClose + 3, linkClose).trim()
+            const resolvedImg = resolveUrl(rawImg, assetBase)
+            const resolvedLink = resolveUrl(rawLink, docBase)
+
+            if (resolvedImg && /^https?:/i.test(resolvedImg)) {
+              const img = (
+                <img
+                  key={key++}
+                  src={resolvedImg}
+                  alt={alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="dshFish__badgeImg"
+                />
+              )
+              if (resolvedLink && /^(https?:|mailto:|#)/i.test(resolvedLink)) {
+                nodes.push(
+                  <a
+                    key={key++}
+                    href={resolvedLink}
+                    target={resolvedLink.startsWith('#') ? undefined : '_blank'}
+                    rel={resolvedLink.startsWith('#') ? undefined : 'noreferrer noopener nofollow'}
+                    className="dshFish__badgeLink"
+                  >
+                    {img}
+                  </a>,
+                )
+              } else {
+                nodes.push(img)
+              }
+              index = linkClose + 1
+              continue
+            }
+          }
+        }
       }
     }
 
-    // 2. Images: ![alt](src)
+    // 2. Standalone Image: ![alt](src)
     if (text.startsWith('![', index)) {
       const altClose = text.indexOf(']', index + 2)
       if (altClose !== -1 && text[altClose + 1] === '(') {
@@ -88,7 +130,21 @@ function renderInline(text: string, docBase?: string, assetBase?: string): React
       }
     }
 
-    // 3. Links: [text](url)
+    // 3. Inline code: `code`
+    if (text[index] === '`') {
+      const end = text.indexOf('`', index + 1)
+      if (end !== -1) {
+        nodes.push(
+          <code key={key++} className="dshFish__codeInline">
+            {text.slice(index + 1, end)}
+          </code>,
+        )
+        index = end + 1
+        continue
+      }
+    }
+
+    // 4. Standard Link: [text](url)
     if (text[index] === '[') {
       const textClose = text.indexOf(']', index + 1)
       if (textClose !== -1 && text[textClose + 1] === '(') {
@@ -110,7 +166,9 @@ function renderInline(text: string, docBase?: string, assetBase?: string): React
               </a>,
             )
           } else {
-            nodes.push(<span key={key++}>{linkText}</span>)
+            nodes.push(
+              <span key={key++}>{renderInline(linkText, docBase, assetBase)}</span>,
+            )
           }
           index = urlClose + 1
           continue
@@ -118,50 +176,136 @@ function renderInline(text: string, docBase?: string, assetBase?: string): React
       }
     }
 
-    // 4. Bold: **text** or __text__
+    // 5. Autolink: https://... or http://...
+    if (text.startsWith('https://', index) || text.startsWith('http://', index)) {
+      const match = text.slice(index).match(/^(https?:\/\/[^\s<>)"]+)/)
+      if (match && match[1]) {
+        const fullUrl = match[1]
+        // Trim trailing punctuation like . or , or )
+        const cleanUrl = fullUrl.replace(/[.,;:)]+$/, '')
+        nodes.push(
+          <a
+            key={key++}
+            href={cleanUrl}
+            target="_blank"
+            rel="noreferrer noopener nofollow"
+            className="dshFish__link"
+          >
+            {cleanUrl}
+          </a>,
+        )
+        index += cleanUrl.length
+        continue
+      }
+    }
+
+    // 6. Bold: **text** or __text__
     if (text.startsWith('**', index) || text.startsWith('__', index)) {
       const marker = text.slice(index, index + 2)
       const end = text.indexOf(marker, index + 2)
       if (end !== -1) {
         const boldText = text.slice(index + 2, end)
         nodes.push(
-          <strong key={key++}>
-            {renderInline(boldText, docBase, assetBase)}
-          </strong>,
+          <strong key={key++}>{renderInline(boldText, docBase, assetBase)}</strong>,
         )
         index = end + 2
         continue
       }
     }
 
-    // 5. Italic: *text* or _text_ (ensure not followed by space or part of bold)
+    // 7. Strikethrough: ~~text~~
+    if (text.startsWith('~~', index)) {
+      const end = text.indexOf('~~', index + 2)
+      if (end !== -1) {
+        const strikeText = text.slice(index + 2, end)
+        nodes.push(<del key={key++}>{renderInline(strikeText, docBase, assetBase)}</del>)
+        index = end + 2
+        continue
+      }
+    }
+
+    // 8. Italic: *text* or _text_
     const currentChar = text[index]
     const nextChar = text[index + 1]
-    if ((currentChar === '*' || currentChar === '_') && nextChar !== undefined && nextChar !== ' ') {
+    if (
+      (currentChar === '*' || currentChar === '_') &&
+      nextChar !== undefined &&
+      nextChar !== ' ' &&
+      nextChar !== '\t' &&
+      nextChar !== '\n'
+    ) {
       const marker = currentChar
       const end = text.indexOf(marker, index + 1)
-      if (end !== -1 && text[end - 1] !== ' ') {
+      if (end !== -1 && text[end - 1] !== ' ' && text[end - 1] !== '\t') {
         const italicText = text.slice(index + 1, end)
-        nodes.push(
-          <em key={key++}>
-            {renderInline(italicText, docBase, assetBase)}
-          </em>,
-        )
+        nodes.push(<em key={key++}>{renderInline(italicText, docBase, assetBase)}</em>)
         index = end + 1
         continue
       }
     }
 
-    // Normal character run
+    // 9. HTML tag stripping / rendering for safe common tags (<br>, <img>, etc.)
+    if (text[index] === '<') {
+      // Check for <br> or <br/>
+      if (/^<br\s*\/?>/i.test(text.slice(index))) {
+        const match = text.slice(index).match(/^<br\s*\/?>/i)
+        nodes.push(<br key={key++} />)
+        index += match ? match[0].length : 4
+        continue
+      }
+      // Check for HTML comments: <!-- ... -->
+      if (text.startsWith('<!--', index)) {
+        const commentEnd = text.indexOf('-->', index + 4)
+        if (commentEnd !== -1) {
+          index = commentEnd + 3
+          continue
+        }
+      }
+      // Check for <img src="..." alt="..." />
+      const imgMatch = text.slice(index).match(/^<img\s+([^>]*)\/?>/i)
+      if (imgMatch && imgMatch[0] && imgMatch[1]) {
+        const attrs = imgMatch[1]
+        const srcMatch = attrs.match(/src=["']([^"']+)["']/i)
+        const altMatch = attrs.match(/alt=["']([^"']*)["']/i)
+        if (srcMatch && srcMatch[1]) {
+          const resolvedSrc = resolveUrl(srcMatch[1], assetBase)
+          if (resolvedSrc && /^https?:/i.test(resolvedSrc)) {
+            nodes.push(
+              <img
+                key={key++}
+                src={resolvedSrc}
+                alt={altMatch?.[1] ?? ''}
+                loading="lazy"
+                decoding="async"
+                className="dshFish__proseImg"
+              />,
+            )
+          }
+        }
+        index += imgMatch[0].length
+        continue
+      }
+      // Strip generic HTML tags: <tag ...> or </tag>
+      const genericTag = text.slice(index).match(/^<\/?[a-zA-Z0-9_-]+(?:\s+[^>]*?)?>/)
+      if (genericTag && genericTag[0]) {
+        index += genericTag[0].length
+        continue
+      }
+    }
+
+    // Character span until next special marker
     let nextSpecial = index + 1
     while (nextSpecial < text.length) {
-      const char = text[nextSpecial]
+      const c = text[nextSpecial]
       if (
-        char === '`' ||
-        char === '[' ||
-        char === '*' ||
-        char === '_' ||
-        (char === '!' && text[nextSpecial + 1] === '[')
+        c === '`' ||
+        c === '[' ||
+        c === '*' ||
+        c === '_' ||
+        c === '<' ||
+        c === '~' ||
+        (c === '!' && text[nextSpecial + 1] === '[') ||
+        (c === 'h' && (text.startsWith('https://', nextSpecial) || text.startsWith('http://', nextSpecial)))
       ) {
         break
       }
@@ -175,48 +319,52 @@ function renderInline(text: string, docBase?: string, assetBase?: string): React
   return nodes
 }
 
-function parseMarkdownBlocks(
+export function parseMarkdown(
   source: string,
   docBase?: string,
   assetBase?: string,
 ): JSX.Element[] {
-  const lines = source.replace(/\r\n/g, '\n').split('\n')
+  // Normalize newlines and strip HTML comments
+  const cleanSource = source
+    .replace(/\r\n/g, '\n')
+    .replace(/<!--[\s\S]*?-->/g, '')
+
+  const lines = cleanSource.split('\n')
   const blocks: JSX.Element[] = []
   let index = 0
   let blockKey = 0
 
   while (index < lines.length) {
-    const line = lines[index] ?? ''
+    const rawLine = lines[index] ?? ''
+    const trimmed = rawLine.trim()
 
-    // Empty lines
-    if (line.trim() === '') {
+    // 1. Skip empty lines
+    if (trimmed === '') {
       index++
       continue
     }
 
-    // 1. Code Fence: ```lang
-    if (line.trim().startsWith('```')) {
-      const fenceMarker = line.trim().slice(0, 3)
-      const lang = line.trim().slice(3).trim()
+    // 2. Code Fence: ```lang or ~~~lang
+    if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
+      const marker = trimmed.slice(0, 3)
+      const lang = trimmed.slice(3).trim()
       const codeLines: string[] = []
       index++
-      while (index < lines.length && !lines[index]?.trim().startsWith(fenceMarker)) {
+      while (index < lines.length && !lines[index]?.trim().startsWith(marker)) {
         codeLines.push(lines[index] ?? '')
         index++
       }
-      if (index < lines.length) index++ // consume closing fence
+      if (index < lines.length) index++ // Consume closing fence
       const code = codeLines.join('\n')
-      blocks.push(
-        <CodeBlock key={blockKey++} code={code} lang={lang} />,
-      )
+      blocks.push(<CodeBlock key={blockKey++} code={code} lang={lang} />)
       continue
     }
 
-    // 2. Headings: # H1, ## H2, etc.
-    const headingMatch = line.match(/^(#{1,6})\s+(.*)$/)
-    if (headingMatch && headingMatch[1] && headingMatch[2] !== undefined) {
+    // 3. Headings: # H1, ## H2, ..., ###### H6
+    const headingMatch = trimmed.match(/^(#{1,6})(?:\s+(.*?))?(?:\s+#+)?$/)
+    if (headingMatch && headingMatch[1]) {
       const level = headingMatch[1].length
-      const headingContent = headingMatch[2].trim()
+      const headingContent = headingMatch[2]?.trim() ?? ''
       const Tag = (`h${Math.min(6, level + 1)}` as keyof JSX.IntrinsicElements)
       blocks.push(
         <Tag key={blockKey++} className={`dshFish__h${level}`}>
@@ -227,18 +375,25 @@ function parseMarkdownBlocks(
       continue
     }
 
-    // 3. Horizontal rule: ---, ***, ___
-    if (/^(\*{3,}|-{3,}|_{3,})\s*$/.test(line.trim())) {
+    // 4. Horizontal Rule: ---, ***, ___
+    if (/^(\*{3,}|-{3,}|_{3,})\s*$/.test(trimmed)) {
       blocks.push(<hr key={blockKey++} className="dshFish__hr" />)
       index++
       continue
     }
 
-    // 4. Blockquote: > ...
-    if (line.trim().startsWith('>')) {
+    // 5. Blockquotes: > quote
+    if (trimmed.startsWith('>')) {
       const quoteLines: string[] = []
-      while (index < lines.length && lines[index]?.trim().startsWith('>')) {
-        quoteLines.push(lines[index]?.trim().replace(/^>\s?/, '') ?? '')
+      while (index < lines.length && (lines[index]?.trim().startsWith('>') || (lines[index]?.trim() !== '' && quoteLines.length > 0 && !lines[index]?.trim().startsWith('#') && !lines[index]?.trim().startsWith('```')))) {
+        const qLine = lines[index]?.trim() ?? ''
+        if (qLine.startsWith('>')) {
+          quoteLines.push(qLine.replace(/^>\s?/, ''))
+        } else if (qLine === '') {
+          break
+        } else {
+          quoteLines.push(qLine)
+        }
         index++
       }
       blocks.push(
@@ -249,19 +404,35 @@ function parseMarkdownBlocks(
       continue
     }
 
-    // 5. Unordered list: - or *
-    if (/^(\s*)[-*+]\s+(.*)$/.test(line)) {
+    // 6. Unordered Lists: - item, * item, + item, including task lists [ ] / [x]
+    if (/^(\s*)[-*+]\s+(.*)$/.test(rawLine)) {
       const listItems: JSX.Element[] = []
       let itemKey = 0
       while (index < lines.length && /^(\s*)[-*+]\s+(.*)$/.test(lines[index] ?? '')) {
         const itemLine = lines[index] ?? ''
         const match = itemLine.match(/^(\s*)[-*+]\s+(.*)$/)
         if (match && match[2] !== undefined) {
-          listItems.push(
-            <li key={itemKey++}>
-              {renderInline(match[2], docBase, assetBase)}
-            </li>,
-          )
+          const itemText = match[2]
+          // Check task checkbox: [ ] or [x]
+          if (itemText.startsWith('[ ] ') || itemText.startsWith('[x] ') || itemText.startsWith('[X] ')) {
+            const isChecked = !itemText.startsWith('[ ] ')
+            const taskContent = itemText.slice(4)
+            listItems.push(
+              <li key={itemKey++} className="dshFish__taskItem">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  readOnly
+                  className="dshFish__checkbox"
+                />
+                <span>{renderInline(taskContent, docBase, assetBase)}</span>
+              </li>,
+            )
+          } else {
+            listItems.push(
+              <li key={itemKey++}>{renderInline(itemText, docBase, assetBase)}</li>,
+            )
+          }
         }
         index++
       }
@@ -273,8 +444,8 @@ function parseMarkdownBlocks(
       continue
     }
 
-    // 6. Ordered list: 1. 2.
-    if (/^\s*\d+\.\s+(.*)$/.test(line)) {
+    // 7. Ordered Lists: 1. item, 2. item
+    if (/^\s*\d+\.\s+(.*)$/.test(rawLine)) {
       const listItems: JSX.Element[] = []
       let itemKey = 0
       while (index < lines.length && /^\s*\d+\.\s+(.*)$/.test(lines[index] ?? '')) {
@@ -282,9 +453,7 @@ function parseMarkdownBlocks(
         const match = itemLine.match(/^\s*\d+\.\s+(.*)$/)
         if (match && match[1] !== undefined) {
           listItems.push(
-            <li key={itemKey++}>
-              {renderInline(match[1], docBase, assetBase)}
-            </li>,
+            <li key={itemKey++}>{renderInline(match[1], docBase, assetBase)}</li>,
           )
         }
         index++
@@ -297,20 +466,18 @@ function parseMarkdownBlocks(
       continue
     }
 
-    // 7. Table: | col1 | col2 |
-    if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
+    // 8. Tables: | col1 | col2 | or col1 | col2
+    if (trimmed.includes('|') && (index + 1 < lines.length && lines[index + 1]?.includes('|') && lines[index + 1]?.includes('-'))) {
       const tableLines: string[] = []
-      while (
-        index < lines.length &&
-        lines[index]?.trim().startsWith('|') &&
-        lines[index]?.trim().endsWith('|')
-      ) {
+      while (index < lines.length && (lines[index]?.trim().includes('|') || lines[index]?.trim().startsWith('|-'))) {
         tableLines.push(lines[index]?.trim() ?? '')
         index++
       }
       if (tableLines.length >= 2) {
         const headerCells = parseTableRow(tableLines[0] ?? '')
-        const rows = tableLines.slice(2).map(parseTableRow)
+        // Skip delimiter line (index 1)
+        const rowLines = tableLines.slice(2)
+        const rows = rowLines.map(parseTableRow)
         blocks.push(
           <div key={blockKey++} className="dshFish__tableWrapper">
             <table className="dshFish__table">
@@ -337,19 +504,20 @@ function parseMarkdownBlocks(
       }
     }
 
-    // 8. Paragraph
+    // 9. Standard Paragraph (consume continuous prose lines)
     const paragraphLines: string[] = []
     while (
       index < lines.length &&
       lines[index]?.trim() !== '' &&
       !lines[index]?.trim().startsWith('```') &&
-      !lines[index]?.trim().startsWith('#') &&
+      !lines[index]?.trim().startsWith('~~~') &&
+      !lines[index]?.trim().match(/^#{1,6}(\s+|$)/) &&
       !lines[index]?.trim().startsWith('>') &&
       !/^(\s*)[-*+]\s+/.test(lines[index] ?? '') &&
       !/^\s*\d+\.\s+/.test(lines[index] ?? '') &&
       !/^(\*{3,}|-{3,}|_{3,})\s*$/.test(lines[index]?.trim() ?? '')
     ) {
-      paragraphLines.push(lines[index] ?? '')
+      paragraphLines.push(lines[index]?.trim() ?? '')
       index++
     }
 
@@ -359,6 +527,17 @@ function parseMarkdownBlocks(
           {renderInline(paragraphLines.join(' '), docBase, assetBase)}
         </p>,
       )
+    } else {
+      // Guaranteed progress to avoid infinite loops on unmatched lines
+      const fallbackLine = lines[index]?.trim() ?? ''
+      if (fallbackLine !== '') {
+        blocks.push(
+          <p key={blockKey++} className="dshFish__p">
+            {renderInline(fallbackLine, docBase, assetBase)}
+          </p>,
+        )
+      }
+      index++
     }
   }
 
@@ -366,12 +545,10 @@ function parseMarkdownBlocks(
 }
 
 function parseTableRow(line: string): string[] {
-  const trimmed = line.trim()
-  const cells = trimmed
-    .slice(1, -1)
-    .split('|')
-    .map((c) => c.trim())
-  return cells
+  let cleaned = line.trim()
+  if (cleaned.startsWith('|')) cleaned = cleaned.slice(1)
+  if (cleaned.endsWith('|')) cleaned = cleaned.slice(0, -1)
+  return cleaned.split('|').map((c) => c.trim())
 }
 
 function CodeBlock({ code, lang }: { code: string; lang?: string }): JSX.Element {

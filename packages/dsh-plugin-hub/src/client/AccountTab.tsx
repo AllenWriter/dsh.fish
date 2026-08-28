@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { ApiError, request, type AccountState, type DeviceLogin, type HubState } from './api.js'
+import {
+  ApiError,
+  request,
+  type AccountState,
+  type DeviceLogin,
+  type HubState,
+  type SelfUpdateResult,
+  type UpdateCheckResult,
+} from './api.js'
 import { Avatar } from './Avatar.js'
 import { ExternalLinkIcon, SpinnerIcon } from './Icons.js'
 import type { HubTranslate } from './locale.js'
@@ -9,29 +17,26 @@ import { Tooltip } from './Tooltip.js'
 const POLL_INTERVAL_MS = 3000
 
 /**
- * Sign-in, by device flow.
- *
- * The verification URL is rendered as an ordinary link with `target="_blank"`
- * rather than navigated to in place. A desktop shell hosting this UI keeps its
- * WebView on loopback and hands external `https` links to the system browser,
- * which is where the reader's session and password manager already are; a
- * same-window navigation would strand them in a window with no address bar.
- *
- * Approval happens out of band, so state is polled while it is outstanding.
- * The device code and the resulting token stay host side.
+ * Sign-in, by device flow, and plugin maintenance.
  */
 export function AccountTab({ t }: { t: HubTranslate }): JSX.Element {
   const [account, setAccount] = useState<AccountState | undefined>(undefined)
+  const [version, setVersion] = useState<string | undefined>(undefined)
   const [login, setLogin] = useState<DeviceLogin | undefined>(undefined)
   const [starting, setStarting] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
   const [error, setError] = useState<string | undefined>(undefined)
+  const [checkingUpdate, setCheckingUpdate] = useState(false)
+  const [updateResult, setUpdateResult] = useState<UpdateCheckResult | undefined>(undefined)
+  const [updating, setUpdating] = useState(false)
+  const [updateNotice, setUpdateNotice] = useState<string | undefined>(undefined)
   const timer = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
 
   const reload = (): void => {
     request<HubState>('/state').then(
       (state) => {
         setAccount(state.account)
+        if (state.version) setVersion(state.version)
         if (state.account.signedIn) {
           setLogin(undefined)
           setError(undefined)
@@ -80,6 +85,39 @@ export function AccountTab({ t }: { t: HubTranslate }): JSX.Element {
       (failure: unknown) => {
         setStarting(false)
         setError(describe(failure, t))
+      },
+    )
+  }
+
+  const handleCheckUpdate = (): void => {
+    setCheckingUpdate(true)
+    setUpdateNotice(undefined)
+    request<UpdateCheckResult>('/check-update').then(
+      (res) => {
+        setCheckingUpdate(false)
+        setUpdateResult(res)
+        if (!res.hasUpdate) {
+          setUpdateNotice(t('update.upToDate', { version: res.currentVersion }))
+        }
+      },
+      () => {
+        setCheckingUpdate(false)
+        setUpdateNotice(t('update.failed'))
+      },
+    )
+  }
+
+  const handleApplyUpdate = (): void => {
+    setUpdating(true)
+    request<SelfUpdateResult>('/self-update', {}).then(
+      () => {
+        setUpdating(false)
+        setUpdateResult(undefined)
+        setUpdateNotice(t('update.success'))
+      },
+      () => {
+        setUpdating(false)
+        setUpdateNotice(t('update.failed'))
       },
     )
   }
@@ -160,6 +198,52 @@ export function AccountTab({ t }: { t: HubTranslate }): JSX.Element {
           )}
         </div>
       )}
+
+      <div className="dshFish__pluginSection">
+        <h4 className="dshFish__sectionTitle">{t('plugin.about')}</h4>
+        <div className="dshFish__pluginCard">
+          <div className="dshFish__pluginInfo">
+            <span className="dshFish__pluginName">@dsh-fish/hub</span>
+            {version && (
+              <span className="dshFish__meta">
+                {t('plugin.version', { version })}
+              </span>
+            )}
+          </div>
+          <div className="dshFish__pluginActions">
+            {updateResult?.hasUpdate ? (
+              <button
+                className="dshFish__button dshFish__button--primary"
+                type="button"
+                disabled={updating}
+                onClick={handleApplyUpdate}
+              >
+                {updating ? <SpinnerIcon size={13} /> : null}
+                <span>
+                  {updating
+                    ? t('update.upgrading')
+                    : `${t('update.upgrade')} (${updateResult.latestVersion})`}
+                </span>
+              </button>
+            ) : (
+              <button
+                className="dshFish__button"
+                type="button"
+                disabled={checkingUpdate}
+                onClick={handleCheckUpdate}
+              >
+                {checkingUpdate ? <SpinnerIcon size={13} /> : null}
+                <span>{checkingUpdate ? t('update.checking') : t('update.check')}</span>
+              </button>
+            )}
+          </div>
+        </div>
+        {updateNotice && (
+          <p className="dshFish__notice" role="status">
+            {updateNotice}
+          </p>
+        )}
+      </div>
     </div>
   )
 }

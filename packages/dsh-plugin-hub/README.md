@@ -77,6 +77,10 @@ the account avatar and a tooltip from `/me`. The device code and the
 resulting token never reach the browser, and a desktop shell can hand that
 `https` link to the system browser rather than navigating its own WebView.
 
+The heading and the Account tab both offer **Check for updates**. That hits
+npm for the latest `@dsh-fish/hub` and, when a newer version exists, runs
+`dsh plugin add @dsh-fish/hub` on this profile so the next restart loads it.
+
 A profile that serves no client still loads the tools — the HTTP surface is
 registered only when the composition has a web server.
 

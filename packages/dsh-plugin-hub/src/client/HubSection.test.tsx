@@ -201,6 +201,37 @@ describe('HubSection', () => {
     expect(await screen.findByText(/WXYZ-1234/)).toBeDefined()
   })
 
+  it('checks for plugin updates and shows update banner when available', async () => {
+    stubFetch({
+      'GET /state': { body: { ...STATE, version: '0.4.0' } },
+      'GET /catalog': { body: { total: 0, items: [] } },
+      'GET /check-update': {
+        body: {
+          currentVersion: '0.4.0',
+          latestVersion: '0.5.0',
+          hasUpdate: true,
+        },
+      },
+      'POST /self-update': {
+        body: {
+          applied: true,
+          restartRequired: true,
+        },
+      },
+    })
+    render(<HubSection t={translate} />)
+
+    expect(await screen.findByText('v0.4.0')).toBeDefined()
+    const checkBtn = screen.getByRole('button', { name: 'Check for updates' })
+    fireEvent.click(checkBtn)
+
+    expect(await screen.findByText(/New version: v0.5.0/)).toBeDefined()
+    const upgradeBtn = screen.getByRole('button', { name: 'Update now' })
+    fireEvent.click(upgradeBtn)
+
+    expect(await screen.findByText('Updated successfully. Restart DSH to apply.')).toBeDefined()
+  })
+
   it('replaces waiting with the host error when the token poll fails', async () => {
     let account: HubState['account'] = { signedIn: false }
     stubFetch({

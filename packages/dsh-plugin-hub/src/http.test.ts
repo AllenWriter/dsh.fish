@@ -312,6 +312,26 @@ describe('settings API', () => {
     })
   })
 
+  it('checks for plugin update and updates self', async () => {
+    process.env['DSH_HOME'] = home
+    const request = await listen({
+      client: {},
+    })
+
+    const check = await request('/check-update')
+    expect(check.status).toBe(200)
+    const checkData = JSON.parse(check.body)
+    expect(checkData).toHaveProperty('currentVersion')
+    expect(checkData).toHaveProperty('hasUpdate')
+
+    const selfUpdate = await request('/self-update', { method: 'POST' })
+    expect(selfUpdate.status).toBe(200)
+    expect(JSON.parse(selfUpdate.body)).toMatchObject({
+      applied: true,
+      restartRequired: true,
+    })
+  })
+
   it('rejects an unknown route and an artifact id that is not one', async () => {
     process.env['DSH_HOME'] = home
     const request = await listen({ client: {} })

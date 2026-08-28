@@ -22,6 +22,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { HubError, type ArtifactSummary, type DeviceCodeGrant, type HubClient } from './hub-client.js'
 import { InstallRefused, type PlanInstaller } from './installer.js'
 import { clearToken, readToken } from './token-store.js'
+import { isNewerVersion, PLUGIN_VERSION } from './version.js'
 
 /** Mounted under the DSH client's own origin, beside `/api/local-models`. */
 export const API_ROOT = '/api/dsh-fish'
@@ -89,6 +90,7 @@ export function registerHttpApi(ctx: Context, deps: HttpDependencies): void {
       switch (route) {
         case '/state':
           json(res, 200, {
+            version: PLUGIN_VERSION,
             profile: deps.profile,
             baseUrl: deps.baseUrl,
             account: await account(deps, pending),
@@ -101,6 +103,30 @@ export function registerHttpApi(ctx: Context, deps: HttpDependencies): void {
             })),
           })
           return
+        case '/check-update': {
+          let latestVersion = PLUGIN_VERSION
+          try {
+            const resNpm = await fetch('https://registry.npmjs.org/@dsh-fish%2Fhub/latest', {
+              headers: { accept: 'application/json' },
+              signal: AbortSignal.timeout(6000),
+            })
+            if (resNpm.ok) {
+              const data = (await resNpm.json()) as { version?: string }
+              if (typeof data.version === 'string') {
+                latestVersion = data.version
+              }
+            }
+          } catch {
+            // keep fallback
+          }
+          const hasUpdate = isNewerVersion(PLUGIN_VERSION, latestVersion)
+          json(res, 200, {
+            currentVersion: PLUGIN_VERSION,
+            latestVersion,
+            hasUpdate,
+          })
+          return
+        }
         case '/catalog': {
           const query = url.searchParams.get('q')?.trim()
           const kind = url.searchParams.get('kind')?.trim()
@@ -201,6 +227,15 @@ export function registerHttpApi(ctx: Context, deps: HttpDependencies): void {
         })
         return
       }
+      case '/self-update': {
+        const step = await deps.installer.updateSelf('@dsh-fish/hub')
+        json(res, 200, {
+          applied: true,
+          restartRequired: true,
+          step,
+        })
+        return
+      }
       case '/account/login': {
         const login = await startLogin()
         json(res, 200, {
@@ -294,12 +329,18 @@ function card(item: ArtifactSummary): Record<string, unknown> {
 
 class BadRequest extends Error {}
 
-/** Hub ids are kebab-case, so anything with a separator in it is not one. */
+/** Hub ids and package specs: kebab-case slugs, scoped packages like @dsh-fish/hub, or namespaced ids. */
 function requireId(value: unknown): string {
-  if (typeof value !== 'string' || !/^[a-z0-9][a-z0-9._-]{0,199}$/.test(value)) {
+  if (
+    typeof value !== 'string' ||
+    value.trim() === '' ||
+    value.includes('..') ||
+    value.includes('\\') ||
+    !/^(?:@[a-z0-9_.-]+\/)?[a-z0-9][a-z0-9._:-]{0,199}$/i.test(value.trim())
+  ) {
     throw new BadRequest('artifactId is invalid')
   }
-  return value
+  return value.trim()
 }
 
 async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> {

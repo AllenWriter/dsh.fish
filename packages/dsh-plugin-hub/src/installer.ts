@@ -79,6 +79,14 @@ export class PlanInstaller {
     private readonly host: InstallerHost = {},
   ) {}
 
+  async updateSelf(
+    spec = '@dsh-fish/hub',
+    signal: AbortSignal = AbortSignal.timeout(5 * 60_000),
+  ): Promise<AppliedStep> {
+    const result = await this.addPackage({ type: 'add-package', spec }, signal)
+    return result.step
+  }
+
   async apply(
     plan: InstallPlan,
     options: {

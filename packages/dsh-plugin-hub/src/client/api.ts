@@ -26,10 +26,27 @@ export interface InstalledItem {
 }
 
 export interface HubState {
+  version?: string
   profile: string
   baseUrl: string
   account: AccountState
   installed: InstalledItem[]
+}
+
+export interface UpdateCheckResult {
+  currentVersion: string
+  latestVersion: string
+  hasUpdate: boolean
+}
+
+export interface SelfUpdateResult {
+  applied: boolean
+  restartRequired: boolean
+  step?: {
+    summary: string
+    applied: boolean
+    detail?: string
+  }
 }
 
 export interface CatalogItem {

@@ -346,7 +346,9 @@ renamed independently.
 settings section with the harness module loader. `0.4.0` installs from a
 Browse card without a plan confirmation, opens a README modal, forwards the
 host locale to catalog/detail, and shows the signed-in avatar on Account.
-Later releases should go through `publish-hub.yml`. On
+`0.4.1` gives the README modal an opaque surface with a working Markdown
+renderer, and lets the settings section check npm and update `@dsh-fish/hub`
+itself. Later releases should go through `publish-hub.yml`. On
 [npm access for @dsh-fish/hub](https://www.npmjs.com/package/@dsh-fish/hub/access),
 under **Trusted Publisher → GitHub Actions**, set:
 

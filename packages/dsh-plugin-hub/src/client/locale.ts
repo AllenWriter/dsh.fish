@@ -67,6 +67,16 @@ const zh = {
   'account.waiting': '等待你在浏览器中批准…',
   'restart.required': '重启 DSH 后生效。',
   'error.generic': '操作失败，请重试。',
+  'update.check': '检查更新',
+  'update.checking': '正在检查…',
+  'update.upToDate': '已是最新版本 ({version})',
+  'update.available': '发现新版本：v{version}',
+  'update.upgrade': '立即更新',
+  'update.upgrading': '正在更新…',
+  'update.success': '更新成功，重启 DSH 后生效。',
+  'update.failed': '检查或更新失败，请重试。',
+  'plugin.about': '关于插件',
+  'plugin.version': '版本 v{version}',
 } as const
 
 const en = {
@@ -130,6 +140,16 @@ const en = {
   'account.waiting': 'Waiting for you to approve in the browser…',
   'restart.required': 'Restart DSH to load it.',
   'error.generic': 'That did not work. Try again.',
+  'update.check': 'Check for updates',
+  'update.checking': 'Checking…',
+  'update.upToDate': 'Already up to date ({version})',
+  'update.available': 'New version: v{version}',
+  'update.upgrade': 'Update now',
+  'update.upgrading': 'Updating…',
+  'update.success': 'Updated successfully. Restart DSH to apply.',
+  'update.failed': 'Update check failed. Try again.',
+  'plugin.about': 'About plugin',
+  'plugin.version': 'Version v{version}',
 } as const
 
 export const LOCALE_NS = 'settings.dshFish'

@@ -30,8 +30,9 @@
   `GET /state` instead of keeping the waiting copy, and HubSection replaces
   waiting with that error so Sign in is offered again. HubSection also pins
   silent Install-to-Uninstall, a card click that opens the README dialog, and
-  the signed-in avatar tooltip. `/detail` forwards `locale` and returns
-  `readmeMarkdown`.
+  the signed-in avatar tooltip, and Check for updates when npm has a newer
+  `@dsh-fish/hub`. MarkdownView pins headings, badges, fences, lists and
+  tables. `/detail` forwards `locale` and returns `readmeMarkdown`.
 
 ## Integration tests
 
