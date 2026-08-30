@@ -22,4 +22,9 @@ This layer contains page components that map to URLs.
 Product docs are the `docs` slice: MDX lives in `frontend/content/docs/`
 (outside this tree), the splat route and Fumadocs source live here, and
 chrome lives in `widgets/docs-shell`. See
-[`docs/decisions/adr-0004-product-docs-with-fumadocs.md`](../../../docs/decisions/adr-0004-product-docs-with-fumadocs.md).
+[`docs/decisions/adr-0005-product-docs-with-fumadocs.md`](../../../docs/decisions/adr-0005-product-docs-with-fumadocs.md).
+
+The editorial blog is the `blog` slice: MDX lives in `frontend/content/blog/`,
+the splat route and collection source live here, and chrome lives in
+`widgets/blog-shell`. See
+[`docs/decisions/adr-0007-editorial-blog.md`](../../../docs/decisions/adr-0007-editorial-blog.md).

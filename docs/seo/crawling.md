@@ -37,7 +37,7 @@ Responses are `text/plain; charset=utf-8` with `public, max-age=86400`.
 
 ```
 /sitemap.xml                       sitemapindex
-├── /sitemaps/pages.xml            home, browse, 6 kinds, 22 categories, every /docs slug, submit
+├── /sitemaps/pages.xml            home, browse, 6 kinds, 22 categories, every /docs slug, every /blog slug, submit
 └── /sitemaps/artifacts/:n.xml     one page of the catalog, 1,000 artifacts each
 ```
 
@@ -178,9 +178,10 @@ Lighthouse's agentic-browsing audit fetches `GET /llms.txt`; coding agents
 then follow the links.
 
 ```
-/llms.txt                 origin coverage — kinds, API, pointer at the docs index
+/llms.txt                 origin coverage — kinds, API, pointer at the docs and blog indexes
 /docs/llms.txt            product-docs coverage, generated from the Fumadocs nav
 /docs/llms-full.txt       every English guide concatenated (community convention)
+/blog/llms.txt            blog coverage, generated from the Fumadocs collection
 ```
 
 The root file is English and deliberately small. It does not enumerate
@@ -189,7 +190,9 @@ generated from `ARTIFACT_KINDS` the same way the sitemap is, so a kind added
 to the domain appears in `/llms.txt` in the same commit. `/docs/llms.txt`
 is generated from `docsNav('en')` and the loader throws if a sitemap slug is
 missing. `/docs/llms-full.txt` concatenates `productDocsPaths()` through
-`productDocsMarkdown`; the plugin catalog is not dumped.
+`productDocsMarkdown`; the plugin catalog is not dumped. `/blog/llms.txt`
+is generated from `listBlogPosts` and `BLOG_SERIES`; the loader throws if a
+sitemap slug is missing.
 
 There is no `/:locale/llms.txt` and no `/.well-known/llms.txt`. Agents fetch
 the conventional filename at the origin; other languages are a path prefix
@@ -207,11 +210,13 @@ content type or by the v2 `.md` alias:
 curl https://dsh.fish/a/<artifact-id> -H "Accept: text/markdown"
 curl https://dsh.fish/a/<artifact-id>.md
 curl https://dsh.fish/docs/cli.md
+curl https://dsh.fish/blog/harness/v0-1-2-alpha-1.md
 curl https://dsh.fish/index.md
 ```
 
-Directory URLs use `index.md` (`/` → `/index.md`, `/docs` → `/docs/index.md`)
-so the docs tree stays under `/docs/` and `/docs/llms.txt` covers it. Artifact
+Directory URLs use `index.md` (`/` → `/index.md`, `/docs` → `/docs/index.md`,
+`/blog` → `/blog/index.md`) so the docs tree stays under `/docs/` and the
+blog tree stays under `/blog/`. Artifact
 ids are kebab-case with no dots, so `/a/foo.md` cannot collide with an id.
 
 The negotiation lives in the Worker entry (`frontend/workers/app.ts` →
@@ -261,7 +266,8 @@ Link: </llms.txt>; rel="describedby"; type="text/markdown"
 ```
 
 Pages under `/docs` point `describedby` at `/docs/llms.txt` instead of the
-origin file (v2: the most specific covering file wins). Indexable HTML pages
+origin file (v2: the most specific covering file wins). Pages under `/blog`
+point `describedby` at `/blog/llms.txt`. Indexable HTML pages
 repeat both relations in `<head>` via `pageMeta`.
 
 Pages that have a markdown representation add an `alternate` link pointing at

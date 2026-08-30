@@ -11,6 +11,7 @@ import { prefersMarkdown } from './negotiate'
 import { markdownResponse } from './response'
 import { artifactMarkdown, listingItemMarkdown } from './artifact'
 import { productDocsMarkdown, supportsProductDocsMarkdown } from '@/pages/docs'
+import { blogMarkdown, supportsBlogMarkdown } from '@/pages/blog'
 
 /** How many rows a markdown listing carries. Agents page through the API. */
 const LISTING_LIMIT = 50
@@ -30,7 +31,7 @@ export function supportsMarkdownNegotiation(pathname: string): boolean {
   if (kindMatch !== null) return isArtifactKind(kindMatch[1]!)
   const categoryMatch = /^\/category\/([\w-]+)$/.exec(path)
   if (categoryMatch !== null) return isCategory(categoryMatch[1]!)
-  return supportsProductDocsMarkdown(path)
+  return supportsProductDocsMarkdown(path) || supportsBlogMarkdown(path)
 }
 
 /**
@@ -94,6 +95,9 @@ export async function maybeMarkdownResponse(
 
   const docsMarkdown = productDocsMarkdown(path, locale)
   if (docsMarkdown !== undefined) return markdownResponse(docsMarkdown)
+
+  const blog = blogMarkdown(path, locale)
+  if (blog !== undefined) return markdownResponse(blog)
 
   return null
 }

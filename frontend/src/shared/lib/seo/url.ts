@@ -64,6 +64,7 @@ export function hreflangFor(locale: Locale): string {
 export function markdownPath(unlocalizedPath: string): string {
   if (unlocalizedPath === '/') return '/index.md'
   if (unlocalizedPath === '/docs') return '/docs/index.md'
+  if (unlocalizedPath === '/blog') return '/blog/index.md'
   return `${unlocalizedPath}.md`
 }
 
@@ -84,12 +85,13 @@ export function htmlPathFromMarkdownAlias(unlocalizedPath: string): string | und
 
 /**
  * The llms.txt file that covers this HTML path (v2: most specific wins).
- * `/docs/llms.txt` covers the product-docs tree; `/llms.txt` covers the rest.
+ * `/docs/llms.txt` covers the product-docs tree; `/blog/llms.txt` covers
+ * the editorial tree; `/llms.txt` covers the rest.
  */
 export function coveringLlmsTxt(unlocalizedPath: string): string {
-  return unlocalizedPath === '/docs' || unlocalizedPath.startsWith('/docs/')
-    ? '/docs/llms.txt'
-    : '/llms.txt'
+  if (unlocalizedPath === '/docs' || unlocalizedPath.startsWith('/docs/')) return '/docs/llms.txt'
+  if (unlocalizedPath === '/blog' || unlocalizedPath.startsWith('/blog/')) return '/blog/llms.txt'
+  return '/llms.txt'
 }
 
 /**
@@ -103,7 +105,9 @@ export function hasMarkdownAlternate(unlocalizedPath: string): boolean {
   if (/^\/kind\/[^/]+$/.test(unlocalizedPath)) return true
   if (/^\/category\/[^/]+$/.test(unlocalizedPath)) return true
   if (unlocalizedPath === '/docs') return true
-  return unlocalizedPath.startsWith('/docs/') && unlocalizedPath !== '/docs/search'
+  if (unlocalizedPath.startsWith('/docs/') && unlocalizedPath !== '/docs/search') return true
+  if (unlocalizedPath === '/blog') return true
+  return unlocalizedPath.startsWith('/blog/') && unlocalizedPath !== '/blog/feed.xml'
 }
 
 /**

@@ -52,12 +52,12 @@ test.describe('destination marks', () => {
 
     const bar = page.locator('header nav').first()
     await expect(bar.getByRole('link')).toHaveCount(3)
-    for (const label of ['Browse', 'Docs', 'Submit']) {
+    for (const label of ['Browse', 'Docs', 'Blog', 'Submit']) {
       await expect(bar.getByRole('link', { name: label }).locator('svg')).toHaveCount(1)
     }
 
     const siteNav = page.getByRole('navigation', { name: 'dsh.fish' })
-    for (const label of ['Browse', 'Docs', 'Submit', 'GitHub', 'Discord', 'DeepSeek Harness']) {
+    for (const label of ['Browse', 'Docs', 'Blog', 'Submit', 'GitHub', 'Discord', 'DeepSeek Harness']) {
       await expect(siteNav.getByRole('link', { name: label }).locator('svg')).toHaveCount(1)
     }
   })

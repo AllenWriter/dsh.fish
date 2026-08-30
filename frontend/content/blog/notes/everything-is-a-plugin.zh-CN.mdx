@@ -1,0 +1,50 @@
+---
+title: 一切都是插件
+description: DeepSeek Harness 核心很小，其余都加载进来。dsh.fish 是这些可加载单元的目录，不是第二套运行时。
+author: Steven Lynn
+date: 2026-08-29
+series: notes
+---
+
+DeepSeek Harness 自己的 README 以 **everything is a plugin** 起头。这不是市场口号，而是对进程的描述：核心保持很小，每项能力——工具、提供方、审批规则、UI——都以列在 profile 里的插件到达。底下的组合运行时是 Cordis；论文是 [_A Programming Paradigm for Spatiotemporal Composability_](https://arxiv.org/abs/2608.25512)。
+
+dsh.fish 存在，是因为这句话有操作后果。如果一切都是插件，那么「安装这个」就不是一条命令，而是一份计划：哪个 profile、哪些包、哪些文件、哪些设置。这篇写这两件事怎么接上。
+
+## Profile 才是启动的单位
+
+`$DSH_HOME`（默认 `~/.dsh`）放用户数据。`profiles/<name>` 下面是定义一套配置的包和 patch。启动时用 `--profile` 选择。到 v0.1.2-alpha.1，Web UI、Python SDK 和 ACP 都通过 Profile 启动。没有另一扇门加载另一套栈。
+
+所以 dsh.fish 的每份安装计划都点名一个 profile。把插件写进「harness」却不写 profile，等于写进虚无。
+
+## 四种 kind，四个加载面
+
+目录不发明类型。它给 harness 已经加载的东西起名：
+
+| Kind | Harness 拿它做什么 |
+| --- | --- |
+| Bundle | 声明 `dsh.bundle` 的 npm 包——`dsh plugin add` 装进 profile |
+| Skill | 模型按需加载的 `SKILL.md` |
+| Agent preset | 一个 agent 的工具、prompt 段和人设 |
+| Profile | 一叠有序的 bundle；整份可运行的组合 |
+
+已退役的 kind（`mcp-server`、`hook-bridge`）被 301 走，因为它们是目录虚构：harness 从来没有对得上这些名字的一等加载槽。注册表保留运行时装不上的 kind，就是在卖不存在的产品。
+
+## 安装计划才是文档
+
+网站、CLI（`npx @dsh-fish/cli`）和 hub 插件打印同一份计划。计划是你可以在任何东西跑起来之前读完的步骤列表。必须跑构建脚本的 git 包会单独要一次批准，因为那脚本在 agent 沙箱外执行。
+
+计划也解释了目录如何在不翻译标识符的情况下做多语言。`dsh plugin add`、`SKILL.md` 和包名在每种语言里都保持英文。围着它们的框不是。
+
+## 核心仍然拥有的
+
+「一切都是插件」不等于核心是空的。会话仍是只追加的事件日志。工作区仍是你交给 agent 的目录。权限仍是具名预设（默认 `workspace-write`）。官方 DeepSeek 适配器仍是密钥留在本机的方式。
+
+插件在这些权限下行动。这就是目录要守的信任边界：改 profile 之前，你先看插件是什么、计划会写什么。
+
+## 这份目录拒绝成为什么
+
+它不是第二套 harness。它不包一层 Cordis。它不重做 PTC mode 或 `@Remote`。Harness 把 Code Mode 改名为 PTC mode 时，目录的工作是停止写旧名，而不是做兼容垫片。
+
+它也不是官方文档。DeepSeek 的指南在 [deepseek-harness.github.io](https://deepseek-harness.github.io/deepseek-harness/)。dsh.fish 文档教你怎么发布进目录、分数怎么算。两棵树故意分开：一个是运行时，一个是注册表。
+
+插件那句话是连接键。如果未来的 Harness 增加第五个加载面，这里就会多一个 kind——或者不予收录。没有第三种选项去发明进程加载不了的类型。

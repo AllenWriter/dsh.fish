@@ -40,3 +40,4 @@ Anything that crosses both boundaries — for example, a shared type contract be
 - Operational procedures (those live in [`operations/`](../operations/README.md)).
 - Testing or code-review policy (those live in [`quality/`](../quality/README.md)).
 - Reader-facing publishing and CLI guides (those live on the site at `/docs`; see [`../decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md)).
+- Reader-facing editorial posts (those live on the site at `/blog`; see [`../decisions/adr-0007-editorial-blog.md`](../decisions/adr-0007-editorial-blog.md)).

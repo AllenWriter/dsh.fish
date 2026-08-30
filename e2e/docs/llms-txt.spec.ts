@@ -52,6 +52,7 @@ test.describe('llms.txt for agents', () => {
     expect(lines[0]).toBe('# dsh.fish')
     expect(lines[1]?.startsWith('> ')).toBe(true)
     expect(body).toContain('/docs/llms.txt')
+    expect(body).toContain('/blog/llms.txt')
     expect(body).toContain('/openapi.json')
     expect(body).toContain('/api/v1/catalog/snapshot')
     expect(body).toContain('/docs/developers')
@@ -179,7 +180,7 @@ test.describe('llms.txt for agents', () => {
 
   test('a language cookie does not redirect .txt or .md files', async ({ request }) => {
     const headers = { cookie: 'dsh_locale=ja', accept: 'text/html' }
-    for (const path of ['/llms.txt', '/docs/llms.txt', '/docs/cli.md', '/index.md']) {
+    for (const path of ['/llms.txt', '/docs/llms.txt', '/blog/llms.txt', '/docs/cli.md', '/index.md']) {
       const response = await request.get(path, { headers, maxRedirects: 0 })
       expect(response.status(), path).toBe(200)
     }

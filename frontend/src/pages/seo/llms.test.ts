@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ARTIFACT_KINDS, CATEGORIES } from '@/entities/artifact/model/types'
-import { docsLlmsFull, docsLlmsTxt, rootLlmsTxt } from './llms'
+import { blogLlmsTxt, docsLlmsFull, docsLlmsTxt, rootLlmsTxt } from './llms'
 
 const ORIGIN = 'https://dsh.fish'
 
@@ -44,6 +44,8 @@ describe('rootLlmsTxt', () => {
 
   it('points at the docs index and the JSON catalog rather than enumerating plugins', () => {
     expect(body).toContain(`${ORIGIN}/docs/llms.txt`)
+    expect(body).toContain(`${ORIGIN}/blog/llms.txt`)
+    expect(body).toContain(`${ORIGIN}/blog/feed.xml`)
     expect(body).toContain(`${ORIGIN}/api/v1/catalog/snapshot`)
     expect(body).toContain(`${ORIGIN}/openapi.json`)
     expect(body).toContain(`${ORIGIN}/docs/developers`)
@@ -82,5 +84,23 @@ describe('docsLlmsFull', () => {
     expect(body).toContain('# CLI')
     expect(body).toContain('# API')
     expect(body).toContain('npx @dsh-fish/cli')
+  })
+})
+
+describe('blogLlmsTxt', () => {
+  const body = blogLlmsTxt(
+    ORIGIN,
+    [{ title: 'Harness releases', url: '/blog/harness' }],
+    [{ title: 'DeepSeek Harness v0.1.2-alpha.1', url: '/blog/harness/v0-1-2-alpha-1' }],
+  )
+
+  it('lists the index, each series, and every post as markdown aliases', () => {
+    expect(body.startsWith('# dsh.fish blog')).toBe(true)
+    expect(body).toContain(`[Blog](${ORIGIN}/blog/index.md)`)
+    expect(body).toContain(`[Harness releases](${ORIGIN}/blog/harness.md)`)
+    expect(body).toContain(
+      `[DeepSeek Harness v0.1.2-alpha.1](${ORIGIN}/blog/harness/v0-1-2-alpha-1.md)`,
+    )
+    expect(body).toContain(`${ORIGIN}/blog/feed.xml`)
   })
 })

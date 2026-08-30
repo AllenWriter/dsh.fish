@@ -68,6 +68,7 @@ describe('isMachineReadablePath', () => {
     '/llms.txt',
     '/docs/llms.txt',
     '/docs/llms-full.txt',
+    '/blog/llms.txt',
     '/indexnow-abc123.txt',
     '/api/v1/catalog/snapshot',
   ])('matches %s', (pathname) => {

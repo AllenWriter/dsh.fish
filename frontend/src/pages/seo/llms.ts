@@ -77,6 +77,7 @@ export function rootLlmsTxt(baseUrl: string): string {
     item(name, md(baseUrl, '/'), 'The hub home page.'),
     item('Browse the catalog', md(baseUrl, '/browse'), 'Full listing; page through the API for more than the first fifty rows.'),
     item('Product docs', href(baseUrl, '/docs/llms.txt'), 'Guides for the CLI, publishing, scoring, and the REST API.'),
+    item('Blog', href(baseUrl, '/blog/llms.txt'), 'Harness releases, DeepSeek announcements, hub changelogs, and technical notes.'),
     item('dsh.fish developer resources', href(baseUrl, '/docs/developers'), 'OpenAPI, REST, JSON errors, markdown negotiation, and auth.'),
     item('Submit a plugin', href(baseUrl, '/submit'), 'How a repository becomes a catalog row.'),
     '',
@@ -106,6 +107,7 @@ export function rootLlmsTxt(baseUrl: string): string {
       item(translate(locale, topic.labelKey), href(baseUrl, `/for/${topic.id}`), 'Curated intent page.'),
     ),
     item('Atom feed', href(baseUrl, '/feed.xml'), 'The fifty most recently updated artifacts. Other languages at /<locale>/feed.xml.'),
+    item('Blog feed', href(baseUrl, '/blog/feed.xml'), 'Editorial posts. Other languages at /<locale>/blog/feed.xml.'),
     item('Sitemap', href(baseUrl, '/sitemap.xml'), 'Complete URL inventory for search engines, every language of every page.'),
     item('DeepSeek Harness', HARNESS_REPO_URL, 'The runtime this registry exists for.'),
     '',
@@ -138,6 +140,33 @@ export function docsLlmsTxt(baseUrl: string, nav: readonly LlmsNavNode[]): strin
     'This file covers `/docs/*`. The site-wide map is `/llms.txt`. Each guide is also at the same path with `.md` appended (`/docs/cli.md`). A concatenation of every English guide is `/docs/llms-full.txt`. Other languages use a path prefix (`/ja/docs/cli.md`).',
     '',
     ...sections.flatMap((section) => [`## ${section.heading}`, ...section.entries, '']),
+  ].join('\n')
+}
+
+/**
+ * `/blog/llms.txt` — covers `/blog/*`. Series landings and posts are generated
+ * from the Fumadocs collection so a new MDX file appears here in the same commit.
+ */
+export function blogLlmsTxt(
+  baseUrl: string,
+  series: readonly { title: string; url: string }[],
+  posts: readonly { title: string; url: string }[],
+): string {
+  return [
+    `# ${translate(DEFAULT_LOCALE, 'app.name')} blog`,
+    '> Harness release notes, DeepSeek announcements, the dsh.fish changelog, and original technical notes.',
+    '',
+    'This file covers `/blog/*`. The site-wide map is `/llms.txt`. Each post is also at the same path with `.md` appended (`/blog/harness/v0-1-2-alpha-1.md`). Other languages use a path prefix (`/ja/blog`).',
+    '',
+    '## Start here',
+    item('Blog', md(baseUrl, '/blog'), 'All posts, newest first.'),
+    ...series.map((entry) => item(entry.title, md(baseUrl, entry.url))),
+    '',
+    '## Posts',
+    ...posts.map((post) => item(post.title, md(baseUrl, post.url))),
+    '',
+    item('Blog feed', href(baseUrl, '/blog/feed.xml'), 'Atom feed of every post.'),
+    '',
   ].join('\n')
 }
 

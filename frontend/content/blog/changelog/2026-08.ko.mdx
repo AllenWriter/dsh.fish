@@ -1,0 +1,39 @@
+---
+title: 2026년 8월의 dsh.fish
+description: 제품 문서를 Fumadocs 구역으로 만들고, hub 플러그인을 npm에 올렸으며, 두 kind를 폐기하고, 에이전트용 llms.txt를 두었습니다.
+author: Steven Lynn
+date: 2026-08-29
+series: changelog
+---
+
+이 사이트의 첫 changelog입니다. 2026년 8월 29일까지 실제로 올라간 것만 씁니다. 로드맵이 아닙니다. 커밋하지 않은 작업은 적지 않습니다.
+
+## 제품 문서는 한 페이지를 떠났습니다
+
+`/docs`는 kind 탭이 있는 하나의 React 페이지가 아닙니다. Fumadocs 구역입니다. 빌드 때 MDX를 컴파일하고, 여섯 언어, 칸 안 사이드바, 채점 표는 가중치를 본문에 붙이지 않고 `GET /api/v1/scoring`을 호출합니다. 가이드는 quickstart, 개념, 각 게시 형식, CLI, hub 플러그인, 제출, 채점, REST API를 덮습니다.
+
+이 나무의 검색은 `/docs/search`이지 `/api/search`가 아닙니다. `/api/*`는 Hono입니다. 에이전트는 아무 가이드나 markdown으로 가져갈 수 있습니다(`/docs/cli.md`, 또는 `Accept: text/markdown`). `/docs/llms.txt`는 같은 페이지 나무에서 생성됩니다.
+
+## hub 플러그인은 npm 패키지입니다
+
+`@dsh-fish/hub`는 npm에 게시되고 Cordis 플러그인으로 세션 안에서 로드됩니다. 카탈로그를 검색하고, 둘러보기 카드에서 설치하고, README를 열며, 사이트와 같은 설치 계획을 씁니다. 기기 로그인은 고쳤습니다. 브라우저에서 승인하면 플러그인이 폴링하는 토큰이 실제로 교환됩니다.
+
+설정은 harness의 플러그인 설정 클라이언트를 통해 등록합니다. 게시는 npm 11 trusted publishing에 고정합니다.
+
+## 카탈로그 분류는 의도적으로 작아졌습니다
+
+`mcp-server`와 `hook-bridge`는 더 이상 kind가 아닙니다. 그 URL은 `/browse`로 301합니다. 옛 게시 가이드는 `/docs/plugins`로 301합니다. 남은 넷은 harness가 실제로 로드하는 것입니다. bundle, skill, agent preset, profile.
+
+분류는 [awesome-dsh-plugin.com](https://awesome-dsh-plugin.com)에 맞췄습니다. 주제 랜딩(`/for/...`)은 짧은 의도 목록만 덮고, 행이 셋 미만이면 `noindex`를 유지합니다.
+
+## 에이전트를 향한 면
+
+오리진 `/llms.txt`, 가이드 `/docs/llms.txt`, 이어붙인 `/docs/llms-full.txt`. `Accept: text/markdown`인 404는 짧은 복구 지도를 주고 앱 껍질이 아닙니다. OpenAPI와 `.well-known/api-catalog`는 JSON API로 들어가는 기계 문 그대로입니다.
+
+검색 결과의 플러그인 제목은 summary를 싣습니다. README 번역은 대체가 끝날 때까지 이전 완료 본문을 유지해, 작업이 도는 동안 로케일이 빈칸으로 깜빡이지 않게 합니다.
+
+## 이 글이 아닌 것
+
+DeepSeek Harness 릴리스가 아닙니다. Harness 버전은 [Harness 릴리스](/blog/harness)에 있습니다. 모든 커밋 목록도 아닙니다. 기기 인가 경합, sitemap 쿼리 한도, ads.txt는 git에 있습니다. 여기 오는 이유가 아닙니다.
+
+다음 changelog는 경계가 있는, 사용자가 볼 수 있는 변화의 묶음을 쓰고, 로그를 쏟지 않습니다.

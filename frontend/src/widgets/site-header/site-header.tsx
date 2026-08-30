@@ -18,6 +18,7 @@ import {
   DashboardIcon,
   DiscordIcon,
   DocsIcon,
+  BlogIcon,
   GithubIcon,
   LightThemeIcon,
   MenuIcon,
@@ -27,13 +28,14 @@ import {
 } from '@/shared/ui/icon'
 
 /**
- * The three destinations, each with the mark it keeps everywhere else: the same
+ * The four destinations, each with the mark it keeps everywhere else: the same
  * glyph identifies a destination in the bar, in the mobile sheet, in the command
  * palette and in the footer, which is what lets a reader learn it once.
  */
 const NAV: readonly { to: string; key: string; icon: Icon }[] = [
   { to: '/browse', key: 'nav.browse', icon: BrowseIcon },
   { to: '/docs', key: 'nav.docs', icon: DocsIcon },
+  { to: '/blog', key: 'nav.blog', icon: BlogIcon },
   { to: '/submit', key: 'nav.submit', icon: SubmitIcon },
 ]
 

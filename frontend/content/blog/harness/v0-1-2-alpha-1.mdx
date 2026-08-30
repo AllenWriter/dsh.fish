@@ -1,0 +1,65 @@
+---
+title: DeepSeek Harness v0.1.2-alpha.1
+description: Plugin package names ride on official API requests, Profiles become the only launch path, ApiProxy is gone, and WebFetch is on by default.
+author: Steven Lynn
+date: 2026-08-27
+series: harness
+---
+
+[v0.1.2-alpha.1](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.1.2-alpha.1) is a pre-release, published 27 August 2026. The changelog is long because several surfaces moved at once: how a session starts, how a plugin identifies itself to DeepSeek, how a subagent is spawned, and what a headless process is allowed to print. This note reads those rows against the code they name, not as a recap.
+
+The tag is `dsh-v0.1.2-alpha.1`. Install with `npx @deepseek-ai/dsh web` still resolves the published preview; pin the tag if you are bisecting.
+
+## Plugins are now visible on the wire
+
+The official DeepSeek adapter attaches the **package name and version of every enabled plugin** to outbound requests. Deployments can turn the header off. A second, **opt-in** channel can stream incremental session-log uploads on those same requests; it stays off unless you enable it.
+
+That is a catalog fact as much as a runtime one. A row on dsh.fish is an install plan into a named profile. After this release, the model provider can see which of those packages actually loaded. If you ship a bundle, assume the name you published is the name that leaves the machine when the official adapter is in use.
+
+Plugins can also **register a provider sign-in control on the Models settings page**. That is the first settings-card hook that is not a generic form: it is specifically how a plugin adds an OAuth or token login next to the built-in providers.
+
+## Launch is a Profile, including Python and ACP
+
+Applications now start through a `dsh` Profile even when the entry is the Python SDK or ACP, not the Web UI. The Python SDK runtime gained a **Windows x64** artifact in this tag.
+
+ACP (the Agent Client Protocol surface) is no longer a partial stub. Session control, model settings, MCP, permissions, and cancellation are listed as complete. If you were waiting on ACP because a control was missing, this is the release to re-test against — still a preview, still not a stability promise.
+
+## Subagents pick their own model
+
+Two related changes:
+
+- An agent may choose provider, model, and reasoning effort for a subagent **inside the authorization the parent already has**.
+- Callers that start a subagent can set provider, model, reasoning effort, and **maximum output length** at spawn time.
+- Claude Code and Codex subagents take a **configured model** instead of inheriting whatever the parent session used.
+
+The first item is a policy change: the child is not a clone of the parent’s model slot. The second and third are how you pin that in a profile. A hub profile that installs Claude Code or Codex as a bundle should now also say which model those children run.
+
+## What left the tree
+
+**ApiProxy is gone.** The changelog says the migration to the `@Remote` gateway is complete. Anything still importing the old call path will not load.
+
+**Code Mode is now PTC mode.** Existing session records remain readable. English presets that still say “Code mode” in a screenshot are stale; the runtime name is PTC.
+
+**Public WebFetch is on by default**, with SSRF protection, and public-network fetches no longer ask for per-request approval. That is the opposite of the previous “ask every time” default. If a profile depended on that prompt as a gate, it no longer has one for public URLs.
+
+**Network access to the Web UI requires the one-time token in the launch URL.** Local `dsh web` on loopback is unchanged; anything bound across the network now authenticates the link itself.
+
+Headless runs stream progress on **stderr**. **stdout is only the final result.** Scripts that grepped stdout for tool traces will see nothing until the turn ends.
+
+## Session UI and storage
+
+The conversation stream now folds process details and the System prompt before each completed answer, shows expandable token counts after each answer, and lets the column width be dragged. Those are UI rows. The storage rows matter more for anyone with large histories: conversation records use less disk, and a truncated log tail is repaired with a warning that names the session.
+
+Persistent PowerShell on macOS/Linux no longer starts too early. Persistent Bash on Linux no longer returns empty output mid-pipeline. macOS hosts no longer stall when Bash spawns a process storm. Profile-configured Agent Preset directories are no longer dropped at startup; a preset that cannot load is flagged before you switch to it.
+
+## Safety notice
+
+The Safety Notice was updated in this tag: DeepSeek Harness **has not been security-audited**. Sandboxing, approvals, and permissions **do not guarantee isolation**. That sentence is now the official text, not a forum rumour. Treat `danger-full-access` as what it always was, and do not read the new WebFetch default as a claim that the sandbox got tighter. It did not.
+
+## What this hub will do with it
+
+dsh.fish install plans still write under `$DSH_HOME` into a named profile. They do not set the new session-log upload flag, and they do not invent an ApiProxy fallback. A plugin that still documents ApiProxy should be treated as targeting a tree older than this tag.
+
+The scoring model did not change. What changed is the runtime a score is *about*: if a plugin’s README still says Code Mode, or still shows an ApiProxy snippet, that is now a documentation defect relative to v0.1.2-alpha.1, not a different product.
+
+Full changelog: [dsh-v0.1.2-alpha.1](https://github.com/deepseek-ai/deepseek-harness/compare/dsh-v0.1.1-rc.2...dsh-v0.1.2-alpha.1).

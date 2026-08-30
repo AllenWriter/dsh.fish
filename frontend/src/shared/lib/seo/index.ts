@@ -14,6 +14,7 @@ export {
 } from './url'
 export {
   SCHEMA,
+  blogPostingLd,
   breadcrumbLd,
   collectionLd,
   interactionLd,

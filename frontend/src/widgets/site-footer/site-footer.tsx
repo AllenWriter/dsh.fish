@@ -8,16 +8,18 @@ import {
   BrowseIcon,
   DiscordIcon,
   DocsIcon,
+  BlogIcon,
   ExternalLinkIcon,
   GithubIcon,
   SubmitIcon,
   type Icon,
 } from '@/shared/ui/icon'
 
-/** The same three destinations, and the same three marks, as the header bar. */
+/** The same four destinations, and the same four marks, as the header bar. */
 const NAV: readonly { to: string; key: string; icon: Icon }[] = [
   { to: '/browse', key: 'nav.browse', icon: BrowseIcon },
   { to: '/docs', key: 'nav.docs', icon: DocsIcon },
+  { to: '/blog', key: 'nav.blog', icon: BlogIcon },
   { to: '/submit', key: 'nav.submit', icon: SubmitIcon },
 ]
 

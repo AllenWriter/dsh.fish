@@ -19,6 +19,7 @@ export { GithubIcon, DiscordIcon } from './brand-icons'
 
 export {
   // Navigation and destinations.
+  NewspaperIcon as BlogIcon,
   CompassIcon as BrowseIcon,
   BookOpenTextIcon as DocsIcon,
   UploadSimpleIcon as SubmitIcon,

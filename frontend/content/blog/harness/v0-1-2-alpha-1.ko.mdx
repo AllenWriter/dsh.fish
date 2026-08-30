@@ -1,0 +1,65 @@
+---
+title: DeepSeek Harness v0.1.2-alpha.1
+description: 공식 API 요청은 활성화된 플러그인의 패키지 이름과 버전을 싣고, 앱은 Profile로 시작하며, ApiProxy는 제거되었고, 공개 WebFetch는 기본으로 켜집니다.
+author: Steven Lynn
+date: 2026-08-27
+series: harness
+---
+
+[v0.1.2-alpha.1](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.1.2-alpha.1)은 2026년 8월 27일의 프리뷰입니다. changelog가 긴 이유는 세션 시작, 플러그인이 DeepSeek에 자신을 밝히는 방식, 서브에이전트 기동, headless가 로그를 보낼 수 있는 곳이 한꺼번에 바뀌었기 때문입니다. 목록을 되풀이하지 않고, 이름이 나온 코드를 따라 읽습니다.
+
+태그는 `dsh-v0.1.2-alpha.1`입니다. `npx @deepseek-ai/dsh web`은 여전히 현재 프리뷰 패키지로 해석됩니다. 회귀를 추적할 때는 이 태그를 고정하세요.
+
+## 플러그인이 요청에 실립니다
+
+공식 DeepSeek 어댑터는 **활성화된 각 플러그인의 패키지 이름과 버전**을 나가는 요청에 붙입니다. 배포 측에서 끌 수 있습니다. 같은 경로에 **기본 꺼짐, 명시적으로 켜야 하는** Session 로그 증분 업로드도 있습니다.
+
+카탈로그에도 같습니다. dsh.fish의 한 줄은 named profile에 쓰는 설치 계획입니다. 이 버전부터 모델 제공자는 실제로 로드된 패키지를 볼 수 있습니다. 게시한 bundle 이름이 공식 어댑터 사용 시 기기를 떠나는 이름입니다.
+
+플러그인은 **모델 설정 페이지에 제공자 로그인 컨트롤을 등록**할 수 있습니다. 일반 설정 카드가 아니라 OAuth나 토큰 로그인을 내장 제공자 옆에 두기 위한 것입니다.
+
+## 시작은 Profile입니다. Python과 ACP도
+
+Python SDK나 ACP로 들어가도 앱은 `dsh` Profile을 통해 시작합니다. Python SDK runtime에 **Windows x64** 배포가 추가되었습니다.
+
+ACP(Agent Client Protocol)는 반쪽 구현이 아닙니다. 세션 제어, 모델 설정, MCP, 권한, 취소가 채워졌다고 적혀 있습니다. 빠진 제어 때문에 막혔다면 이 버전으로 다시 재세요. 여전히 preview이고 안정성 약속은 없습니다.
+
+## 서브에이전트는 자기 모델을 고를 수 있습니다
+
+관련된 두 가지입니다.
+
+- 부모 작업의 기존 인가 범위 안에서 Agent는 서브에이전트의 제공자, 모델, 추론 강도를 고를 수 있습니다.
+- 서브에이전트를 시작할 때 제공자, 모델, 추론 강도, **최대 출력 길이**를 지정할 수 있습니다.
+- Claude Code와 Codex 서브에이전트는 **설정된 모델**을 쓰며, 기본적으로 부모 세션을 상속하지 않습니다.
+
+첫 번째는 정책입니다. 서브에이전트는 부모 모델 슬롯의 복제가 아닙니다. 나머지 둘은 profile에서 고정하는 방법입니다. Claude Code나 Codex를 bundle로 hub profile에 넣는다면, 그 자식 프로세스가 어떤 모델로 도는지 적어야 합니다.
+
+## 트리에서 빠진 것
+
+**ApiProxy는 제거되었습니다.** changelog는 `@Remote` 게이트웨이로의 이전이 끝났다고 적습니다. 옛 호출 경로를 import하는 코드는 로드되지 않습니다.
+
+**Code Mode는 이제 PTC mode입니다.** 기존 세션 기록은 읽을 수 있습니다. 스크린샷에 “Code mode”가 있는 영어 프리셋은 낡았습니다. 런타임 이름은 PTC입니다.
+
+**공개 WebFetch는 기본으로 켜지며** SSRF 방호가 있고, 공개 URL은 매번 승인하지 않습니다. 예전의 「매번 묻기」와 반대입니다. 그 승인을 게이트로 쓰던 profile에서는 공개 URL에 대한 게이트가 없어졌습니다.
+
+**네트워크로 Web UI에 접근할 때 시작 링크는 일회용 토큰이 필요합니다.** 로컬 loopback의 `dsh web`은 그대로입니다. 네트워크에 바인드한 리스너는 이제 링크 자체로 인증합니다.
+
+Headless는 진행을 **stderr**에 씁니다. **stdout은 최종 결과만** 냅니다. stdout에서 도구 궤적을 grep하던 스크립트는 이 라운드가 끝나기 전까지 아무것도 보지 못합니다.
+
+## 세션 UI와 저장
+
+세션 흐름은 완료된 각 답 앞에서 과정과 System prompt를 접고, 답 뒤에 정확한 토큰 사용량을 열 수 있으며, 본문 너비를 드래그할 수 있습니다. 이것은 UI입니다. 큰 이력에서 중요한 것은 저장입니다. 세션 기록은 디스크를 아끼고, 잘린 로그 꼬리는 자동 복구되며, 영향받은 세션을 경고합니다.
+
+macOS/Linux에서 지속 PowerShell은 너무 일찍 시작하지 않습니다. Linux에서 지속 Bash는 파이프 중간에 빈 출력을 반환하지 않습니다. Bash가 많은 자식 프로세스를 띄워도 macOS 호스트는 멈추지 않습니다. Profile에 설정한 Agent Preset 디렉터리는 시작 시 사라지지 않습니다. 로드할 수 없는 preset은 전환 전에 표시됩니다.
+
+## 안전 안내
+
+이 태그는 Safety Notice를 갱신합니다. DeepSeek Harness는 **아직 보안 감사를 받지 않았습니다**. 샌드박스, 승인, 권한 제어는 **격리를 보장하지 않습니다**. 공식 문장이지 포럼 소문이 아닙니다. `danger-full-access`는 지금까지와 같이 다루세요. 새 WebFetch 기본값을 샌드박스가 더 엄격해졌다고 읽지 마세요. 그렇지 않습니다.
+
+## 이 카탈로그가 다루는 방식
+
+dsh.fish 설치 계획은 여전히 `$DSH_HOME` 아래 named profile만 적습니다. Session 로그 업로드를 켜지 않고, ApiProxy 폴백도 만들지 않습니다. 아직 ApiProxy를 쓰는 플러그인 README는 이 태그보다 오래된 트리를 향한 것입니다.
+
+채점 모델은 바뀌지 않았습니다. 바뀐 것은 점수가 서술하는 런타임입니다. README가 여전히 Code Mode를 쓰고 ApiProxy 조각을 붙이면, v0.1.2-alpha.1에 대한 문서 결함이지 다른 제품이 아닙니다.
+
+전체 changelog: [dsh-v0.1.2-alpha.1](https://github.com/deepseek-ai/deepseek-harness/compare/dsh-v0.1.1-rc.2...dsh-v0.1.2-alpha.1).

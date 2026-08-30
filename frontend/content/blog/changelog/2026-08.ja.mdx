@@ -1,0 +1,39 @@
+---
+title: 2026 年 8 月の dsh.fish
+description: 製品ドキュメントを Fumadocs 区画にし、hub プラグインを npm に出し、二つの kind を退役させ、エージェント向け llms.txt を置いた。
+author: Steven Lynn
+date: 2026-08-29
+series: changelog
+---
+
+本サイト最初の changelog です。2026 年 8 月 29 日までに実際に載ったものだけを書きます。ロードマップではありません。未コミットの作業は列挙しません。
+
+## 製品ドキュメントは単一ページを出た
+
+`/docs` は kind タブ付きの一つの React ページではありません。Fumadocs 区画です。ビルド時に MDX をコンパイルし、六言語、欄内サイドバー、採点表は重みを本文に貼らず `GET /api/v1/scoring` を呼びます。ガイドは quickstart、概念、各公開形式、CLI、hub プラグイン、提出、採点、REST API を覆います。
+
+この木の検索は `/docs/search` であり `/api/search` ではありません。`/api/*` は Hono です。エージェントは任意のガイドを markdown として取れます（`/docs/cli.md`、または `Accept: text/markdown`）。`/docs/llms.txt` は同じページ木から生成されます。
+
+## hub プラグインは npm パッケージ
+
+`@dsh-fish/hub` は npm に公開され、Cordis プラグインとしてセッション内で載ります。カタログを検索し、閲覧カードからインストールし、README を開き、サイトと同じインストール計画を使います。デバイスログインは直しました。ブラウザで認可すると、プラグインがポーリングしている token が本当に兌換されます。
+
+設定は harness のプラグイン設定クライアント経由で登録します。公開は npm 11 の trusted publishing にピンしています。
+
+## カタログ分類は意図して小さくなった
+
+`mcp-server` と `hook-bridge` は kind ではありません。それらの URL は `/browse` へ 301 します。古い公開ガイドは `/docs/plugins` へ 301 します。残る四種は harness が実際に載せるものです。bundle、skill、agent preset、profile。
+
+分類は [awesome-dsh-plugin.com](https://awesome-dsh-plugin.com) に揃えました。トピック落地（`/for/...`）は短い意図リストだけを覆い、行が三未満なら `noindex` のままです。
+
+## エージェント向けの面
+
+オリジンの `/llms.txt`、ガイドの `/docs/llms.txt`、連結版 `/docs/llms-full.txt`。`Accept: text/markdown` の 404 は短い回復地図を返し、アプリ殻ではありません。OpenAPI と `.well-known/api-catalog` は JSON API への機械入口のままです。
+
+検索結果のプラグインタイトルは summary を載せます。README 翻訳は置換が終わるまで前の完成本文を保ち、ジョブ実行中にロケールが空に点滅しないようにします。
+
+## この記事が書かないこと
+
+DeepSeek Harness のリリースではありません。Harness の版は [Harness のリリース](/blog/harness) です。全コミットの一覧でもありません。デバイス認可の競合、sitemap のクエリ上限、ads.txt は git にあります。ここに来る理由ではありません。
+
+次の changelog は境界のある、利用者が見える変化の組を書き、ログのダンプにはしません。

@@ -26,6 +26,7 @@ describe('robotsText', () => {
   it('points agents at llms.txt', () => {
     expect(body).toContain('/llms.txt')
     expect(body).toContain('/docs/llms.txt')
+    expect(body).toContain('/blog/llms.txt')
   })
 
   it('points buyers at ads.txt', () => {

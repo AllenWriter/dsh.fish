@@ -139,6 +139,44 @@ export function collectionLd(
 }
 
 /**
+ * A dated editorial article.
+ *
+ * Only facts the page actually has: headline, description, date, author name.
+ * No invented `wordCount` or `image` beyond the site-wide card already in the
+ * Open Graph tags.
+ */
+export function blogPostingLd(
+  origin: string,
+  locale: Locale,
+  input: {
+    readonly path: string
+    readonly title: string
+    readonly description: string
+    readonly datePublished: string
+    readonly author: string
+  },
+): Ld {
+  const url = absoluteUrl(origin, locale, input.path)
+  return {
+    '@context': SCHEMA,
+    '@type': 'BlogPosting',
+    '@id': `${url}#article`,
+    headline: input.title,
+    description: clampDescription(input.description),
+    datePublished: input.datePublished,
+    inLanguage: localeDefinition(locale).tag,
+    url,
+    mainEntityOfPage: url,
+    isPartOf: { '@id': `${origin}/#website` },
+    publisher: { '@id': `${origin}/#organization` },
+    author: {
+      '@type': 'Person',
+      name: input.author,
+    },
+  }
+}
+
+/**
  * A measured interaction count.
  *
  * The one place schema.org lets a registry state popularity without asserting a

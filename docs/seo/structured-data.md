@@ -9,8 +9,9 @@ One connected graph, emitted as `application/ld+json` through React Router's
 |---|---|---|
 | `WebSite` (+ `SearchAction`) | Home, per language | `websiteLd` |
 | `Organization` | Home, per language | `organizationLd` |
-| `BreadcrumbList` | Artifact, kind, category, topic, browse, docs, submit | `breadcrumbLd` |
-| `CollectionPage` + `ItemList` | Browse, kind, category, topic | `collectionLd` |
+| `BreadcrumbList` | Artifact, kind, category, topic, browse, docs, blog, submit | `breadcrumbLd` |
+| `CollectionPage` + `ItemList` | Browse, kind, category, topic, blog index, blog series | `collectionLd` |
+| `BlogPosting` | Blog post | `blogPostingLd` |
 | `SoftwareApplication` | Artifact detail | `artifactLd` |
 
 The `Organization.logo` is the square 256×256 whale brand mark. The 1200×630
@@ -63,6 +64,11 @@ without inventing a rating.
 `manualCommands` can include comment lines (`# Copy the composition to …`) that
 are instructions to a reader, and publishing one would tell a machine that `#`
 is how you install this.
+
+`BlogPosting` is emitted on a post with facts the page has: `headline`,
+`description`, `datePublished`, `author` as a `Person` name. `wordCount` and
+a dedicated `image` are omitted — counting words for a crawler is invention,
+and the site-wide Open Graph card is not the article's photograph.
 
 ## Language
 

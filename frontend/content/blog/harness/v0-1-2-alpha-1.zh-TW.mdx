@@ -1,0 +1,65 @@
+---
+title: DeepSeek Harness v0.1.2-alpha.1
+description: 官方 API 請求會帶上已啟用外掛的套件名稱與版本，應用統一由 Profile 啟動，ApiProxy 已移除，公網 WebFetch 預設開啟。
+author: Steven Lynn
+date: 2026-08-27
+series: harness
+---
+
+[v0.1.2-alpha.1](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.1.2-alpha.1) 是 2026 年 8 月 27 日發布的預覽版。changelog 很長，因為好幾條線同時動了：工作階段怎麼啟動、外掛如何向 DeepSeek 表明身分、子代理怎麼拉起，以及 headless 行程允許往哪裡打日誌。下面按這些線對照它們點名的程式碼來讀，而不是複述一遍列表。
+
+標籤是 `dsh-v0.1.2-alpha.1`。`npx @deepseek-ai/dsh web` 仍然會解析到目前預覽套件；排查迴歸時請釘死這個 tag。
+
+## 外掛會出現在請求裡
+
+官方 DeepSeek 適配器會把**每個已啟用外掛的套件名稱與版本**附在出站請求上。部署側可以關掉。同一條鏈路上還有一個**預設關閉、需顯式打開**的 Session 日誌增量上傳。
+
+這對目錄同樣成立。dsh.fish 上的一列是寫入某個 named profile 的安裝計畫。這個版本之後，模型提供方能看見這些套件裡哪些真正載入了。你發布的 bundle 名字，就是官方適配器在用時離開本機的那個名字。
+
+外掛還可以**在模型設定頁註冊提供方登入控制項**。這不是通用設定卡片，而是專門把 OAuth 或 token 登入放在內建提供方旁邊。
+
+## 啟動就是 Profile，包括 Python 和 ACP
+
+即使用 Python SDK 或 ACP 進入，應用也透過 `dsh` Profile 啟動。Python SDK runtime 增加了 **Windows x64** 發行包。
+
+ACP（Agent Client Protocol）不再是半截實作。工作階段控制、模型設定、MCP、權限和取消都列為已補齊。如果之前卡在缺某個控制，用這個版本重新測——仍然是 preview，仍然沒有穩定性承諾。
+
+## 子代理可以選自己的模型
+
+兩件相關的事：
+
+- 在父任務已有的授權範圍內，Agent 可以為子代理選擇提供方、模型和推理力度。
+- 啟動子代理時可以指定提供方、模型、推理力度和**最大輸出長度**。
+- Claude Code 與 Codex 子代理使用**設定的模型**，不再預設繼承父工作階段。
+
+第一項是策略：子代理不是父模型槽的複製。後兩項是你在 profile 裡釘死它的方式。把 Claude Code 或 Codex 當 bundle 裝進 hub profile 的，現在還應該寫明這些子行程跑哪個模型。
+
+## 從樹裡拿掉的東西
+
+**ApiProxy 已移除。** changelog 寫明遷移到 `@Remote` 閘道已完成。仍在 import 舊呼叫路徑的程式碼不會載入。
+
+**Code Mode 現名為 PTC mode。** 既有工作階段紀錄仍可讀。截圖裡還寫著 “Code mode” 的英文預設已經過時；執行時名字是 PTC。
+
+**公網 WebFetch 預設開啟**，帶 SSRF 防護，公網請求不再逐次審批。這和以前的「每次都問」相反。如果某個 profile 把那次審批當成閘門，對公網 URL 它已經不在了。
+
+**經網路存取 Web UI 時，啟動連結必須帶一次性 token。** 本機 loopback 上的 `dsh web` 不變；綁到網上的監聽現在用連結本身鑑權。
+
+Headless 執行把進度打到 **stderr**。**stdout 只輸出最終結果。** 從 stdout 裡 grep 工具軌跡的指令碼，在這一輪結束前會什麼都看不到。
+
+## 工作階段 UI 與儲存
+
+工作階段流會在每條已完成回答前摺疊過程內容和 System prompt，回答後可展開精確 token 用量，正文寬度可拖。這些是 UI。對大歷史更要緊的是儲存：工作階段紀錄更省磁碟；截斷的日誌尾會自動修復，並警告受影響的工作階段。
+
+macOS/Linux 上持久 PowerShell 不再過早啟動。Linux 上持久 Bash 不再在管線中途回傳空輸出。Bash 拉起大量子行程時 macOS 宿主不再卡死。Profile 設定的 Agent Preset 目錄啟動時不再遺失；無法載入的 preset 會在切換前被標出來。
+
+## 安全說明
+
+本 tag 更新了 Safety Notice：DeepSeek Harness **尚未接受安全稽核**。沙箱、審批與權限控制**不能保證隔離**。這是官方文字，不是論壇傳言。繼續把 `danger-full-access` 當成它一直是的那樣。不要把新的 WebFetch 預設理解成沙箱變嚴了。它沒有。
+
+## 本目錄會怎麼對待它
+
+dsh.fish 的安裝計畫仍然只寫 `$DSH_HOME` 下的 named profile。它們不會打開 Session 日誌上傳，也不會發明 ApiProxy 回退。文件還在寫 ApiProxy 的外掛，應視為面向比這個 tag 更舊的樹。
+
+評分模型沒變。變的是分數所描述的執行時：README 仍寫 Code Mode、仍貼 ApiProxy 片段，相對 v0.1.2-alpha.1 是文件缺陷，不是另一個產品。
+
+完整 changelog：[dsh-v0.1.2-alpha.1](https://github.com/deepseek-ai/deepseek-harness/compare/dsh-v0.1.1-rc.2...dsh-v0.1.2-alpha.1)。

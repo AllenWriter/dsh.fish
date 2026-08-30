@@ -1,0 +1,50 @@
+---
+title: 一切都是外掛
+description: DeepSeek Harness 核心很小，其餘都載入進來。dsh.fish 是這些可載入單元的目錄，不是第二套執行時。
+author: Steven Lynn
+date: 2026-08-29
+series: notes
+---
+
+DeepSeek Harness 自己的 README 以 **everything is a plugin** 起頭。這不是市場口號，而是對行程的描述：核心保持很小，每項能力——工具、提供方、審批規則、UI——都以列在 profile 裡的外掛到達。底下的組合執行時是 Cordis；論文是 [_A Programming Paradigm for Spatiotemporal Composability_](https://arxiv.org/abs/2608.25512)。
+
+dsh.fish 存在，是因為這句話有操作後果。如果一切都是外掛，那麼「安裝這個」就不是一條命令，而是一份計畫：哪個 profile、哪些套件、哪些檔案、哪些設定。這篇寫這兩件事怎麼接上。
+
+## Profile 才是啟動的單位
+
+`$DSH_HOME`（預設 `~/.dsh`）放使用者資料。`profiles/<name>` 下面是定義一套設定的套件和 patch。啟動時用 `--profile` 選擇。到 v0.1.2-alpha.1，Web UI、Python SDK 和 ACP 都透過 Profile 啟動。沒有另一扇門載入另一套棧。
+
+所以 dsh.fish 的每份安裝計畫都點名一個 profile。把外掛寫進「harness」卻不寫 profile，等於寫進虛無。
+
+## 四種 kind，四個載入面
+
+目錄不發明類型。它給 harness 已經載入的東西起名：
+
+| Kind | Harness 拿它做什麼 |
+| --- | --- |
+| Bundle | 宣告 `dsh.bundle` 的 npm 套件——`dsh plugin add` 裝進 profile |
+| Skill | 模型按需載入的 `SKILL.md` |
+| Agent preset | 一個 agent 的工具、prompt 段和人設 |
+| Profile | 一疊有序的 bundle；整份可執行的組合 |
+
+已退役的 kind（`mcp-server`、`hook-bridge`）被 301 走，因為它們是目錄虛構：harness 從來沒有對得上這些名字的一等載入槽。註冊表保留執行時裝不上的 kind，就是在賣不存在的產品。
+
+## 安裝計畫才是文件
+
+網站、CLI（`npx @dsh-fish/cli`）和 hub 外掛列印同一份計畫。計畫是你可以在任何東西跑起來之前讀完的步驟列表。必須跑建置指令碼的 git 套件會單獨要一次批准，因為那指令碼在 agent 沙箱外執行。
+
+計畫也解釋了目錄如何在不翻譯識別碼的情況下做多語言。`dsh plugin add`、`SKILL.md` 和套件名在每種語言裡都保持英文。圍著它們的框不是。
+
+## 核心仍然擁有的
+
+「一切都是外掛」不等於核心是空的。工作階段仍是只追加的事件日誌。工作區仍是你交給 agent 的目錄。權限仍是具名預設（預設 `workspace-write`）。官方 DeepSeek 適配器仍是金鑰留在本機的方式。
+
+外掛在這些權限下行動。這就是目錄要守的信任邊界：改 profile 之前，你先看外掛是什麼、計畫會寫什麼。
+
+## 這份目錄拒絕成為什麼
+
+它不是第二套 harness。它不包一層 Cordis。它不重做 PTC mode 或 `@Remote`。Harness 把 Code Mode 改名為 PTC mode 時，目錄的工作是停止寫舊名，而不是做相容墊片。
+
+它也不是官方文件。DeepSeek 的指南在 [deepseek-harness.github.io](https://deepseek-harness.github.io/deepseek-harness/)。dsh.fish 文件教你怎麼發布進目錄、分數怎麼算。兩棵樹故意分開：一個是執行時，一個是註冊表。
+
+外掛那句話是連接鍵。如果未來的 Harness 增加第五個載入面，這裡就會多一個 kind——或者不予收錄。沒有第三種選項去發明行程載入不了的類型。

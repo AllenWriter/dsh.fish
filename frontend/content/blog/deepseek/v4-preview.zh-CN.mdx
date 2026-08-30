@@ -1,0 +1,54 @@
+---
+title: DeepSeek-V4 预览版，以及它给 Harness 带来的变化
+description: 2026 年 4 月的 V4 公告把 1M 上下文做成默认。Harness 随后跟上了 Flash-Vision、Files API 上传，以及旧模型名的下线日期。
+author: Steven Lynn
+date: 2026-08-29
+series: deepseek
+---
+
+DeepSeek 于 2026 年 4 月 24 日发布 [DeepSeek-V4 预览版](https://www.deepseek.com/news/v4-preview/)。那篇文章是第一手来源。本文不是转载，而是截至 Harness v0.1.2-alpha.1，这条公告对目录所索引的 agent 运行时做了什么。
+
+## 公告实际写了什么
+
+两个开源权重模型，官方服务上的默认上下文都是 **1M token**：
+
+| 模型 | 总参数 / 激活参数 | 公告中的定位 |
+| --- | --- | --- |
+| DeepSeek-V4-Pro | 1.6T / 49B | 编程、世界知识、数学——对标闭源 |
+| DeepSeek-V4-Flash | 284B / 13B | 更快更便宜；「简单 Agent 任务上与 Pro 相当」 |
+
+架构主张是 **token 维压缩加上 DSA**（DeepSeek Sparse Attention）。1M 不是可选的长上下文 SKU，而是标准窗口。
+
+API 的 `base_url` 不变。`model` 改为 `deepseek-v4-pro` 或 `deepseek-v4-flash`。两个名字都支持思考 / 非思考。公告建议 Agent 场景用思考模式，强度 `max`。
+
+**下线：** `deepseek-chat` 与 `deepseek-reasoner` 于 **2026 年 7 月 24 日 15:59 UTC** 停止。此前分别路由到 V4-Flash 的非思考与思考。过期之后这两个字符串是死名，不是别名。
+
+网页与 App 以专家模式 / 极速模式暴露这一对。权重与技术报告从公告页链出（Hugging Face / ModelScope、arXiv）。
+
+## Harness 拿它做了什么
+
+V4 公告在四月。八月人们实际跑的 harness 预览已经把 V4 当活的家族：
+
+- **v0.1.1-rc.1** 在官方适配器上增加 `DeepSeek-V4-Flash-Vision-Exp`——图像输入，实验性，名字就写着 Exp。
+- **v0.1.1-rc.2** 让适配器优先走 **Files API** 上传图像并复用已传文件，按模型要求缩放和转格式。
+- **v0.1.0-rc.8** 已经为 DeepSeek 适配器打开原生图片请求（`/goal`、`/plan`、`@` 引用文件和会话）。
+- **v0.1.2-alpha.1** 把**已启用插件的包名和版本**附在官方 DeepSeek 请求上，并提供可选的 Session 日志上传。
+
+所以公告里「与 Claude Code、OpenClaw、OpenCode 以及 DeepSeek 自研 coding agent 集成」不是贴在未改运行时旁边的营销句。随后几个月，vision、Files API 和插件身份都成了这条 API 上的一等公民。
+
+实验性视觉模型是单独的 `model` 字符串：`deepseek-v4-flash-vision-exp`。API 文档目前写明 `deepseek-v4-flash` 对应 DeepSeek-V4-Flash-0731，`deepseek-v4-pro` 对应 DeepSeek-V4-Pro-0813——名字不变，快照更新。调用方式不变。
+
+## 插件作者不该忽略的
+
+1. **不要再把 `deepseek-chat` / `deepseek-reasoner` 写成调用方式。** 它们有下线日。四月还对的 README，在 2026 年 7 月 24 日就会错。
+2. **1M 是官方适配器围绕的窗口。** 假定 128k 裁剪、或把整仓塞进一次 prompt 却没有检索策略的 skill，现在要么浪费窗口，要么以另一种方式溢出。
+3. **图像是一等的工具结果**，不是边栏。插件若产出截图、图表或 diff 图，官方适配器会走 Files API 和 vision-exp。压缩时要把它们算进去（v0.1.2-alpha.1 已经算了）。
+4. **官方适配器能告诉 DeepSeek 加载了哪些插件。** 包名丢人、误导或冲突，现在会跟请求一起走。
+
+## 本目录不会做什么
+
+dsh.fish 不替你选模型。安装计划从不写 API key。V4 公告里的定价和高峰时段属于 [DeepSeek API 文档](https://api-docs.deepseek.com/quick_start/pricing)，不属于目录行。
+
+目录要做的是让安装计划对准 V4 实际跑在里面的运行时。插件 README 还在写 `export deepseek-chat`，那是可以打进维护分的文档缺陷，不是另一个产品。
+
+第一手来源：[DeepSeek-V4 预览版](https://www.deepseek.com/news/v4-preview/)。英文：[V4 Preview](https://www.deepseek.com/en/news/v4-preview/)。

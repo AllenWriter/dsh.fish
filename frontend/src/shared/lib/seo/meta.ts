@@ -138,12 +138,14 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
     // Feed autodiscovery. Each page advertises its own language's feed: the
     // feed exists in every language the page does, and a feed-aware client
     // offers the reader the channel in the language they are already reading.
+    // Blog pages point at the editorial feed, not the catalog of plugins.
+    const isBlog = path === '/blog' || path.startsWith('/blog/')
     descriptors.push({
       tagName: 'link',
       rel: 'alternate',
       type: 'application/atom+xml',
-      title: translate(locale, 'feed.title'),
-      href: absoluteUrl(origin, locale, '/feed.xml'),
+      title: translate(locale, isBlog ? 'feed.blog.title' : 'feed.title'),
+      href: absoluteUrl(origin, locale, isBlog ? '/blog/feed.xml' : '/feed.xml'),
     })
     // llms.txt v2: the covering overview, and the markdown alias when this
     // path has one. Headers on the response repeat the same relations so an

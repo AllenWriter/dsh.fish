@@ -77,6 +77,12 @@ every markdown link in the docs index is fetchable. Unit tests also require
 every guide to have a physical file in every public locale. Fold
 screenshots are written for inspection; they are not visual baselines.
 
+**Editorial blog** (`e2e/blog/`) covers the Fumadocs collection at one desktop
+viewport (1280×900). It asserts the series nav, a filtered series landing, a
+post with TOC and `BlogPosting` JSON-LD, indexable Japanese MDX, localized
+`Accept: text/markdown`, `/blog/llms.txt`, and `/blog/feed.xml`. Unit tests
+also require every post to have a physical file in every public locale.
+
 **Plugin-detail markdown** is an exception to "journeys only": a third-party
 readme is the unique content of `/a/:id`, and its layout is resolution-dependent.
 The suite runs against the real SSR app at six device sizes (iPhone SE 320,

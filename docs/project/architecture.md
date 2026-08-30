@@ -159,6 +159,30 @@ never advertise an English fallback as a translation.
 
 See [`../decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md).
 
+### Editorial blog
+
+Dated posts live under `/blog/*`, in a second Fumadocs collection
+(`defineCollections` with `author`, `date`, and a closed `series` enum).
+They are not product docs: a changelog and a Harness release reading are
+a different intent from a publishing guide.
+
+`pages/blog` owns the routes and the source module. `widgets/blog-shell`
+is in-column chrome (series nav + post TOC) beside `SiteHeader`.
+`fumadocs-ui` is not a dependency. MDX is compiled at build time; the
+Worker never `getText('raw')`.
+
+Same-layer imports, same reason as docs:
+
+- `pages/markdown` → `pages/blog` public API (`blogMarkdown`, `supportsBlogMarkdown`)
+- `pages/seo` → `pages/blog` public API (`BLOG_SERIES`) for `/blog/llms.txt`
+- `pages/seo` → `pages/blog/source` (`blogSitemapEntries`, `listBlogPosts`, `blogPostPaths`) — those helpers cannot sit on the public API, because the collection is a Vite macro and the markdown unit tests import `@/pages/blog` without the plugin
+
+Dot-suffix locale files; React Router owns the URL prefix.
+`blogLocales` checks physical MDX files so metadata and the sitemap never
+advertise an English fallback as a translation.
+
+See [`../decisions/adr-0007-editorial-blog.md`](../decisions/adr-0007-editorial-blog.md).
+
 React Router requires every route module to live inside `appDirectory`, so
 `appDirectory` is `src` — the whole FSD tree. `src/root.tsx` and `src/routes.ts`
 are one-line re-exports of the real modules in the `app` layer, so the framework
@@ -180,7 +204,7 @@ pages, not query strings, because that is the form an engine will rank and the
 form the footer can link from every page on the site.
 
 **Resource routes.** `/robots.txt`, `/ads.txt`, `/sitemap.xml` and the two sitemap files
-it indexes, plus `/llms.txt`, `/docs/llms.txt` and `/docs/llms-full.txt`, are
+it indexes, plus `/llms.txt`, `/docs/llms.txt`, `/docs/llms-full.txt` and `/blog/llms.txt`, are
 React Router routes with a `loader` and no component, so they resolve their
 data through the same container as every page — the artifact sitemap reads
 `ListSitemapEntries`, an application use case over a dedicated
@@ -611,5 +635,6 @@ language-neutral in the database.
 
 - [`decisions/adr-0001-plugin-hub-architecture.md`](../decisions/adr-0001-plugin-hub-architecture.md)
 - [`decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md) — reader-facing `/docs` as a Fumadocs section
+- [`decisions/adr-0007-editorial-blog.md`](../decisions/adr-0007-editorial-blog.md) — reader-facing `/blog` as a second Fumadocs collection
 - [`operations/deployment.md`](../operations/deployment.md)
 - [`frontend/README.md`](../frontend/README.md), [`backend/README.md`](../backend/README.md)

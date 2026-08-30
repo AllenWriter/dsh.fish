@@ -1,0 +1,54 @@
+---
+title: DeepSeek-V4 Preview, and what it does to the harness
+description: The April 2026 V4 announcement set 1M context as the default. The harness followed with Flash-Vision, Files API uploads, and a retirement date for the old model names.
+author: Steven Lynn
+date: 2026-08-29
+series: deepseek
+---
+
+DeepSeek published [DeepSeek-V4 Preview](https://www.deepseek.com/en/news/v4-preview/) on 24 April 2026. The post is the primary source. This note is not a reprint. It is what that announcement did to the agent runtime this catalog indexes, as of Harness v0.1.2-alpha.1.
+
+## What the post actually said
+
+Two open-weight models, both with a **1M token** context as the default on official DeepSeek services:
+
+| Model | Total / active parameters | Role in the post |
+| --- | --- | --- |
+| DeepSeek-V4-Pro | 1.6T / 49B | Coding, world knowledge, math — claimed against closed-source peers |
+| DeepSeek-V4-Flash | 284B / 13B | Faster, cheaper; “on par with Pro on simple agent tasks” |
+
+The architectural claim is **token-wise compression plus DSA** (DeepSeek Sparse Attention). 1M context is not an optional long-context SKU. It is the standard window.
+
+API access keeps the existing `base_url`. The `model` field becomes `deepseek-v4-pro` or `deepseek-v4-flash`. Both names support thinking and non-thinking modes. The post tells agent workloads to use thinking at intensity `max`.
+
+**Retirement:** `deepseek-chat` and `deepseek-reasoner` stop on **24 July 2026, 15:59 UTC**. Until then they route to V4-Flash non-thinking and thinking respectively. After that date those strings are dead names, not aliases.
+
+Chat and App expose the pair as Expert Mode / Instant Mode. Weights and the technical report are linked from the post (Hugging Face / ModelScope, arXiv).
+
+## What the harness did with it
+
+The V4 post is from April. The harness preview that people actually run in August already treats V4 as the live family:
+
+- **v0.1.1-rc.1** added `DeepSeek-V4-Flash-Vision-Exp` on the official adapter — image input, experimental, named as such.
+- **v0.1.1-rc.2** made the adapter prefer the **Files API** for image uploads and reuse uploaded files, and resize/convert to whatever the model asked for.
+- **v0.1.0-rc.8** had already turned native image requests on for DeepSeek adapters (`/goal`, `/plan`, `@` file and session references).
+- **v0.1.2-alpha.1** attaches **enabled plugin package names and versions** to official DeepSeek requests, and offers opt-in session-log upload on that same path.
+
+So the V4 announcement’s “agent integrations” line (Claude Code, OpenClaw, OpenCode, plus DeepSeek’s own coding agents) is not marketing copy sitting next to an unchanged runtime. The harness spent the following months making vision, Files API, and plugin identity first-class on that API.
+
+The experimental vision model is a separate `model` string: `deepseek-v4-flash-vision-exp`. API docs currently note that `deepseek-v4-flash` resolves to DeepSeek-V4-Flash-0731 and `deepseek-v4-pro` to DeepSeek-V4-Pro-0813 — same names, newer snapshots. The calling convention does not change.
+
+## What a plugin author should not ignore
+
+1. **Do not document `deepseek-chat` / `deepseek-reasoner` as the way to call DeepSeek.** Those names have a kill date. A README that still uses them will be wrong on 24 July 2026 even if it was right in April.
+2. **1M context is the window the official adapter is built around.** A skill that assumes a 128k clip, or that dumps a whole repo into one prompt without a retrieval story, is now leaving a large fraction of the window unused — or overflowing it in a different way than last year’s models.
+3. **Images are a first-class tool result**, not a sidebar. If your plugin produces screenshots, plots, or diffs as images, the Files API path and the vision-exp model are how the official adapter will send them. Count them in compaction (v0.1.2-alpha.1 does).
+4. **The official adapter can tell DeepSeek which plugins loaded.** If your package name is embarrassing, misleading, or collides, it is now on the request.
+
+## What this hub will not do
+
+dsh.fish does not pick a model for you. Install plans never write API keys. The V4 post’s pricing and peak/off-peak hours belong on [DeepSeek’s API docs](https://api-docs.deepseek.com/quick_start/pricing), not in a catalog row.
+
+What the hub *does* is keep install plans pointed at the runtime the V4 models actually run inside. When a plugin’s README still says to export `deepseek-chat`, that is a documentation defect we can score as maintenance, not a different product.
+
+Primary source: [DeepSeek-V4 Preview](https://www.deepseek.com/en/news/v4-preview/). Chinese original: [V4 预览版](https://www.deepseek.com/news/v4-preview/).

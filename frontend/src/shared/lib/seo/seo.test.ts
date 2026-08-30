@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { TITLE_MAX } from '@/shared/config/site'
 import { LOCALE_CODES, translate } from '@/shared/config/i18n'
 import { pageMeta } from './meta'
-import { organizationLd, websiteLd } from './structured-data'
+import { blogPostingLd, organizationLd, websiteLd } from './structured-data'
 import { artifactSearchTitle } from './title'
 import {
   alternates,
@@ -125,6 +125,28 @@ describe('pageMeta', () => {
     )
     expect(feeds).toHaveLength(1)
     expect(feeds[0]!.href).toBe(`${ORIGIN}/ja/feed.xml`)
+  })
+
+  it('points blog pages at the editorial feed, not the catalog feed', () => {
+    const blog = pageMeta({
+      origin: ORIGIN,
+      locale: 'ja',
+      path: '/blog/harness/v0-1-2-alpha-1',
+      title: 'v0.1.2',
+      description: 'Release notes.',
+      type: 'article',
+    }) as Descriptor[]
+    const feeds = find(
+      blog,
+      (entry) => entry.rel === 'alternate' && entry.type === 'application/atom+xml',
+    )
+    expect(feeds).toHaveLength(1)
+    expect(feeds[0]!.href).toBe(`${ORIGIN}/ja/blog/feed.xml`)
+    expect(feeds[0]!.title).toBe(translate('ja', 'feed.blog.title'))
+    expect(
+      find(blog, (entry) => entry.rel === 'describedby' && entry.type === 'text/markdown')[0]!
+        .href,
+    ).toBe(`${ORIGIN}/blog/llms.txt`)
   })
 
   it('points at the covering llms.txt and the markdown alias', () => {
@@ -273,6 +295,24 @@ describe('websiteLd', () => {
   })
 })
 
+describe('blogPostingLd', () => {
+  it('names the article, the author, and the publication date, and nothing invented', () => {
+    const node = blogPostingLd(ORIGIN, 'en', {
+      path: '/blog/notes/everything-is-a-plugin',
+      title: 'Everything is a plugin',
+      description: 'The harness keeps a small core.',
+      datePublished: '2026-08-29T00:00:00.000Z',
+      author: 'Steven Lynn',
+    })
+    expect(node['@type']).toBe('BlogPosting')
+    expect(node.headline).toBe('Everything is a plugin')
+    expect(node.datePublished).toBe('2026-08-29T00:00:00.000Z')
+    expect(node.author).toEqual({ '@type': 'Person', name: 'Steven Lynn' })
+    expect(node).not.toHaveProperty('wordCount')
+    expect(node).not.toHaveProperty('image')
+  })
+})
+
 describe('markdownPath', () => {
   it('appends .md, using index.md for directory URLs', () => {
     expect(markdownPath('/')).toBe('/index.md')
@@ -280,10 +320,12 @@ describe('markdownPath', () => {
     expect(markdownPath('/docs/cli')).toBe('/docs/cli.md')
     expect(markdownPath('/a/dsh-hello')).toBe('/a/dsh-hello.md')
     expect(markdownPath('/browse')).toBe('/browse.md')
+    expect(markdownPath('/blog')).toBe('/blog/index.md')
+    expect(markdownPath('/blog/harness/v0-1-2-alpha-1')).toBe('/blog/harness/v0-1-2-alpha-1.md')
   })
 
   it('round-trips through the alias stripper', () => {
-    for (const path of ['/', '/docs', '/docs/cli', '/a/dsh-hello', '/kind/skill']) {
+    for (const path of ['/', '/docs', '/docs/cli', '/a/dsh-hello', '/kind/skill', '/blog']) {
       expect(htmlPathFromMarkdownAlias(markdownPath(path))).toBe(path)
     }
     expect(htmlPathFromMarkdownAlias('/browse')).toBeUndefined()
@@ -291,12 +333,14 @@ describe('markdownPath', () => {
 })
 
 describe('coveringLlmsTxt', () => {
-  it('uses the docs file under /docs, otherwise the origin file', () => {
+  it('uses the most specific overview for docs and the blog', () => {
     expect(coveringLlmsTxt('/')).toBe('/llms.txt')
     expect(coveringLlmsTxt('/browse')).toBe('/llms.txt')
     expect(coveringLlmsTxt('/a/dsh-hello')).toBe('/llms.txt')
     expect(coveringLlmsTxt('/docs')).toBe('/docs/llms.txt')
     expect(coveringLlmsTxt('/docs/cli')).toBe('/docs/llms.txt')
+    expect(coveringLlmsTxt('/blog')).toBe('/blog/llms.txt')
+    expect(coveringLlmsTxt('/blog/harness/v0-1-2-alpha-1')).toBe('/blog/llms.txt')
   })
 })
 
@@ -305,6 +349,8 @@ describe('hasMarkdownAlternate', () => {
     expect(hasMarkdownAlternate('/')).toBe(true)
     expect(hasMarkdownAlternate('/browse')).toBe(true)
     expect(hasMarkdownAlternate('/docs/cli')).toBe(true)
+    expect(hasMarkdownAlternate('/blog')).toBe(true)
+    expect(hasMarkdownAlternate('/blog/harness')).toBe(true)
     expect(hasMarkdownAlternate('/submit')).toBe(false)
     expect(hasMarkdownAlternate('/docs/search')).toBe(false)
     expect(hasMarkdownAlternate('/dashboard')).toBe(false)

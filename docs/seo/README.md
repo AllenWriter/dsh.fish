@@ -74,7 +74,9 @@ curl -s /robots.txt
 curl -s /ads.txt
 curl -s /llms.txt
 curl -s /docs/llms.txt
+curl -s /blog/llms.txt
 curl -s /docs/cli.md | head
+curl -s /blog/harness/v0-1-2-alpha-1.md | head
 curl -s /sitemap.xml
 curl -s /sitemaps/artifacts/0.xml | head
 curl -sI /sitemaps/artifacts/0   # expect 301 → /sitemaps/artifacts/0.xml

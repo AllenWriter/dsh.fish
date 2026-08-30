@@ -31,6 +31,11 @@ export function NotFoundRecovery() {
           </LocaleLink>
         </li>
         <li>
+          <LocaleLink to="/blog" className="underline-offset-4 hover:text-foreground hover:underline">
+            {t('notFound.blog')}
+          </LocaleLink>
+        </li>
+        <li>
           <LocaleLink
             to="/docs/developers"
             className="underline-offset-4 hover:text-foreground hover:underline"

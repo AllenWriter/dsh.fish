@@ -1,0 +1,54 @@
+---
+title: DeepSeek-V4 프리뷰, 그리고 Harness가 따라간 것
+description: 2026년 4월 V4 발표는 1M 컨텍스트를 기본으로 만들었습니다. Harness는 이후 Flash-Vision, Files API 업로드, 옛 모델 이름의 종료일을 따라갔습니다.
+author: Steven Lynn
+date: 2026-08-29
+series: deepseek
+---
+
+DeepSeek는 2026년 4월 24일에 [DeepSeek-V4 프리뷰](https://www.deepseek.com/news/v4-preview/)를 냈습니다. 그 글이 1차 출처입니다. 여기는 전재가 아니라, Harness v0.1.2-alpha.1까지 그 발표가 이 카탈로그가 색인하는 agent 런타임에 무엇을 했는지를 쫓습니다.
+
+## 발표가 실제로 쓴 것
+
+오픈 웨이트 모델 둘. 공식 서비스의 기본 컨텍스트는 둘 다 **1M 토큰**:
+
+| 모델 | 총 파라미터 / 활성 | 발표에서의 위치 |
+| --- | --- | --- |
+| DeepSeek-V4-Pro | 1.6T / 49B | 프로그래밍, 세계 지식, 수학 — 클로즈드 소스에 맞춤 |
+| DeepSeek-V4-Flash | 284B / 13B | 더 빠르고 저렴. 「단순한 Agent 작업에서는 Pro와 동등」 |
+
+아키텍처 주장은 **토큰 차원 압축과 DSA**(DeepSeek Sparse Attention)입니다. 1M은 선택적 긴 컨텍스트 SKU가 아니라 표준 창입니다.
+
+API `base_url`은 그대로입니다. `model`은 `deepseek-v4-pro` 또는 `deepseek-v4-flash`. 둘 다 사고 / 비사고를 지원합니다. 발표는 Agent 장면에 사고 모드, 강도 `max`를 권합니다.
+
+**종료:** `deepseek-chat`과 `deepseek-reasoner`는 **2026년 7월 24일 15:59 UTC**에 멈춥니다. 그전까지 각각 V4-Flash의 비사고와 사고로 라우팅되었습니다. 만료 후 이 두 문자열은 별명이 아니라 죽은 이름입니다.
+
+웹과 앱은 전문가 모드 / 극속 모드로 이 쌍을 노출합니다. 가중치와 기술 보고는 발표 페이지에서 링크됩니다(Hugging Face / ModelScope, arXiv).
+
+## Harness가 한 일
+
+V4 발표는 4월입니다. 8월에 실제로 돌아가는 harness 프리뷰는 이미 V4를 살아있는 계열로 다룹니다.
+
+- **v0.1.1-rc.1**은 공식 어댑터에 `DeepSeek-V4-Flash-Vision-Exp`를 추가 — 이미지 입력, 실험적, 이름에 Exp.
+- **v0.1.1-rc.2**는 어댑터가 **Files API**로 이미지를 올리고 이미 올린 파일을 재사용하게 하며, 모델 요구대로 크기와 형식을 맞춥니다.
+- **v0.1.0-rc.8**은 이미 DeepSeek 어댑터에서 네이티브 이미지 요청을 열었습니다(`/goal`, `/plan`, `@`로 파일과 세션 참조).
+- **v0.1.2-alpha.1**은 **활성화된 플러그인의 패키지 이름과 버전**을 공식 DeepSeek 요청에 붙이고, 선택적 Session 로그 업로드를 제공합니다.
+
+그래서 발표의 「Claude Code, OpenClaw, OpenCode, DeepSeek 자체 코딩 에이전트와의 통합」은 손대지 않은 런타임 옆에 붙인 마케팅이 아닙니다. 그 다음 몇 달 동안 vision, Files API, 플러그인 신원이 이 API의 일등이 되었습니다.
+
+실험적 비전 모델은 별도의 `model` 문자열입니다: `deepseek-v4-flash-vision-exp`. API 문서는 현재 `deepseek-v4-flash`를 DeepSeek-V4-Flash-0731, `deepseek-v4-pro`를 DeepSeek-V4-Pro-0813으로 적습니다. 이름은 같고 스냅샷이 갱신됩니다. 호출 방식은 그대로입니다.
+
+## 플러그인 저자가 무시하면 안 되는 것
+
+1. **`deepseek-chat` / `deepseek-reasoner`를 호출 방식으로 쓰지 마세요.** 종료일이 있습니다. 4월에 맞던 README는 2026년 7월 24일에 틀립니다.
+2. **1M이 공식 어댑터가 도는 창입니다.** 128k 잘라내기를 가정하거나, 검색 전략 없이 저장소 전체를 한 번의 prompt에 넣는 skill은 창을 낭비하거나 다른 방식으로 넘칩니다.
+3. **이미지는 일등 도구 결과**이지 사이드바가 아닙니다. 스크린샷, 차트, diff 그림을 내는 플러그인은 공식 어댑터가 Files API와 vision-exp를 탑니다. 압축할 때 세세요(v0.1.2-alpha.1은 셉니다).
+4. **공식 어댑터는 DeepSeek에 어떤 플러그인이 로드됐는지 말할 수 있습니다.** 창피하거나 오해를 사거나 충돌하는 패키지 이름은 이제 요청과 함께 나갑니다.
+
+## 이 카탈로그가 하지 않는 것
+
+dsh.fish는 모델을 골라 주지 않습니다. 설치 계획은 API 키를 쓰지 않습니다. V4 발표의 가격과 피크 시간은 [DeepSeek API 문서](https://api-docs.deepseek.com/quick_start/pricing)이지 카탈로그 행이 아닙니다.
+
+카탈로그가 할 일은 설치 계획을 V4가 실제로 도는 런타임에 맞추는 것입니다. 플러그인 README가 아직 `export deepseek-chat`을 쓰면, 유지보수 점수에 넣을 문서 결함이지 다른 제품이 아닙니다.
+
+1차 출처: [DeepSeek-V4 프리뷰](https://www.deepseek.com/news/v4-preview/). 영어: [V4 Preview](https://www.deepseek.com/en/news/v4-preview/).

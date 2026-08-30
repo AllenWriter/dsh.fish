@@ -43,9 +43,9 @@ test.describe('the mobile menu toggle', () => {
     const sheet = page.locator('nav.overflow-hidden')
     await expect(sheet).toBeVisible()
 
-    // Three destinations, then the source repository and the community.
+    // Four destinations, then the source repository and the community.
     const links = sheet.getByRole('link')
-    await expect(links).toHaveCount(5)
+    await expect(links).toHaveCount(6)
     const count = await links.count()
     for (let index = 0; index < count; index += 1) {
       const link = links.nth(index)

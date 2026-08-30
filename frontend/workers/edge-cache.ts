@@ -63,6 +63,7 @@ export function isMachineReadablePath(pathname: string): boolean {
     pathname === '/llms.txt' ||
     pathname === '/docs/llms.txt' ||
     pathname === '/docs/llms-full.txt' ||
+    pathname === '/blog/llms.txt' ||
     pathname.startsWith('/indexnow-') ||
     pathname === '/api/v1/catalog/snapshot'
   )

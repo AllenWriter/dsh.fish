@@ -51,6 +51,10 @@ export default [
   route('docs/llms-full.txt', './pages/seo/docs-llms-full.ts'),
   route(':locale?/docs', './pages/docs/docs-page.tsx'),
   route(':locale?/docs/*', './pages/docs/docs-page.tsx', { id: 'docs-splat' }),
+  route(':locale?/blog/feed.xml', './pages/blog/feed.ts'),
+  route('blog/llms.txt', './pages/seo/blog-llms-txt.ts'),
+  route(':locale?/blog', './pages/blog/blog-page.tsx'),
+  route(':locale?/blog/*', './pages/blog/blog-page.tsx', { id: 'blog-splat' }),
 
   // Crawler-facing resources. No locale prefix: there is one robots.txt per
   // origin, one ads.txt, and one sitemap set that lists every language of

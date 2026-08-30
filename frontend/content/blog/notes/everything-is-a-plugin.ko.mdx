@@ -1,0 +1,50 @@
+---
+title: 모든 것은 플러그인이다
+description: DeepSeek Harness의 코어는 작고 나머지는 로드합니다. dsh.fish는 그 로드 가능한 단위의 카탈로그이지, 두 번째 런타임이 아닙니다.
+author: Steven Lynn
+date: 2026-08-29
+series: notes
+---
+
+DeepSeek Harness 자신의 README는 **everything is a plugin**으로 시작합니다. 시장의 구호가 아니라 프로세스의 서술입니다. 코어는 작게 두고, 능력 — 도구, 제공자, 승인 규칙, UI — 은 모두 profile에 적힌 플러그인으로 도착합니다. 아래의 합성 런타임은 Cordis입니다. 논문은 [_A Programming Paradigm for Spatiotemporal Composability_](https://arxiv.org/abs/2608.25512)입니다.
+
+dsh.fish가 있는 이유는 그 문장에 운영상 결과가 있기 때문입니다. 모든 것이 플러그인이면 「이것을 설치」는 한 줄 명령이 아니라 계획입니다. 어느 profile, 어떤 패키지, 어떤 파일, 어떤 설정. 이 노트는 그 두 사실을 잇는 방법입니다.
+
+## 기동의 단위는 Profile입니다
+
+`$DSH_HOME`(기본 `~/.dsh`)에 사용자 데이터가 있습니다. `profiles/<name>` 아래에 한 세트를 정의하는 패키지와 patch가 있습니다. 시작할 때 `--profile`로 고릅니다. v0.1.2-alpha.1에서 Web UI, Python SDK, ACP는 모두 Profile을 통해 시작합니다. 다른 스택을 로드하는 뒷문은 없습니다.
+
+그래서 dsh.fish의 설치 계획은 모두 profile을 지명합니다. 플러그인을 「harness」에 쓰고 profile을 쓰지 않는 것은 어디에도 쓰지 않는 것입니다.
+
+## 네 kind, 네 로드 면
+
+카탈로그는 유형을 발명하지 않습니다. harness가 이미 로드하는 것에 이름을 붙입니다.
+
+| Kind | harness가 하는 일 |
+| --- | --- |
+| Bundle | `dsh.bundle`을 선언하는 npm 패키지 — `dsh plugin add`가 profile에 넣음 |
+| Skill | 모델이 필요할 때 로드하는 `SKILL.md` |
+| Agent preset | 한 agent의 도구, prompt 절, 페르소나 |
+| Profile | 순서 있는 bundle 더미. 실행 가능한 합성 전체 |
+
+폐기된 kind(`mcp-server`, `hook-bridge`)는 301됩니다. 카탈로그 허구였기 때문입니다. harness에는 그 이름에 맞는 일등 로드 슬롯이 없었습니다. 런타임이 넣을 수 없는 kind를 레지스트리가 남기는 것은 존재하지 않는 제품을 파는 일입니다.
+
+## 문서가 되는 것은 설치 계획입니다
+
+사이트, CLI(`npx @dsh-fish/cli`), hub 플러그인은 같은 계획을 인쇄합니다. 계획은 무엇이든 돌기 전에 다 읽을 수 있는 단계 목록입니다. 빌드 스크립트를 돌려야 하는 git 패키지는 별도 승인을 요청합니다. 그 스크립트는 agent 샌드박스 밖에서 실행되기 때문입니다.
+
+계획은 식별자를 번역하지 않고 다국어를 하는 이유이기도 합니다. `dsh plugin add`, `SKILL.md`, 패키지 이름은 모든 언어에서 영어입니다. 둘러싼 프레임은 아닙니다.
+
+## 코어가 여전히 가진 것
+
+「모든 것은 플러그인」은 코어가 비었다는 뜻이 아닙니다. 세션은 여전히 추가만 하는 이벤트 로그입니다. 워크스페이스는 여전히 agent에게 넘기는 디렉터리입니다. 권한은 여전히 이름 있는 프리셋입니다(기본 `workspace-write`). 공식 DeepSeek 어댑터는 여전히 키를 기기에 두는 방식입니다.
+
+플러그인은 그 권한 아래에서 움직입니다. 그것이 허브가 지키는 신뢰 경계입니다. profile을 바꾸기 전에 플러그인이 무엇인지, 계획이 무엇을 쓸지를 봅니다.
+
+## 이 카탈로그가 거부하는 것
+
+두 번째 harness가 아닙니다. Cordis를 감싸지 않습니다. PTC mode나 `@Remote`를 다시 만들지 않습니다. Harness가 Code Mode를 PTC mode로 바꿀 때 카탈로그의 일은 옛 이름을 쓰는 것을 멈추는 것이지, 호환 패드를 내는 것이 아닙니다.
+
+공식 문서도 아닙니다. DeepSeek 가이드는 [deepseek-harness.github.io](https://deepseek-harness.github.io/deepseek-harness/)입니다. dsh.fish 문서는 허브에 게시하는 법과 점수가 계산되는 법을 가르칩니다. 두 나무는 일부러 갈라져 있습니다. 하나는 런타임, 하나는 레지스트리.
+
+플러그인 문장이 연결 키입니다. 미래의 Harness가 다섯 번째 로드 면을 더하면 여기 kind가 늘거나, 색인하지 않습니다. 프로세스가 로드할 수 없는 유형을 발명하는 세 번째 선택은 없습니다.

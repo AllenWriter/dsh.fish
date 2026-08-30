@@ -154,6 +154,17 @@ describe('maybeMarkdownResponse', () => {
     )
     expect(localizedDocs).not.toBeNull()
     expect(await localizedDocs!.text()).toContain('启动 Web UI')
+
+    const blog = await maybeMarkdownResponse(request('/blog', 'text/markdown'), stubContainer())
+    expect(blog).not.toBeNull()
+    expect(await blog!.text()).toContain('/blog/harness/v0-1-2-alpha-1')
+
+    const post = await maybeMarkdownResponse(
+      request('/blog/notes/everything-is-a-plugin', 'text/markdown'),
+      stubContainer(),
+    )
+    expect(post).not.toBeNull()
+    expect(await post!.text()).toContain('everything is a plugin')
   })
 
   it('serves v2 .md aliases without an Accept header', async () => {
@@ -233,11 +244,15 @@ describe('supportsMarkdownNegotiation', () => {
     expect(supportsMarkdownNegotiation('/category/nope')).toBe(false)
   })
 
-  it('covers product docs, localized or not', () => {
+  it('covers product docs and the blog, localized or not', () => {
     expect(supportsMarkdownNegotiation('/docs')).toBe(true)
     expect(supportsMarkdownNegotiation('/ja/docs')).toBe(true)
     expect(supportsMarkdownNegotiation('/docs/cli')).toBe(true)
     expect(supportsMarkdownNegotiation('/zh-CN/docs/publish/skill')).toBe(true)
+    expect(supportsMarkdownNegotiation('/blog')).toBe(true)
+    expect(supportsMarkdownNegotiation('/ja/blog')).toBe(true)
+    expect(supportsMarkdownNegotiation('/blog/harness')).toBe(true)
+    expect(supportsMarkdownNegotiation('/zh-CN/blog/notes/everything-is-a-plugin')).toBe(true)
   })
 })
 
@@ -261,6 +276,7 @@ describe('notFoundMarkdown', () => {
     expect(body).toContain('/sitemap.xml')
     expect(body).toContain('/llms.txt')
     expect(body).toContain('/docs/developers')
+    expect(body).toContain('/blog')
     expect(body).toContain('/openapi.json')
     expect(body).toContain('/api/v1/artifacts')
   })
