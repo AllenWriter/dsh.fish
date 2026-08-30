@@ -165,7 +165,7 @@ They are not product docs: a changelog and a Harness release reading are
 a different intent from a publishing guide.
 
 `pages/blog` owns the routes and the source module. `widgets/blog-shell`
-is in-column chrome (series nav + post TOC) beside `SiteHeader`.
+is in-column chrome (newsroom tabs on listings, breadcrumbs on posts) beside `SiteHeader`.
 `fumadocs-ui` is not a dependency. MDX is compiled at build time; the
 Worker never `getText('raw')`.
 

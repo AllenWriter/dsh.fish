@@ -74,7 +74,7 @@ export function rootLlmsTxt(baseUrl: string): string {
     'Content pages have a markdown representation: append `.md` to the path (`/docs/cli.md`, `/a/{id}.md`, `/index.md` for the home page) or send `Accept: text/markdown` on the HTML URL. English is unprefixed; other public languages use a path prefix (`/zh-CN`, `/ja`). Inference and search use is welcome; training crawlers are denied.',
     '',
     '## Start here',
-    item(name, md(baseUrl, '/'), 'Personal writing index: square cards for every public post.'),
+    item(name, md(baseUrl, '/'), 'Personal writing index: a newsroom grid of every public post.'),
     item('Blog', href(baseUrl, '/blog/llms.txt'), 'The full editorial index, series landings, and posts.'),
     item('Docs', href(baseUrl, '/docs/llms.txt'), 'Technical documentation: CLI, publishing, scoring, REST API.'),
     item('Browse', md(baseUrl, '/browse'), 'Secondary plugin catalog. Page through the API for more than the first fifty rows.'),

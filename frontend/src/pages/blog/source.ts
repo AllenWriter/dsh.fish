@@ -188,6 +188,19 @@ export function blogPostCards(
   }))
 }
 
+/** Three other posts, same series first, for the article footer. */
+export function relatedBlogPostCards(
+  locale: Locale,
+  currentUrl: string,
+  series: BlogSeries,
+  limit = 3,
+): readonly BlogPostCard[] {
+  const rest = blogPostCards(locale).filter((post) => post.url !== currentUrl)
+  const same = rest.filter((post) => post.seriesId === series)
+  const other = rest.filter((post) => post.seriesId !== series)
+  return [...same, ...other].slice(0, limit)
+}
+
 export function blogPostPaths(): readonly string[] {
   return [
     ...new Set(source.getPages(DEFAULT_LOCALE).map((page) => page.url)),

@@ -1,3 +1,6 @@
+import { translate, type Locale } from '@/shared/config/i18n'
+import type { BlogSeriesNavItem } from '@/widgets/blog-shell'
+
 export const BLOG_SERIES = ['harness', 'deepseek', 'changelog', 'notes'] as const
 
 export type BlogSeries = (typeof BLOG_SERIES)[number]
@@ -16,4 +19,16 @@ export function seriesDescriptionKey(
   series: BlogSeries,
 ): `blog.series.${BlogSeries}.description` {
   return `blog.series.${series}.description`
+}
+
+/** All + the four series, for newsroom tabs on home and listing pages. */
+export function blogSeriesNav(locale: Locale): readonly BlogSeriesNavItem[] {
+  return [
+    { id: 'all', href: '/blog', title: translate(locale, 'blog.allPosts') },
+    ...BLOG_SERIES.map((series) => ({
+      id: series,
+      href: `/blog/${series}`,
+      title: translate(locale, seriesTitleKey(series)),
+    })),
+  ]
 }

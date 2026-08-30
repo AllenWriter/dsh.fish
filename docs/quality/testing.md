@@ -78,10 +78,12 @@ every guide to have a physical file in every public locale. Fold
 screenshots are written for inspection; they are not visual baselines.
 
 **Editorial blog** (`e2e/blog/`) covers the Fumadocs collection at one desktop
-viewport (1280×900). It asserts the series nav, a filtered series landing, a
-post with TOC and `BlogPosting` JSON-LD, indexable Japanese MDX, localized
-`Accept: text/markdown`, `/blog/llms.txt`, and `/blog/feed.xml`. Unit tests
-also require every post to have a physical file in every public locale.
+viewport (1280×900). It asserts the newsroom series tabs, a filtered series
+landing, a post with breadcrumbs (no TOC) and `BlogPosting` JSON-LD, indexable
+Japanese MDX, localized `Accept: text/markdown`, `/blog/llms.txt`, and
+`/blog/feed.xml`. Editorial posts keep a physical file in every public locale;
+writer shorts ship English and Simplified Chinese and fall back to English
+elsewhere.
 
 **Plugin-detail markdown** is an exception to "journeys only": a third-party
 readme is the unique content of `/a/:id`, and its layout is resolution-dependent.

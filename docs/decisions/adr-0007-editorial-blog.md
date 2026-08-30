@@ -43,8 +43,8 @@ without becoming a second theme or a second origin.
    `/blog/:slug` would collide series names with post slugs and hide the
    four tracks from crawlers.
 3. **Keep the ADR 0005 constraints.** MDX compiles at build time.
-   `fumadocs-ui` stays out. Chrome is `widgets/blog-shell` (series nav +
-   post TOC). Fumadocs i18n uses the same `LOCALE_CODES` and dot-suffix
+   `fumadocs-ui` stays out. Chrome is `widgets/blog-shell` (newsroom tabs +
+   article breadcrumbs). Fumadocs i18n uses the same `LOCALE_CODES` and dot-suffix
    files as docs (`v0-1-2-alpha-1.mdx`, `v0-1-2-alpha-1.zh-CN.mdx`).
    English fallback keeps the route up; a fallback-only locale is not
    canonical and is not advertised in `hreflang` or the sitemap.
@@ -72,7 +72,7 @@ without becoming a second theme or a second origin.
 ```
 frontend/content/blog/          MDX source (outside the FSD tree)
 frontend/src/pages/blog/        routes, loader, collection source, raw markdown
-frontend/src/widgets/blog-shell/     series nav + listing + TOC
+frontend/src/widgets/blog-shell/     newsroom tabs + listing tiles + article breadcrumbs
 ```
 
 `source.ts` stays in the page slice. Nothing outside that slice imports
@@ -128,13 +128,14 @@ Harder:
 | Collection        | `frontend/source.config.ts` — `defineCollections`, series enum                                                 |
 | Source loader     | `frontend/src/pages/blog/source.ts` — `toFumadocsSource(blog, [])`                                             |
 | Routes            | `:locale?/blog`, `:locale?/blog/*`, `:locale?/blog/feed.xml`, `blog/llms.txt`                                  |
-| Shell             | `widgets/blog-shell` — series pills + post TOC                                                                 |
+| Shell             | `widgets/blog-shell` — newsroom tabs on home/listing; breadcrumbs on posts (no TOC)                            |
 | Covers            | `frontend/public/blog/covers/` — one 3:5 editorial poster per post, referenced by required `cover` frontmatter |
 | Markdown          | `pages/blog/raw.ts` glob; listings generated from frontmatter                                                  |
 | Atom              | `/blog/feed.xml` and `/<locale>/blog/feed.xml`                                                                 |
 
-Every shipped post has a physical file for all six locales. English
-fallback remains a route-safety mechanism.
+Editorial posts keep a physical file for every public locale. Writer shorts
+may ship a subset (English + Simplified Chinese); English fallback keeps the
+route up and is excluded from canonical, hreflang, and sitemap output.
 
 ## References
 

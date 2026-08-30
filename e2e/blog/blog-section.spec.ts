@@ -33,7 +33,7 @@ async function openBlog(
 ): Promise<void> {
   await quietChrome(page, theme)
   await page.goto(path, { waitUntil: 'domcontentloaded' })
-  await expect(page.locator('article h1')).toBeVisible()
+  await expect(page.locator('h1')).toBeVisible()
   await expect(page.locator('header a[href*="sign-in"]')).toBeVisible({
     timeout: 20_000,
   })
@@ -51,13 +51,13 @@ test.describe('blog on a desktop', () => {
   test('the index lists every series and newest posts first', async ({ page }) => {
     await openBlog(page, '/blog')
 
-    const series = page.getByRole('navigation', { name: 'Blog series' })
+    const series = page.getByRole('tablist', { name: 'Sections' })
     await expect(series).toBeVisible()
-    await expect(series.getByRole('link', { name: 'All' })).toBeVisible()
-    await expect(series.getByRole('link', { name: 'Harness releases' })).toBeVisible()
-    await expect(series.getByRole('link', { name: 'DeepSeek notes' })).toBeVisible()
-    await expect(series.getByRole('link', { name: 'dsh.fish changelog' })).toBeVisible()
-    await expect(series.getByRole('link', { name: 'Technical notes' })).toBeVisible()
+    await expect(series.getByRole('tab', { name: 'All' })).toBeVisible()
+    await expect(series.getByRole('tab', { name: 'Harness releases' })).toBeVisible()
+    await expect(series.getByRole('tab', { name: 'DeepSeek notes' })).toBeVisible()
+    await expect(series.getByRole('tab', { name: 'dsh.fish changelog' })).toBeVisible()
+    await expect(series.getByRole('tab', { name: 'Technical notes' })).toBeVisible()
     await expect(page.getByRole('heading', { level: 1, name: 'Blog' })).toBeVisible()
     await expect(page.getByRole('link', { name: /Everything is a plugin/ })).toBeVisible()
     await expect(page.getByRole('link', { name: /DeepSeek Harness v0.1.2-alpha.1/ })).toBeVisible()
@@ -78,17 +78,18 @@ test.describe('blog on a desktop', () => {
     await shot(page, 'blog-harness-light')
   })
 
-  test('a post has a TOC, byline, and BlogPosting JSON-LD', async ({ page }) => {
+  test('a post has breadcrumbs, byline, and BlogPosting JSON-LD', async ({ page }) => {
     await openBlog(page, '/blog/notes/everything-is-a-plugin')
 
     await expect(page.getByRole('heading', { level: 1, name: 'Everything is a plugin' })).toBeVisible()
-    await expect(page.getByText('Written by Steven Lynn')).toBeVisible()
-    await expect(page.getByRole('navigation', { name: 'On this page' })).toBeVisible()
-    await expect(
-      page
-        .getByRole('navigation', { name: 'On this page' })
-        .getByRole('link', { name: 'A profile is the unit that boots' }),
-    ).toBeVisible()
+    const crumbs = page.getByRole('navigation', { name: 'Breadcrumb' })
+    await expect(crumbs).toBeVisible()
+    await expect(crumbs.getByRole('link', { name: 'Blog' })).toBeVisible()
+    await expect(crumbs.getByRole('link', { name: 'Technical notes' })).toBeVisible()
+    await expect(page.getByText('Written by')).toBeVisible()
+    await expect(page.getByText('Steven Lynn').first()).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'On this page' })).toHaveCount(0)
+    await expect(page.getByRole('tablist')).toHaveCount(0)
     await expect(page.locator('article')).toContainText('dsh plugin add')
 
     const jsonLd = await page.locator('script[type="application/ld+json"]').allTextContents()
@@ -105,7 +106,8 @@ test.describe('blog on a desktop', () => {
   test('Japanese posts are translated, canonical, and indexable', async ({ page }) => {
     await openBlog(page, '/ja/blog/notes/everything-is-a-plugin')
     await expect(page.getByRole('heading', { level: 1, name: 'すべてはプラグイン' })).toBeVisible()
-    await expect(page.getByRole('navigation', { name: 'ブログのシリーズ' })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'パンくずリスト' })).toBeVisible()
+    await expect(page.getByRole('tablist')).toHaveCount(0)
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /index, follow/)
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',

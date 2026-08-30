@@ -7,5 +7,5 @@
  * see architecture.md.
  */
 export { blogListingEntries, blogMarkdown, blogPostMarkdown, blogPostMarkdownPaths, supportsBlogMarkdown } from './raw'
-export { BLOG_SERIES, isBlogSeries, seriesDescriptionKey, seriesTitleKey } from './series'
+export { BLOG_SERIES, blogSeriesNav, isBlogSeries, seriesDescriptionKey, seriesTitleKey } from './series'
 export type { BlogSeries } from './series'

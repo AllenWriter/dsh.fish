@@ -14,11 +14,12 @@ import {
   errorMeta,
   pageMeta,
 } from '@/shared/lib/seo'
-import { BlogPostList, BlogShell } from '@/widgets/blog-shell'
+import { BlogArticle, BlogNewsroom } from '@/widgets/blog-shell'
 import { blogMdxComponents } from './mdx'
-import { blogLocales } from './raw'
+import { blogLocales, blogPostMarkdown } from './raw'
+import { readingMinutesFromMarkdown } from './reading-time'
 import {
-  BLOG_SERIES,
+  blogSeriesNav,
   isBlogSeries,
   seriesDescriptionKey,
   seriesTitleKey,
@@ -27,25 +28,14 @@ import {
   blogPostCards,
   postDateIso,
   readBlogPage,
+  relatedBlogPostCards,
   slugsFromSplat,
   source,
-  tocFromCompiled,
 } from './source'
 
 const blogContent = browserCollections.blog.createClientLoader({
   component: ({ default: Mdx }) => <Mdx components={blogMdxComponents()} />,
 })
-
-function seriesNav(locale: Locale) {
-  return [
-    { id: 'all', href: '/blog', title: translate(locale, 'blog.allPosts') },
-    ...BLOG_SERIES.map((series) => ({
-      id: series,
-      href: `/blog/${series}`,
-      title: translate(locale, seriesTitleKey(series)),
-    })),
-  ]
-}
 
 function formatDate(iso: string, locale: Locale): string {
   return new Intl.DateTimeFormat(localeDefinition(locale).tag, {
@@ -86,7 +76,7 @@ export function loader({ context, params }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale)
   const slugs = slugsFromSplat(params['*'])
   const origin = context.get(hubContext).container.config.baseUrl
-  const nav = seriesNav(locale)
+  const nav = blogSeriesNav(locale)
 
   if (slugs.length === 0) {
     const posts = blogPostCards(locale)
@@ -160,6 +150,7 @@ export function loader({ context, params }: Route.LoaderArgs) {
   const data = readBlogPage(page)
   const date = postDateIso(data.date)
   const availableLocales = blogLocales(page.url)
+  const markdown = blogPostMarkdown(page.url, locale) ?? ''
 
   return {
     kind: 'post' as const,
@@ -170,16 +161,14 @@ export function loader({ context, params }: Route.LoaderArgs) {
     title: data.title,
     description: data.description,
     author: data.author,
-    writtenBy: translate(locale, 'blog.writtenBy'),
     date,
     series: data.series,
     cover: data.cover,
     seriesTitle: translate(locale, seriesTitleKey(data.series)),
     formattedDate: formatDate(date, locale),
+    readingMinutes: readingMinutesFromMarkdown(markdown),
+    related: relatedBlogPostCards(locale, page.url, data.series),
     availableLocales,
-    currentSeries: data.series,
-    nav,
-    toc: tocFromCompiled(data),
     type: 'article' as const,
     jsonLd: [
       breadcrumbLd(origin, locale, [
@@ -206,15 +195,14 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
   if (loaderData.kind === 'listing') {
     const { nav, currentSeries, title, description, posts } = loaderData
     return (
-      <BlogShell seriesNav={nav} currentSeries={currentSeries}>
-        <h1 className="text-3xl font-semibold tracking-tight text-balance">
-          {title}
-        </h1>
-        <p className="mt-3 text-pretty text-muted-foreground">{description}</p>
-        <div className="mt-8">
-          <BlogPostList posts={posts} />
-        </div>
-      </BlogShell>
+      <BlogNewsroom
+        posts={posts}
+        tabs={nav}
+        title={title}
+        subtitle={description}
+        activeSeries={currentSeries ?? 'all'}
+        tabMode="links"
+      />
     )
   }
 
@@ -223,45 +211,29 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
     title,
     description,
     author,
-    writtenBy,
     formattedDate,
     date,
+    series,
     seriesTitle,
     cover,
-    nav,
-    currentSeries,
-    toc,
+    readingMinutes,
+    related,
   } = loaderData
 
   return (
-    <BlogShell seriesNav={nav} currentSeries={currentSeries} toc={toc}>
-      <header className="grid items-end gap-8 md:grid-cols-[minmax(0,1fr)_minmax(14rem,18rem)]">
-        <div className="min-w-0">
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            {seriesTitle}
-          </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-balance">
-            {title}
-          </h1>
-          <p className="mt-3 text-pretty text-muted-foreground">
-            {description}
-          </p>
-          <p className="mt-4 text-sm text-muted-foreground">
-            <time dateTime={date}>{formattedDate}</time>
-            <span aria-hidden="true"> · </span>
-            {writtenBy} {author}
-          </p>
-        </div>
-        <img
-          src={cover}
-          alt=""
-          width={1200}
-          height={2000}
-          fetchPriority="high"
-          className="aspect-[3/5] w-full max-w-72 justify-self-center rounded-xl border border-border bg-muted object-cover md:justify-self-end"
-        />
-      </header>
-      <div className="mt-8">{blogContent.useContent(contentPath)}</div>
-    </BlogShell>
+    <BlogArticle
+      title={title}
+      description={description}
+      author={author}
+      date={date}
+      formattedDate={formattedDate}
+      readingMinutes={readingMinutes}
+      cover={cover}
+      seriesId={series}
+      seriesTitle={seriesTitle}
+      related={related}
+    >
+      {blogContent.useContent(contentPath)}
+    </BlogArticle>
   )
 }

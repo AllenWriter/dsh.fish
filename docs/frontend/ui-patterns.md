@@ -29,7 +29,7 @@ import { t } from 'shared/i18n';
 - Do not repeat information already shown by a title, icon, selected state, or surrounding section.
 - Prefer concise labels over explanatory text when the state is self-evident.
 - Remove disabled placeholder actions unless they teach a real next step.
-- The home page is a dense grid of square blog cards. Do not restate the product pitch or a plugin glossary — those live on `/docs` and `/browse`.
+- The home page is a newsroom: kicker, title, series tabs, and a 4-column grid of 4:3 tiles. Do not restate the product pitch or a plugin glossary — those live on `/docs` and `/browse`.
 
 ```tsx
 // ❌ Bad

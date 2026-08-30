@@ -1,8 +1,9 @@
 import type { Route } from './+types/home-page'
 import { requireLocale, translate, useT } from '@/shared/config/i18n'
 import { errorMeta, organizationLd, pageMeta, websiteLd } from '@/shared/lib/seo'
-import { BlogPostList } from '@/widgets/blog-shell'
+import { BlogNewsroom } from '@/widgets/blog-shell'
 import { blogPostCards } from '@/pages/blog/source'
+import { blogSeriesNav } from '@/pages/blog'
 import { hubContext } from '@/shared/api/hub-context'
 
 export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
@@ -25,7 +26,7 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
  * Server-side data for the landing page.
  *
  * The home page is the writing index: the same blog collection `/blog` uses,
- * shown as a dense grid of square cards. Catalog rails live on `/browse`.
+ * shown as a filterable newsroom grid. Catalog rails live on `/browse`.
  */
 export function loader({ context, params }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale)
@@ -34,20 +35,20 @@ export function loader({ context, params }: Route.LoaderArgs) {
     locale,
     origin,
     posts: blogPostCards(locale),
+    tabs: blogSeriesNav(locale),
   }
 }
 
 export default function HomePage({ loaderData }: Route.ComponentProps) {
-  const { posts } = loaderData
+  const { posts, tabs } = loaderData
   const t = useT()
 
   return (
-    <section className="mx-auto w-full max-w-6xl px-6 py-10 lg:py-14">
-      <header className="mb-8">
-        <h1 className="text-lg font-semibold tracking-tight">{t('app.author')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t('app.tagline')}</p>
-      </header>
-      <BlogPostList posts={posts} variant="home" />
-    </section>
+    <BlogNewsroom
+      posts={posts}
+      tabs={tabs}
+      title={t('blog.newsroom.title')}
+      subtitle={t('app.tagline')}
+    />
   )
 }

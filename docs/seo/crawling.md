@@ -304,7 +304,7 @@ A page nothing links to is a page nothing ranks. Three deliberate link sources:
 1. **The footer** links Blog, Docs, Browse (secondary), and the site GitHub.
    Plugin kind, topic and category landings stay off the default chrome; they
    remain in the sitemap and on `/browse`.
-2. **The home page** is a grid of blog cards that each link to a post.
+2. **The home page** is a newsroom grid of blog tiles that each link to a post.
 3. **Each plugin page** still carries a visible breadcrumb up to its type's collection
    page, and links its categories to theirs.
 
