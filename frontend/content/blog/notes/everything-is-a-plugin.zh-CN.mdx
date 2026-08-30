@@ -3,12 +3,15 @@ title: 一切都是插件
 description: DeepSeek Harness 核心很小，其余都加载进来。dsh.fish 是这些可加载单元的目录，不是第二套运行时。
 author: Steven Lynn
 date: 2026-08-29
+cover: /blog/covers/everything-is-a-plugin.webp
 series: notes
 ---
 
 DeepSeek Harness 自己的 README 以 **everything is a plugin** 起头。这不是市场口号，而是对进程的描述：核心保持很小，每项能力——工具、提供方、审批规则、UI——都以列在 profile 里的插件到达。底下的组合运行时是 Cordis；论文是 [_A Programming Paradigm for Spatiotemporal Composability_](https://arxiv.org/abs/2608.25512)。
 
 dsh.fish 存在，是因为这句话有操作后果。如果一切都是插件，那么「安装这个」就不是一条命令，而是一份计划：哪个 profile、哪些包、哪些文件、哪些设置。这篇写这两件事怎么接上。
+
+![Profile 把目录 artifact 组合成一个受权限范围约束的 Harness 会话。](/blog/diagrams/plugin-composition.svg)
 
 ## Profile 才是启动的单位
 
@@ -20,12 +23,12 @@ dsh.fish 存在，是因为这句话有操作后果。如果一切都是插件�
 
 目录不发明类型。它给 harness 已经加载的东西起名：
 
-| Kind | Harness 拿它做什么 |
-| --- | --- |
-| Bundle | 声明 `dsh.bundle` 的 npm 包——`dsh plugin add` 装进 profile |
-| Skill | 模型按需加载的 `SKILL.md` |
-| Agent preset | 一个 agent 的工具、prompt 段和人设 |
-| Profile | 一叠有序的 bundle；整份可运行的组合 |
+| Kind         | Harness 拿它做什么                                         |
+| ------------ | ---------------------------------------------------------- |
+| Bundle       | 声明 `dsh.bundle` 的 npm 包——`dsh plugin add` 装进 profile |
+| Skill        | 模型按需加载的 `SKILL.md`                                  |
+| Agent preset | 一个 agent 的工具、prompt 段和人设                         |
+| Profile      | 一叠有序的 bundle；整份可运行的组合                        |
 
 已退役的 kind（`mcp-server`、`hook-bridge`）被 301 走，因为它们是目录虚构：harness 从来没有对得上这些名字的一等加载槽。注册表保留运行时装不上的 kind，就是在卖不存在的产品。
 
@@ -40,6 +43,22 @@ dsh.fish 存在，是因为这句话有操作后果。如果一切都是插件�
 「一切都是插件」不等于核心是空的。会话仍是只追加的事件日志。工作区仍是你交给 agent 的目录。权限仍是具名预设（默认 `workspace-write`）。官方 DeepSeek 适配器仍是密钥留在本机的方式。
 
 插件在这些权限下行动。这就是目录要守的信任边界：改 profile 之前，你先看插件是什么、计划会写什么。
+
+## 安装 bundle 时会发生什么
+
+有用的 mental model 不是“下载一个 package”，而是**改变一套 composition，再启动这套 composition**。hub 把 artifact 解析成明确 plan，client 把其中步骤应用到一个 Profile，下一次 launch 再由 Cordis 解析生成的 package graph。Discovery 与 execution 始终分开。
+
+这层分离带来了可检查性。第三方 package 获得运行机会之前，你可以核对目标 Profile、package source、files 和 build-script allowance。它也带来硬限制：dsh.fish 能描述 install 会改什么，却不能证明任意 plugin code 安全。高 catalog score 是 maintenance 证据，不是 sandbox 证书。
+
+检查 bundle 的最短路径是：
+
+```bash
+npx @dsh-fish/cli info <artifact-id>
+npx @dsh-fish/cli install <artifact-id> --profile <profile-name>
+dsh --profile <profile-name> web
+```
+
+请阅读前两条 command 打印的 plan。尤其当 source、Profile 或申请的 build allowance 不符合预期时，立刻停下。
 
 ## 这份目录拒绝成为什么
 

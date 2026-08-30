@@ -31,6 +31,18 @@
       "skillPath": "skills/beui/SKILL.md",
       "computedHash": "376f66cd971464942de99b11bf17d939d98d894904f4b2fea0570446baefff1a"
     },
+    "blog-writing-guide": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/blog-writing-guide/SKILL.md",
+      "computedHash": "f885b9890d8a1c43e8ed0386e2ef2c17e941a403aa354513d6b844e99229ffb7"
+    },
+    "diagram-design": {
+      "source": "cathrynlavery/diagram-design",
+      "sourceType": "github",
+      "skillPath": "skills/diagram-design/SKILL.md",
+      "computedHash": "bb7276bf214dee8634a52d58e5fe9fd410850ac5c169e4077fdb1c80c4eccabb"
+    },
     "documentation-writer": {
       "source": "github/awesome-copilot",
       "sourceType": "github",
@@ -48,6 +60,12 @@
       "sourceType": "github",
       "skillPath": "skills/find-animation-opportunities/SKILL.md",
       "computedHash": "8fb8492eb8fbed1313cb430b5831d925d9b8964ca24f3c41a6244cbd1fd98732"
+    },
+    "gc-minimal-zine-poster-v0-3": {
+      "source": "LiamGvchi/gc-minimal-zine-poster",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "dc3f31a6e13e2a4ca7896e178274f1417a9981ef5a3076b29c5b95ed4c1ee3fc"
     },
     "humanizer-zh": {
       "source": "op7418/Humanizer-zh",

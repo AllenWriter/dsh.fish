@@ -122,15 +122,16 @@ Harder:
 
 ## What shipped
 
-| Piece | Where |
-| --- | --- |
-| MDX (six locales) | `frontend/content/blog/{harness,deepseek,changelog,notes}/` |
-| Collection | `frontend/source.config.ts` — `defineCollections`, series enum |
-| Source loader | `frontend/src/pages/blog/source.ts` — `toFumadocsSource(blog, [])` |
-| Routes | `:locale?/blog`, `:locale?/blog/*`, `:locale?/blog/feed.xml`, `blog/llms.txt` |
-| Shell | `widgets/blog-shell` — series pills + post TOC |
-| Markdown | `pages/blog/raw.ts` glob; listings generated from frontmatter |
-| Atom | `/blog/feed.xml` and `/<locale>/blog/feed.xml` |
+| Piece             | Where                                                                                                          |
+| ----------------- | -------------------------------------------------------------------------------------------------------------- |
+| MDX (six locales) | `frontend/content/blog/{harness,deepseek,changelog,notes}/`                                                    |
+| Collection        | `frontend/source.config.ts` — `defineCollections`, series enum                                                 |
+| Source loader     | `frontend/src/pages/blog/source.ts` — `toFumadocsSource(blog, [])`                                             |
+| Routes            | `:locale?/blog`, `:locale?/blog/*`, `:locale?/blog/feed.xml`, `blog/llms.txt`                                  |
+| Shell             | `widgets/blog-shell` — series pills + post TOC                                                                 |
+| Covers            | `frontend/public/blog/covers/` — one 3:5 editorial poster per post, referenced by required `cover` frontmatter |
+| Markdown          | `pages/blog/raw.ts` glob; listings generated from frontmatter                                                  |
+| Atom              | `/blog/feed.xml` and `/<locale>/blog/feed.xml`                                                                 |
 
 Every shipped post has a physical file for all six locales. English
 fallback remains a route-safety mechanism.

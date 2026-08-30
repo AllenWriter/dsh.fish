@@ -3,12 +3,15 @@ title: DeepSeek Harness v0.1.2-alpha.1
 description: Plugin package names ride on official API requests, Profiles become the only launch path, ApiProxy is gone, and WebFetch is on by default.
 author: Steven Lynn
 date: 2026-08-27
+cover: /blog/covers/harness-v0-1-2-alpha-1.webp
 series: harness
 ---
 
 [v0.1.2-alpha.1](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.1.2-alpha.1) is a pre-release, published 27 August 2026. The changelog is long because several surfaces moved at once: how a session starts, how a plugin identifies itself to DeepSeek, how a subagent is spawned, and what a headless process is allowed to print. This note reads those rows against the code they name, not as a recap.
 
 The tag is `dsh-v0.1.2-alpha.1`. Install with `npx @deepseek-ai/dsh web` still resolves the published preview; pin the tag if you are bisecting.
+
+![Harness v0.1.2 separates request metadata from headless process output.](/blog/diagrams/harness-request-path.svg)
 
 ## Plugins are now visible on the wire
 
@@ -46,6 +49,22 @@ The first item is a policy change: the child is not a clone of the parent’s mo
 
 Headless runs stream progress on **stderr**. **stdout is only the final result.** Scripts that grepped stdout for tool traces will see nothing until the turn ends.
 
+## The compatibility checklist is short but unforgiving
+
+Before moving a profile to this preview, search its packages and automation for four assumptions: `ApiProxy` still exists, Code Mode is still the public name, subagents inherit the parent model, or stdout contains progress events. Each assumption now fails differently, which makes a single “the preview broke my script” report hard to diagnose.
+
+A practical migration keeps stdout machine-readable and sends diagnostics elsewhere:
+
+```bash
+dsh --profile <profile-name> run "your task" >result.txt 2>progress.log
+```
+
+Then re-test network-bound WebFetch behavior and any remotely exposed Web UI separately. The new default for public fetches and the one-time launch token solve different problems; treating either as a general security boundary would be a mistake.
+
+## Where this preview still asks you to be cautious
+
+This is an alpha. ACP coverage being listed as complete means its named controls exist, not that every client combination has a stable compatibility contract. Plugin identity is specific to the official DeepSeek adapter, session-log upload is opt-in, and deployments may disable the metadata header. Build observability around those facts rather than assuming every provider sees the same request shape.
+
 ## Session UI and storage
 
 The conversation stream now folds process details and the System prompt before each completed answer, shows expandable token counts after each answer, and lets the column width be dragged. Those are UI rows. The storage rows matter more for anyone with large histories: conversation records use less disk, and a truncated log tail is repaired with a warning that names the session.
@@ -60,6 +79,6 @@ The Safety Notice was updated in this tag: DeepSeek Harness **has not been secur
 
 dsh.fish install plans still write under `$DSH_HOME` into a named profile. They do not set the new session-log upload flag, and they do not invent an ApiProxy fallback. A plugin that still documents ApiProxy should be treated as targeting a tree older than this tag.
 
-The scoring model did not change. What changed is the runtime a score is *about*: if a plugin’s README still says Code Mode, or still shows an ApiProxy snippet, that is now a documentation defect relative to v0.1.2-alpha.1, not a different product.
+The scoring model did not change. What changed is the runtime a score is _about_: if a plugin’s README still says Code Mode, or still shows an ApiProxy snippet, that is now a documentation defect relative to v0.1.2-alpha.1, not a different product.
 
 Full changelog: [dsh-v0.1.2-alpha.1](https://github.com/deepseek-ai/deepseek-harness/compare/dsh-v0.1.1-rc.2...dsh-v0.1.2-alpha.1).

@@ -27,9 +27,23 @@ describe('isBlogSeries', () => {
 
 describe('blogMarkdown', () => {
   it('bundles every English post under /blog/{series}/{slug}', () => {
-    expect(blogPostMarkdownPaths()).toEqual([...POSTS].sort((left, right) => left.localeCompare(right)))
-    expect(blogPostMarkdown('/blog/harness/v0-1-2-alpha-1')).toContain('dsh-v0.1.2-alpha.1')
-    expect(blogPostMarkdown('/blog/notes/everything-is-a-plugin')).toContain('everything is a plugin')
+    expect(blogPostMarkdownPaths()).toEqual(
+      [...POSTS].sort((left, right) => left.localeCompare(right)),
+    )
+    expect(blogPostMarkdown('/blog/harness/v0-1-2-alpha-1')).toContain(
+      'dsh-v0.1.2-alpha.1',
+    )
+    expect(blogPostMarkdown('/blog/notes/everything-is-a-plugin')).toContain(
+      'everything is a plugin',
+    )
+  })
+
+  it('gives every post a public cover image', () => {
+    for (const path of POSTS) {
+      expect(blogPostMarkdown(path), path).toMatch(
+        /\ncover: \/blog\/covers\/[a-z0-9-]+\.webp\n/,
+      )
+    }
   })
 
   it('treats the index and each series landing as documents', () => {
@@ -60,8 +74,12 @@ describe('blogMarkdown', () => {
   })
 
   it('returns localized Markdown and falls back to English', () => {
-    expect(blogMarkdown('/blog/changelog/2026-08', 'zh-CN')).toContain('产品文档')
-    expect(blogMarkdown('/blog/harness/v0-1-2-alpha-1', 'ja')).toContain('ApiProxy')
+    expect(blogMarkdown('/blog/changelog/2026-08', 'zh-CN')).toContain(
+      '产品文档',
+    )
+    expect(blogMarkdown('/blog/harness/v0-1-2-alpha-1', 'ja')).toContain(
+      'ApiProxy',
+    )
     expect(blogMarkdown('/blog/not-a-post', 'ru')).toBeUndefined()
   })
 })

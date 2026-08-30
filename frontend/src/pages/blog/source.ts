@@ -47,6 +47,7 @@ export interface BlogCompiledData {
   readonly author: string
   readonly date: string | Date
   readonly series: BlogSeries
+  readonly cover: string
   readonly toc: readonly CompiledTocItem[]
 }
 
@@ -54,7 +55,10 @@ export interface BlogCompiledData {
  * Frontmatter plus compiled TOC. Fumadocs types the extra schema fields as
  * `unknown`; missing values are a content bug, not a silent default.
  */
-export function readBlogPage(page: { url: string; data: unknown }): BlogCompiledData {
+export function readBlogPage(page: {
+  url: string
+  data: unknown
+}): BlogCompiledData {
   const data = page.data as Record<string, unknown>
   if (typeof data.title !== 'string' || data.title.trim() === '') {
     throw new Error(`Blog post ${page.url} is missing a title`)
@@ -66,7 +70,9 @@ export function readBlogPage(page: { url: string; data: unknown }): BlogCompiled
     throw new Error(`Blog post ${page.url} is missing an author`)
   }
   if (typeof data.series !== 'string' || !isBlogSeries(data.series)) {
-    throw new Error(`Blog post ${page.url} has unknown series ${String(data.series)}`)
+    throw new Error(
+      `Blog post ${page.url} has unknown series ${String(data.series)}`,
+    )
   }
   const date = data.date
   if (typeof date !== 'string' && !(date instanceof Date)) {
@@ -75,18 +81,26 @@ export function readBlogPage(page: { url: string; data: unknown }): BlogCompiled
   if (!Array.isArray(data.toc)) {
     throw new Error(`Blog post ${page.url} has no table of contents`)
   }
+  if (
+    typeof data.cover !== 'string' ||
+    !data.cover.startsWith('/blog/covers/')
+  ) {
+    throw new Error(`Blog post ${page.url} has an invalid cover`)
+  }
   return {
     title: data.title,
     description: data.description.trim(),
     author: data.author,
     date,
     series: data.series,
+    cover: data.cover,
     toc: data.toc as CompiledTocItem[],
   }
 }
 
 function nodeText(value: unknown): string {
-  if (typeof value === 'string' || typeof value === 'number') return String(value)
+  if (typeof value === 'string' || typeof value === 'number')
+    return String(value)
   if (Array.isArray(value)) return value.map(nodeText).join('')
   if (value && typeof value === 'object' && 'props' in value) {
     const element = value as { props?: { children?: unknown } }
@@ -128,9 +142,12 @@ export interface BlogPostSummary {
   readonly author: string
   readonly date: string
   readonly series: BlogSeries
+  readonly cover: string
 }
 
-function summaryFromPage(page: NonNullable<ReturnType<typeof source.getPages>[number]>): BlogPostSummary {
+function summaryFromPage(
+  page: NonNullable<ReturnType<typeof source.getPages>[number]>,
+): BlogPostSummary {
   const data = readBlogPage(page)
   return {
     url: page.url,
@@ -140,10 +157,14 @@ function summaryFromPage(page: NonNullable<ReturnType<typeof source.getPages>[nu
     author: data.author,
     date: postDateIso(data.date),
     series: data.series,
+    cover: data.cover,
   }
 }
 
-export function listBlogPosts(locale: Locale, series?: BlogSeries): readonly BlogPostSummary[] {
+export function listBlogPosts(
+  locale: Locale,
+  series?: BlogSeries,
+): readonly BlogPostSummary[] {
   return source
     .getPages(locale)
     .map(summaryFromPage)
@@ -152,9 +173,9 @@ export function listBlogPosts(locale: Locale, series?: BlogSeries): readonly Blo
 }
 
 export function blogPostPaths(): readonly string[] {
-  return [...new Set(source.getPages(DEFAULT_LOCALE).map((page) => page.url))].sort((a, b) =>
-    a.localeCompare(b),
-  )
+  return [
+    ...new Set(source.getPages(DEFAULT_LOCALE).map((page) => page.url)),
+  ].sort((a, b) => a.localeCompare(b))
 }
 
 /** Indexable `/blog…` paths: the index, each series landing, and every post. */

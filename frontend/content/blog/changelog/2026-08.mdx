@@ -3,10 +3,13 @@ title: dsh.fish in August 2026
 description: Product docs as a Fumadocs section, the hub plugin on npm, two kinds retired, and llms.txt for agents.
 author: Steven Lynn
 date: 2026-08-29
+cover: /blog/covers/dsh-fish-2026-08.webp
 series: changelog
 ---
 
 This is the first changelog post on this site. It covers what actually shipped to dsh.fish through 29 August 2026, not a roadmap. Uncommitted work is not listed.
+
+![The catalog now feeds human, install-client, web, and agent-facing surfaces from shared sources.](/blog/diagrams/hub-surfaces.svg)
 
 ## Product docs left the single page
 
@@ -31,6 +34,23 @@ Categories were aligned with [awesome-dsh-plugin.com](https://awesome-dsh-plugin
 `/llms.txt` at the origin, `/docs/llms.txt` for the guides, `/docs/llms-full.txt` as a concatenation. 404s for `Accept: text/markdown` return a short recovery map instead of the app shell. OpenAPI and `.well-known/api-catalog` stay the machine doors into the JSON API.
 
 Plugin titles in search results now carry the summary. README translations keep the previous completed body until a replacement finishes, so a locale does not flicker empty while a job runs.
+
+## Why the shared sources matter
+
+The visible work is a docs tree, a blog, and an installable plugin. The engineering constraint underneath is more useful: none of those surfaces gets a private copy of catalog facts. The website, CLI, and hub plugin resolve the same install plans. Docs search, Markdown negotiation, `llms.txt`, Atom, and sitemap output are generated from their respective MDX trees.
+
+That removes a common failure mode where the page says one thing and the agent endpoint says another. It also makes authoring stricter. A route or locale file missing from the source tree cannot be patched over with prose embedded in a component; parity and link checks fail instead.
+
+## What to try
+
+Use the surface that matches the job:
+
+- Browse `/docs` when you are learning the publishing contract.
+- Fetch `/docs/llms.txt` or a `.md` route when an agent needs the same material.
+- Run `npx @dsh-fish/cli` when you want an install plan without opening the site.
+- Load `@dsh-fish/hub` when the plan should stay inside a Harness session.
+
+The limitation is deliberate: blog search did not ship in this release, and `/api/search` remains catalog search rather than a second content index.
 
 ## What this post is not
 

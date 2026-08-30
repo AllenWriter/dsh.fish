@@ -1,4 +1,8 @@
-import { defineCollections, defineConfig, defineDocs } from 'fumadocs-mdx/config'
+import {
+  defineCollections,
+  defineConfig,
+  defineDocs,
+} from 'fumadocs-mdx/config'
 import { pageSchema } from 'fumadocs-core/source/schema'
 import { z } from 'zod'
 
@@ -19,6 +23,7 @@ export const blog = defineCollections({
     date: z.union([z.string(), z.date()]),
     series: z.enum(['harness', 'deepseek', 'changelog', 'notes']),
     description: z.string().min(1),
+    cover: z.string().startsWith('/blog/covers/'),
   }),
 })
 

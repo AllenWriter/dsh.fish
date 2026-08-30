@@ -3,12 +3,15 @@ title: DeepSeek Harness v0.1.2-alpha.1
 description: 公式 API リクエストは有効プラグインのパッケージ名とバージョンを載せ、アプリは Profile 経由で起動し、ApiProxy は消え、公開 WebFetch は既定でオン。
 author: Steven Lynn
 date: 2026-08-27
+cover: /blog/covers/harness-v0-1-2-alpha-1.webp
 series: harness
 ---
 
 [v0.1.2-alpha.1](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.1.2-alpha.1) は 2026 年 8 月 27 日のプレビューです。changelog が長いのは、セッションの起動、プラグインの DeepSeek への名乗り、サブエージェントの起動、headless がログを出せる場所が同時に動いたからです。一覧の復唱ではなく、名前の挙がったコードに沿って読みます。
 
 タグは `dsh-v0.1.2-alpha.1` です。`npx @deepseek-ai/dsh web` は今のプレビューパッケージに解決されます。回帰を追うときはこの tag をピンしてください。
+
+![Harness v0.1.2 が request metadata と headless process output を分離する流れ。](/blog/diagrams/harness-request-path.svg)
 
 ## プラグインはリクエストに出る
 
@@ -45,6 +48,22 @@ ACP（Agent Client Protocol）は半実装ではなくなりました。セッ�
 **ネットワーク経由で Web UI に触るとき、起動リンクはワンタイム token 必須。** ローカル loopback の `dsh web` は変わりません。ネットにバインドしたリスナはリンク自体で認証します。
 
 Headless は進捗を **stderr** に出します。**stdout は最終結果だけ。** stdout からツール軌跡を grep するスクリプトは、このラウンドが終わるまで何も見ません。
+
+## 互換性チェックは短いが容赦がない
+
+Profile をこの preview に移す前に、package と automation から四つの前提を探します。`ApiProxy` がまだある、Code Mode が今も公開名である、subagent が親の model を継承する、stdout に進捗 event が含まれる、の四つです。前提ごとに壊れ方が違うため、「preview で script が壊れた」だけでは原因を特定しにくくなります。
+
+実用的な移行では stdout を機械可読に保ち、診断を別へ流します。
+
+```bash
+dsh --profile <profile-name> run "your task" >result.txt 2>progress.log
+```
+
+その後、ネットワークを使う WebFetch と、外部へ公開する Web UI を別々に再テストします。公開 fetch の新しい既定値と一回限りの launch token は別の問題を解くもので、どちらも一般的な security boundary ではありません。
+
+## この preview でまだ慎重に扱う場所
+
+これは alpha です。ACP coverage が complete と書かれているのは、名前のある control が存在するという意味で、すべての client の組合せに安定した互換契約があるという意味ではありません。Plugin identity は公式 DeepSeek adapter に固有で、session-log upload は opt-in、deployment は metadata header を無効にできます。すべての provider が同じ request shape を見ると仮定せず、これらの事実に合わせて observability を組み立ててください。
 
 ## セッション UI と保存
 

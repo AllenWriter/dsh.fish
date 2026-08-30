@@ -3,12 +3,15 @@ title: DeepSeek Harness v0.1.2-alpha.1
 description: 官方 API 请求会带上已启用插件的包名和版本，应用统一由 Profile 启动，ApiProxy 已移除，公网 WebFetch 默认开启。
 author: Steven Lynn
 date: 2026-08-27
+cover: /blog/covers/harness-v0-1-2-alpha-1.webp
 series: harness
 ---
 
 [v0.1.2-alpha.1](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.1.2-alpha.1) 是 2026 年 8 月 27 日发布的预览版。changelog 很长，因为好几条线同时动了：会话怎么启动、插件如何向 DeepSeek 表明身份、子代理怎么拉起、以及 headless 进程允许往哪里打日志。下面按这些行对照它们点名的代码来读，而不是复述一遍列表。
 
 标签是 `dsh-v0.1.2-alpha.1`。`npx @deepseek-ai/dsh web` 仍然会解析到当前预览包；排查回归时请钉死这个 tag。
+
+![Harness v0.1.2 将请求 metadata 与 headless process output 分开。](/blog/diagrams/harness-request-path.svg)
 
 ## 插件会出现在请求里
 
@@ -45,6 +48,22 @@ ACP（Agent Client Protocol）不再是半截实现。会话控制、模型设�
 **经网络访问 Web UI 时，启动链接必须带一次性 token。** 本机 loopback 上的 `dsh web` 不变；绑到网上的监听现在用链接本身鉴权。
 
 Headless 运行把进度打到 **stderr**。**stdout 只输出最终结果。** 从 stdout 里 grep 工具轨迹的脚本，在这一轮结束前会什么都看不到。
+
+## 兼容性检查很短，但不会留情
+
+把 Profile 迁到这个 preview 前，先在 package 和 automation 里查四个假设：`ApiProxy` 还存在、Code Mode 仍是公开名称、subagent 会继承父级 model、stdout 会带进度 event。四个假设的失败方式不同，所以一句“preview 把我的 script 弄坏了”很难定位问题。
+
+实用的迁移方式是保持 stdout 可被机器读取，把诊断信息送到别处：
+
+```bash
+dsh --profile <profile-name> run "your task" >result.txt 2>progress.log
+```
+
+然后分别重测需要网络的 WebFetch 和任何暴露到外部的 Web UI。公共 fetch 的新默认值与一次性 launch token 解决的是两个问题；把任意一个当成通用 security boundary 都是错误的。
+
+## 这个 preview 仍需谨慎的地方
+
+这是 alpha。ACP coverage 标成 complete，表示具名 control 已经存在，不表示所有 client 组合都有稳定兼容契约。Plugin identity 只属于官方 DeepSeek adapter，session-log upload 需要主动开启，deployment 也可以关闭 metadata header。请围绕这些事实建立 observability，不要假设每个 provider 看到的 request shape 都相同。
 
 ## 会话 UI 和存储
 

@@ -17,4 +17,5 @@ export interface BlogPostCard {
   readonly date: string
   readonly seriesId: string
   readonly seriesTitle: string
+  readonly cover: string
 }

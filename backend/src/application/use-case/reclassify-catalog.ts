@@ -1,4 +1,3 @@
-import type { Artifact } from '../../domain/artifact/artifact.js'
 import { artifactContentChanged } from '../../domain/artifact/artifact.js'
 import type { ArtifactRepository } from '../../domain/artifact/artifact-repository.js'
 import { resolveCategories } from '../../domain/artifact/category-inference.js'

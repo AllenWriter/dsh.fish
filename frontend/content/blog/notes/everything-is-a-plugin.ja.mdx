@@ -3,12 +3,15 @@ title: すべてはプラグイン
 description: DeepSeek Harness のコアは小さく、残りは載せる。dsh.fish はそれらの載る単位のカタログであり、第二のランタイムではない。
 author: Steven Lynn
 date: 2026-08-29
+cover: /blog/covers/everything-is-a-plugin.webp
 series: notes
 ---
 
 DeepSeek Harness 自身の README は **everything is a plugin** で始まります。市場のスローガンではなく、プロセスの記述です。コアは小さく保ち、能力 — ツール、提供元、承認規則、UI — はすべて profile に列挙されたプラグインとして届きます。下の合成ランタイムは Cordis。論文は [_A Programming Paradigm for Spatiotemporal Composability_](https://arxiv.org/abs/2608.25512) です。
 
 dsh.fish があるのは、その文に運用上の帰結があるからです。すべてがプラグインなら、「これを入れる」は一条のコマンドではなく計画です。どの profile、どのパッケージ、どのファイル、どの設定。このノートは、その二つの事実のつなぎ方です。
+
+![Profile がカタログ artifact を一つの権限制約付き Harness session に構成する流れ。](/blog/diagrams/plugin-composition.svg)
 
 ## 起動の単位は Profile
 
@@ -20,12 +23,12 @@ dsh.fish があるのは、その文に運用上の帰結があるからです�
 
 カタログは型を発明しません。harness がすでに載せるものに名前を付けます。
 
-| Kind | harness がすること |
-| --- | --- |
-| Bundle | `dsh.bundle` を宣言する npm パッケージ — `dsh plugin add` が profile に入れる |
-| Skill | モデルが必要に応じて載せる `SKILL.md` |
-| Agent preset | 一つの agent のツール、prompt 節、人格 |
-| Profile | 順序付きの bundle の束。実行可能な合成そのもの |
+| Kind         | harness がすること                                                            |
+| ------------ | ----------------------------------------------------------------------------- |
+| Bundle       | `dsh.bundle` を宣言する npm パッケージ — `dsh plugin add` が profile に入れる |
+| Skill        | モデルが必要に応じて載せる `SKILL.md`                                         |
+| Agent preset | 一つの agent のツール、prompt 節、人格                                        |
+| Profile      | 順序付きの bundle の束。実行可能な合成そのもの                                |
 
 退役した kind（`mcp-server`、`hook-bridge`）は 301 されます。カタログのフィクションだったからです。harness にそれらの名前に合う一等の載スロットはありませんでした。ランタイムが入れられない kind を登録表が残すのは、存在しない製品を売ることです。
 
@@ -40,6 +43,22 @@ dsh.fish があるのは、その文に運用上の帰結があるからです�
 「すべてはプラグイン」はコアが空であることではありません。セッションは今も追記専用のイベントログです。ワークスペースは今も agent に渡すディレクトリです。権限は今も名前付きプリセット（既定 `workspace-write`）です。公式 DeepSeek アダプタは今もキーをマシンに留める方法です。
 
 プラグインはそれらの権限の下で動きます。それがハブが守る信頼境界です。profile を変える前に、プラグインが何か、計画が何を書くかを見ます。
+
+## bundle を install すると何が起きるか
+
+役に立つ mental model は「package を download する」ではありません。**composition を変え、その composition を boot する**ことです。hub は artifact を明示的な plan に解決し、client はその step を一つの Profile に適用し、次の launch で Cordis が出来上がった package graph を解決します。Discovery と execution は分離されたままです。
+
+この分離により inspect できます。第三者 package が実行される前に、target Profile、package source、files、build-script allowance を確認できます。ただし限界も明確です。dsh.fish は install で何が変わるかを記述できますが、任意の plugin code が安全だとは証明できません。高い catalog score は maintenance の証拠であり、sandbox certificate ではありません。
+
+bundle の最短の確認は次です。
+
+```bash
+npx @dsh-fish/cli info <artifact-id>
+npx @dsh-fish/cli install <artifact-id> --profile <profile-name>
+dsh --profile <profile-name> web
+```
+
+最初の二つの command が表示する plan を読んでください。特に source、Profile、要求された build allowance が期待と違えば停止します。
 
 ## このカタログが拒否するもの
 

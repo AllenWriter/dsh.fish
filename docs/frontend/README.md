@@ -4,6 +4,7 @@ This section defines how the frontend is organized using **Feature-Sliced Design
 
 ## Documents
 
+- [`blog-covers.md`](blog-covers.md) — required blog cover frontmatter and the minimal-zine poster production contract.
 - [`fsd-overview.md`](fsd-overview.md) — what FSD is and why it is used.
 - [`layers.md`](layers.md) — responsibilities of each FSD layer.
 - [`slices.md`](slices.md) — how to split code into slices.

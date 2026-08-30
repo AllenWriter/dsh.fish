@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>plugin-composition</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+  <style>
+    html, body { margin: 0; background: #faf9fc; }
+    body { font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif; }
+    svg { display: block; width: min(100%, 960px); height: auto; margin: 0 auto; }
+  </style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="plugin-title plugin-desc">
+  <title id="plugin-title">How a profile becomes a running Harness session</title>
+  <desc id="plugin-desc">A profile selects four loadable plugin kinds, which Cordis composes inside the Harness permission boundary.</desc>
+  <defs><marker id="plugin-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#7867d9"/></marker></defs>
+  <rect width="960" height="540" fill="#faf9fc"/>
+  <text x="56" y="62" fill="#17151d" font-family="ui-sans-serif,system-ui" font-size="26" font-weight="700">A profile is the composition boundary</text>
+  <text x="56" y="91" fill="#68636f" font-family="ui-sans-serif,system-ui" font-size="14">The catalog describes inputs. Cordis turns them into one permission-scoped session.</text>
+  <path d="M250 270H360M600 270H710" stroke="#7867d9" stroke-width="3" marker-end="url(#plugin-arrow)"/>
+  <g font-family="ui-sans-serif,system-ui"><rect x="56" y="155" width="194" height="230" fill="#fff" stroke="#d8d4df"/><text x="80" y="190" fill="#17151d" font-size="18" font-weight="700">Profile</text><text x="80" y="223" fill="#68636f" font-size="14">ordered packages</text><text x="80" y="253" fill="#68636f" font-size="14">settings + patches</text><text x="80" y="283" fill="#68636f" font-size="14">provider choices</text><text x="80" y="335" fill="#7867d9" font-size="14" font-weight="700">selected at launch</text></g>
+  <g font-family="ui-sans-serif,system-ui"><rect x="360" y="130" width="240" height="280" fill="#17151d"/><text x="390" y="170" fill="#fff" font-size="20" font-weight="700">Cordis composition</text><path d="M390 190H570" stroke="#514d58"/><text x="390" y="226" fill="#d7d2df" font-size="14">Bundle</text><text x="390" y="265" fill="#d7d2df" font-size="14">Skill</text><text x="390" y="304" fill="#d7d2df" font-size="14">Agent preset</text><text x="390" y="343" fill="#d7d2df" font-size="14">Profile packages</text><text x="390" y="382" fill="#a99dea" font-size="14" font-weight="700">resolve → load → start</text></g>
+  <g font-family="ui-sans-serif,system-ui"><rect x="710" y="155" width="194" height="230" fill="#eeeafd" stroke="#7867d9" stroke-width="2"/><text x="734" y="190" fill="#17151d" font-size="18" font-weight="700">Session</text><text x="734" y="223" fill="#68636f" font-size="14">tools + providers</text><text x="734" y="253" fill="#68636f" font-size="14">append-only log</text><text x="734" y="283" fill="#68636f" font-size="14">workspace access</text><text x="734" y="335" fill="#7867d9" font-size="14" font-weight="700">permission scoped</text></g>
+  <text x="56" y="475" fill="#68636f" font-family="ui-monospace,monospace" font-size="13">$DSH_HOME/profiles/&lt;name&gt;  →  dsh --profile &lt;name&gt;</text>
+</svg>
+</body>
+</html>

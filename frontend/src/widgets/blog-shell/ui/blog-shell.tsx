@@ -1,9 +1,16 @@
 import { LocaleLink, LocaleNavLink } from '@/shared/ui/locale-link'
 import { localeDefinition, useLocale, useT } from '@/shared/config/i18n'
 import { cn } from '@/shared/lib/utils'
-import type { BlogPostCard, BlogSeriesNavItem, BlogTocItem } from '../model/types'
+import type {
+  BlogPostCard,
+  BlogSeriesNavItem,
+  BlogTocItem,
+} from '../model/types'
 
-function formatPostDate(iso: string, locale: ReturnType<typeof useLocale>): string {
+function formatPostDate(
+  iso: string,
+  locale: ReturnType<typeof useLocale>,
+): string {
   return new Intl.DateTimeFormat(localeDefinition(locale).tag, {
     dateStyle: 'medium',
     timeZone: 'UTC',
@@ -27,10 +34,15 @@ export function BlogShell({
   return (
     <div className="mx-auto flex w-full max-w-6xl gap-10 px-6 py-10 lg:py-14">
       <div className="min-w-0 flex-1">
-        <nav aria-label={t('blog.seriesNav')} className="mb-8 flex flex-wrap gap-1">
+        <nav
+          aria-label={t('blog.seriesNav')}
+          className="mb-8 flex flex-wrap gap-1"
+        >
           {seriesNav.map((item) => {
             const active =
-              item.id === 'all' ? currentSeries === undefined : item.id === currentSeries
+              item.id === 'all'
+                ? currentSeries === undefined
+                : item.id === currentSeries
             return (
               <LocaleNavLink
                 key={item.id}
@@ -62,7 +74,10 @@ export function BlogShell({
           </p>
           <ol className="mt-3 space-y-1.5 text-sm">
             {items.map((item) => (
-              <li key={item.url} style={{ paddingInlineStart: Math.max(0, item.depth - 2) * 12 }}>
+              <li
+                key={item.url}
+                style={{ paddingInlineStart: Math.max(0, item.depth - 2) * 12 }}
+              >
                 <a
                   href={item.url}
                   className="text-muted-foreground transition-colors duration-150 hover:text-foreground"
@@ -86,12 +101,25 @@ export function BlogPostList({ posts }: { posts: readonly BlogPostCard[] }) {
   }
 
   return (
-    <ul className="divide-y divide-border border-t border-border">
-      {posts.map((post) => (
+    <ul className="grid gap-x-6 gap-y-10 sm:grid-cols-2">
+      {posts.map((post, index) => (
         <li key={post.url}>
-          <LocaleLink to={post.url} className="group block py-6">
-            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              <time dateTime={post.date}>{formatPostDate(post.date, locale)}</time>
+          <LocaleLink to={post.url} className="group block">
+            <div className="overflow-hidden rounded-xl border border-border bg-muted">
+              <img
+                src={post.cover}
+                alt=""
+                width={1200}
+                height={2000}
+                loading={index < 2 ? 'eager' : 'lazy'}
+                fetchPriority={index === 0 ? 'high' : 'auto'}
+                className="aspect-[3/5] w-full object-cover transition-opacity duration-150 group-hover:opacity-90"
+              />
+            </div>
+            <p className="mt-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              <time dateTime={post.date}>
+                {formatPostDate(post.date, locale)}
+              </time>
               <span aria-hidden="true"> · </span>
               {post.seriesTitle}
             </p>
@@ -99,7 +127,9 @@ export function BlogPostList({ posts }: { posts: readonly BlogPostCard[] }) {
               {post.title}
             </h2>
             {post.description === '' ? null : (
-              <p className="mt-2 text-pretty text-muted-foreground">{post.description}</p>
+              <p className="mt-2 text-pretty text-muted-foreground">
+                {post.description}
+              </p>
             )}
           </LocaleLink>
         </li>

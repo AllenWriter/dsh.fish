@@ -3,10 +3,13 @@ title: 2026 年 8 月的 dsh.fish
 description: 產品文件做成 Fumadocs 分區、hub 外掛上了 npm、兩個 kind 退役，以及給 agent 用的 llms.txt。
 author: Steven Lynn
 date: 2026-08-29
+cover: /blog/covers/dsh-fish-2026-08.webp
 series: changelog
 ---
 
 這是本站第一篇 changelog。它只寫到 2026 年 8 月 29 日已經上線的內容，不是路線圖。未提交的工作不列。
+
+![目錄從共享來源向人類介面、安裝客戶端、Web 與 agent 介面提供內容。](/blog/diagrams/hub-surfaces.svg)
 
 ## 產品文件離開了單頁
 
@@ -31,6 +34,23 @@ series: changelog
 源站 `/llms.txt`，指南 `/docs/llms.txt`，拼接版 `/docs/llms-full.txt`。`Accept: text/markdown` 的 404 回傳短恢復地圖，而不是應用殼。OpenAPI 和 `.well-known/api-catalog` 仍是進 JSON API 的機器入口。
 
 搜尋結果裡的外掛標題帶上 summary。README 翻譯在替換完成前保留上一份已完成正文，避免任務跑著時某個語言閃成空白。
+
+## 為什麼共享來源重要
+
+看得見的成果是文件樹、部落格與可安裝外掛，底下那條工程約束更有價值：任何表面都不私存一份目錄事實。網站、CLI 與 hub 外掛解析同一份安裝計畫；文件搜尋、Markdown 內容協商、`llms.txt`、Atom 與 sitemap 則從各自的 MDX 樹產生。
+
+這消除了一個常見故障：頁面說一套，agent 端點說另一套。代價是寫作必須更嚴格。來源樹裡缺少路由或 locale 檔案時，不能在元件裡塞一段文字帶過；一致性檢查與連結檢查會直接失敗。
+
+## 可以怎麼試
+
+依工作選擇對應表面：
+
+- 想了解發布契約，瀏覽 `/docs`。
+- agent 需要同一份材料，取得 `/docs/llms.txt` 或 `.md` 路由。
+- 不開網站也想拿到安裝計畫，執行 `npx @dsh-fish/cli`。
+- 希望計畫留在 Harness 工作階段裡，載入 `@dsh-fish/hub`。
+
+限制是刻意的：本次發布沒有部落格搜尋，`/api/search` 仍然是目錄搜尋，不是第二套內容索引。
 
 ## 這篇不是什麼
 

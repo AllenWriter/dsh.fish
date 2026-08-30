@@ -56,6 +56,7 @@ function cardsFor(locale: Locale, posts: readonly BlogPostSummary[]) {
     date: post.date,
     seriesId: post.series,
     seriesTitle: translate(locale, seriesTitleKey(post.series)),
+    cover: post.cover,
   }))
 }
 
@@ -66,9 +67,21 @@ function formatDate(iso: string, locale: Locale): string {
   }).format(new Date(iso))
 }
 
-export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescriptors {
+export function meta({
+  loaderData,
+  params,
+}: Route.MetaArgs): Route.MetaDescriptors {
   if (!loaderData) return errorMeta(params.locale)
-  const { origin, locale, path, title, description, availableLocales, jsonLd, type } = loaderData
+  const {
+    origin,
+    locale,
+    path,
+    title,
+    description,
+    availableLocales,
+    jsonLd,
+    type,
+  } = loaderData
   return pageMeta({
     origin,
     locale,
@@ -173,6 +186,7 @@ export function loader({ context, params }: Route.LoaderArgs) {
     writtenBy: translate(locale, 'blog.writtenBy'),
     date,
     series: data.series,
+    cover: data.cover,
     seriesTitle: translate(locale, seriesTitleKey(data.series)),
     formattedDate: formatDate(date, locale),
     availableLocales,
@@ -184,7 +198,10 @@ export function loader({ context, params }: Route.LoaderArgs) {
       breadcrumbLd(origin, locale, [
         { name: translate(locale, 'app.name'), path: '/' },
         { name: translate(locale, 'blog.title'), path: '/blog' },
-        { name: translate(locale, seriesTitleKey(data.series)), path: `/blog/${data.series}` },
+        {
+          name: translate(locale, seriesTitleKey(data.series)),
+          path: `/blog/${data.series}`,
+        },
         { name: data.title, path: page.url },
       ]),
       blogPostingLd(origin, locale, {
@@ -203,7 +220,9 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
     const { nav, currentSeries, title, description, posts } = loaderData
     return (
       <BlogShell seriesNav={nav} currentSeries={currentSeries}>
-        <h1 className="text-3xl font-semibold tracking-tight text-balance">{title}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-balance">
+          {title}
+        </h1>
         <p className="mt-3 text-pretty text-muted-foreground">{description}</p>
         <div className="mt-8">
           <BlogPostList posts={posts} />
@@ -212,21 +231,49 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
     )
   }
 
-  const { contentPath, title, description, author, writtenBy, formattedDate, date, seriesTitle, nav, currentSeries, toc } =
-    loaderData
+  const {
+    contentPath,
+    title,
+    description,
+    author,
+    writtenBy,
+    formattedDate,
+    date,
+    seriesTitle,
+    cover,
+    nav,
+    currentSeries,
+    toc,
+  } = loaderData
 
   return (
     <BlogShell seriesNav={nav} currentSeries={currentSeries} toc={toc}>
-      <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-        {seriesTitle}
-      </p>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight text-balance">{title}</h1>
-      <p className="mt-3 text-pretty text-muted-foreground">{description}</p>
-      <p className="mt-4 text-sm text-muted-foreground">
-        <time dateTime={date}>{formattedDate}</time>
-        <span aria-hidden="true"> · </span>
-        {writtenBy} {author}
-      </p>
+      <header className="grid items-end gap-8 md:grid-cols-[minmax(0,1fr)_minmax(14rem,18rem)]">
+        <div className="min-w-0">
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            {seriesTitle}
+          </p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-balance">
+            {title}
+          </h1>
+          <p className="mt-3 text-pretty text-muted-foreground">
+            {description}
+          </p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            <time dateTime={date}>{formattedDate}</time>
+            <span aria-hidden="true"> · </span>
+            {writtenBy} {author}
+          </p>
+        </div>
+        <img
+          src={cover}
+          alt=""
+          width={1200}
+          height={2000}
+          fetchPriority="high"
+          className="aspect-[3/5] w-full max-w-72 justify-self-center rounded-xl border border-border bg-muted object-cover md:justify-self-end"
+        />
+      </header>
       <div className="mt-8">{blogContent.useContent(contentPath)}</div>
     </BlogShell>
   )

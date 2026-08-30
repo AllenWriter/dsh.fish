@@ -3,19 +3,22 @@ title: DeepSeek-V4 プレビューと、Harness がそれに続けたこと
 description: 2026 年 4 月の V4 発表は 1M コンテキストを既定にした。Harness はその後 Flash-Vision、Files API アップロード、旧モデル名の廃止日を追った。
 author: Steven Lynn
 date: 2026-08-29
+cover: /blog/covers/deepseek-v4-preview.webp
 series: deepseek
 ---
 
 DeepSeek は 2026 年 4 月 24 日に [DeepSeek-V4 プレビュー](https://www.deepseek.com/news/v4-preview/) を出した。一次ソースはその記事です。ここは転載ではなく、Harness v0.1.2-alpha.1 時点で、その発表がこのカタログが索引する agent ランタイムに何をしたかの追跡です。
 
+![V4 の発表から DeepSeek Harness adapter が段階的に変わった流れ。](/blog/diagrams/v4-adapter-timeline.svg)
+
 ## 発表が書いたこと
 
 オープンウェイトの二モデル。公式サービス上の既定コンテキストはどちらも **1M token**：
 
-| モデル | 総パラメータ / 活性 | 発表での位置づけ |
-| --- | --- | --- |
-| DeepSeek-V4-Pro | 1.6T / 49B | プログラミング、世界知識、数学 — クローズドソースに並ぶ |
-| DeepSeek-V4-Flash | 284B / 13B | より速く安く。「単純な Agent タスクでは Pro と同等」 |
+| モデル            | 総パラメータ / 活性 | 発表での位置づけ                                        |
+| ----------------- | ------------------- | ------------------------------------------------------- |
+| DeepSeek-V4-Pro   | 1.6T / 49B          | プログラミング、世界知識、数学 — クローズドソースに並ぶ |
+| DeepSeek-V4-Flash | 284B / 13B          | より速く安く。「単純な Agent タスクでは Pro と同等」    |
 
 アーキテクチャの主張は **token 次元の圧縮と DSA**（DeepSeek Sparse Attention）。1M は任意の長コンテキスト SKU ではなく、標準ウィンドウです。
 
@@ -37,6 +40,23 @@ V4 発表は四月。八月に実際に走っている harness プレビュー�
 発表の「Claude Code、OpenClaw、OpenCode、DeepSeek 自前の coding agent との統合」は、未改修ランタイムの横に貼った宣伝ではありません。その後の数か月で vision、Files API、プラグインの身元がこの API の一等になりました。
 
 実験的視覚モデルは別の `model` 文字列：`deepseek-v4-flash-vision-exp`。API 文書は現在 `deepseek-v4-flash` を DeepSeek-V4-Flash-0731、`deepseek-v4-pro` を DeepSeek-V4-Pro-0813 と書きます。名前は同じ、スナップショットが更新されます。呼び出し方は変わりません。
+
+## 1M の窓が変えるのは予算であり、検索の必要性ではない
+
+大きいコンテキスト窓は切り捨ての圧力を下げますが、リポジトリ全体を無差別に投入しても無料にはなりません。入力には依然として遅延と費用があり、重複ファイルはツール結果と場所を奪い合い、長いセッションには compaction が必要です。プラグイン作者は 1M を会計不要の容量ではなく、同じ会計問題を持つ大きな予算として扱うべきです。証拠を選び、重要な判断を残し、回答の余地を確保します。
+
+Vision には第二の予算があります。Files API は同じ素材の再アップロードを避け、adapter の resize と変換経路は画像を選んだモデルが受け取れる形にします。しかし、どちらも画像が関連するかは判断しません。ほぼ同じスクリーンショットを十枚返すツールは、結果を返す前に重複を除くべきです。
+
+## 最小の移行チェック
+
+設定と例から廃止 model 文字列を探し、プラグインが実際に出す modality を試します。
+
+```text
+deepseek-chat       → deepseek-v4-flash
+deepseek-reasoner   → deepseek-v4-pro（thinking は明示的に選ぶ）
+```
+
+この対応を workload に機械的に適用しないでください。Flash と Pro は費用と能力の狙いが異なり、thinking intensity も独立した選択です。Profile で意図した model を固定し、代表的な task を実行し、README を更新する前に公式 adapter で画像と file の動作を確認します。
 
 ## プラグイン著者が無視できないこと
 

@@ -3,12 +3,15 @@ title: Everything is a plugin
 description: DeepSeek Harness keeps a small core and loads the rest. dsh.fish is a catalog of those loadable units, not a second runtime.
 author: Steven Lynn
 date: 2026-08-29
+cover: /blog/covers/everything-is-a-plugin.webp
 series: notes
 ---
 
 DeepSeek Harness’s own README leads with the sentence **everything is a plugin**. That is not a slogan for a marketplace. It is a description of the process: the core stays small, and every capability — tools, providers, approval rules, UI — arrives as a plugin listed in a profile. Cordis is the composition runtime underneath; the paper is [_A Programming Paradigm for Spatiotemporal Composability_](https://arxiv.org/abs/2608.25512).
 
 dsh.fish exists because that sentence has an operational consequence. If everything is a plugin, then “install this” is not one command. It is a plan: which profile, which packages, which files, which settings. This note is how those two facts fit together.
+
+![A profile composes catalog artifacts into one permission-scoped Harness session.](/blog/diagrams/plugin-composition.svg)
 
 ## A profile is the unit that boots
 
@@ -20,12 +23,12 @@ That is why every dsh.fish install plan names a profile. Writing a plugin into �
 
 The hub does not invent types. It names the things the harness already loads:
 
-| Kind | What the harness does with it |
-| --- | --- |
-| Bundle | An npm package declaring `dsh.bundle` — `dsh plugin add` installs it into the profile |
-| Skill | `SKILL.md` the model loads on demand |
-| Agent preset | Tools, prompt sections, and persona for one agent |
-| Profile | An ordered stack of bundles; a whole runnable composition |
+| Kind         | What the harness does with it                                                         |
+| ------------ | ------------------------------------------------------------------------------------- |
+| Bundle       | An npm package declaring `dsh.bundle` — `dsh plugin add` installs it into the profile |
+| Skill        | `SKILL.md` the model loads on demand                                                  |
+| Agent preset | Tools, prompt sections, and persona for one agent                                     |
+| Profile      | An ordered stack of bundles; a whole runnable composition                             |
 
 Retired kinds (`mcp-server`, `hook-bridge`) 301 away because they were catalog fiction: the harness never had a first-class load slot that matched those names. A registry that keeps a kind the runtime cannot install is advertising a product that does not exist.
 
@@ -40,6 +43,22 @@ The plan is also why the catalog can be multilingual without translating identif
 “Everything is a plugin” does not mean the core is empty. Sessions are still append-only event logs. A workspace is still the directory you hand the agent. Permissions are still named presets (`workspace-write` by default). The official DeepSeek adapter is still how keys stay on the machine.
 
 Plugins act with those permissions. That is the trust boundary the hub is for: you inspect what a plugin is, and what the plan will write, before the profile changes.
+
+## What happens when you install a bundle
+
+The useful mental model is not “download a package.” It is **change a composition, then boot that composition**. The hub resolves an artifact into an explicit plan, the client applies those steps to one profile, and the next launch lets Cordis resolve the resulting package graph. Discovery and execution remain separate.
+
+That separation buys you inspectability. You can review the target profile, package source, files, and build-script allowance before a third-party package gets a chance to run. It also creates a hard limitation: dsh.fish can describe what an install will change, but it cannot prove that arbitrary plugin code is safe. A high catalog score is maintenance evidence, not a sandbox certificate.
+
+For a bundle, the shortest useful check is:
+
+```bash
+npx @dsh-fish/cli info <artifact-id>
+npx @dsh-fish/cli install <artifact-id> --profile <profile-name>
+dsh --profile <profile-name> web
+```
+
+Read the plan printed by the first two commands. In particular, stop if the source, profile, or requested build allowance is not what you expected.
 
 ## What this catalog refuses to be
 

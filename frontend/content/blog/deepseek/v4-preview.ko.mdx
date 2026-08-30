@@ -3,19 +3,22 @@ title: DeepSeek-V4 프리뷰, 그리고 Harness가 따라간 것
 description: 2026년 4월 V4 발표는 1M 컨텍스트를 기본으로 만들었습니다. Harness는 이후 Flash-Vision, Files API 업로드, 옛 모델 이름의 종료일을 따라갔습니다.
 author: Steven Lynn
 date: 2026-08-29
+cover: /blog/covers/deepseek-v4-preview.webp
 series: deepseek
 ---
 
 DeepSeek는 2026년 4월 24일에 [DeepSeek-V4 프리뷰](https://www.deepseek.com/news/v4-preview/)를 냈습니다. 그 글이 1차 출처입니다. 여기는 전재가 아니라, Harness v0.1.2-alpha.1까지 그 발표가 이 카탈로그가 색인하는 agent 런타임에 무엇을 했는지를 쫓습니다.
 
+![V4 발표 이후 DeepSeek Harness adapter가 단계적으로 바뀐 흐름.](/blog/diagrams/v4-adapter-timeline.svg)
+
 ## 발표가 실제로 쓴 것
 
 오픈 웨이트 모델 둘. 공식 서비스의 기본 컨텍스트는 둘 다 **1M 토큰**:
 
-| 모델 | 총 파라미터 / 활성 | 발표에서의 위치 |
-| --- | --- | --- |
-| DeepSeek-V4-Pro | 1.6T / 49B | 프로그래밍, 세계 지식, 수학 — 클로즈드 소스에 맞춤 |
-| DeepSeek-V4-Flash | 284B / 13B | 더 빠르고 저렴. 「단순한 Agent 작업에서는 Pro와 동등」 |
+| 모델              | 총 파라미터 / 활성 | 발표에서의 위치                                        |
+| ----------------- | ------------------ | ------------------------------------------------------ |
+| DeepSeek-V4-Pro   | 1.6T / 49B         | 프로그래밍, 세계 지식, 수학 — 클로즈드 소스에 맞춤     |
+| DeepSeek-V4-Flash | 284B / 13B         | 더 빠르고 저렴. 「단순한 Agent 작업에서는 Pro와 동등」 |
 
 아키텍처 주장은 **토큰 차원 압축과 DSA**(DeepSeek Sparse Attention)입니다. 1M은 선택적 긴 컨텍스트 SKU가 아니라 표준 창입니다.
 
@@ -37,6 +40,23 @@ V4 발표는 4월입니다. 8월에 실제로 돌아가는 harness 프리뷰는 
 그래서 발표의 「Claude Code, OpenClaw, OpenCode, DeepSeek 자체 코딩 에이전트와의 통합」은 손대지 않은 런타임 옆에 붙인 마케팅이 아닙니다. 그 다음 몇 달 동안 vision, Files API, 플러그인 신원이 이 API의 일등이 되었습니다.
 
 실험적 비전 모델은 별도의 `model` 문자열입니다: `deepseek-v4-flash-vision-exp`. API 문서는 현재 `deepseek-v4-flash`를 DeepSeek-V4-Flash-0731, `deepseek-v4-pro`를 DeepSeek-V4-Pro-0813으로 적습니다. 이름은 같고 스냅샷이 갱신됩니다. 호출 방식은 그대로입니다.
+
+## 1M 창은 예산을 바꾸지만 검색의 필요성을 없애지 않습니다
+
+더 큰 컨텍스트 창은 잘림 압력을 낮추지만 저장소 전체를 무차별로 넣는 일을 공짜로 만들지는 않습니다. 입력에는 여전히 지연과 비용이 있고, 중복 파일은 도구 결과와 자리를 다투며, 긴 세션에는 여전히 compaction이 필요합니다. 플러그인 작성자는 1M을 회계가 필요 없는 공간이 아니라 같은 회계 문제를 가진 더 큰 예산으로 다뤄야 합니다. 증거를 고르고, 중요한 결정을 보존하고, 답변을 위한 여유를 남기십시오.
+
+Vision에는 두 번째 예산이 있습니다. Files API는 같은 자산을 반복 업로드하지 않게 하고, adapter의 resize와 변환 경로는 이미지를 선택한 모델이 받을 수 있게 만듭니다. 어느 단계도 이미지가 관련 있는지는 판단하지 않습니다. 거의 같은 스크린샷 열 장을 내보내는 도구라면 결과를 반환하기 전에 중복을 제거해야 합니다.
+
+## 최소 마이그레이션 점검
+
+설정과 예제에서 폐기된 model 문자열을 찾은 다음, 플러그인이 실제로 만드는 modality를 실행해 봅니다.
+
+```text
+deepseek-chat       → deepseek-v4-flash
+deepseek-reasoner   → deepseek-v4-pro (thinking은 명시적으로 선택)
+```
+
+이 대응을 workload에 무조건 적용하지 마십시오. Flash와 Pro는 비용과 능력 목표가 다르고 thinking intensity도 별도 선택입니다. Profile에 의도한 model을 고정하고, 대표 task를 실행하고, README를 바꾸기 전에 공식 adapter에서 이미지와 file 동작을 확인하십시오.
 
 ## 플러그인 저자가 무시하면 안 되는 것
 

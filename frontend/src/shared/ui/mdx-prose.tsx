@@ -12,7 +12,9 @@ import { cn } from '@/shared/lib/utils'
  * not demoted: the page owns `<h1>` from frontmatter, so MDX `#` is `<h2>`.
  */
 type IntrinsicMdxComponents = Partial<{
-  [Tag in keyof JSX.IntrinsicElements]: ComponentType<JSX.IntrinsicElements[Tag]>
+  [Tag in keyof JSX.IntrinsicElements]: ComponentType<
+    JSX.IntrinsicElements[Tag]
+  >
 }>
 
 export function proseMdxComponents(): IntrinsicMdxComponents {
@@ -36,11 +38,20 @@ export function proseMdxComponents(): IntrinsicMdxComponents {
       />
     ),
     h4: (props) => (
-      <h4 {...props} className="mt-7 mb-2 scroll-mt-20 text-sm font-semibold tracking-tight" />
+      <h4
+        {...props}
+        className="mt-7 mb-2 scroll-mt-20 text-sm font-semibold tracking-tight"
+      />
     ),
-    p: (props) => <p {...props} className="my-4 text-pretty first:mt-0 last:mb-0" />,
+    p: (props) => (
+      <p {...props} className="my-4 text-pretty first:mt-0 last:mb-0" />
+    ),
     a: ({ href, children, ...props }) => {
-      if (href !== undefined && href.startsWith('/') && !href.startsWith('//')) {
+      if (
+        href !== undefined &&
+        href.startsWith('/') &&
+        !href.startsWith('//')
+      ) {
         return (
           <LocaleLink
             to={href}
@@ -63,13 +74,24 @@ export function proseMdxComponents(): IntrinsicMdxComponents {
         </a>
       )
     },
-    ul: (props) => <ul {...props} className="my-4 list-disc space-y-1.5 ps-5" />,
-    ol: (props) => <ol {...props} className="my-4 list-decimal space-y-1.5 ps-5" />,
+    ul: (props) => (
+      <ul {...props} className="my-4 list-disc space-y-1.5 ps-5" />
+    ),
+    ol: (props) => (
+      <ol {...props} className="my-4 list-decimal space-y-1.5 ps-5" />
+    ),
     li: (props) => <li {...props} className="[overflow-wrap:anywhere]" />,
     blockquote: (props) => (
       <blockquote
         {...props}
         className="my-4 border-l-2 border-border-strong pl-4 text-muted-foreground"
+      />
+    ),
+    img: ({ alt, ...props }) => (
+      <img
+        {...props}
+        alt={alt ?? ''}
+        className="my-6 h-auto w-full rounded-xl border border-border bg-card"
       />
     ),
     hr: () => <hr className="my-8 border-t border-border" />,
@@ -84,7 +106,9 @@ export function proseMdxComponents(): IntrinsicMdxComponents {
         className="border-b border-border bg-muted/50 px-3 py-2 text-left font-medium"
       />
     ),
-    td: (props) => <td {...props} className="border-b border-border px-3 py-2 align-top" />,
+    td: (props) => (
+      <td {...props} className="border-b border-border px-3 py-2 align-top" />
+    ),
     pre: ({ children }) => <CodeFence>{children}</CodeFence>,
     code: ({ children, className, ...props }) => (
       <code
@@ -107,7 +131,9 @@ function CodeFence({ children }: { children?: React.ReactNode }) {
       <pre className="max-w-full min-w-0 overflow-x-auto rounded-xl border border-border bg-card p-4 pr-12 font-mono text-[13px] leading-relaxed [scrollbar-width:thin]">
         {children}
       </pre>
-      {code === '' ? null : <CopyButton text={code} className="absolute right-2.5 top-2.5" />}
+      {code === '' ? null : (
+        <CopyButton text={code} className="absolute right-2.5 top-2.5" />
+      )}
     </div>
   )
 }
