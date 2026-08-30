@@ -211,7 +211,7 @@ describe('maybeMarkdownResponse', () => {
     expect(await maybeMarkdownResponse(request('/a/missing', 'text/markdown'), missing)).toBeNull()
   })
 
-  it('gives the homepage a title, catalog doors and a trending rail, without glossary copy', async () => {
+  it('gives the homepage a title, writing index and doors, without glossary copy', async () => {
     const response = await maybeMarkdownResponse(request('/', 'text/markdown'), stubContainer())
     expect(response).not.toBeNull()
     const body = await response!.text()
@@ -221,8 +221,9 @@ describe('maybeMarkdownResponse', () => {
     expect(body).not.toContain('What dsh.fish is')
     expect(body).not.toContain('Plugin kinds')
     expect(body).not.toContain('For agents')
-    expect(body).not.toContain('dsh.fish developer resources')
-    expect(body).toContain('Trending')
+    expect(body).not.toContain('Trending')
+    expect(body).toContain('Blog')
+    expect(body).toContain('/blog')
   })
 })
 

@@ -12,10 +12,7 @@
  */
 import enJson from './en.json'
 import zhCNJson from './zh-CN.json'
-import zhTWJson from './zh-TW.json'
 import jaJson from './ja.json'
-import koJson from './ko.json'
-import ruJson from './ru.json'
 
 export type MessageKey = keyof typeof enJson
 
@@ -24,7 +21,4 @@ export type Catalog = Readonly<Record<MessageKey, string>>
 
 export const en: Catalog = enJson
 export const zhCN: Catalog = zhCNJson
-export const zhTW: Catalog = zhTWJson
 export const ja: Catalog = jaJson
-export const ko: Catalog = koJson
-export const ru: Catalog = ruJson

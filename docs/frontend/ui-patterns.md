@@ -29,7 +29,7 @@ import { t } from 'shared/i18n';
 - Do not repeat information already shown by a title, icon, selected state, or surrounding section.
 - Prefer concise labels over explanatory text when the state is self-evident.
 - Remove disabled placeholder actions unless they teach a real next step.
-- The home page is a catalog: search, type chips, and rails. Do not restate the product pitch, a kind glossary, or agent discovery docs — those live on `/docs`, `/kind/:kind`, and `/llms.txt`.
+- The home page is a dense grid of square blog cards. Do not restate the product pitch or a plugin glossary — those live on `/docs` and `/browse`.
 
 ```tsx
 // ❌ Bad
@@ -76,7 +76,7 @@ not give a taxonomy entry a hue — per-kind colours encode nothing a reader can
 and compete with the one accent.
 
 A glyph is the opposite trade and is encouraged: it is one mark per entry, it
-survives translation into six languages where the word does not, and it stays
+survives translation into the public languages where the word does not, and it stays
 legible without colour vision. So a kind or a category is told apart by its word and
 its mark, never by a colour.
 

@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, LOCALE_CODES, type Locale } from '@/shared/config/i18n'
+import { DEFAULT_LOCALE, LOCALE_CODES, mdxTranslationSuffixes, type Locale } from '@/shared/config/i18n'
 
 /**
  * First-party MDX as bundled strings.
@@ -40,9 +40,7 @@ function rawDocument(relative: string): string | undefined {
  * files (`cli.ja.mdx`) are translations of an English path, not extra slugs.
  */
 export function productDocsPaths(): readonly string[] {
-  const translationSuffixes = LOCALE_CODES.filter((locale) => locale !== DEFAULT_LOCALE).map(
-    (locale) => `.${locale}`,
-  )
+  const translationSuffixes = mdxTranslationSuffixes()
   const paths = new Set<string>()
   for (const key of Object.keys(RAW)) {
     const match = /\/content\/docs\/(.+)\.mdx$/.exec(key)

@@ -3,15 +3,15 @@
  *
  * Same Worker constraints as product docs: the generated collection is
  * build-time compiled MDX. Never `getText('raw')`. Nothing outside this page
- * slice imports Fumadocs except the documented sitemap exception.
+ * slice imports Fumadocs except the documented sitemap, llms.txt, and homepage exceptions.
  */
 import { blog } from 'collections/server'
 import { defineI18n } from 'fumadocs-core/i18n'
 import { loader } from 'fumadocs-core/source'
 import { toFumadocsSource } from 'fumadocs-mdx/runtime/server'
-import { DEFAULT_LOCALE, LOCALE_CODES, type Locale } from '@/shared/config/i18n'
-import type { BlogTocItem } from '@/widgets/blog-shell'
-import { BLOG_SERIES, isBlogSeries, type BlogSeries } from './series'
+import { DEFAULT_LOCALE, LOCALE_CODES, translate, type Locale } from '@/shared/config/i18n'
+import type { BlogPostCard, BlogTocItem } from '@/widgets/blog-shell'
+import { BLOG_SERIES, isBlogSeries, seriesTitleKey, type BlogSeries } from './series'
 import { blogLocales } from './raw'
 
 const blogI18n = defineI18n({
@@ -170,6 +170,22 @@ export function listBlogPosts(
     .map(summaryFromPage)
     .filter((post) => series === undefined || post.series === series)
     .sort((left, right) => right.date.localeCompare(left.date))
+}
+
+/** Listing cards for the home grid and `/blog`, from the same collection. */
+export function blogPostCards(
+  locale: Locale,
+  series?: BlogSeries,
+): readonly BlogPostCard[] {
+  return listBlogPosts(locale, series).map((post) => ({
+    url: post.url,
+    title: post.title,
+    description: post.description,
+    date: post.date,
+    seriesId: post.series,
+    seriesTitle: translate(locale, seriesTitleKey(post.series)),
+    cover: post.cover,
+  }))
 }
 
 export function blogPostPaths(): readonly string[] {

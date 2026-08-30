@@ -1,6 +1,6 @@
 # SEO and multilingual delivery
 
-This section describes how dsh.fish is made findable — in six languages, for
+This section describes how dsh.fish is made findable — in three languages, for
 every page the site owns, including every plugin it indexes.
 
 ## Documents

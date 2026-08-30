@@ -13,6 +13,7 @@ export {
   isLocale,
   localeDefinition,
   matchLocale,
+  mdxTranslationSuffixes,
   readLocaleCookie,
   writeLocaleCookie,
   type Locale,

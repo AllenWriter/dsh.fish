@@ -35,19 +35,21 @@ describe('alternates', () => {
     })
   })
 
-  it('uses script subtags for Chinese, so a reader in Singapore is not excluded', () => {
+  it('uses a script subtag for Simplified Chinese, so a reader in Singapore is not excluded', () => {
     const tags = alternates(ORIGIN, '/').map((entry) => entry.hreflang)
     expect(tags).toContain('zh-Hans')
-    expect(tags).toContain('zh-Hant')
+    expect(tags).not.toContain('zh-Hant')
     expect(tags).not.toContain('zh-CN')
   })
 
   it('is reciprocal: each language points at the same page in every other', () => {
     const fromJapanese = alternates(ORIGIN, '/a/dsh-hello').map((entry) => entry.href)
-    const fromRussian = alternates(ORIGIN, '/a/dsh-hello').map((entry) => entry.href)
-    expect(fromJapanese).toEqual(fromRussian)
+    const fromChinese = alternates(ORIGIN, '/a/dsh-hello').map((entry) => entry.href)
+    expect(fromJapanese).toEqual(fromChinese)
     expect(fromJapanese).toContain(`${ORIGIN}/ja/a/dsh-hello`)
-    expect(fromJapanese).toContain(`${ORIGIN}/ru/a/dsh-hello`)
+    expect(fromJapanese).toContain(`${ORIGIN}/zh-CN/a/dsh-hello`)
+    expect(fromJapanese).not.toContain(`${ORIGIN}/ru/a/dsh-hello`)
+    expect(fromJapanese).not.toContain(`${ORIGIN}/ko/a/dsh-hello`)
   })
 })
 
@@ -64,15 +66,14 @@ describe('artifactSearchTitle', () => {
     expect(title).not.toContain('dsh.fish')
   })
 
-  it('puts the translated summary in a Korean title, not the kind label', () => {
+  it('puts the translated summary in a Japanese title, not the kind label', () => {
     const title = artifactSearchTitle(
-      'ko',
+      'ja',
       'dsh-better-edit',
-      'DeepSeek Harness(dsh)용 해시 기반 읽기/편집/마지막 편집 실행 취소 도구',
+      'DeepSeek Harness（dsh）向けのハッシュ固定の読み取り/編集/取り消しツール',
     )
     expect(title.startsWith('dsh-better-edit — ')).toBe(true)
-    expect(title).toContain('해시')
-    expect(title).not.toContain('번들')
+    expect(title).toContain('ハッシュ')
     expect(title.length).toBeLessThanOrEqual(TITLE_MAX)
   })
 
@@ -179,7 +180,7 @@ describe('pageMeta', () => {
   it('carries a Twitter card as well as Open Graph', () => {
     expect(content(indexed, 'name', 'twitter:card')).toBe('summary_large_image')
     expect(content(indexed, 'name', 'twitter:image')).toBe(`${ORIGIN}/og.png`)
-    expect(content(indexed, 'name', 'twitter:image:alt')).toBe('DeepSeek Harness のプラグインハブ')
+    expect(content(indexed, 'name', 'twitter:image:alt')).toBe(translate('ja', 'app.tagline'))
   })
 
   it('fully describes the preview image for Open Graph consumers', () => {
@@ -187,7 +188,7 @@ describe('pageMeta', () => {
     expect(content(indexed, 'property', 'og:image:type')).toBe('image/png')
     expect(content(indexed, 'property', 'og:image:width')).toBe('1200')
     expect(content(indexed, 'property', 'og:image:height')).toBe('630')
-    expect(content(indexed, 'property', 'og:image:alt')).toBe('DeepSeek Harness のプラグインハブ')
+    expect(content(indexed, 'property', 'og:image:alt')).toBe(translate('ja', 'app.tagline'))
   })
 
   it('points og:image at a per-page renderer when one is given', () => {

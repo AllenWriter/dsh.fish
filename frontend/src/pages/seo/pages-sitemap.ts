@@ -29,7 +29,7 @@ export async function loader({ context }: Route.LoaderArgs) {
 
   const urls: SitemapUrl[] = [
     { path: '/', changeFrequency: 'daily', priority: 1 },
-    { path: '/browse', changeFrequency: 'daily', priority: 0.9 },
+    { path: '/browse', changeFrequency: 'daily', priority: 0.5 },
     ...ARTIFACT_KINDS.filter((kind) => visibleKinds.has(kind)).map((kind) => ({
       path: `/kind/${kind}`,
       changeFrequency: 'daily' as const,
@@ -49,13 +49,13 @@ export async function loader({ context }: Route.LoaderArgs) {
       path,
       locales,
       changeFrequency: 'monthly' as const,
-      priority: path === '/docs' ? 0.6 : 0.55,
+      priority: path === '/docs' ? 0.8 : 0.55,
     })),
     ...blogSitemapEntries().map(({ path, locales }) => ({
       path,
       locales,
       changeFrequency: path === '/blog' ? ('weekly' as const) : ('monthly' as const),
-      priority: path === '/blog' ? 0.6 : path.split('/').length === 3 ? 0.55 : 0.5,
+      priority: path === '/blog' ? 0.9 : path.split('/').length === 3 ? 0.7 : 0.65,
     })),
     { path: '/submit', changeFrequency: 'monthly', priority: 0.5 },
   ]

@@ -1,6 +1,6 @@
 # URL strategy
 
-One document, one URL, in six languages.
+One document, one URL, in three languages.
 
 ## Language lives in the path
 
@@ -23,11 +23,12 @@ Sub-directories, not sub-domains and not a `?lang=` parameter:
 301 to it. Publishing both is the single most common way a multilingual site
 splits its own ranking signal across two URLs for one document.
 
-**Retired languages redirect.** German, French, Spanish and Brazilian
-Portuguese were served once and are no longer declared, so `/de/*`, `/fr/*`,
-`/es/*` and `/pt-BR/*` 301 onto the same path in the default language —
-`/de/browse` lands on `/browse`. Their stored README translations are left in
-the database; they are simply not routed.
+**Retired languages redirect.** German, French, Spanish, Brazilian
+Portuguese, Traditional Chinese, Korean and Russian were served once and are
+no longer declared, so `/de/*`, `/fr/*`, `/es/*`, `/pt-BR/*`, `/zh-TW/*`,
+`/ko/*` and `/ru/*` 301 onto the same path in the default language —
+`/de/browse` and `/zh-TW/blog` land on `/browse` and `/blog`. Their stored
+README translations are left in the database; they are simply not routed.
 
 ## Remembering the reader's choice
 
@@ -102,16 +103,16 @@ guides fold onto `/docs/plugins`:
 `pageMeta` emits, for every indexable page:
 
 - `<link rel="canonical">` pointing at this page in **this** language.
-- `<link rel="alternate" hreflang="…">` for all six languages **plus**
+- `<link rel="alternate" hreflang="…">` for all public languages **plus**
   `x-default` pointing at the unprefixed default.
 
 The set is reciprocal — every language lists every other, including itself — so
 a crawler landing on any one of them discovers the rest.
 
-`hreflang` uses **script** subtags for Chinese (`zh-Hans`, `zh-Hant`) rather
-than region ones. A reader in Singapore reads simplified Chinese and would be
-excluded by a `zh-CN` region match; the script is exactly what distinguishes
-the two catalogs that are actually maintained.
+`hreflang` uses a **script** subtag for Simplified Chinese (`zh-Hans`) rather
+than a region one. A reader in Singapore reads simplified Chinese and would be
+excluded by a `zh-CN` region match. Traditional Chinese is retired and is not
+advertised.
 
 The canonical is built from the page's path **without its query string**. That
 is what folds `/a/x?profile=web` into `/a/x`: previewing an install plan for a
@@ -126,7 +127,7 @@ contradictory instructions about one document, and which one wins is undefined.
 The site never redirects on `Accept-Language`, and never varies the response
 body by it. A crawler sends no language preference, so a site that guesses
 serves it whatever language happens to be first in the header — and indexes one
-language while the other nine stay invisible. Readers get a language switcher
+language while the other languages stay invisible. Readers get a language switcher
 in the header. Crawlers get the `hreflang` set in the page head and the sitemap
 `xhtml:link` alternates.
 

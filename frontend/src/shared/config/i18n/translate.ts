@@ -1,14 +1,11 @@
 import { DEFAULT_LOCALE, type Locale } from './locales'
-import { en, ja, ko, ru, zhCN, zhTW, type Catalog, type MessageKey } from './messages'
+import { en, ja, zhCN, type Catalog, type MessageKey } from './messages'
 
 /** Every catalog, keyed by the same codes the locale registry uses. */
 export const CATALOGS: Readonly<Record<Locale, Catalog>> = Object.freeze({
   en,
   'zh-CN': zhCN,
-  'zh-TW': zhTW,
   ja,
-  ko,
-  ru,
 })
 
 export type { Catalog, MessageKey }

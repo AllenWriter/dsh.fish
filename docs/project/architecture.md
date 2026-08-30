@@ -1,16 +1,14 @@
 # Architecture
 
-> System architecture for **dsh.fish**, the plugin hub for DeepSeek Harness.
+> System architecture for **dsh.fish**, the personal site of 蓝健声 (AllenWriter), which still hosts the DeepSeek Harness plugin catalog as a secondary module.
 
 ## What this system is
 
-dsh.fish is a discovery, distribution and installation service for every kind of
-artifact the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
-can load. The harness has no registry of its own — its README asks authors to
-tag repositories with the `dsh-plugin` topic and leaves discovery there. This
-project is that missing registry, plus the install path on three ends: a website
-a human browses, a CLI they copy from an artifact page, and a harness plugin
-an agent drives.
+dsh.fish is the personal site of 蓝健声 (AllenWriter): a blog and technical
+docs on this domain. The DeepSeek Harness plugin catalog remains at `/browse`
+as a secondary module — the same Worker still serves the JSON API, CLI, and
+hub plugin for artifacts the
+[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) can load.
 
 ## Technology stack
 
@@ -147,7 +145,7 @@ is in-column chrome beside `SiteHeader`. `widgets/docs-scoring` renders
 video with a localized caption and transcript. `fumadocs-ui` is not a dependency: theme is the
 existing cookie on `<html>`, and the palette stays hue 263.
 
-Two same-layer imports are allowed so the slug list exists once:
+Same-layer imports are allowed so the slug list exists once:
 
 - `pages/markdown` → `pages/docs` public API (`productDocsMarkdown`, `productDocsPaths`)
 - `pages/seo` → `pages/docs` public API (`productDocsMarkdown`, `productDocsPaths`) for `/docs/llms-full.txt`
@@ -176,6 +174,7 @@ Same-layer imports, same reason as docs:
 - `pages/markdown` → `pages/blog` public API (`blogMarkdown`, `supportsBlogMarkdown`)
 - `pages/seo` → `pages/blog` public API (`BLOG_SERIES`) for `/blog/llms.txt`
 - `pages/seo` → `pages/blog/source` (`blogSitemapEntries`, `listBlogPosts`, `blogPostPaths`) — those helpers cannot sit on the public API, because the collection is a Vite macro and the markdown unit tests import `@/pages/blog` without the plugin
+- `pages/home` → `pages/blog/source` (`blogPostCards`) so the homepage grid is the same collection as `/blog`, not a second post list
 
 Dot-suffix locale files; React Router owns the URL prefix.
 `blogLocales` checks physical MDX files so metadata and the sitemap never

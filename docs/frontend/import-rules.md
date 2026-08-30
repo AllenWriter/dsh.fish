@@ -58,5 +58,6 @@ Exceptions must be documented in [`docs/project/architecture.md`](../project/arc
 - `pages/seo` imports `productDocsMarkdown` / `productDocsPaths` from the docs public API for `/docs/llms-full.txt`.
 - `pages/seo` imports `docsSitemapEntries`, `docsNav`, and `docsSitemapPaths` from `pages/docs/source`. Those helpers cannot live on the docs public API: `defineDocs` is a Vite macro, and the markdown unit tests import `@/pages/docs` without the plugin.
 - `pages/seo` imports `blogSitemapEntries`, `listBlogPosts`, and `blogPostPaths` from `pages/blog/source` for the same reason.
+- `pages/home` imports `blogPostCards` from `pages/blog/source` so the homepage grid is that collection, not a second list.
 
 Do not copy the slug list into the sitemap, the markdown handler, or llms.txt.

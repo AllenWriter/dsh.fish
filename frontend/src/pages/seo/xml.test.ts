@@ -111,7 +111,7 @@ describe('urlSetXml', () => {
   })
 
   it('omits x-default when the available locale set has no English document', () => {
-    const localized = urlSetXml(ORIGIN, [{ path: '/a/example', locales: ['ja', 'ko'] }])
+    const localized = urlSetXml(ORIGIN, [{ path: '/a/example', locales: ['ja', 'zh-CN'] }])
     expect(localized).not.toContain('hreflang="x-default"')
   })
 

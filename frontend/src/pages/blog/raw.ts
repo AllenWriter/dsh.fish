@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, LOCALE_CODES, translate, type Locale } from '@/shared/config/i18n'
+import { DEFAULT_LOCALE, LOCALE_CODES, mdxTranslationSuffixes, translate, type Locale } from '@/shared/config/i18n'
 import { BLOG_SERIES, isBlogSeries, seriesDescriptionKey, seriesTitleKey, type BlogSeries } from './series'
 
 /**
@@ -38,9 +38,7 @@ function rawDocument(relative: string): string | undefined {
  * Unlocalized `/blog/{series}/{slug}` paths that have a bundled English MDX file.
  */
 export function blogPostMarkdownPaths(): readonly string[] {
-  const translationSuffixes = LOCALE_CODES.filter((locale) => locale !== DEFAULT_LOCALE).map(
-    (locale) => `.${locale}`,
-  )
+  const translationSuffixes = mdxTranslationSuffixes()
   const paths = new Set<string>()
   for (const key of Object.keys(RAW)) {
     const match = /\/content\/blog\/(.+)\.mdx$/.exec(key)
@@ -101,7 +99,7 @@ function frontmatterField(source: string, field: string): string {
   return match[1]!.trim().replace(/^["']|["']$/g, '')
 }
 
-function listingEntries(locale: Locale, series?: BlogSeries): readonly {
+export function blogListingEntries(locale: Locale, series?: BlogSeries): readonly {
   path: string
   title: string
   description: string
@@ -143,7 +141,7 @@ export function blogMarkdown(unlocalizedPath: string, locale: Locale = DEFAULT_L
     series === undefined
       ? translate(locale, 'seo.blog.description')
       : translate(locale, seriesDescriptionKey(series))
-  const entries = listingEntries(locale, series)
+  const entries = blogListingEntries(locale, series)
   const lines = [
     '---',
     `title: ${title}`,

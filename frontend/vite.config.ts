@@ -64,6 +64,10 @@ function stubMdxTypesPackage(): Plugin {
 }
 
 export default defineConfig({
+  server: {
+    // Allow Cloudflare quick tunnels and other preview hosts during local dev.
+    allowedHosts: true,
+  },
   plugins: [
     stubMdxTypesPackage(),
     // Compile MDX at build time and generate separate server/browser indexes.

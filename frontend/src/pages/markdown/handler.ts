@@ -11,7 +11,7 @@ import { prefersMarkdown } from './negotiate'
 import { markdownResponse } from './response'
 import { artifactMarkdown, listingItemMarkdown } from './artifact'
 import { productDocsMarkdown, supportsProductDocsMarkdown } from '@/pages/docs'
-import { blogMarkdown, supportsBlogMarkdown } from '@/pages/blog'
+import { blogListingEntries, blogMarkdown, supportsBlogMarkdown } from '@/pages/blog'
 
 /** How many rows a markdown listing carries. Agents page through the API. */
 const LISTING_LIMIT = 50
@@ -124,15 +124,11 @@ async function artifactResponse(
 }
 
 async function homeResponse(
-  container: Container,
+  _container: Container,
   origin: string,
   locale: Locale,
 ): Promise<Response> {
-  const trending = await container.useCases.searchArtifacts.execute({
-    locale,
-    sort: 'popular',
-    limit: 20,
-  })
+  const posts = blogListingEntries(locale)
 
   const lines: string[] = [
     '---',
@@ -143,14 +139,18 @@ async function homeResponse(
     '',
     `# ${translate(locale, 'app.name')}`,
     '',
-    translate(locale, 'app.description'),
+    translate(locale, 'app.tagline'),
     '',
-    `- ${translate(locale, 'markdown.browseAll')}: ${origin}${localizedPath(locale, '/browse')}`,
-    `- ${translate(locale, 'markdown.catalogSnapshot')}: ${origin}/api/v1/catalog/snapshot`,
+    `- ${translate(locale, 'nav.blog')}: ${origin}${localizedPath(locale, '/blog')}`,
+    `- ${translate(locale, 'nav.docs')}: ${origin}${localizedPath(locale, '/docs')}`,
+    `- ${translate(locale, 'nav.browse')}: ${origin}${localizedPath(locale, '/browse')}`,
     '',
-    `## ${translate(locale, 'home.trending')}`,
+    `## ${translate(locale, 'blog.title')}`,
     '',
-    ...trending.items.map((item) => listingItemMarkdown(origin, locale, item)),
+    ...posts.map(
+      (entry) =>
+        `- [${entry.title}](${origin}${localizedPath(locale, entry.path)}) — ${entry.date}`,
+    ),
     '',
   ]
 

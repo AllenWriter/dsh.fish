@@ -93,44 +93,61 @@ export function BlogShell({
   )
 }
 
-export function BlogPostList({ posts }: { posts: readonly BlogPostCard[] }) {
+export function BlogPostList({
+  posts,
+  variant = 'index',
+}: {
+  posts: readonly BlogPostCard[]
+  variant?: 'home' | 'index'
+}) {
   const t = useT()
   const locale = useLocale()
   if (posts.length === 0) {
     return <p className="text-sm text-muted-foreground">{t('blog.empty')}</p>
   }
 
+  const home = variant === 'home'
+
   return (
-    <ul className="grid gap-x-6 gap-y-10 sm:grid-cols-2">
+    <ul
+      className={cn(
+        'grid',
+        home
+          ? 'grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4'
+          : 'grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3',
+      )}
+    >
       {posts.map((post, index) => (
         <li key={post.url}>
           <LocaleLink to={post.url} className="group block">
-            <div className="overflow-hidden rounded-xl border border-border bg-muted">
+            <div className="overflow-hidden rounded-lg border border-border bg-muted">
               <img
                 src={post.cover}
                 alt=""
                 width={1200}
                 height={2000}
-                loading={index < 2 ? 'eager' : 'lazy'}
+                loading={index < (home ? 8 : 4) ? 'eager' : 'lazy'}
                 fetchPriority={index === 0 ? 'high' : 'auto'}
-                className="aspect-[3/5] w-full object-cover transition-opacity duration-150 group-hover:opacity-90"
+                className="aspect-square w-full object-cover object-center transition-opacity duration-150 group-hover:opacity-90"
               />
             </div>
-            <p className="mt-4 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              <time dateTime={post.date}>
-                {formatPostDate(post.date, locale)}
-              </time>
-              <span aria-hidden="true"> · </span>
-              {post.seriesTitle}
-            </p>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight text-balance group-hover:underline group-hover:decoration-border-strong group-hover:underline-offset-[3px]">
-              {post.title}
-            </h2>
-            {post.description === '' ? null : (
-              <p className="mt-2 text-pretty text-muted-foreground">
-                {post.description}
+            {home ? null : (
+              <p className="mt-3 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                <time dateTime={post.date}>
+                  {formatPostDate(post.date, locale)}
+                </time>
+                <span aria-hidden="true"> · </span>
+                {post.seriesTitle}
               </p>
             )}
+            <h2
+              className={cn(
+                'font-semibold tracking-tight text-balance group-hover:underline group-hover:decoration-border-strong group-hover:underline-offset-[3px]',
+                home ? 'mt-2 text-sm leading-snug' : 'mt-1.5 text-base',
+              )}
+            >
+              {post.title}
+            </h2>
           </LocaleLink>
         </li>
       ))}

@@ -1,5 +1,5 @@
 import { localeDefinition, translate, type Locale } from '@/shared/config/i18n'
-import { BRAND_IMAGE, HUB_DISCORD_URL, HUB_REPO_URL } from '@/shared/config/site'
+import { BRAND_IMAGE, HUB_REPO_URL } from '@/shared/config/site'
 import { absoluteUrl, clampDescription } from './url'
 
 export type Ld = Record<string, unknown>
@@ -59,7 +59,7 @@ export function organizationLd(origin: string, locale: Locale): Ld {
     },
     // The two profiles this project actually maintains: an engine can confirm
     // the same publisher on both, and neither is a page we do not control.
-    sameAs: [HUB_REPO_URL, HUB_DISCORD_URL],
+    sameAs: [HUB_REPO_URL],
   }
 }
 

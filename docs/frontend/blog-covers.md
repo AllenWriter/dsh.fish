@@ -8,7 +8,7 @@ post points to the same image.
 cover: /blog/covers/everything-is-a-plugin.webp
 ```
 
-The collection schema and `readBlogPage` both require the field. The listing
+The collection schema and `readBlogPage` both require the field. Listings crop that 3:5 poster into a square tile (`object-cover` at the optical center). The listing
 uses it as a decorative card image, and the post header uses the same asset.
 Cover artwork contains no translated prose, so sharing it across locales does
 not create a language mismatch.

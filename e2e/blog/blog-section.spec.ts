@@ -7,7 +7,7 @@ import { E2E_ORIGIN } from '../lib/origin'
  * Editorial blog as a Fumadocs collection.
  *
  * Functional claims a crawler or an agent would notice: one URL per series
- * and post, six-locale MDX, Atom, markdown negotiation, BlogPosting JSON-LD.
+ * and post, three-locale MDX, Atom, markdown negotiation, BlogPosting JSON-LD.
  * Screenshots of the first fold are written for a human to look at — they
  * are not visual baselines.
  */
@@ -62,7 +62,7 @@ test.describe('blog on a desktop', () => {
     await expect(page.getByRole('link', { name: /Everything is a plugin/ })).toBeVisible()
     await expect(page.getByRole('link', { name: /DeepSeek Harness v0.1.2-alpha.1/ })).toBeVisible()
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `${E2E_ORIGIN}/blog`)
-    await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(7)
+    await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(4)
     await expect(page.locator('link[rel="alternate"][type="application/atom+xml"]')).toHaveAttribute(
       'href',
       `${E2E_ORIGIN}/blog/feed.xml`,
@@ -111,7 +111,7 @@ test.describe('blog on a desktop', () => {
       'href',
       `${E2E_ORIGIN}/ja/blog/notes/everything-is-a-plugin`,
     )
-    await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(7)
+    await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(4)
     await shot(page, 'blog-notes-ja')
   })
 

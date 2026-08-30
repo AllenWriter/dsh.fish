@@ -6,6 +6,6 @@
  * `./source` directly because those lists are generated from the MDX tree —
  * see architecture.md.
  */
-export { blogMarkdown, blogPostMarkdown, blogPostMarkdownPaths, supportsBlogMarkdown } from './raw'
+export { blogListingEntries, blogMarkdown, blogPostMarkdown, blogPostMarkdownPaths, supportsBlogMarkdown } from './raw'
 export { BLOG_SERIES, isBlogSeries, seriesDescriptionKey, seriesTitleKey } from './series'
 export type { BlogSeries } from './series'

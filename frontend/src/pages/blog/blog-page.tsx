@@ -24,13 +24,12 @@ import {
   seriesTitleKey,
 } from './series'
 import {
-  listBlogPosts,
+  blogPostCards,
   postDateIso,
   readBlogPage,
   slugsFromSplat,
   source,
   tocFromCompiled,
-  type BlogPostSummary,
 } from './source'
 
 const blogContent = browserCollections.blog.createClientLoader({
@@ -46,18 +45,6 @@ function seriesNav(locale: Locale) {
       title: translate(locale, seriesTitleKey(series)),
     })),
   ]
-}
-
-function cardsFor(locale: Locale, posts: readonly BlogPostSummary[]) {
-  return posts.map((post) => ({
-    url: post.url,
-    title: post.title,
-    description: post.description,
-    date: post.date,
-    seriesId: post.series,
-    seriesTitle: translate(locale, seriesTitleKey(post.series)),
-    cover: post.cover,
-  }))
 }
 
 function formatDate(iso: string, locale: Locale): string {
@@ -102,7 +89,7 @@ export function loader({ context, params }: Route.LoaderArgs) {
   const nav = seriesNav(locale)
 
   if (slugs.length === 0) {
-    const posts = listBlogPosts(locale)
+    const posts = blogPostCards(locale)
     const title = translate(locale, 'blog.title')
     const description = translate(locale, 'seo.blog.description')
     const path = '/blog'
@@ -116,7 +103,7 @@ export function loader({ context, params }: Route.LoaderArgs) {
       availableLocales: blogLocales(path),
       currentSeries: undefined,
       nav,
-      posts: cardsFor(locale, posts),
+      posts,
       type: 'website' as const,
       jsonLd: [
         breadcrumbLd(origin, locale, [
@@ -135,7 +122,7 @@ export function loader({ context, params }: Route.LoaderArgs) {
 
   if (slugs.length === 1 && isBlogSeries(slugs[0]!)) {
     const series = slugs[0]
-    const posts = listBlogPosts(locale, series)
+    const posts = blogPostCards(locale, series)
     const title = translate(locale, seriesTitleKey(series))
     const description = translate(locale, seriesDescriptionKey(series))
     const path = `/blog/${series}`
@@ -149,7 +136,7 @@ export function loader({ context, params }: Route.LoaderArgs) {
       availableLocales: blogLocales(path),
       currentSeries: series,
       nav,
-      posts: cardsFor(locale, posts),
+      posts,
       type: 'website' as const,
       jsonLd: [
         breadcrumbLd(origin, locale, [

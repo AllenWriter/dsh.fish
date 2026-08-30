@@ -12,7 +12,6 @@ import type { Route } from '../+types/root'
 import { readThemeCookie, type ThemePreference } from '@/shared/lib/theme'
 import { SiteHeader } from '@/widgets/site-header/site-header'
 import { SiteFooter } from '@/widgets/site-footer/site-footer'
-import { CommunityToasts, readDismissedToasts } from '@/widgets/community-toasts'
 import {
   DEFAULT_LOCALE,
   LocaleProvider,
@@ -80,7 +79,6 @@ export function loader({ request, context }: Route.LoaderArgs) {
   return {
     theme: readThemeCookie(cookie),
     locale: splitLocalePath(pathname).locale,
-    dismissedToasts: readDismissedToasts(cookie),
     gaMeasurementId: analyticsIdForDocument(
       context.get(hubContext).env.GA_MEASUREMENT_ID,
       import.meta.env.PROD,
@@ -131,7 +129,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const data = useRouteLoaderData<typeof loader>('root')
   const { pathname } = useLocation()
   const { path } = splitLocalePath(pathname.replace(/\.data$/, ''))
   // Plugin pages keep the footer inside the ask layout's main column so it
@@ -146,7 +143,6 @@ export default function App() {
         <Outlet />
       </main>
       {footerInPage ? null : <SiteFooter />}
-      <CommunityToasts dismissed={data?.dismissedToasts ?? []} />
     </div>
   )
 }

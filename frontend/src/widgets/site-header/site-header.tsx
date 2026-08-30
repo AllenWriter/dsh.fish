@@ -8,7 +8,7 @@ import { AccountMenu } from '@/features/account-menu'
 import { CatalogSearchPalette } from '@/features/catalog-search'
 import { LocaleSwitcher } from '@/features/locale-switcher'
 import { useT } from '@/shared/config/i18n'
-import { HUB_DISCORD_URL, HUB_REPO_URL } from '@/shared/config/site'
+import { HUB_REPO_URL } from '@/shared/config/site'
 import { writeThemeCookie } from '@/shared/lib/theme'
 import { cn } from '@/shared/lib/utils'
 import {
@@ -16,39 +16,27 @@ import {
   CloseIcon,
   DarkThemeIcon,
   DashboardIcon,
-  DiscordIcon,
   DocsIcon,
   BlogIcon,
   GithubIcon,
   LightThemeIcon,
   MenuIcon,
   SearchIcon,
-  SubmitIcon,
   type Icon,
 } from '@/shared/ui/icon'
 
 /**
- * The four destinations, each with the mark it keeps everywhere else: the same
- * glyph identifies a destination in the bar, in the mobile sheet, in the command
- * palette and in the footer, which is what lets a reader learn it once.
+ * Primary destinations first; Browse is the leftover catalog, so it is last
+ * and visually quieter. Submit and plugin taxonomy stay off this bar.
  */
-const NAV: readonly { to: string; key: string; icon: Icon }[] = [
-  { to: '/browse', key: 'nav.browse', icon: BrowseIcon },
-  { to: '/docs', key: 'nav.docs', icon: DocsIcon },
+const NAV: readonly { to: string; key: string; icon: Icon; secondary?: boolean }[] = [
   { to: '/blog', key: 'nav.blog', icon: BlogIcon },
-  { to: '/submit', key: 'nav.submit', icon: SubmitIcon },
+  { to: '/docs', key: 'nav.docs', icon: DocsIcon },
+  { to: '/browse', key: 'nav.browse', icon: BrowseIcon, secondary: true },
 ]
 
-/**
- * The project's source and its community, in the bar and in the mobile sheet.
- *
- * Both are icon-only in the bar: a logo mark that a reader already recognises
- * needs no word beside it, and the word would cost the room the destinations
- * need. The accessible name carries it for anyone the mark does not reach.
- */
 const SOCIAL: readonly { href: string; key: string; icon: Icon }[] = [
   { href: HUB_REPO_URL, key: 'nav.github', icon: GithubIcon },
-  { href: HUB_DISCORD_URL, key: 'nav.discord', icon: DiscordIcon },
 ]
 
 export function SiteHeader() {
@@ -63,7 +51,7 @@ export function SiteHeader() {
       ...NAV.map((entry) => ({
         id: entry.to,
         label: t(entry.key),
-        group: t('nav.browse'),
+        group: t('nav.blog'),
         icon: entry.icon,
         onSelect: () => navigate(localePath(entry.to)),
       })),
@@ -75,8 +63,6 @@ export function SiteHeader() {
         onSelect: () => navigate(localePath('/dashboard')),
       },
     ],
-    // `t` and `localePath` are both derived from the request's language, so the
-    // palette's labels and destinations change together when it does.
     [navigate, localePath, t],
   )
 
@@ -92,8 +78,6 @@ export function SiteHeader() {
             className="size-6 object-contain"
             aria-hidden
           />
-          {/* The wordmark gives its seat to the controls on a phone; the mark
-              alone still says whose site this is. */}
           <span className="hidden sm:inline">{t('app.name')}</span>
         </LocaleLink>
 
@@ -104,16 +88,14 @@ export function SiteHeader() {
               to={entry.to}
               className={({ isActive }) =>
                 cn(
-                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors',
+                  entry.secondary ? 'font-normal' : 'font-medium',
                   isActive
                     ? 'bg-muted text-foreground'
                     : 'text-muted-foreground hover:text-foreground',
                 )
               }
             >
-              {/* The current destination fills its mark. Colour already says
-                  which link is active; the fill says it a second way, for a
-                  reader who cannot see the first. */}
               {({ isActive }) => (
                 <>
                   <entry.icon className="size-4" weight={isActive ? 'fill' : 'bold'} />
@@ -124,8 +106,6 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        {/* Icon-only until there is room for the field: below `lg` the full
-            search button would crush its neighbours against the small bar. */}
         <button
           type="button"
           aria-label={t('nav.search')}
@@ -182,7 +162,6 @@ export function SiteHeader() {
         </button>
       </div>
 
-      {/* Grows out of the bar it belongs to rather than appearing beside it. */}
       <AnimatePresence initial={false}>
       {mobileOpen ? (
         <motion.nav
@@ -192,9 +171,6 @@ export function SiteHeader() {
           transition={{ duration: 0.2, ease: EASE_OUT }}
           className="overflow-hidden border-t border-border bg-background px-6 md:hidden"
         >
-          {/* Destinations only, the two outbound ones labelled because the bar
-              has no room to label them. Account actions stay in the avatar menu,
-              which is in the bar at every width. */}
           <div className="py-3">
           {NAV.map((entry) => (
             <LocaleNavLink
@@ -203,7 +179,8 @@ export function SiteHeader() {
               onClick={() => setMobileOpen(false)}
               className={({ isActive }) =>
                 cn(
-                  'flex min-h-11 items-center gap-2.5 text-sm font-medium',
+                  'flex min-h-11 items-center gap-2.5 text-sm',
+                  entry.secondary ? 'font-normal' : 'font-medium',
                   isActive ? 'text-foreground' : 'text-muted-foreground',
                 )
               }
@@ -243,15 +220,8 @@ export function SiteHeader() {
   )
 }
 
-/**
- * Theme switch. Reads and writes the same `localStorage` key the inline script
- * in `root.tsx` consults before first paint, so the two never disagree.
- */
 function ThemeToggle({ className }: { className?: string }) {
   const t = useT()
-  // Initialised from what is actually painted, which covers all three cases:
-  // an explicit class from the server, or the system preference when there is
-  // no cookie yet.
   const [dark, setDark] = useState(false)
   useEffect(() => {
     const root = document.documentElement
@@ -269,8 +239,6 @@ function ThemeToggle({ className }: { className?: string }) {
       onClick={() => {
         const next = !dark
         setDark(next)
-        // Both classes are managed so an explicit light choice can override a
-        // dark OS setting, which a lone `.dark` toggle cannot express.
         const root = document.documentElement
         root.classList.toggle('dark', next)
         root.classList.toggle('light', !next)

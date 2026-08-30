@@ -26,10 +26,7 @@ export interface LocaleDefinition {
 export const LOCALES = [
   { code: 'en', tag: 'en', ogLocale: 'en_US', dir: 'ltr', nativeName: 'English' },
   { code: 'zh-CN', tag: 'zh-Hans', ogLocale: 'zh_CN', dir: 'ltr', nativeName: '简体中文' },
-  { code: 'zh-TW', tag: 'zh-Hant', ogLocale: 'zh_TW', dir: 'ltr', nativeName: '繁體中文' },
   { code: 'ja', tag: 'ja', ogLocale: 'ja_JP', dir: 'ltr', nativeName: '日本語' },
-  { code: 'ko', tag: 'ko', ogLocale: 'ko_KR', dir: 'ltr', nativeName: '한국어' },
-  { code: 'ru', tag: 'ru', ogLocale: 'ru_RU', dir: 'ltr', nativeName: 'Русский' },
 ] as const satisfies readonly LocaleDefinition[]
 
 export type Locale = (typeof LOCALES)[number]['code']
@@ -37,7 +34,7 @@ export type Locale = (typeof LOCALES)[number]['code']
 /**
  * The language served without a URL prefix.
  *
- * English lives at `/browse`, not `/en/browse`. A prefixed duplicate of the
+ * English lives at `/`, not `/en`. A prefixed duplicate of the
  * default language is the most common way a multilingual site splits its own
  * ranking signal across two URLs, so `/en/*` is redirected to the bare path
  * rather than served.
@@ -49,7 +46,7 @@ export const DEFAULT_LOCALE: Locale = 'en'
  * onto the default-language URL of the same page (a 301), so existing links
  * and crawlers follow through instead of dying on a 404.
  */
-const RETIRED = new Set(['de', 'es', 'fr', 'pt-br'])
+const RETIRED = new Set(['de', 'es', 'fr', 'pt-br', 'zh-tw', 'ko', 'ru'])
 
 /** Case-insensitive match for a language the site no longer serves. */
 export function isRetiredLocale(raw: string): boolean {
@@ -89,6 +86,22 @@ const BY_LOWER_CODE = new Map<string, LocaleDefinition>(
 )
 
 export const LOCALE_CODES: readonly Locale[] = LOCALES.map((entry) => entry.code)
+
+/**
+ * Locale codes that still have on-disk MDX (`*.zh-TW.mdx`) after the URL
+ * locale was retired. Glob enumeration must skip those files as extra slugs.
+ */
+const RETIRED_MDX_LOCALES = ['zh-TW', 'ko', 'ru'] as const
+
+/** Dot-suffixes of translated MDX files, including leftover retired locales. */
+export function mdxTranslationSuffixes(): readonly string[] {
+  const codes = new Set<string>([
+    ...LOCALE_CODES.filter((code) => code !== DEFAULT_LOCALE),
+    ...RETIRED_MDX_LOCALES,
+  ])
+  return [...codes].map((code) => `.${code}`)
+}
+
 
 export function isLocale(raw: string): raw is Locale {
   return BY_CODE.has(raw)

@@ -68,6 +68,10 @@ describe('catalog parity', () => {
     expect(new Set(LOCALES.map((entry) => entry.code)).size).toBe(LOCALES.length)
     expect(new Set(LOCALES.map((entry) => entry.nativeName)).size).toBe(LOCALES.length)
   })
+
+  it('publishes only English, Simplified Chinese, and Japanese', () => {
+    expect([...LOCALE_CODES]).toEqual(['en', 'zh-CN', 'ja'])
+  })
 })
 
 describe('backend key coverage', () => {
@@ -159,14 +163,14 @@ describe('locale paths', () => {
   })
 
   it('carries the query string through a language switch', () => {
-    expect(localizedPath('ko', '/browse?q=postgres&kind=skill')).toBe(
-      '/ko/browse?q=postgres&kind=skill',
+    expect(localizedPath('ja', '/browse?q=postgres&kind=skill')).toBe(
+      '/ja/browse?q=postgres&kind=skill',
     )
   })
 
   it('splits a prefixed path back into language and page', () => {
-    expect(splitLocalePath('/ko/a/dsh-hello')).toEqual({
-      locale: 'ko',
+    expect(splitLocalePath('/ja/a/dsh-hello')).toEqual({
+      locale: 'ja',
       path: '/a/dsh-hello',
       prefixed: true,
     })
@@ -192,7 +196,7 @@ describe('locale paths', () => {
 
   it('normalises a trailing slash away, so one page has one URL', () => {
     expect(splitLocalePath('/browse/').path).toBe('/browse')
-    expect(localizedPath('ru', '/browse/')).toBe('/ru/browse')
+    expect(localizedPath('ja', '/browse/')).toBe('/ja/browse')
   })
 })
 
@@ -222,6 +226,9 @@ describe('canonical redirects', () => {
     expect(canonicalLocaleRedirect('/PT-br/a/dsh-hello', '?q=postgres')).toBe(
       '/a/dsh-hello?q=postgres',
     )
+    expect(canonicalLocaleRedirect('/zh-TW/blog')).toBe('/blog')
+    expect(canonicalLocaleRedirect('/ko/docs')).toBe('/docs')
+    expect(canonicalLocaleRedirect('/ru')).toBe('/')
   })
 
   it('leaves a page path that is not a language alone', () => {
@@ -233,10 +240,12 @@ describe('canonical redirects', () => {
 describe('the locale cookie', () => {
   it('reads an explicit choice back', () => {
     expect(readLocaleCookie('theme=dark; dsh_locale=ja')).toBe('ja')
-    expect(readLocaleCookie('dsh_locale=zh-TW')).toBe('zh-TW')
+    expect(readLocaleCookie('dsh_locale=zh-CN')).toBe('zh-CN')
     expect(readLocaleCookie(null)).toBeUndefined()
     // A stale value from a retired language is not a choice we can honour.
     expect(readLocaleCookie('dsh_locale=de')).toBeUndefined()
+    expect(readLocaleCookie('dsh_locale=zh-TW')).toBeUndefined()
+    expect(readLocaleCookie('dsh_locale=ko')).toBeUndefined()
   })
 })
 
@@ -249,7 +258,7 @@ describe('preference redirects', () => {
   })
 
   it('never overrides an explicit URL prefix', () => {
-    expect(preferredLocaleRedirect('/ko/browse', '', 'dsh_locale=ja', HTML)).toBeUndefined()
+    expect(preferredLocaleRedirect('/zh-CN/browse', '', 'dsh_locale=ja', HTML)).toBeUndefined()
   })
 
   it('does nothing without a choice, or with the default language chosen', () => {

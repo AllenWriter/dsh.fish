@@ -65,6 +65,17 @@ describe('blogMarkdown', () => {
     expect(harness).not.toContain('](/blog/notes/everything-is-a-plugin)')
   })
 
+  it('serves the blog index in every public locale rather than a single post', () => {
+    for (const locale of ['en', 'zh-CN', 'ja'] as const) {
+      const index = blogMarkdown('/blog', locale)
+      expect(index, locale).toContain('title:')
+      expect(index, locale).not.toMatch(/^title: 2026-08/m)
+      for (const path of POSTS) {
+        expect(index, `${locale} ${path}`).toContain(`](${path})`)
+      }
+    }
+  })
+
   it('has a physical translation of every post in every public locale', () => {
     for (const path of POSTS) {
       expect(blogLocales(path), path).toEqual(LOCALE_CODES)
@@ -80,6 +91,6 @@ describe('blogMarkdown', () => {
     expect(blogMarkdown('/blog/harness/v0-1-2-alpha-1', 'ja')).toContain(
       'ApiProxy',
     )
-    expect(blogMarkdown('/blog/not-a-post', 'ru')).toBeUndefined()
+    expect(blogMarkdown('/blog/not-a-post', 'ja')).toBeUndefined()
   })
 })
