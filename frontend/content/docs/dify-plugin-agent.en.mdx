@@ -1,0 +1,180 @@
+---
+title: "A Long Talk: How Dify Plugins Help You Build AI Agent Apps"
+description: "Dify 1.0's plugin system: remote debugging, Endpoints, reverse calls, and real work with SSH, gateways, databases, RAG, Agent strategies, and MCP."
+---
+
+Hi, I'm Allen, a technical writer at Dify. I work on Dify's help docs and the enterprise docs.
+![Slide 1](/docs/dify-plugin-agent/slide-01.png)
+
+
+The title of this talk is **Dify's plugin ecosystem in practice: a new pattern for Agent app development**. Five parts: what Dify is, how we keep up with Agent development as it keeps changing, what plugins give a complex Agent, a few shipped examples, and how an app actually goes to production.
+![Slide 2](/docs/dify-plugin-agent/slide-02.png)
+
+
+## What Dify is
+
+If you treat AI capability as a new production resource — like water and power — then when ChatGPT first took off, developers were reinventing the same wheels: how to wire the API, how to handle a knowledge base. Dify showed up in that gap. It packages workflow orchestration, RAG, Agent building, multi-model management, and observability into one open-source stack.
+
+In two years it passed 100k GitHub stars and entered the global top fifty open-source projects.
+![Slide 3](/docs/dify-plugin-agent/slide-03.png)
+ A lot of the heavy users are not developers in the strict sense. They are finance, ops, marketing, sales. Business people should not go silent in this shift. A good Agent app comes from seeing everyday pain. Dify's job is to keep lowering the technical bar.
+![Slide 4](/docs/dify-plugin-agent/slide-04.png)
+![Slide 5](/docs/dify-plugin-agent/slide-05.png)
+
+
+The technical tempo is fast: DeepSeek, Deep Research, Manus, MCP, A2A, one after another. It is no longer enough to wrap an LLM API and tell a story. Agents need multimodal input, the network, OCR, and a knowledge base that is actually accurate. For developers, the tech changed, the scenes changed, and time and budget stay tight. The plugin system exists so development can snap together like Lego.
+![Slide 6](/docs/dify-plugin-agent/slide-06.png)
+
+
+Four examples:
+
+1. **Browser Use.** Contributed by a user in Japan. It finds key information on a page — for example, contact-form fields — and brings back the URL. Search "Browser" on the Marketplace.
+![Slide 7](/docs/dify-plugin-agent/slide-07.png)
+
+2. **Recreating Deep Research.** Once you know the main flow, you assemble an LLM app from nodes, what-you-see-is-what-you-get.
+![Slide 8](/docs/dify-plugin-agent/slide-08.png)
+
+3. **SSH plugin.** Type a command, log into a server, deploy a page. I will unpack the development process later.
+4. **Video generation.** Turn an API into a Plugin. I built this one.
+
+We want Dify to be more than LLM application infrastructure. We want it to be an operating system for calling AI. Early on there was only a tool-calling entry, heavily dependent on APIs, already behind the Agent tempo.
+![Slide 9](/docs/dify-plugin-agent/slide-09.png)
+
+
+## How Dify rebuilt the tool system
+
+### Problems with the old system
+
+The community kept asking "when will you support model X." Often it was just a parameter change, but it still meant a full repackage and release. Contributing an external capability to Dify — even adding one API tool — meant deploying the whole source tree locally.
+![Slide 10](/docs/dify-plugin-agent/slide-10.png)
+
+
+The problems, in short:
+
+1. **Tight coupling.** Adding models and tools was tedious, engineering deps were heavy, versions were hard to manage.
+2. **User needs could not close the loop.** Connecting IM meant wrapping another Webhook layer outside Dify.
+3. **Customization was frozen.** PDF parsing, RAG, and the like could not be swapped out flexibly.
+
+So we split tools and models into independently installable plugins, and pluginized document parsing and OCR as well. For scenes Dify could not close internally, we opened interfaces to external systems.
+![Slide 11](/docs/dify-plugin-agent/slide-11.png)
+
+
+Engineering hit the next set of issues quickly: tools did not travel across Workspaces, plugin environments had to stay consistent, runtime cost for tens of thousands of plugins in the cloud, every code change requiring a repackage, and whether a plugin should sit on HTTP forever listening for Webhooks.
+
+### Three key designs
+
+**Remote debugging.** Debugger and runtime are split; the runtime connects out. A local plugin opens a long-lived connection to Dify, is treated as installed, and is marked debug mode. Requests forward over that connection. The hard part: a long-lived connection is stateful, Dify's services are not, and K8s load balancing will send the request to the wrong Pod. Traffic forwarding later solved that.
+![Slide 12](/docs/dify-plugin-agent/slide-12.png)
+
+
+**Endpoint.** Let Dify receive Webhooks from IM and office software. The platform mints a random URL and does the HTTP forwarding. The plugin only handles the forwarded request, so each plugin does not have to run a server of its own.
+![Slide 13](/docs/dify-plugin-agent/slide-13.png)
+
+
+**Reverse calls.** A plugin can call models, tools, or Apps inside Dify that are already authenticated. Uses include: external knowledge bases (for example LlamaIndex's Agentic RAG), treating OCR/ASR/TTS as tools, exposing an OpenAI-compatible API via Endpoint, and pluginizing Agent strategies.
+![Slide 14](/docs/dify-plugin-agent/slide-14.png)
+
+
+### Architecture notes
+
+SaaS uses serverless-style elasticity, on AWS Lambda. Debug mode tracks connection state in a Redis HashMap. The cluster keeps an IP pool and votes on reachability; the Master node cleans up Pods that have left.
+
+Dify 1.0's answer is an open-source plugin ecosystem, in the spirit of Chrome / VS Code / WordPress. Users should not have to wait for official features; good projects get seen by the community. After the Marketplace launched it quickly passed 120 services. New protocols like MCP and A2A can land as plugins too. At the time we previewed: Dify would support wiring MCP into tools, and publishing a finished app as an MCP server.
+![Slide 15](/docs/dify-plugin-agent/slide-15.png)
+
+
+## Shipping Agent apps on plugins
+
+An Agent is after intelligent decisions plus autonomous execution — not RPA's fixed flow. Current pain includes: poor stability, misaligned cognition, hard-to-manage context, unverifiability, and limited ability to act across systems.
+
+What Dify plugins buy you:
+
+- **Lower development cost.** Standard interfaces plus Schema, so the model knows how to call; when to call is left to the model, so you write less control logic; build once, reuse in many places.
+- **Modular evolution.** Start with one plugin and a simple Prompt, then add capability; each plugin can be debugged on its own.
+
+### How to write an SSH plugin
+
+Start with a tool-type plugin. The structure is simple: define a tool provider, then define the actions it can run. Everything a human does to log into a server needs a matching action: host, port, password, run a command.
+![Slide 16](/docs/dify-plugin-agent/slide-16.png)
+![Slide 17](/docs/dify-plugin-agent/slide-17.png)
+![Slide 18](/docs/dify-plugin-agent/slide-18.png)
+
+
+Steps:
+
+1. Create a project and fill in `manifest.yaml`, including locales.
+2. Define the provider name and description.
+3. Under `tools/`, one Python file per Action, with a function that handles the parameters.
+4. Put the remote-debug address in `.env` (SaaS or community edition). You do not need to deploy all of Dify locally.
+5. Package from the CLI as a `.difypkg`, like an apk, for decentralized distribution.
+![Slide 19](/docs/dify-plugin-agent/slide-19.png)
+![Slide 20](/docs/dify-plugin-agent/slide-20.png)
+![Slide 21](/docs/dify-plugin-agent/slide-21.png)
+
+
+A lot of infrastructure vendors have excellent API docs. What they lack is a clean entry. Turn the API into a Dify plugin and you are in the ecosystem.
+
+### Plugin security
+
+Security leans on signatures, not an extremely strict Sandbox (a Sandbox that strict would block many dependencies). After a human review we sign with a private key and mark the plugin verified. Unsigned plugins cannot be installed by default unless the user changes settings.
+![Slide 22](/docs/dify-plugin-agent/slide-22.png)
+
+
+## Five cases
+
+Dify has five plugin types: Model, Tool, Agent strategy, Extension, Bundle.
+
+### 1. Turn Dify into an LLM API gateway
+
+Users already store a lot of model keys in Dify. Once models became plugins, model providers became the most frequently updated plugin type. Reverse calls let an Endpoint plugin expose any model hosted in Dify in OpenAI-compatible form. A homegrown model can be wrapped into the same calling pattern.
+![Slide 23](/docs/dify-plugin-agent/slide-23.png)
+![Slide 24](/docs/dify-plugin-agent/slide-24.png)
+![Slide 25](/docs/dify-plugin-agent/slide-25.png)
+![Slide 26](/docs/dify-plugin-agent/slide-26.png)
+
+
+### 2. Database plugin
+
+Business people who need numbers often wait on IT approval, and they may not write SQL. A read-only database plugin makes natural-language queries possible. IT owns the risk; the business asks its own questions.
+![Slide 27](/docs/dify-plugin-agent/slide-27.png)
+![Slide 28](/docs/dify-plugin-agent/slide-28.png)
+
+
+### 3. Third-party RAG
+
+Dify had a knowledge base early, but specialist vector stores and complex document parsing are often stronger at other vendors. The first external-knowledge-base path was an API. With plugins, common external stores become plugins, so every developer does not re-integrate them. These plugins do two-way communication, a bit like Cloudflare Workers: take a Query, ask the external store, return to Dify.
+![Slide 29](/docs/dify-plugin-agent/slide-29.png)
+![Slide 30](/docs/dify-plugin-agent/slide-30.png)
+![Slide 31](/docs/dify-plugin-agent/slide-31.png)
+![Slide 32](/docs/dify-plugin-agent/slide-32.png)
+![Slide 33](/docs/dify-plugin-agent/slide-33.png)
+
+
+### 4. Complex Agent strategies
+
+The community wants ReAct, Function Calling, and every chain-of-thought variant. Agent-strategy plugins let a developer implement their own strategy and install it on the Agent node in a workflow.
+![Slide 34](/docs/dify-plugin-agent/slide-34.png)
+
+
+### 5. MCP
+
+Connect to an external MCP service over HTTP; a Dify app can also publish as an MCP server, so Cursor or Claude can call a finished workflow directly.
+![Slide 35](/docs/dify-plugin-agent/slide-35.png)
+![Slide 36](/docs/dify-plugin-agent/slide-36.png)
+
+
+## From prototype to production
+
+All five application types support APIs, with embed code built in, and the knowledge base has an API too. From the first day of open source there were access logs, feedback labels, and monitoring for session count, token speed, and cost. The enterprise edition covers higher concurrency and multi-tenancy.
+![Slide 37](/docs/dify-plugin-agent/slide-37.png)
+![Slide 38](/docs/dify-plugin-agent/slide-38.png)
+![Slide 39](/docs/dify-plugin-agent/slide-39.png)
+
+
+## Wrap-up
+
+The AI era moves fast, and there is a lot of room. Dify wants to be the arsenal — so anyone with an idea can turn it into something real.
+![Slide 40](/docs/dify-plugin-agent/slide-40.png)
+
+
+Original: [https://mp.weixin.qq.com/s/YfK0jaQ_KXNZFc9X5O9s3w](https://mp.weixin.qq.com/s/YfK0jaQ_KXNZFc9X5O9s3w)

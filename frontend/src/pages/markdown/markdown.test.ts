@@ -70,7 +70,7 @@ describe('artifactMarkdown', () => {
 describe('listingItemMarkdown', () => {
   it('links the name to the localized plugin page', () => {
     expect(listingItemMarkdown(ORIGIN, 'en', mockArtifact())).toBe(
-      '- [@acme/dsh-hello](https://dsh.fish/a/dsh-hello) — A bundle.',
+      '- [@acme/dsh-hello](https://dsh.fish/en/a/dsh-hello) — A bundle.',
     )
     expect(listingItemMarkdown(ORIGIN, 'ja', mockArtifact())).toContain(
       'https://dsh.fish/ja/a/dsh-hello',
@@ -136,7 +136,9 @@ describe('maybeMarkdownResponse', () => {
       stubContainer(),
     )
     expect(browse).not.toBeNull()
-    expect(await browse!.text()).toContain('- [@acme/dsh-hello]')
+    const browseText = await browse!.text()
+    expect(browseText).toContain('/blog/tech/one-inbox')
+    expect(browseText).not.toContain('- [@acme/dsh-hello]')
 
     const kind = await maybeMarkdownResponse(
       request('/kind/bundle', 'text/markdown'),
@@ -144,34 +146,34 @@ describe('maybeMarkdownResponse', () => {
     )
     expect(kind).not.toBeNull()
 
-    const docs = await maybeMarkdownResponse(request('/docs/cli', 'text/markdown'), stubContainer())
+    const docs = await maybeMarkdownResponse(request('/docs/dify-plugin-agent', 'text/markdown'), stubContainer())
     expect(docs).not.toBeNull()
-    expect(await docs!.text()).toContain('npx @dsh-fish/cli')
+    expect(await docs!.text()).toContain('Dify')
 
     const localizedDocs = await maybeMarkdownResponse(
-      request('/zh-CN/docs/quickstart', 'text/markdown'),
+      request('/zh-CN/docs/dify-docs-engineering', 'text/markdown'),
       stubContainer(),
     )
     expect(localizedDocs).not.toBeNull()
-    expect(await localizedDocs!.text()).toContain('启动 Web UI')
+    expect(await localizedDocs!.text()).toContain('Mintlify')
 
     const blog = await maybeMarkdownResponse(request('/blog', 'text/markdown'), stubContainer())
     expect(blog).not.toBeNull()
-    expect(await blog!.text()).toContain('/blog/harness/v0-1-2-alpha-1')
+    expect(await blog!.text()).toContain('/blog/tech/one-inbox')
 
     const post = await maybeMarkdownResponse(
-      request('/blog/notes/everything-is-a-plugin', 'text/markdown'),
+      request('/blog/tech/one-inbox', 'text/markdown'),
       stubContainer(),
     )
     expect(post).not.toBeNull()
-    expect(await post!.text()).toContain('everything is a plugin')
+    expect(await post!.text()).toContain('只留一个入口')
   })
 
   it('serves v2 .md aliases without an Accept header', async () => {
-    const docs = await maybeMarkdownResponse(request('/docs/cli.md'), stubContainer())
+    const docs = await maybeMarkdownResponse(request('/docs/dify-plugin-agent.md'), stubContainer())
     expect(docs).not.toBeNull()
     expect(docs!.headers.get('content-type')).toBe('text/markdown; charset=utf-8')
-    expect(await docs!.text()).toContain('npx @dsh-fish/cli')
+    expect(await docs!.text()).toContain('Dify')
 
     const home = await maybeMarkdownResponse(request('/index.md'), stubContainer())
     expect(home).not.toBeNull()
@@ -183,12 +185,12 @@ describe('maybeMarkdownResponse', () => {
     expect(artifact).not.toBeNull()
     expect(await artifact!.text()).toContain('# @acme/dsh-hello')
 
-    const localized = await maybeMarkdownResponse(request('/ja/docs/cli.md'), stubContainer())
+    const localized = await maybeMarkdownResponse(request('/ja/docs/dify-plugin-agent.md'), stubContainer())
     expect(localized).not.toBeNull()
   })
 
   it('still requires Accept on the HTML URL', async () => {
-    expect(await maybeMarkdownResponse(request('/docs/cli'), stubContainer())).toBeNull()
+    expect(await maybeMarkdownResponse(request('/docs/dify-plugin-agent'), stubContainer())).toBeNull()
     expect(await maybeMarkdownResponse(request('/a/dsh-hello'), stubContainer())).toBeNull()
   })
 
@@ -222,7 +224,7 @@ describe('maybeMarkdownResponse', () => {
     expect(body).not.toContain('Plugin kinds')
     expect(body).not.toContain('For agents')
     expect(body).not.toContain('Trending')
-    expect(body).toContain('Blog')
+    expect(body).toContain('博客')
     expect(body).toContain('/blog')
   })
 })
@@ -248,12 +250,12 @@ describe('supportsMarkdownNegotiation', () => {
   it('covers product docs and the blog, localized or not', () => {
     expect(supportsMarkdownNegotiation('/docs')).toBe(true)
     expect(supportsMarkdownNegotiation('/ja/docs')).toBe(true)
-    expect(supportsMarkdownNegotiation('/docs/cli')).toBe(true)
-    expect(supportsMarkdownNegotiation('/zh-CN/docs/publish/skill')).toBe(true)
+    expect(supportsMarkdownNegotiation('/docs/dify-plugin-agent')).toBe(true)
+    expect(supportsMarkdownNegotiation('/zh-CN/docs/dify-docs-engineering')).toBe(true)
     expect(supportsMarkdownNegotiation('/blog')).toBe(true)
     expect(supportsMarkdownNegotiation('/ja/blog')).toBe(true)
-    expect(supportsMarkdownNegotiation('/blog/harness')).toBe(true)
-    expect(supportsMarkdownNegotiation('/zh-CN/blog/notes/everything-is-a-plugin')).toBe(true)
+    expect(supportsMarkdownNegotiation('/blog/tech')).toBe(true)
+    expect(supportsMarkdownNegotiation('/zh-CN/blog/tech/one-inbox')).toBe(true)
   })
 })
 
@@ -276,7 +278,7 @@ describe('notFoundMarkdown', () => {
     const body = notFoundMarkdown('https://dsh.fish', 'en')
     expect(body).toContain('/sitemap.xml')
     expect(body).toContain('/llms.txt')
-    expect(body).toContain('/docs/developers')
+    expect(body).toContain('/docs')
     expect(body).toContain('/blog')
     expect(body).toContain('/openapi.json')
     expect(body).toContain('/api/v1/artifacts')

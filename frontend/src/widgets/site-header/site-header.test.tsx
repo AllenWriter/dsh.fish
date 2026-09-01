@@ -5,7 +5,7 @@ import { LocaleProvider } from '@/shared/config/i18n'
 import { SiteHeader } from './site-header'
 
 describe('SiteHeader', () => {
-  it('leads with Blog and Docs, keeps Browse secondary, and drops Submit', () => {
+  it('leads with Blog and Docs, drops Filter, and keeps Connect', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter>
         <LocaleProvider locale="en">
@@ -14,13 +14,15 @@ describe('SiteHeader', () => {
       </MemoryRouter>,
     )
 
-    expect(html).toContain('href="/blog"')
-    expect(html).toContain('href="/docs"')
-    expect(html).toContain('href="/browse"')
+    expect(html).toContain('href="/en/blog"')
+    expect(html).toContain('href="/en/docs"')
+    expect(html).not.toContain('href="/browse"')
     expect(html).not.toContain('href="/submit"')
     expect(html).not.toContain('Discord')
     expect(html).toContain('Blog')
     expect(html).toContain('Docs')
-    expect(html).toContain('Browse')
+    expect(html).not.toContain('Filter')
+    expect(html).toContain('Connect')
+    expect(html).not.toContain('Sign in')
   })
 })

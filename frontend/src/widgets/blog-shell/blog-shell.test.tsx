@@ -7,37 +7,37 @@ import type { BlogPostCard, BlogSeriesNavItem } from './model/types'
 
 const TABS: readonly BlogSeriesNavItem[] = [
   { id: 'all', href: '/blog', title: 'All' },
-  { id: 'harness', href: '/blog/harness', title: 'Harness releases' },
-  { id: 'deepseek', href: '/blog/deepseek', title: 'DeepSeek notes' },
-  { id: 'changelog', href: '/blog/changelog', title: 'dsh.fish changelog' },
-  { id: 'notes', href: '/blog/notes', title: 'Technical notes' },
+  { id: 'tech', href: '/blog/tech', title: 'Tech' },
+  { id: 'life', href: '/blog/life', title: 'Life' },
+  { id: 'finance', href: '/blog/finance', title: 'Markets' },
+  { id: 'travel', href: '/blog/travel', title: 'Travel' },
 ]
 
 const NOTES: BlogPostCard = {
-  url: '/blog/notes/one-inbox',
+  url: '/blog/tech/one-inbox',
   title: 'Leave only one inbox',
   description: 'Two rules for a content factory.',
   date: '2026-08-30T00:00:00.000Z',
-  seriesId: 'notes',
-  seriesTitle: 'Technical notes',
+  seriesId: 'tech',
+  seriesTitle: 'Tech',
   cover: '/blog/covers/one-inbox.webp',
 }
 
-const HARNESS: BlogPostCard = {
-  url: '/blog/harness/v0-1-2-alpha-1',
-  title: 'DeepSeek Harness v0.1.2-alpha.1',
-  description: 'What landed in the alpha.',
+const LIFE: BlogPostCard = {
+  url: '/blog/life/a-day',
+  title: 'A day in the city',
+  description: 'Walking home.',
   date: '2026-08-29T00:00:00.000Z',
-  seriesId: 'harness',
-  seriesTitle: 'Harness releases',
-  cover: '/blog/covers/harness-v0-1-2-alpha-1.webp',
+  seriesId: 'life',
+  seriesTitle: 'Life',
+  cover: '/blog/covers/one-inbox.webp',
 }
 
 const ZH_NOTES: BlogPostCard = {
   ...NOTES,
   title: '只留一个入口',
   description: '新东西只丢进素材，要拿走的只从节目目录拿。',
-  seriesTitle: '技术笔记',
+  seriesTitle: '技术',
 }
 
 function render(node: React.ReactNode, locale: 'en' | 'zh-CN' | 'ja' = 'en') {
@@ -50,11 +50,11 @@ function render(node: React.ReactNode, locale: 'en' | 'zh-CN' | 'ja' = 'en') {
 
 describe('filterNewsroomPosts', () => {
   it('keeps every card for All and filters by series otherwise', () => {
-    const posts = [NOTES, HARNESS]
+    const posts = [NOTES, LIFE]
     expect(filterNewsroomPosts(posts, 'all')).toEqual(posts)
-    expect(filterNewsroomPosts(posts, 'notes')).toEqual([NOTES])
-    expect(filterNewsroomPosts(posts, 'harness')).toEqual([HARNESS])
-    expect(filterNewsroomPosts(posts, 'changelog')).toEqual([])
+    expect(filterNewsroomPosts(posts, 'tech')).toEqual([NOTES])
+    expect(filterNewsroomPosts(posts, 'life')).toEqual([LIFE])
+    expect(filterNewsroomPosts(posts, 'travel')).toEqual([])
   })
 })
 
@@ -71,31 +71,31 @@ describe('BlogNewsroom', () => {
 
     expect(html).toContain('src="/blog/covers/one-inbox.webp"')
     expect(html).toMatch(/<img[^>]*alt=""/)
-    expect(html).toContain('href="/blog/notes/one-inbox"')
+    expect(html).toContain('href="/en/blog/tech/one-inbox"')
     expect(html).toContain('aspect-[4/3]')
     expect(html).toContain('rounded-2xl')
-    expect(html).toContain('Technical notes')
+    expect(html).toContain('Tech')
     expect(html).toContain('Leave only one inbox')
     expect(html).toContain('Journal')
     expect(html).toContain('role="tablist"')
     expect(html).toContain('All')
-    expect(html).toContain('Harness releases')
+    expect(html).toContain('Life')
   })
 
   it('client-filters to the active series on first paint', () => {
     const html = render(
       <BlogNewsroom
-        posts={[NOTES, HARNESS]}
+        posts={[NOTES, LIFE]}
         tabs={TABS}
         title="Latest writing"
-        activeSeries="notes"
+        activeSeries="tech"
       />,
     )
 
     expect(html).toContain('Leave only one inbox')
-    expect(html).toContain('href="/blog/notes/one-inbox"')
-    expect(html).not.toContain('DeepSeek Harness v0.1.2-alpha.1')
-    expect(html).not.toContain('href="/blog/harness/v0-1-2-alpha-1"')
+    expect(html).toContain('href="/en/blog/tech/one-inbox"')
+    expect(html).not.toContain('A day in the city')
+    expect(html).not.toContain('href="/en/blog/life/a-day"')
   })
 
   it('lists Simplified Chinese titles on a zh-CN newsroom', () => {
@@ -104,7 +104,7 @@ describe('BlogNewsroom', () => {
         posts={[ZH_NOTES]}
         tabs={[
           { id: 'all', href: '/blog', title: '全部' },
-          { id: 'notes', href: '/blog/notes', title: '技术笔记' },
+          { id: 'tech', href: '/blog/tech', title: '技术' },
         ]}
         title="最近在写"
       />,
@@ -113,7 +113,7 @@ describe('BlogNewsroom', () => {
 
     expect(html).toContain('只留一个入口')
     expect(html).toContain('全部')
-    expect(html).toContain('技术笔记')
+    expect(html).toContain('技术')
     expect(html).toContain('手记')
     expect(html).not.toContain('Leave only one inbox')
   })
@@ -125,29 +125,56 @@ describe('BlogArticle', () => {
       <BlogArticle
         title="Leave only one inbox"
         description="Two rules for a content factory."
-        author="蓝健声"
+        author="Jens"
         date="2026-08-30T00:00:00.000Z"
         formattedDate="August 30, 2026"
         readingMinutes={2}
         cover="/blog/covers/one-inbox.webp"
-        seriesId="notes"
-        seriesTitle="Technical notes"
-        related={[HARNESS]}
+        seriesId="tech"
+        seriesTitle="Tech"
+        related={[LIFE]}
       >
         <p>Body</p>
       </BlogArticle>,
     )
 
     expect(html).toContain('aria-label="Breadcrumb"')
-    expect(html).toContain('href="/blog"')
-    expect(html).toContain('href="/blog/notes"')
-    expect(html).toContain('Technical notes')
+    expect(html).toContain('href="/en/blog"')
+    expect(html).toContain('href="/en/blog/tech"')
+    expect(html).toContain('Tech')
     expect(html).toContain('Leave only one inbox')
-    expect(html).toContain('蓝健声')
+    expect(html).toContain('Jens')
     expect(html).toContain('2 min read')
     expect(html).toContain('Written by')
     expect(html).toContain('Related')
     expect(html).not.toContain('role="tablist"')
     expect(html).not.toContain('On this page')
+  })
+
+  it('shows the on-this-page list when headings exist', () => {
+    const html = render(
+      <BlogArticle
+        title="Leave only one inbox"
+        description="Two rules for a content factory."
+        author="Jens"
+        date="2026-08-30T00:00:00.000Z"
+        formattedDate="August 30, 2026"
+        readingMinutes={2}
+        cover="/blog/covers/one-inbox.webp"
+        seriesId="tech"
+        seriesTitle="Tech"
+        related={[LIFE]}
+        toc={[
+          { title: 'The rehearsal', url: '#the-rehearsal', depth: 2 },
+          { title: 'The shortest path', url: '#the-shortest-path', depth: 2 },
+        ]}
+      >
+        <p>Body</p>
+      </BlogArticle>,
+    )
+
+    expect(html).toContain('aria-label="On this page"')
+    expect(html).toContain('The rehearsal')
+    expect(html).toContain('href="#the-rehearsal"')
   })
 })

@@ -34,12 +34,12 @@ export type Locale = (typeof LOCALES)[number]['code']
 /**
  * The language served without a URL prefix.
  *
- * English lives at `/`, not `/en`. A prefixed duplicate of the
+ * Chinese lives at `/`, not `/zh-CN`. A prefixed duplicate of the
  * default language is the most common way a multilingual site splits its own
- * ranking signal across two URLs, so `/en/*` is redirected to the bare path
- * rather than served.
+ * ranking signal across two URLs, so `/zh-CN/*` is redirected to the bare path
+ * rather than served. English is `/en`, Japanese is `/ja`.
  */
-export const DEFAULT_LOCALE: Locale = 'en'
+export const DEFAULT_LOCALE: Locale = 'zh-CN'
 
 /**
  * Languages the site once served and no longer does. A retired prefix folds

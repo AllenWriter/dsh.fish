@@ -1,0 +1,77 @@
+---
+title: "MetaGPT 入门与安装笔记"
+description: "MetaGPT 是中间件不是产品。这篇笔记写 Role、Trigger、Callback，以及一套真能跑起来的本地安装。"
+---
+
+## 背景
+
+这是 DeepWisdom 免费公开课[《MetaGPT智能体开发入门》](https://deepwisdom.feishu.cn/docx/RJmTdvZuPozAxFxEpFxcbiPwnQf)的学习笔记。我报名了。仓库在 [geekan/MetaGPT](https://github.com/geekan/MetaGPT)。
+
+## MetaGPT 是什么？
+
+AI Agent 大概是 2024 最热闹的应用方向：给一句话需求，坐等结果。ChatGPT 会回你刚说的那一句；Agent 会把后文脑补出来——比如「我想做个 2048」，它会自己找一条实现路径，而不是只给你一段话。
+
+MetaGPT 可以当成已经写好一部分实现逻辑的工具箱。你走进店里使唤这个服务员，服务员再跟后厨的大模型说话，做好了把菜端上来。
+
+**它是中间件、中间件、中间件。** 不是一个 AI 产品。厨房里的 LLM 还得你自己配。没模型，什么都做不出来。所以从概念和安装两边一起折腾。
+
+## 订阅智能体的三要素
+
+我读导读课时是高兴的。我每天要处理大量信息，很依赖订阅和推荐。如果能用 MetaGPT 做出高质量的信息订阅智能体，学习速度会快很多，内容质量也会更贴近我自己的标准。
+
+带着两个目的读完整门课比较合适：
+
+- 掌握智能体概念，能读相关源代码
+- 基于 MetaGPT 做出比 GPTs 更丰富的工作流编排
+
+打造一个订阅智能体，需要三个单位：Role、Trigger、Callback，也就是智能体本身、触发器、数据回调。
+
+- **Role.** 做一个 Watcher，关注并分析热门开源项目，有值得看的信息再推送。
+- **Trigger.** 指定 Watcher 在什么时间、什么条件下触发。
+- **Callback.** 清洗 Watcher 收集到的信息，再发到微信或 Discord。
+
+形状就是这样。后面全是接线。
+
+## 把仓库拉到本地
+
+折腾开源项目的第一件事：Fork 到自己的 GitHub，再 clone 到本地。如果这句话对你来说是新的，先去学 Git。
+
+- 项目地址：[MetaGPT 代码仓库](https://github.com/geekan/MetaGPT)
+- 课程文档：[MetaGPT 智能体开发入门](https://deepwisdom.feishu.cn/docx/UBoydfLRXodYjdxPKeyc9QWhnvW)
+
+## 安装并初始化
+
+依赖写在 `requirements.txt` 里。本机要有 Python 3。强烈建议新建虚拟环境——MetaGPT 依赖很多，会污染你原来的环境。
+
+```bash
+python -m venv your-name-env
+git clone https://github.com/geekan/MetaGPT.git
+cd /your/path/to/MetaGPT
+pip install -e .
+```
+
+终端里一行行往下跳的时候，说明安装已经开始了。看着还挺解压。
+
+第一次装有部分依赖报错，换版本也没解决。换成独立虚拟环境之后好了。
+
+## 配置环境变量
+
+MetaGPT 只是框架，真正干活的是厨房里的厨子——ChatGPT 或 Claude 这类模型。环境变量就是把召唤它们的密钥和模型名填进去。
+
+新建 `config` 文件夹，把 `config.yaml` 复制一份改名为 `key.yaml`，按文件里的字段填。然后：
+
+```bash
+export OPENAI_API_KEY="YOUR_OPENAI_API_KEY"
+export OPENAI_API_MODEL="gpt-4"
+```
+
+填你自己的密钥。默认 OpenAI 接口从你所在的网络打不通时，再自己设置 `OPENAI_API_BASE` 指向你实际在用的网关，不要往配置里贴来路不明的公共代理。
+
+装完先跑一次：
+
+```bash
+cd /your/path/to/MetaGPT/metagpt
+python startup.py --idea "write a cli blackjack game"
+```
+
+顺利的话会看到各个角色按步骤往外打日志。这叫「能开机」。课的后半段才是让这些角色去做你本来得自己做的事。

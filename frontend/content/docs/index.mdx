@@ -1,36 +1,50 @@
 ---
-title: DeepSeek Harness and dsh.fish
-description: What DeepSeek Harness is, what dsh.fish is, and the order to read these docs.
+title: 文档
+description: 技术笔记。
 ---
 
-DeepSeek Harness (`dsh`) is an open-source agent harness from DeepSeek AI: a program that runs an AI agent on your own machine. It connects a model you choose to tools that read and edit files and run commands, and it records everything the agent does.
+技术文章都放在这里。按主题翻即可。
 
-You start it locally with `npx @deepseek-ai/dsh web`, which opens a Web UI.
+## AI
 
-dsh.fish is an independent catalog of extensions for the harness. It finds plugins, reads what they actually contain, and shows you an install plan before anything is written to your machine.
+- [万字演讲：Dify 插件如何助力 AI Agent 应用开发？](/docs/dify-plugin-agent)
+- [Dify 支持视频生成了！附 AI 视频应用搭建教程](/docs/dify-video-plugin)
+- [三步搭建 ChatGPT API 中转代理](/docs/chatgpt-api-proxy)
+- [MetaGPT 入门与安装笔记](/docs/metagpt-notes)
+- [用 Dify 把 Notion 笔记做成 AI 助手](/docs/notion-dify)
+- [给你的龙虾安一个家：OpenClaw GUI 容器部署实践](/docs/openclaw-gui-container)
+- [自动化脚本](/docs/scripts-by-gpt)
+- [自动批量检测链接是否能够打开](/docs/batch-link-check)
 
-The website, the dsh.fish CLI, and the hub plugin that runs inside a session all read the same plans.
+## 自托管
 
-## The learning path
+- [Nginx Proxy Manager](/docs/nginx-proxy-manager)
+- [如何轻松使用 Docker 进行重定向？](/docs/docker-nginx-proxy-redirect)
+- [什么是 Clash？](/docs/what-is-clash)
+- [搭建 Clash 订阅转换平台](/docs/clash-frontend-dashboard)
+- [如何使用 Gmail 的批量邮件发送功能？](/docs/gmail-api-bulk-send)
+- [搭建 OneManagor + Picgo 图床教程](/docs/onedrive-picgo-image-host)
 
-The sidebar is one ordered path from zero to publishing your own plugin.
+## 账号
 
-1. **Start.** [Quickstart](/docs/quickstart) takes you from an empty terminal to a finished first task; [Core concepts](/docs/concepts) defines the words every later page uses.
-2. **Plugins.** [Why plugins](/docs/plugins) explains how the harness grows by installing plugins, and one page covers each format: [bundle](/docs/publish/bundle), [skill](/docs/publish/skill), [agent preset](/docs/publish/agent-preset), [profile](/docs/publish/profile).
-3. **Develop.** Build your own: a [first plugin](/docs/develop/first-plugin), a [tool](/docs/develop/tool), and its [configuration](/docs/develop/configuration).
-4. **Use dsh.fish.** Search and install from inside a session with the [hub plugin](/docs/hub) or from a terminal with the [CLI](/docs/cli), then [submit](/docs/submit) your own work.
-5. **Reference.** How [scoring](/docs/scoring) works, and the [API](/docs/api) the catalog exposes.
+- [如何注册一个外区 Apple 账号？](/docs/register-foreign-apple-id)
+- [如何搞定 Apple 付费服务？](/docs/apple-paid-services)
+- [微软 E3 账号管理员初始化](/docs/microsoft-e3-admin-init)
+- [Facebook 账号踩坑记之消失的 WhatsAPP API](/docs/facebook-account-pitfalls)
+- [如何快速在网上开店（独角数卡）？](/docs/dujiaoka)
 
-## Why you can trust an install
+## 站点
 
-The catalog reads the real repository or package manifest of everything it lists; a topic tag or a submission is only a discovery seed.
+- [Docusaurus 折腾记录](/docs/docusaurus-guide)
+- [提示块代码](/docs/docusaurus-admonitions)
+- [如何在 Docusaurus 中引用 react-player 控件？](/docs/react-player-docusaurus)
 
-Every install plan is a list of steps you can read before anything runs: packages to add, files to write, settings to change.
+## 金融
 
-A Git package that must run a build script asks for a separate, explicit approval, because that script executes outside the agent sandbox.
+- [香港汇丰银行开户指南](/docs/hsbc-hong-kong-account)
+- [香港券商开户指南](/docs/hk-broker-account)
+- [出发去香港前的注意事项](/docs/before-going-to-hong-kong)
 
-## Developer preview
+## 产品
 
-DeepSeek Harness is a developer preview and iterates quickly, with compatibility-breaking changes. These docs describe only behavior verified against the published npm release.
-
-For version-specific options, see the [official DeepSeek Harness guide](https://deepseek-harness.github.io/deepseek-harness/en/guide/quickstart).
+- [Dify 技术文档工程实践：如何构建面向 AI 时代的知识系统？](/docs/dify-docs-engineering)

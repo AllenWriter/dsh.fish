@@ -2,16 +2,16 @@ import { describe, expect, it } from 'vitest'
 import { retiredKindRedirect, retiredPublishDocsRedirect } from './retired-kind-path'
 
 describe('retiredKindRedirect', () => {
-  it('folds retired kinds onto browse', () => {
-    expect(retiredKindRedirect('/kind/mcp-server')).toBe('/browse')
-    expect(retiredKindRedirect('/kind/hook-bridge')).toBe('/browse')
+  it('folds retired kinds onto the blog', () => {
+    expect(retiredKindRedirect('/kind/mcp-server')).toBe('/blog')
+    expect(retiredKindRedirect('/kind/hook-bridge')).toBe('/blog')
   })
 
   it('keeps a locale prefix, a markdown alias and the query', () => {
-    expect(retiredKindRedirect('/ja/kind/mcp-server')).toBe('/ja/browse')
-    expect(retiredKindRedirect('/kind/hook-bridge.md')).toBe('/browse.md')
+    expect(retiredKindRedirect('/ja/kind/mcp-server')).toBe('/ja/blog')
+    expect(retiredKindRedirect('/kind/hook-bridge.md')).toBe('/blog.md')
     expect(retiredKindRedirect('/zh-CN/kind/mcp-server', '?sort=name')).toBe(
-      '/zh-CN/browse?sort=name',
+      '/zh-CN/blog?sort=name',
     )
   })
 

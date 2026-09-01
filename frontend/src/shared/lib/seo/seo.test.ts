@@ -47,7 +47,8 @@ describe('alternates', () => {
     const fromChinese = alternates(ORIGIN, '/a/dsh-hello').map((entry) => entry.href)
     expect(fromJapanese).toEqual(fromChinese)
     expect(fromJapanese).toContain(`${ORIGIN}/ja/a/dsh-hello`)
-    expect(fromJapanese).toContain(`${ORIGIN}/zh-CN/a/dsh-hello`)
+    expect(fromJapanese).toContain(`${ORIGIN}/a/dsh-hello`)
+    expect(fromJapanese).toContain(`${ORIGIN}/en/a/dsh-hello`)
     expect(fromJapanese).not.toContain(`${ORIGIN}/ru/a/dsh-hello`)
     expect(fromJapanese).not.toContain(`${ORIGIN}/ko/a/dsh-hello`)
   })
@@ -238,7 +239,7 @@ describe('pageMeta', () => {
 
     it('keeps the real document canonical and indexable', () => {
       expect(find(englishOnly, (entry) => entry.rel === 'canonical')[0]?.href).toBe(
-        `${ORIGIN}/docs`,
+        `${ORIGIN}/en/docs`,
       )
       expect(content(englishOnly, 'name', 'robots')).toContain('index, follow')
     })
@@ -258,7 +259,7 @@ describe('pageMeta', () => {
       expect(
         find(englishOnly, (entry) => entry.rel === 'alternate' && entry.type === 'text/markdown')[0]
           ?.href,
-      ).toBe(`${ORIGIN}/docs/index.md`)
+      ).toBe(`${ORIGIN}/en/docs/index.md`)
     })
   })
 
@@ -281,9 +282,9 @@ describe('organizationLd', () => {
   it('uses the square brand mark as the organization logo, not the social card', () => {
     expect(organizationLd(ORIGIN, 'en').logo).toEqual({
       '@type': 'ImageObject',
-      url: `${ORIGIN}/icons/whale-brand.png`,
-      width: 256,
-      height: 256,
+      url: `${ORIGIN}/icons/laptop-brand.png`,
+      width: 512,
+      height: 512,
     })
   })
 })
@@ -291,8 +292,8 @@ describe('organizationLd', () => {
 describe('websiteLd', () => {
   it('names the abbreviation people type as an alternate, without replacing the sitename', () => {
     const site = websiteLd(ORIGIN, 'en')
-    expect(site.name).toBe('dsh.fish')
-    expect(site.alternateName).toBe('dsh')
+    expect(site.name).toBe("Jens' Blog")
+    expect(site.alternateName).toBe('Jens')
   })
 })
 

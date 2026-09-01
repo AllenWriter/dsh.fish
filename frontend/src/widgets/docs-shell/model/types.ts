@@ -3,12 +3,12 @@ import type { MessageKey } from '@/shared/config/i18n'
 
 export type DocsSeparatorKey = Extract<
   MessageKey,
-  | 'docs.nav.start'
-  | 'docs.nav.plugins'
-  | 'docs.nav.develop'
-  | 'docs.nav.publish'
-  | 'docs.nav.use'
-  | 'docs.nav.reference'
+  | 'docs.nav.ai'
+  | 'docs.nav.selfHosted'
+  | 'docs.nav.accounts'
+  | 'docs.nav.site'
+  | 'docs.nav.finance'
+  | 'docs.nav.product'
 >
 
 export type DocsNavNode =

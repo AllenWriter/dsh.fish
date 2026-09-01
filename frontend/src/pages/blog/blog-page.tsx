@@ -31,6 +31,7 @@ import {
   relatedBlogPostCards,
   slugsFromSplat,
   source,
+  tocFromCompiled,
 } from './source'
 
 const blogContent = browserCollections.blog.createClientLoader({
@@ -168,6 +169,7 @@ export function loader({ context, params }: Route.LoaderArgs) {
     formattedDate: formatDate(date, locale),
     readingMinutes: readingMinutesFromMarkdown(markdown),
     related: relatedBlogPostCards(locale, page.url, data.series),
+    toc: tocFromCompiled(data),
     availableLocales,
     type: 'article' as const,
     jsonLd: [
@@ -218,6 +220,7 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
     cover,
     readingMinutes,
     related,
+    toc,
   } = loaderData
 
   return (
@@ -232,6 +235,7 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
       seriesId={series}
       seriesTitle={seriesTitle}
       related={related}
+      toc={toc}
     >
       {blogContent.useContent(contentPath)}
     </BlogArticle>

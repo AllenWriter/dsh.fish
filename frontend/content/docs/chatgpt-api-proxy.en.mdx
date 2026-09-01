@@ -1,0 +1,95 @@
+---
+title: "Three steps to a ChatGPT API proxy"
+description: "Put a Cloudflare Worker in front of the OpenAI API so clients call a domain you control"
+---
+
+## Why a proxy at all
+
+ChatGPT was an unusual kind of lockout: the product itself did not serve users in China, and the website was also hard to reach. A usable setup meant a foreign card, a foreign phone number, and a foreign IP, and even then the web UI was clumsy.
+
+The API is a different door. One key, and you can call the model from your own tools. If you wrap that call, it can look like a product you shipped. The remaining problem is the network: from some networks `api.openai.com` is unstable, sometimes unreachable. Anything that talks over HTTP can sit behind a proxy. The API is no exception.
+
+I looked for a write-up that was actually pleasant to follow. The best one I found lived in a GitHub repo, so I rewrote it as a shorter path: [SnowfallC/chatgpt-api-worker-proxy](https://github.com/SnowfallC/chatgpt-api-worker-proxy).
+
+This post is about running **your own** Worker. Do not treat someone else's personal relay as a public service. The official origin is still `https://api.openai.com/v1`. You replace that host with a hostname you bound.
+
+## How the relay works
+
+Park the domain on Cloudflare, then use Workers to forward the request.
+
+- A Worker is a small backend function. You do not buy a VPS just to accept and rewrite requests.
+- Cloudflare has points of presence in many places, so the hop to the Worker is usually the easy part of the path.
+- The free tier was 10,000 invocations a day when I wrote this, which is enough for personal use.
+- Workers can sit on a custom hostname, so the URL looks like a real API instead of `*.workers.dev`.
+
+## What you need
+
+- A domain you control
+- A Cloudflare account
+- A bit of patience
+
+## 1. Move the domain onto Cloudflare
+
+Register at [Cloudflare](https://www.cloudflare.com/), then add the domain and follow the nameserver instructions. That part is well documented; I will not repeat it.
+
+## 2. Create the Worker
+
+From the Cloudflare home page, create a Worker. The wizard wants a template. Hello World is enough; you will replace the body.
+
+Deploy once so the Worker exists.
+
+### Replace the Worker code
+
+Open the editor and swap the handler for a host rewrite that points at `api.openai.com`.
+
+```js
+const TELEGRAPH_URL = 'https://api.openai.com';
+
+addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request))
+})
+
+async function handleRequest(request) {
+  const url = new URL(request.url);
+  url.host = TELEGRAPH_URL.replace(/^https?:\/\//, '');
+  const modifiedRequest = new Request(url.toString(), {
+    headers: request.headers,
+    method: request.method,
+    body: request.body,
+    redirect: 'follow'
+  });
+  const response = await fetch(modifiedRequest);
+  const modifiedResponse = new Response(response.body, response);
+  modifiedResponse.headers.set('Access-Control-Allow-Origin', '*');
+  return modifiedResponse;
+}
+```
+
+Save and deploy, then rename the Worker to something you will recognize later.
+
+## 3. Bind a hostname
+
+Open the domain you added. In the left nav, **Workers Routes**, then **Add route**.
+
+Pick a hostname you want to expose. In this walkthrough I used `gptapi.wsyfin.com` as the bound name, so the route was `gptapi.wsyfin.com/*`. Point that route at the Worker you just made.
+
+Add a DNS A record for the same name, content `2.2.2.2`, orange cloud on. The address is a dummy; Cloudflare intercepts the name because the proxy is enabled.
+
+## Check that the relay answers
+
+Call `/v1/chat/completions` on **your** hostname. A missing key should still produce an OpenAI error, which is the useful signal: the Worker reached the origin.
+
+That screenshot is an error on purpose. The path works; the request still needs a Bearer token. In a terminal, replace the host with the one you bound, and replace `sk-********` with your own key. Do not paste a real key into a blog post.
+
+```bash
+curl --location 'https://YOUR-HOSTNAME/v1/chat/completions' \
+--header 'Authorization: Bearer sk-********' \
+--header 'Content-Type: application/json' \
+--data '{
+   "model": "gpt-3.5-turbo",
+  "messages": [{"role": "user", "content": "Why did Mark Twain punch Samuel Clemens?"}]
+ }'
+```
+
+A 2023-era `gpt-3.5-turbo` answer to that joke looked like this:
+

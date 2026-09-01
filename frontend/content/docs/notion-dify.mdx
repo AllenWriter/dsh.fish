@@ -1,0 +1,107 @@
+---
+title: "用 Dify 把 Notion 笔记做成 AI 助手"
+description: "把 Notion 知识库接到 Dify，训练一个能回答问题的对话应用，而不是只让笔记躺在库里"
+---
+
+## 笔记躺在库里，并不等于能用
+
+Notion 很适合当个人知识库，也适合跟人一起改稿。页面灵活，扩展也多，很多人把长期积累的东西都放进去。
+
+但这些内容默认是静止的。要用，就得自己搜、自己点开、自己读到那一句。库越大，这个过程越不像「助手」，越像「自己给自己当检索」。
+
+我一直想要一个读过我 Notion 的助手：能帮我复习库里的东西，也能像管家一样接着聊，甚至替我回答别人的问题。
+
+## 用 Dify 把它做出来
+
+[Dify](https://dify.ai/) 是开源的 LLMOps 平台。ChatGPT、Claude 这类模型已经能从你提供的文本里学习。缺的往往不是模型本身，而是把 Notion 里的页面变成它能用的上下文。
+
+如果不用 Dify，多半得自己拼 LangChain：切分、向量、检索、对话记忆，每一段都要管。Dify 把数据集、训练、提示词和聊天应用收成一套界面。
+
+## 五步走完
+
+流程不长：
+
+1. 登录 Dify
+2. 新建数据集
+3. 把 Notion 同步进去
+4. 开始训练
+5. 创建一个应用，挂上这个数据集
+
+### 1. 登录 Dify
+
+打开 [dify.ai](https://dify.ai/)，用 GitHub 或 Google 登录即可。如果走 GitHub，顺手给 [langgenius/dify](https://github.com/langgenius/dify) 点个 star，对这个开源项目有用。
+
+### 2. 新建数据集
+
+顶栏点 **Datasets**，再点 **Create Dataset**。
+
+### 3. 连接 Notion
+
+选 **Sync from Notion**，点 **Connect**。
+
+浏览器会跳到 Notion 登录页。登录后核对 Dify 申请的权限，点 **Select pages**。
+
+勾选要同步的页面，再点 **Allow access**。
+
+### 4. 开始训练
+
+指定模型要学的页面，点下一步。
+
+分段我选 **Automatic**，索引质量选 **High Quality**，然后 **Save & Process**。训练要一会儿，够喝杯咖啡，不用一直盯着。
+
+### 5. 创建应用
+
+数据集不会自己开口。回到控制台，**Create new APP**，直接用 Chat App 就行。
+
+打开 **Prompt Eng.**，在 **context** 里挂上刚刚的 Notion 数据集。
+
+预置提示词值得写。笔记如果主要是排障，可以写成：
+
+> 请你作为我 Notion 工作区里的 IT 专家，结合计算机、网络、这些笔记和安全方面的知识来解决问题。
+
+我还会开一句欢迎语，让来的人知道能问什么；语音转文字也可以开，方便对着说。
+
+右上角 **Publish**。Overview 里的公开链接就是对话入口。
+
+## 用 API 接到自己的项目里
+
+Dify 上的应用都带 API。模型、检索留在 Dify，前端只发消息，相当于一层 Backend-as-a-Service。
+
+在 Overview 打开 **API Reference**，把它当成这份应用的接口说明。
+
+### 生成密钥
+
+单独给应用建一把 API secret，不要把已经散落到客户端里的钥匙再拿来用。
+
+### 拿到会话 ID
+
+先在界面里聊一轮，然后到 **Logs & Ann.** 里看 session id。
+
+### 发请求
+
+文档里有示例。把密钥换掉。第一次可以把 `conversation_id` 留空，等响应里带回 id，下一轮再填进去。
+
+```bash
+curl --location --request POST 'https://api.dify.ai/v1/chat-messages' \
+--header 'Authorization: Bearer ENTER-YOUR-SECRET-KEY' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "inputs": {},
+    "query": "eh",
+    "response_mode": "streaming",
+    "conversation_id": "",
+    "user": "abc-123"
+}'
+```
+
+成功的话会看到流式返回：
+
+同一轮对话，把返回的 `conversation_id` 带回下一次请求。完整记录还在 Logs 页。
+
+## 和 Notion 保持同步
+
+页面改过之后，定期在 Dify 里同步一次，助手才会学到新内容。
+
+## 做完之后
+
+真正留下的不是「给 Notion 套一层 AI」，而是一份能刷新的数据集、一段能改的提示词，以及一个能从现有项目里调用的 API。Dify 只是少走 LangChain 手工拼装的那一段。

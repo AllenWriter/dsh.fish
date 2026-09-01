@@ -1,0 +1,95 @@
+---
+title: "三つの手順で ChatGPT API プロキシを立てる"
+description: "Cloudflare Workers を OpenAI API の前に置き、自分で管理するドメイン経由で呼ぶ"
+---
+
+## なぜプロキシが要るか
+
+ChatGPT は珍しい種類の閉鎖だった。製品自体が中国の利用者向けではなく、ウェブ UI も届きにくかった。使える状態にするには海外のカード、電話番号、IP が要り、それでもブラウザは扱いにくい。
+
+API は別の入口だ。キーが一つあれば、自分の道具から呼べる。その呼び出しを包めば、出荷した製品にも見える。残る問題はネットワークで、場所によっては `api.openai.com` が不安定で、時には全く届かない。HTTP はプロキシに載せられる。API も例外ではない。
+
+読みやすい手順は少なかった。一番まともに書けていたのは GitHub のリポジトリだったので、短い道に直した。[SnowfallC/chatgpt-api-worker-proxy](https://github.com/SnowfallC/chatgpt-api-worker-proxy)
+
+この記事は **自分の** Worker を走らせる話だ。他人の個人リレーを公開サービスとして叩かないこと。公式の origin は今も `https://api.openai.com/v1` で、それを自分がバインドしたホスト名に差し替える。
+
+## 中継の仕組み
+
+ドメインを Cloudflare に預け、Workers で転送する。
+
+- Worker は小さなバックエンド関数だ。リクエストを受けるためだけに VPS を買わなくてよい
+- Cloudflare の拠点は多く、Worker までのホップはたいてい楽な側だ
+- 当時の無料枠は一日一万回で、個人用途には足りた
+- カスタムホスト名を付けられるので、`*.workers.dev` ではなく API らしい URL になる
+
+## 必要なもの
+
+- 自分で管理しているドメイン
+- Cloudflare アカウント
+- 少しの手間
+
+## 1. ドメインを Cloudflare に移す
+
+[Cloudflare](https://www.cloudflare.com/) で登録し、ドメインを追加して NS の指示に従う。この段は公式ドキュメントで足りる。
+
+## 2. Worker を作る
+
+ホームから Worker を作る。ウィザードはテンプレートを要求する。Hello World でよく、中身はあとで差し替える。
+
+一度デプロイして、Worker を存在させる。
+
+### コードを差し替える
+
+エディタを開き、ホストを `api.openai.com` に書き換えるハンドラにする。
+
+```js
+const TELEGRAPH_URL = 'https://api.openai.com';
+
+addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request))
+})
+
+async function handleRequest(request) {
+  const url = new URL(request.url);
+  url.host = TELEGRAPH_URL.replace(/^https?:\/\//, '');
+  const modifiedRequest = new Request(url.toString(), {
+    headers: request.headers,
+    method: request.method,
+    body: request.body,
+    redirect: 'follow'
+  });
+  const response = await fetch(modifiedRequest);
+  const modifiedResponse = new Response(response.body, response);
+  modifiedResponse.headers.set('Access-Control-Allow-Origin', '*');
+  return modifiedResponse;
+}
+```
+
+保存してデプロイし、あとで識別できる名前に変える。
+
+## 3. ホスト名をバインドする
+
+追加したドメインを開く。左の **Workers Routes** から **Add route**。
+
+公開したいホスト名を決める。この手順では `gptapi.wsyfin.com` をバインドしたので、ルートは `gptapi.wsyfin.com/*` だ。作った Worker を指定する。
+
+同じ名前の A レコードを DNS に足す。内容は `2.2.2.2`、オレンジ雲をオン。この IP はダミーで、プロキシが有効なら Cloudflare が名前を奪う。
+
+## 中継が応答するか確かめる
+
+**自分でバインドした** ホスト名の `/v1/chat/completions` を叩く。キーが無くても OpenAI のエラーが返ればよい。Worker が origin に届いた印だ。
+
+エラーで正しい。通路は通った。Bearer がまだ無い。ターミナルではホストを自分の名前に替え、`sk-********` を自分のキーに替える。本物のキーを記事に書かない。
+
+```bash
+curl --location 'https://YOUR-HOSTNAME/v1/chat/completions' \
+--header 'Authorization: Bearer sk-********' \
+--header 'Content-Type: application/json' \
+--data '{
+   "model": "gpt-3.5-turbo",
+  "messages": [{"role": "user", "content": "夏目漱石はなぜ夏目金之助を殴ったのか？"}]
+ }'
+```
+
+当時の `gpt-3.5-turbo` は、この冗談にこう返してきた。
+

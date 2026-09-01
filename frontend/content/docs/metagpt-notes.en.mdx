@@ -1,0 +1,70 @@
+---
+title: "Notes on getting MetaGPT running"
+description: "MetaGPT is middleware, not a product. These notes cover Role/Trigger/Callback and a local install that actually boots."
+---
+
+## Why I sat through the course
+
+These are notes from DeepWisdom's free public class *[Intro to MetaGPT agent development](https://deepwisdom.feishu.cn/docx/RJmTdvZuPozAxFxEpFxcbiPwnQf)*. I signed up. The repo is [geekan/MetaGPT](https://github.com/geekan/MetaGPT).
+
+## MetaGPT is middleware
+
+2024 made AI agents the hottest applied-AI pitch: give a one-line brief, wait for a result, stop being the person who has to hold the whole thread. ChatGPT answers the last thing you said. An agent is supposed to fill in the rest — "I want a 2048 game" becomes a path, not a paragraph.
+
+MetaGPT is a toolbox with some of that path already written down. Think of it as the waiter: you order, it talks to the kitchen, it brings the plate. The kitchen is still an LLM you have to configure. **Middleware, middleware, middleware** — not a product. If there is no model in the kitchen, nothing cooks.
+
+## The three pieces of a subscription agent
+
+I read the first lesson with a selfish goal. I live on a pile of feeds. If I can build a watcher that subscribes to the sources I actually care about, my reading gets faster and the quality bar stays mine.
+
+The lesson I keep: a subscription agent is three units — Role, Trigger, Callback.
+
+- **Role.** A Watcher. It watches and scores things (in the class example: hot open-source repos) and speaks up when something is worth a ping.
+- **Trigger.** When the Watcher runs — a clock, a condition, both.
+- **Callback.** Clean what the Watcher collected, then send it to WeChat or Discord.
+
+That is the whole shape. Everything else is wiring.
+
+## Clone it locally
+
+First job on an open-source project: fork it, clone it. If that sentence is new, learn Git first, then come back.
+
+- Repo: [github.com/geekan/MetaGPT](https://github.com/geekan/MetaGPT)
+- Lesson notes: [MetaGPT agent development intro](https://deepwisdom.feishu.cn/docx/UBoydfLRXodYjdxPKeyc9QWhnvW)
+
+## Install into a venv
+
+Dependencies live in `requirements.txt`. You need Python 3 on the machine. I strongly suggest a fresh virtualenv — MetaGPT pulls a lot of packages and will fight an existing site-packages.
+
+```bash
+python -m venv your-name-env
+git clone https://github.com/geekan/MetaGPT.git
+cd /your/path/to/MetaGPT
+pip install -e .
+```
+
+Watching the install scroll is oddly calming.
+
+A few dependency errors showed up on the first try. Bumping versions did not help. Switching to a clean venv did.
+
+## Point it at a model
+
+MetaGPT does not think. The model does. Environment variables are how you hand it a key and a model name.
+
+Copy `config.yaml` into a `config` folder as `key.yaml` and fill in the fields the file asks for. Then export:
+
+```bash
+export OPENAI_API_KEY="YOUR_OPENAI_API_KEY"
+export OPENAI_API_MODEL="gpt-4"
+```
+
+Use your own key. If the default OpenAI endpoint is unreachable from where you sit, set `OPENAI_API_BASE` to a gateway you actually run. Do not paste a random public proxy into this file.
+
+Smoke test:
+
+```bash
+cd /your/path/to/MetaGPT/metagpt
+python startup.py --idea "write a cli blackjack game"
+```
+
+If it is working you will see the roles print their steps, one after another. That is "it boots." The rest of the course is teaching those roles to do work you would otherwise do yourself.

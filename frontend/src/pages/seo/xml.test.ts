@@ -83,6 +83,7 @@ describe('urlSetXml', () => {
 
   it('serves the default language unprefixed and the rest under their code', () => {
     expect(xml).toContain(`<loc>${ORIGIN}/browse</loc>`)
+    expect(xml).toContain(`<loc>${ORIGIN}/en/browse</loc>`)
     expect(xml).toContain(`<loc>${ORIGIN}/ja/browse</loc>`)
   })
 
@@ -105,13 +106,13 @@ describe('urlSetXml', () => {
     const englishOnly = urlSetXml(ORIGIN, [{ path: '/docs', locales: ['en'] }])
 
     expect(englishOnly.match(/<url>/g)).toHaveLength(1)
-    expect(englishOnly).toContain(`<loc>${ORIGIN}/docs</loc>`)
+    expect(englishOnly).toContain(`<loc>${ORIGIN}/en/docs</loc>`)
     expect(englishOnly).not.toContain(`${ORIGIN}/ja/docs`)
     expect(englishOnly).not.toContain('<xhtml:link')
   })
 
-  it('omits x-default when the available locale set has no English document', () => {
-    const localized = urlSetXml(ORIGIN, [{ path: '/a/example', locales: ['ja', 'zh-CN'] }])
+  it('omits x-default when the available locale set has no default-language document', () => {
+    const localized = urlSetXml(ORIGIN, [{ path: '/a/example', locales: ['en', 'ja'] }])
     expect(localized).not.toContain('hreflang="x-default"')
   })
 

@@ -26,3 +26,6 @@ export const SPRING_MOUSE = { stiffness: 200, damping: 15, mass: 0.3 } as const
 
 /** Dragged handles and fills — critically damped `useSpring` config. */
 export const SPRING_GLIDE = { stiffness: 700, damping: 50, mass: 0.5 } as const
+
+/** Tab underline that rides between newsroom filters. */
+export const SPRING_TAB = { type: 'spring', stiffness: 400, damping: 32 } as const

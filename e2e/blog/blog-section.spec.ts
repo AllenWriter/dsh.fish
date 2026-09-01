@@ -88,7 +88,7 @@ test.describe('blog on a desktop', () => {
     await expect(crumbs.getByRole('link', { name: 'Technical notes' })).toBeVisible()
     await expect(page.getByText('Written by')).toBeVisible()
     await expect(page.getByText('Steven Lynn').first()).toBeVisible()
-    await expect(page.getByRole('navigation', { name: 'On this page' })).toHaveCount(0)
+    await expect(page.getByRole('navigation', { name: 'On this page' })).toBeVisible()
     await expect(page.getByRole('tablist')).toHaveCount(0)
     await expect(page.locator('article')).toContainText('dsh plugin add')
 

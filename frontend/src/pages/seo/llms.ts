@@ -1,12 +1,4 @@
-import {
-  ARTIFACT_KINDS,
-  CATEGORIES,
-  TOPICS,
-  kindDescriptionKey,
-  kindPluralKey,
-} from '@/entities/artifact/model/types'
 import { DEFAULT_LOCALE, translate } from '@/shared/config/i18n'
-import { HARNESS_REPO_URL } from '@/shared/config/site'
 import { markdownPath } from '@/shared/lib/seo'
 
 /**
@@ -69,46 +61,19 @@ export function rootLlmsTxt(baseUrl: string): string {
     `# ${name}`,
     `> ${translate(locale, 'app.tagline')}. ${translate(locale, 'app.description')}`,
     '',
-    'This file is a curated map for agents, not a catalog dump. Search and list plugins through the JSON API or the versioned snapshot; do not expect every plugin URL here.',
+    'This file is a curated map for agents. It covers the personal blog and technical notes, not a plugin catalog.',
     '',
-    'Content pages have a markdown representation: append `.md` to the path (`/docs/cli.md`, `/a/{id}.md`, `/index.md` for the home page) or send `Accept: text/markdown` on the HTML URL. English is unprefixed; other public languages use a path prefix (`/zh-CN`, `/ja`). Inference and search use is welcome; training crawlers are denied.',
+    'Content pages have a markdown representation: append `.md` to the path (`/docs/dify-plugin-agent.md`, `/index.md` for the home page) or send `Accept: text/markdown` on the HTML URL. English is unprefixed; other public languages use a path prefix (`/zh-CN`, `/ja`). Inference and search use is welcome; training crawlers are denied.',
     '',
     '## Start here',
     item(name, md(baseUrl, '/'), 'Personal writing index: a newsroom grid of every public post.'),
     item('Blog', href(baseUrl, '/blog/llms.txt'), 'The full editorial index, series landings, and posts.'),
-    item('Docs', href(baseUrl, '/docs/llms.txt'), 'Technical documentation: CLI, publishing, scoring, REST API.'),
-    item('Browse', md(baseUrl, '/browse'), 'Secondary plugin catalog. Page through the API for more than the first fifty rows.'),
-    item('dsh.fish developer resources', href(baseUrl, '/docs/developers'), 'OpenAPI, REST, JSON errors, markdown negotiation, and auth.'),
-    '',
-    '## Catalog',
-    ...ARTIFACT_KINDS.map((kind) =>
-      item(
-        translate(locale, kindPluralKey(kind)),
-        md(baseUrl, `/kind/${kind}`),
-        translate(locale, kindDescriptionKey(kind)),
-      ),
-    ),
-    '',
-    '## API',
-    item('OpenAPI', href(baseUrl, '/openapi.json'), 'Machine-readable description of the anonymous JSON API.'),
-    item('Search', href(baseUrl, '/api/v1/artifacts'), 'Filter and page the catalog. Agents should page here rather than scraping HTML.'),
-    item('Artifact detail', href(baseUrl, '/api/v1/artifacts/{id}'), 'One plugin: metadata, README, install plan.'),
-    item('Catalog snapshot', href(baseUrl, '/api/v1/catalog/snapshot'), 'The whole public catalog as one JSON document, with ETag/304.'),
-    item('Scoring model', href(baseUrl, '/api/v1/scoring'), 'The public quality-score formula the site executes.'),
-    item('API catalog', href(baseUrl, '/.well-known/api-catalog'), 'RFC 9727 linkset of the machine-readable doors.'),
+    item('Docs', href(baseUrl, '/docs/llms.txt'), 'Technical notes, grouped into AI and product.'),
     '',
     '## Optional',
     item('Product docs (full)', href(baseUrl, '/docs/llms-full.txt'), 'Every English guide concatenated. Prefer /docs/llms.txt unless the whole set is needed.'),
-    ...CATEGORIES.map((category) =>
-      item(translate(locale, category.labelKey), md(baseUrl, `/category/${category.id}`)),
-    ),
-    ...TOPICS.map((topic) =>
-      item(translate(locale, topic.labelKey), href(baseUrl, `/for/${topic.id}`), 'Curated intent page.'),
-    ),
-    item('Atom feed', href(baseUrl, '/feed.xml'), 'The fifty most recently updated artifacts. Other languages at /<locale>/feed.xml.'),
     item('Blog feed', href(baseUrl, '/blog/feed.xml'), 'Editorial posts. Other languages at /<locale>/blog/feed.xml.'),
     item('Sitemap', href(baseUrl, '/sitemap.xml'), 'Complete URL inventory for search engines, every language of every page.'),
-    item('DeepSeek Harness', HARNESS_REPO_URL, 'The runtime this registry exists for.'),
     '',
   ].join('\n')
 }
@@ -134,9 +99,9 @@ export function docsLlmsTxt(baseUrl: string, nav: readonly LlmsNavNode[]): strin
 
   return [
     `# ${translate(DEFAULT_LOCALE, 'app.name')} documentation`,
-    '> Guides for using the hub, the CLI, and publishing every artifact kind DeepSeek Harness loads.',
+    '> Technical notes on AI systems and shipping products.',
     '',
-    'This file covers `/docs/*`. The site-wide map is `/llms.txt`. Each guide is also at the same path with `.md` appended (`/docs/cli.md`). A concatenation of every English guide is `/docs/llms-full.txt`. Other languages use a path prefix (`/ja/docs/cli.md`).',
+    'This file covers `/docs/*`. The site-wide map is `/llms.txt`. Each guide is also at the same path with `.md` appended (`/docs/dify-plugin-agent.md`). A concatenation of every English guide is `/docs/llms-full.txt`. Other languages use a path prefix (`/ja/docs/dify-plugin-agent.md`).',
     '',
     ...sections.flatMap((section) => [`## ${section.heading}`, ...section.entries, '']),
   ].join('\n')
@@ -153,9 +118,9 @@ export function blogLlmsTxt(
 ): string {
   return [
     `# ${translate(DEFAULT_LOCALE, 'app.name')} blog`,
-    '> Harness release notes, DeepSeek announcements, the dsh.fish changelog, and original technical notes.',
+    '> Notes on technology, daily life, markets, and travel.',
     '',
-    'This file covers `/blog/*`. The site-wide map is `/llms.txt`. Each post is also at the same path with `.md` appended (`/blog/harness/v0-1-2-alpha-1.md`). Other languages use a path prefix (`/ja/blog`).',
+    'This file covers `/blog/*`. The site-wide map is `/llms.txt`. Each post is also at the same path with `.md` appended (`/blog/tech/one-inbox.md`). Other languages use a path prefix (`/ja/blog`).',
     '',
     '## Start here',
     item('Blog', md(baseUrl, '/blog'), 'All posts, newest first.'),

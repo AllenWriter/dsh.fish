@@ -21,7 +21,7 @@ export const blog = defineCollections({
   schema: pageSchema.extend({
     author: z.string().min(1),
     date: z.union([z.string(), z.date()]),
-    series: z.enum(['harness', 'deepseek', 'changelog', 'notes']),
+    series: z.enum(['tech', 'life', 'finance', 'travel']),
     description: z.string().min(1),
     cover: z.string().startsWith('/blog/covers/'),
   }),

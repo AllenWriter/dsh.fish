@@ -1,0 +1,70 @@
+---
+title: "Dify が動画生成に対応した：AI 動画アプリ構築チュートリアル付き"
+description: "豆包（Doubao）動画プラグインで、Dify にテキストから動画、画像から動画のアプリを組む。インストール、認可、DSL の取り込み、あるいは Chatflow からのゼロ構築。"
+---
+
+省エネ要約：まず触ってみたい人は、末尾の体験リンクへ。
+
+アプリの対話欄にテキストを入れると、動画が返ってきます。短い一文でも、詳細な動画プロンプトに自動で広げてから生成します。
+
+本稿では、テキストから動画を体験する方法と、AI 動画生成アプリを自分で組む方法を紹介します。
+
+- 画像と動画の一気通貫：[https://udify.app/chat/18qSv1wysmRTsw34](https://udify.app/chat/18qSv1wysmRTsw34)
+- テキストから動画：[https://udify.app/chat/y3eBFyaxNJkXDlca](https://udify.app/chat/y3eBFyaxNJkXDlca)
+- 画像から動画（PNG をアップロード）：[https://udify.app/workflow/YY6EdT3ztLfvQiKY](https://udify.app/workflow/YY6EdT3ztLfvQiKY)
+
+作例には、少女と狐（テキストから動画）、千軍万馬が押し寄せる（テキストから動画）、王と飛行機（画像から動画）、古代の軍馬（画像から動画）があります。
+
+複雑な登録や認証は要りません。想像力を使ってください。
+
+## 実装の原理
+
+この三つのアプリはすべて Dify で組んでいます。中核は Dify の動画生成プラグインです。
+
+Dify をまだ知らない人は、AI アプリの遊び場だと思ってください。レゴを組むようにアプリを組み立てます。公式サイト：[https://dify.ai/](https://dify.ai/)
+
+以下が完全な再現手順です。およそ三分です。
+
+### 1. Dify に登録してログインする
+
+[https://cloud.dify.ai/](https://cloud.dify.ai/) を開き、メールで登録します。右上で言語を切り替えられます。オープンソースのコミュニティ版を入れることもできます。
+
+### 2. 動画プラグインをインストールし、認可を完了する
+
+Dify 自体は動画モデルではありません。生成は外部プラグインに依ります。
+
+右上の「プラグイン」→「Marketplace を探索」で動画を検索し、**Doubao Image and Video Generator** を見つけます。能力の土台は豆包（Doubao）です。インストール後、自分の API Key を入れて認可してください。鍵をドキュメントに書いたり、リポジトリにコミットしたりしないでください。
+
+### 3. アプリを作る
+
+プラットフォームに入ったあとも、アプリを一つ作り、そこに動画生成を足します。
+
+#### 3.1 既存アプリをコピーする
+
+Dify アプリの実体は DSL です。ウェブ画面で「DSL ファイルをインポート」し、リンクを貼るだけです。
+
+- テキストから動画：[https://r2.xmsex.net/2025/06/07cd66a9979953c29475dd34dd8663bf.yml](https://r2.xmsex.net/2025/06/07cd66a9979953c29475dd34dd8663bf.yml)
+- 画像と動画の一気通貫：[https://r2.xmsex.net/2025/06/3334f9aed0fd9dbe00b1872bf931184c.yml](https://r2.xmsex.net/2025/06/3334f9aed0fd9dbe00b1872bf931184c.yml)
+- 画像から動画：[https://r2.xmsex.net/2025/06/6b76198e75d363debeb065bc74f1160d.yml](https://r2.xmsex.net/2025/06/6b76198e75d363debeb065bc74f1160d.yml)
+
+#### 3.2 ゼロから組む
+
+空のアプリを作り、Chatflow を選び、名前と説明を入れます。
+
+ツールノードを追加し、Doubao Generator を選びます。欲しい効果に応じて、テキストから画像、テキストから動画、画像から動画を選びます。
+
+ツールノードには既定の入力と出力があります。テキストから動画の入力はプロンプト、出力はプラグインが生成した動画です。
+
+私は入力を一つ前の LLM の出力につないでいます。ユーザーのプロンプトはたいてい粗く、先にモデルへ詳細な動画プロンプトへ広げさせてから、生成ノードへ渡します。このプラグインは Agent ノードでも使えます。
+
+ワークフローがまだ掴めていなければ、先にこちら：[Dify Workflow](https://docs.dify.ai/zh-hans/guides/workflow/readme)。
+
+## まとめ
+
+以前、Dify で動画を出すときは、HTTP ノードで外部 API を叩くことがほとんどでした。動きますが、エレガントではなく、動画をやりたい人は毎回設定し直す必要がありました。よくある需要なら、プラグインにして、API Key を入れるだけで使えるほうがよい。
+
+プラグインのソース：[AllenWriter/doubao-image-and-video-generator](https://github.com/AllenWriter/doubao-image-and-video-generator)
+
+開発ドキュメント：[Getting started with Dify plugins](https://docs.dify.ai/plugin-dev-en/0111-getting-started-dify-plugin)
+
+原文：[https://mp.weixin.qq.com/s/obqH8fliSfFIJC0yH7dqvg](https://mp.weixin.qq.com/s/obqH8fliSfFIJC0yH7dqvg)

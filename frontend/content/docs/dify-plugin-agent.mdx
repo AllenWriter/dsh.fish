@@ -1,0 +1,180 @@
+---
+title: "万字演讲：Dify 插件如何助力 AI Agent 应用开发？"
+description: "Dify 1.0 插件体系：远程调试、Endpoint、反向调用，以及 SSH、网关、数据库、RAG、Agent 策略和 MCP 的落地。"
+---
+
+大家好，我是 Allen，来自 Dify 的技术文档工程师，主要负责 Dify 帮助文档和企业版文档建设。
+![幻灯片 1](/docs/dify-plugin-agent/slide-01.png)
+
+
+这次分享的题目是 **Dify 插件生态实践：Agent 应用开发的新范式**，分五部分：Dify 是什么、我们如何适应不断变化的 Agent 开发、插件能给复杂 Agent 提供什么、几个落地案例，以及应用如何投产。
+![幻灯片 2](/docs/dify-plugin-agent/slide-02.png)
+
+
+## Dify 介绍
+
+如果把 AI 的智能能力比作水电网络一样的新生产资源，ChatGPT 刚爆火时，开发者都在反复造轮子：API 怎么接、知识库怎么处理。Dify 在此背景下诞生，把工作流编排、RAG、Agent 构建、多模型管理和可观测做成一套开源方案。
+
+两年间 GitHub 星标超过 10 万，进入全球开源项目前五十。
+![幻灯片 3](/docs/dify-plugin-agent/slide-03.png)
+许多深度用户并不是严格意义上的开发者，而是财务、运营、市场销售。业务人员不应该在这场变革中失语。好用的 Agent 应用来自对日常痛点的洞察，Dify 要做的是不断降低技术门槛。
+![幻灯片 4](/docs/dify-plugin-agent/slide-04.png)
+![幻灯片 5](/docs/dify-plugin-agent/slide-05.png)
+
+
+技术节奏很快：DeepSeek、Deep Research、Manus、MCP、A2A 轮番出现。现在已经不是套一个 LLM API 就能讲故事的时代，Agent 需要多模态、联网、OCR、知识库准确度。对开发者来说，技术变了、场景变了，时间和资源始终紧张。插件体系是为了让开发像乐高一样组合。
+![幻灯片 6](/docs/dify-plugin-agent/slide-06.png)
+
+
+四个例子：
+
+1. **Browser Use。** 日本用户贡献。定位网页关键信息，例如找出联系表单字段并带回 URL。Marketplace 搜 Browser 即可。
+![幻灯片 7](/docs/dify-plugin-agent/slide-07.png)
+
+2. **复刻 Deep Research。** 知道主流程图，用节点拼出可见即所得的 LLM 应用。
+![幻灯片 8](/docs/dify-plugin-agent/slide-08.png)
+
+3. **SSH 插件。** 输入指令，自动登录服务器部署网页。后文会拆开发过程。
+4. **视频生成。** 把 API 转成 Plugin。这个插件是我做的。
+
+我们希望 Dify 不仅是 LLM 应用基建，也是调用 AI 能力的操作系统。早期只有工具调用入口，大量依赖 API，已经跟不上 Agent 节奏。
+![幻灯片 9](/docs/dify-plugin-agent/slide-09.png)
+
+
+## Dify 如何重构工具体系
+
+### 旧体系的问题
+
+社区经常问「什么时候支持某某模型」。很多时候只是参数换一下，却要重新打包发版。过去给 Dify 贡献外部能力，哪怕加一个 API 工具，也要本地部署整套源码。
+![幻灯片 10](/docs/dify-plugin-agent/slide-10.png)
+
+
+问题归纳：
+
+1. **代码强耦合。** 加模型和工具繁琐，工程依赖过重，版本难管。
+2. **用户需求无法闭环。** 接入 IM 必须在 Dify 外再封一层 Webhook。
+3. **定制化模块固定。** PDF 解析、RAG 等无法灵活调整。
+
+所以要把工具和模型拆成可独立安装的插件，文档解析、OCR 也插件化；Dify 内无法闭环的场景，通过开放接口对接外部系统。
+![幻灯片 11](/docs/dify-plugin-agent/slide-11.png)
+
+
+工程上很快碰到：多 Workspace 下工具不相通、插件环境一致性、云上数万插件的运行时成本、每次改代码都要重新打包、以及插件是否该长期跑 HTTP 服务听 Webhook。
+
+### 三个关键设计
+
+**远程调试。** 调试器和运行时分离，运行时主动连接。本地插件与 Dify 建长连接，被视作已安装并标成调试模式。请求经长连接转发。难点是长连接有状态，而 Dify 服务无状态，K8s 负载均衡会把请求打到错误的 Pod，后续用流量转发解决。
+![幻灯片 12](/docs/dify-plugin-agent/slide-12.png)
+
+
+**Endpoint。** 让 Dify 接收 IM / 办公软件的 Webhook。平台生成随机 URL 并承担 HTTP 转发，插件只处理转发过来的请求，避免每个插件长期跑一个服务器。
+![幻灯片 13](/docs/dify-plugin-agent/slide-13.png)
+
+
+**反向调用。** 插件可以调用 Dify 内部已鉴权的模型、工具或 App。用途包括：外部知识库（如 LlamaIndex 的 Agentic RAG）、把 OCR/ASR/TTS 当工具用、用 Endpoint 提供 OpenAI 兼容 API、以及把 Agent 策略插件化。
+![幻灯片 14](/docs/dify-plugin-agent/slide-14.png)
+
+
+### 架构要点
+
+SaaS 采用类似 Serverless 的弹性，选择 AWS Lambda。调试模式用 Redis HashMap 管理连接状态，集群维护 IP 池并用投票测可达性，Master 节点清理退出 Pod。
+
+Dify 1.0 给出的答案是依靠开源插件生态，类似 Chrome / VS Code / WordPress。用户不必苦等官方功能；做得好的项目能被社区看见。插件市场上线后很快超过 120 个服务。MCP、A2A 这类新协议也可以作为插件接入。当时预告：Dify 将支持把 MCP 接到工具里，也可以把已搭好的应用发布为 MCP 服务器。
+![幻灯片 15](/docs/dify-plugin-agent/slide-15.png)
+
+
+## 如何基于插件落地 Agent 应用
+
+Agent 追求智能决策加自主执行，和 RPA 的固定流程不同。当前痛点包括：稳定性差、认知不对齐、上下文难管、不可验证、跨系统动手能力有限。
+
+Dify 插件的优势：
+
+- **降低开发成本。** 标准接口 + Schema，模型理解如何调用；调用时机交给模型，少写控制逻辑；一处开发，多处复用。
+- **模块化演进。** 从单个插件加简单 Prompt 开始，逐步加能力；每个插件可单独调试。
+
+### SSH 插件怎么写
+
+建议从工具类型插件入手。结构很简单：先定义工具提供商，再定义可执行的动作。人类登录服务器要做的事，插件都要有对应动作：主机、端口、密码、执行命令。
+![幻灯片 16](/docs/dify-plugin-agent/slide-16.png)
+![幻灯片 17](/docs/dify-plugin-agent/slide-17.png)
+![幻灯片 18](/docs/dify-plugin-agent/slide-18.png)
+
+
+步骤：
+
+1. 新建项目，填 `manifest.yaml`，包括多语言。
+2. 定义供应商名称和描述。
+3. `tools/` 下每个 Action 一个 Python 文件，用函数处理参数。
+4. 在 `.env` 填写远程调试地址（SaaS 或社区版），不用本地部署整套 Dify。
+5. 命令行打包为 `.difypkg`，类似 apk，去中心化分发。
+![幻灯片 19](/docs/dify-plugin-agent/slide-19.png)
+![幻灯片 20](/docs/dify-plugin-agent/slide-20.png)
+![幻灯片 21](/docs/dify-plugin-agent/slide-21.png)
+
+
+很多基础设施厂商 API 文档很完善，缺的是一个清爽入口。把 API 转成 Dify 插件，就可以进入生态。
+
+### 插件安全
+
+安全主要依赖签名，而不是极严的 Sandbox（Sandbox 会导致很多依赖装不上）。人工审核后用私钥签名，标为已认证；未签名插件默认无法安装，除非用户改设置。
+![幻灯片 22](/docs/dify-plugin-agent/slide-22.png)
+
+
+## 五个案例
+
+Dify 有五种插件类型：模型、工具、Agent 策略、Extension、Bundle。
+
+### 1. 把 Dify 变成 LLM API 网关
+
+用户本来就把很多模型 Key 存在 Dify 里。插件化之后，模型供应商变成更新最勤的插件类型。反向调用让 Endpoint 插件能以 OpenAI 兼容格式暴露 Dify 内托管的任意模型，自研模型也可以被封装成同一套调用方式。
+![幻灯片 23](/docs/dify-plugin-agent/slide-23.png)
+![幻灯片 24](/docs/dify-plugin-agent/slide-24.png)
+![幻灯片 25](/docs/dify-plugin-agent/slide-25.png)
+![幻灯片 26](/docs/dify-plugin-agent/slide-26.png)
+
+
+### 2. 数据库插件
+
+业务人员要数往往要 IT 审批，且不一定会 SQL。只读的数据库插件让自然语言查数成为可能。IT 管风险，业务自己问。
+![幻灯片 27](/docs/dify-plugin-agent/slide-27.png)
+![幻灯片 28](/docs/dify-plugin-agent/slide-28.png)
+
+
+### 3. 第三方 RAG
+
+Dify 早期就有知识库，但专业向量库、复杂文档解析往往是别的厂商更强。外部知识库方案先通过 API 接入；有了插件之后，常见外部库做成插件，避免每个开发者重复对接。这类插件带双向通讯，有点像 Cloudflare Workers：收 Query，问外部库，再返回 Dify。
+![幻灯片 29](/docs/dify-plugin-agent/slide-29.png)
+![幻灯片 30](/docs/dify-plugin-agent/slide-30.png)
+![幻灯片 31](/docs/dify-plugin-agent/slide-31.png)
+![幻灯片 32](/docs/dify-plugin-agent/slide-32.png)
+![幻灯片 33](/docs/dify-plugin-agent/slide-33.png)
+
+
+### 4. 复杂 Agent 策略
+
+社区要 ReAct、Function Calling，以及各种思维链变体。Agent 策略类型插件让开发者实现自己的 strategy，装到工作流的 Agent 节点里。
+![幻灯片 34](/docs/dify-plugin-agent/slide-34.png)
+
+
+### 5. MCP
+
+通过 HTTP 接入外部 MCP 服务；Dify 应用也可以发布为 MCP 服务器，在 Cursor 或 Claude 里直接调用已搭好的工作流。
+![幻灯片 35](/docs/dify-plugin-agent/slide-35.png)
+![幻灯片 36](/docs/dify-plugin-agent/slide-36.png)
+
+
+## 从原型到上市
+
+五个应用类型都支持 API，内置嵌入代码，知识库也有 API。开源第一天就有访问日志、反馈标注，以及会话数、Token 速度、费用等监控。企业版覆盖更高并发和多租户。
+![幻灯片 37](/docs/dify-plugin-agent/slide-37.png)
+![幻灯片 38](/docs/dify-plugin-agent/slide-38.png)
+![幻灯片 39](/docs/dify-plugin-agent/slide-39.png)
+
+
+## 总结
+
+AI 时代变化很快，机会也很多。Dify 希望成为武器库，让每个有想法的人都能把创意变成现实。
+![幻灯片 40](/docs/dify-plugin-agent/slide-40.png)
+
+
+原文：[https://mp.weixin.qq.com/s/YfK0jaQ_KXNZFc9X5O9s3w](https://mp.weixin.qq.com/s/YfK0jaQ_KXNZFc9X5O9s3w)

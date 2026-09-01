@@ -36,14 +36,6 @@ export function NotFoundRecovery() {
           </LocaleLink>
         </li>
         <li>
-          <LocaleLink
-            to="/docs/developers"
-            className="underline-offset-4 hover:text-foreground hover:underline"
-          >
-            {t('notFound.developers')}
-          </LocaleLink>
-        </li>
-        <li>
           <a href="/openapi.json" className="underline-offset-4 hover:text-foreground hover:underline">
             {t('notFound.openapi')}
           </a>

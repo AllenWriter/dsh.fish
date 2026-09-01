@@ -566,7 +566,7 @@ export function PopoverContent({ children, className }: PopoverContentProps) {
           clip path, which is a light rectangle framing the panel. Since the
           neck has pinched off by the time the panel lands, keeping the filter
           on at rest buys nothing and risks exactly that. */}
-      {resting ? null : (
+      {settled ? null : (
         <div
           ref={gooRef}
           aria-hidden

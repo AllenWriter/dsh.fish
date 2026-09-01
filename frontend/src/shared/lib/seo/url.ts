@@ -1,4 +1,4 @@
-import { LOCALE_CODES, localizedPath, type Locale } from '@/shared/config/i18n'
+import { DEFAULT_LOCALE, LOCALE_CODES, localizedPath, type Locale } from '@/shared/config/i18n'
 import { DESCRIPTION_MAX } from '@/shared/config/site'
 
 /**
@@ -36,8 +36,8 @@ export function alternates(
       hreflang: hreflangFor(code),
       href: absoluteUrl(origin, code, path),
     })),
-    ...(locales.includes('en')
-      ? [{ hreflang: 'x-default', href: absoluteUrl(origin, 'en', path) }]
+    ...(locales.includes(DEFAULT_LOCALE)
+      ? [{ hreflang: 'x-default', href: absoluteUrl(origin, DEFAULT_LOCALE, path) }]
       : []),
   ]
 }

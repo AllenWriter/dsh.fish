@@ -5,7 +5,7 @@ import { localizedPath, splitLocalePath } from '@/shared/config/i18n'
  * Where a retired `/kind/<id>` URL should 301.
  *
  * `mcp-server` and `hook-bridge` used to be catalog kinds. They stay as
- * bookmarks (footer, llms.txt, inbound links) so they fold onto `/browse`
+ * bookmarks (footer, llms.txt, inbound links) so they fold onto `/blog`
  * instead of 404ing. Live kinds return undefined and route as themselves.
  */
 export function retiredKindRedirect(pathname: string, search = ''): string | undefined {
@@ -13,7 +13,7 @@ export function retiredKindRedirect(pathname: string, search = ''): string | und
   const match = /^\/kind\/([\w-]+)(\.md)?$/.exec(path)
   if (match === null) return undefined
   if (!isRetiredArtifactKind(match[1]!)) return undefined
-  return `${localizedPath(locale, `/browse${match[2] ?? ''}`)}${search}`
+  return `${localizedPath(locale, `/blog${match[2] ?? ''}`)}${search}`
 }
 
 const RETIRED_PUBLISH_DOCS = new Set(['mcp-server', 'hook-bridge'])

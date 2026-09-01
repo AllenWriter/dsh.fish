@@ -19,6 +19,7 @@ export { GithubIcon, DiscordIcon } from './brand-icons'
 
 export {
   // Navigation and destinations.
+  LaptopIcon as BrandIcon,
   NewspaperIcon as BlogIcon,
   CompassIcon as BrowseIcon,
   BookOpenTextIcon as DocsIcon,
@@ -48,6 +49,7 @@ export {
   // Account, and the places the project and its maintainer can be reached.
   SignInIcon as SignInIcon,
   SignOutIcon as SignOutIcon,
+  ChatCircleIcon as ConnectIcon,
   XLogoIcon as XIcon,
   EnvelopeSimpleIcon as EmailIcon,
 
@@ -68,9 +70,14 @@ export {
   ChatTextIcon as AskIcon,
   SidebarSimpleIcon as AskPanelClosedIcon,
   SidebarIcon as AskPanelOpenIcon,
+  ThumbsUpIcon as HelpfulIcon,
+  ThumbsDownIcon as UnhelpfulIcon,
+
   // Outcomes and states.
   WarningIcon as WarningIcon,
   WarningCircleIcon as ErrorIcon,
+  LightbulbIcon as TipIcon,
+  InfoIcon as InfoIcon,
   ClockIcon as PendingIcon,
   CheckCircleIcon as ApprovedIcon,
   XCircleIcon as RejectedIcon,

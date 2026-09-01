@@ -27,20 +27,11 @@ export function websiteLd(origin: string, locale: Locale): Ld {
     name: translate(locale, 'app.name'),
     // The abbreviation people actually type. `name` stays the sitename Google
     // prints on the result; this is the other string a brand query can match.
-    alternateName: 'dsh',
+    alternateName: 'Jens',
     url: absoluteUrl(origin, locale, '/'),
     description: clampDescription(translate(locale, 'app.description')),
     inLanguage: localeDefinition(locale).tag,
     publisher: { '@id': `${origin}/#organization` },
-    // Tells an engine it may offer a search box straight into the catalog.
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${absoluteUrl(origin, locale, '/browse')}?q={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
   }
 }
 

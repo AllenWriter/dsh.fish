@@ -1,0 +1,123 @@
+---
+title: "Dify Docs Engineering: Building a Knowledge System for the AI Era"
+description: "The full migration from GitBook to Mintlify: knowledge services for LLMs, framework research, and three classes of migration problems — images, syntax, and links."
+---
+
+If docs are part of the product, what reading experience do you want? And how should docs present themselves to a new kind of reader — the LLM, now everywhere?
+
+Hi, I'm Allen, a technical writer at Dify.
+
+Starting in April 2025, I led a full migration of Dify's help docs — from GitBook to Mintlify. That covered research and selection, a working demo, style compatibility, link restructuring, and the cutover itself. It was not just a stack swap. It was a rebuild of the content infrastructure for an AI-era knowledge service.
+
+## Knowledge services in the AI era
+
+Whether this was worth doing depends on whether you are willing to give AI a set of docs that match how they actually read. How should a knowledge system for the AI era reorganize information?
+
+Before the AI boom, every software doc was designed for humans. Layout had to look good and be easy to scan. Information had to layer in, from overview to depth. Even setting SEO aside, human-facing docs want a clean design and a clear layout. For an LLM, the surface is noise. What it needs is enough context. Not clever typesetting — thorough, detailed content.
+
+### How people find information, then and now
+
+The old path: type the problem you hit / type the product name plus keywords → the search engine ranks pages → it recommends a plausible answer.
+
+User behavior collapsed into three paths:
+
+1. Find content through a search engine
+2. Browse the doc hierarchy
+3. Use in-doc search
+
+[Stripe's docs](https://docs.stripe.com/) took this as far as it can go. Anyone on a team can find what they need quickly. For signed-in users, the docs even generate test code scoped to that user's team.
+
+In the LLM era, the path is: ask an LLM → the LLM recommends an approach → the user follows up → the LLM walks through the steps. Users no longer browse sections or hunt for a specific page. They ask the model for an answer now.
+
+## What LLMs change
+
+Large language models are rewriting SEO and giving rise to generative engine optimization (GEO). One study predicted that search traffic from LLMs would jump from 0.25% of all search in 2024 to 10% by the end of 2025.
+
+Study: [AI SEO Study 2024](https://previsible.io/seo-strategy/ai-seo-study-2024/)
+
+For any technical docs built around how people use a product, that trend will change how customers find information — and how they succeed with the product. What technical writers publish will materially shape how well an LLM understands the product.
+
+To actually be LLM-friendly, docs need one key capability: auto-generating `llms.txt`. `llms.txt` is a plain Markdown file that summarizes the most important content in a compact way, structured so an LLM can read it, without the clutter of HTML, JavaScript, or ads.
+
+That set the goal for the upgrade:
+
+- **Easy for LLMs to crawl.** Full GEO compatibility, so the product shows up more often in AI's natural-language answers.
+- **API docs.** Complete and clear, with live debugging and example calls.
+- **Docs you can talk to.** Ask in natural language for endpoint explanations, integration guides, or troubleshooting.
+
+## Plan before you move
+
+### 1. Name the problem, drop GitBook
+
+Dify's docs had been on GitBook. It saw the first version of the docs and the project's open-source launch, but the platform started showing real problems: stuck hyperlinks, white screens under multi-user editing, a directory that was too vertical, broken API-doc rendering, automatic rewrites of published content, and no complete, working local preview.
+
+The root cause: the platform is built for business users who do not write code. Most of the work happens in a GUI. You can pull the repo into an IDE and edit, but you cannot preview the rendered result locally. GitBook is not a Docs-as-Code product. What the editor renders and what ships often do not match.
+
+The team had a clear direction. The first decision was to stop using GitBook and find a replacement.
+
+### 2. Research against the goal
+
+Docs are part of the product. At the time Dify already had more than 600 articles, with dense nested references. A new framework needed a design life of at least three years. I researched and tested the mainstream technical-docs frameworks. The full comparison is here: [Notes on restructuring Dify's docs](https://docs.pflm.net/zh-hans/insights/dify-docs-restructure).
+
+After hands-on trials, the shortlist was Mintlify and Docusaurus.
+
+- Mintlify is mature on visuals and auto-generated API docs. The default theme covers most display needs.
+- Docusaurus is open source and extensible, but API docs need extra tooling. It fits teams that already have React skills.
+
+Weighing long-term maintenance, out-of-the-box behavior, and the team's investment in AI, I chose Mintlify.
+
+## Action
+
+### 1. Learn the framework, iterate in small steps
+
+Once the framework was set, I built a demo, ran several rounds of discussion, and gradually got the team on board. Mintlify uses `.mdx` rather than classic `.md`. With AI moving this fast, converting formats is no longer the hard part. What matters is a structure that can grow, and room to plug in intelligent tools.
+
+### 2. Name the problems, knock them down one by one
+
+#### Problem 1: Unclear image handling
+
+The old system had no unified image host. The repo ballooned. Naming and paths had no convention. GitBook hosted privately without a CDN, so loads were unstable across regions.
+
+The fix: a self-hosted image service on Pico + S3, with automatic naming and archiving. Images left the main repo and sat behind a CDN. Historical local images were bulk-uploaded with a script.
+
+#### Problem 2: Inconsistent syntax
+
+GitBook's hint syntax is neither obvious nor safe around frontend reserved symbols. A comparison:
+
+GitBook:
+
+```md
+{% hint style="info" %}
+The name Dify comes from Do It For You.
+{% endhint %}
+```
+
+Mintlify:
+
+```mdx
+<Info>
+The name Dify comes from Do It For You.
+</Info>
+```
+
+The fix: inject the common style mappings into a prompt, and use a Dify Chat app to convert GitBook syntax to Mintlify MDX automatically.
+
+#### Problem 3: Tangled hyperlink structure
+
+Some links were full production URLs; others were relative paths in the repo. A Python script found every link, highlighted recommended replacements, and we swapped them in bulk after a human check.
+
+### 3. Ship it: keep the cutover quiet
+
+Before launch we walked every page for broken jumps. GitBook and Mintlify have different URL shapes, so redirects matter. After weighing it, we skipped A/B rollout and stayed on the core goal: stable, reachable, no hit to the user experience. On launch day the switch was smooth. Most users never noticed. API docs followed with help from a DevRel colleague, and we added a feedback widget at the bottom of every page.
+
+## Behind the docs is control of the reading experience
+
+The migration was a technical challenge, but it was also a rewrite of the role. Mintlify soon added docs MCP. Guide: [Talk to AI in the Dify docs](https://docs.dify.ai/zh-hans/learn-more/extended-reading/dify-docs-mcp).
+
+Mintlify is now the docs framework of choice for Claude, Cursor, Perplexity, and other major AI vendors. As a technical writer, the job is more than writing well. The role is closer to owner of the docs product: trusted content, a smooth reading experience, and a path people can keep using.
+
+## References
+
+- [How Generative Engine Optimization is Reshaping Docs](https://mintlify.com/blog/how-geo-is-reshaping-docs)
+
+Original: [https://mp.weixin.qq.com/s/QBSQ2-_4RWi-Vf7ddT1WHg](https://mp.weixin.qq.com/s/QBSQ2-_4RWi-Vf7ddT1WHg)

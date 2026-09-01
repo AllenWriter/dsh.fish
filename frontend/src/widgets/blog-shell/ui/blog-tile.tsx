@@ -1,3 +1,4 @@
+import { motion, useReducedMotion } from 'motion/react'
 import { ArrowUpRight } from 'lucide-react'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { localeDefinition, useLocale } from '@/shared/config/i18n'
@@ -28,32 +29,50 @@ export function BlogTile({
   className?: string
 }) {
   const locale = useLocale()
+  const reduce = useReducedMotion()
 
   return (
-    <LocaleLink to={post.url} className={cn('group block', className)}>
-      <div className="relative overflow-hidden rounded-2xl bg-muted">
-        <img
-          src={post.cover}
-          alt=""
-          width={1200}
-          height={2000}
-          loading={eager ? 'eager' : 'lazy'}
-          fetchPriority={eager ? 'high' : 'auto'}
-          className="aspect-[4/3] w-full object-cover object-center transition-transform duration-500 motion-safe:group-hover:scale-105"
-        />
-        <span className="absolute top-3 left-3 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium tracking-wide text-foreground">
-          {post.seriesTitle}
-        </span>
-        <span className="absolute top-3 right-3 grid size-8 place-items-center rounded-full bg-background/90 text-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
-          <ArrowUpRight className="size-4" aria-hidden />
-        </span>
-      </div>
-      <p className="mt-3 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-        <time dateTime={post.date}>{formatNewsroomDate(post.date, locale)}</time>
-      </p>
-      <h2 className="mt-1 text-base font-semibold tracking-tight text-balance">
-        {post.title}
-      </h2>
+    <LocaleLink to={post.url} className={cn('group flex h-full', className)}>
+      <motion.div
+        whileHover="hover"
+        className="relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-muted"
+      >
+        <div className="relative aspect-[4/3] w-full overflow-hidden">
+          <motion.img
+            src={post.cover}
+            alt=""
+            width={1200}
+            height={2000}
+            loading={eager ? 'eager' : 'lazy'}
+            fetchPriority={eager ? 'high' : 'auto'}
+            variants={reduce ? undefined : { hover: { scale: 1.05 } }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="h-full w-full object-cover object-center"
+          />
+          <span className="absolute top-3 left-3 inline-flex items-center rounded-full border border-background/60 bg-background/90 px-2.5 py-1 text-[11px] font-medium tracking-wide text-foreground backdrop-blur">
+            {post.seriesTitle}
+          </span>
+          <motion.span
+            variants={reduce ? undefined : { hover: { opacity: 1, y: 0 } }}
+            initial={{ opacity: 0, y: 6 }}
+            transition={{ duration: 0.25 }}
+            className="absolute top-3 right-3 grid size-8 place-items-center rounded-full bg-background text-foreground shadow-sm"
+          >
+            <ArrowUpRight className="size-4" aria-hidden />
+          </motion.span>
+        </div>
+        <div className="flex flex-1 flex-col gap-2 p-4 sm:p-5">
+          <p className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase sm:text-xs">
+            <time dateTime={post.date}>{formatNewsroomDate(post.date, locale)}</time>
+          </p>
+          <h2
+            title={post.title}
+            className="line-clamp-1 text-sm leading-snug font-medium tracking-tight sm:text-base"
+          >
+            {post.title}
+          </h2>
+        </div>
+      </motion.div>
     </LocaleLink>
   )
 }

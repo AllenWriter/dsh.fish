@@ -26,7 +26,7 @@
     },
   },
   "vars": {
-    "PUBLIC_BASE_URL": "https://dsh.fish",
+    "PUBLIC_BASE_URL": "https://blog.moneynew.net",
     // IndexNow verification key. Public by design — the Worker serves it at
     // /indexnow-<key>.txt. Rotate with: openssl rand -hex 16 (and redeploy).
     "INDEXNOW_KEY": "8935711bcea6a78530892e1c7684c828",
@@ -55,6 +55,9 @@
       "binding": "KV",
       "id": "1baebac2338049c0a8294779adde73a7",
     },
+  ],
+  "routes": [
+    { "pattern": "blog.moneynew.net", "custom_domain": true }
   ],
   "triggers": {
     // Re-crawl the GitHub `dsh-plugin` topic and npm every hour.

@@ -1,4 +1,4 @@
-import { LOCALE_CODES, type Locale } from '@/shared/config/i18n'
+import { DEFAULT_LOCALE, LOCALE_CODES, type Locale } from '@/shared/config/i18n'
 import { absoluteUrl, hreflangFor } from '@/shared/lib/seo'
 
 /**
@@ -104,8 +104,8 @@ function urlEntry(origin: string, locale: Locale, url: SitemapUrl): string {
             (code) =>
               `    <xhtml:link rel="alternate" hreflang="${hreflangFor(code)}" href="${escapeXml(absoluteUrl(origin, code, url.path))}"/>`,
           ),
-          ...(locales.includes('en')
-            ? [`    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(absoluteUrl(origin, 'en', url.path))}"/>`]
+          ...(locales.includes(DEFAULT_LOCALE)
+            ? [`    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(absoluteUrl(origin, DEFAULT_LOCALE, url.path))}"/>`]
             : []),
         ].join('\n')
       : undefined

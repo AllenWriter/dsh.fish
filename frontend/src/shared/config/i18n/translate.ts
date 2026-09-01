@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, type Locale } from './locales'
+import { type Locale } from './locales'
 import { en, ja, zhCN, type Catalog, type MessageKey } from './messages'
 
 /** Every catalog, keyed by the same codes the locale registry uses. */
@@ -30,7 +30,7 @@ const PLACEHOLDER = /\{(\w+)\}/g
  */
 export function translate(locale: Locale, key: string, params?: MessageParams): string {
   const catalog = CATALOGS[locale] as Record<string, string> | undefined
-  const fallback = CATALOGS[DEFAULT_LOCALE] as Record<string, string>
+  const fallback = CATALOGS.en as Record<string, string>
   const template = catalog?.[key] ?? fallback[key] ?? key
   if (params === undefined) return template
   return template.replace(PLACEHOLDER, (match, name: string) =>

@@ -17,9 +17,9 @@ export const OG_IMAGE = {
 
 /** Square brand mark for schema.org identity and install surfaces. */
 export const BRAND_IMAGE = {
-  path: '/icons/whale-brand.png',
-  width: 256,
-  height: 256,
+  path: '/icons/laptop-brand.png',
+  width: 512,
+  height: 512,
   type: 'image/png',
 } as const
 
@@ -27,19 +27,25 @@ export const BRAND_IMAGE = {
 export const HARNESS_REPO_URL = 'https://github.com/deepseek-ai/deepseek-harness'
 
 /** This registry's own source, used as the publisher's `sameAs`. */
-export const HUB_REPO_URL = 'https://github.com/stvlynn/dsh.fish'
+export const HUB_REPO_URL = 'https://github.com/AllenWriter/dsh.fish'
 
 /** Where the people who build and publish plugins talk to each other. */
 export const HUB_DISCORD_URL = 'https://discord.gg/PwZDHH4mv3'
 
 /** Who maintains the registry. One definition: catalogs interpolate it. */
-export const MAINTAINER_NAME = 'Steven Lynn'
+export const MAINTAINER_NAME = 'Jens'
+
+/** Public contact. Shown in the header Connect panel. */
+export const CONTACT_EMAIL = 'ginsinglen@gmail.com'
+
+/** WeChat ID. Shown in the header Connect panel, not a URL. */
+export const CONTACT_WECHAT = 'admilk47'
 
 /** The maintainer's feed, where what lands in the catalog gets announced. */
 export const MAINTAINER_X_URL = 'https://x.com/stv_lynn'
 
 /** The maintainer's GitHub profile, also the source of their public portrait. */
-export const MAINTAINER_GITHUB_URL = 'https://github.com/stvlynn'
+export const MAINTAINER_GITHUB_URL = 'https://github.com/AllenWriter'
 
 /** Where a bug report, a correction or a plugin nomination is read. */
 export const HUB_ISSUES_URL = `${HUB_REPO_URL}/issues`

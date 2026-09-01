@@ -3,7 +3,7 @@ import { DEFAULT_LOCALE, matchLocale, isRetiredLocale, readLocaleCookie, type Lo
 /**
  * URL strategy: one path prefix per language, and none for the default one.
  *
- * `/browse` is English, `/ja/browse` is Japanese. Sub-directories rather than
+ * `/browse` is the default language, `/ja/browse` is Japanese. Sub-directories rather than
  * sub-domains or a `?lang=` parameter, because a directory inherits the origin's
  * authority, needs no extra DNS or certificate, and — unlike a query parameter —
  * is unambiguously a separate document to a crawler.
@@ -45,7 +45,7 @@ export function localizedPath(locale: Locale, path: string): string {
  *
  * Two cases, one rule — one document, one URL:
  *
- * - `/en/browse` duplicates `/browse`, which is the most common way a
+ * - `/zh-CN/browse` duplicates `/browse`, which is the most common way a
  *   multilingual site splits its own ranking signal between two URLs.
  * - `/ZH-cn/browse` is the same document as `/zh-CN/browse` to a router that
  *   matches languages case-insensitively, and a different one to a crawler.

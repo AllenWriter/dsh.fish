@@ -36,12 +36,12 @@ export const source = loader({
 export { docs }
 
 const SEPARATOR_TITLE_KEY = {
-  start: 'docs.nav.start',
-  develop: 'docs.nav.develop',
-  publish: 'docs.nav.publish',
-  plugins: 'docs.nav.plugins',
-  use: 'docs.nav.use',
-  reference: 'docs.nav.reference',
+  ai: 'docs.nav.ai',
+  'self-hosted': 'docs.nav.selfHosted',
+  accounts: 'docs.nav.accounts',
+  site: 'docs.nav.site',
+  finance: 'docs.nav.finance',
+  product: 'docs.nav.product',
 } as const satisfies Record<string, DocsSeparatorKey>
 
 function nodeText(value: unknown): string {

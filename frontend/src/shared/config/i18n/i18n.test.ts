@@ -159,7 +159,7 @@ describe('locale paths', () => {
 
   it('prefixes every other language, including at the root', () => {
     expect(localizedPath('ja', '/browse')).toBe('/ja/browse')
-    expect(localizedPath('zh-CN', '/')).toBe('/zh-CN')
+    expect(localizedPath('en', '/')).toBe('/en')
   })
 
   it('carries the query string through a language switch', () => {
@@ -202,20 +202,22 @@ describe('locale paths', () => {
 
 describe('canonical redirects', () => {
   it('folds an explicit default-language prefix onto the bare path', () => {
-    expect(canonicalLocaleRedirect('/en/browse')).toBe('/browse')
-    expect(canonicalLocaleRedirect('/en')).toBe('/')
+    expect(canonicalLocaleRedirect('/zh-CN/browse')).toBe('/browse')
+    expect(canonicalLocaleRedirect('/zh-CN')).toBe('/')
   })
 
   it('folds a mis-cased prefix onto the canonical one', () => {
-    expect(canonicalLocaleRedirect('/ZH-cn/browse')).toBe('/zh-CN/browse')
+    expect(canonicalLocaleRedirect('/ZH-cn/browse')).toBe('/browse')
+    expect(canonicalLocaleRedirect('/EN/blog')).toBe('/en/blog')
   })
 
   it('preserves the query string across the redirect', () => {
-    expect(canonicalLocaleRedirect('/en/browse', '?q=postgres')).toBe('/browse?q=postgres')
+    expect(canonicalLocaleRedirect('/zh-CN/browse', '?q=postgres')).toBe('/browse?q=postgres')
   })
 
   it('leaves an already-canonical URL alone', () => {
     expect(canonicalLocaleRedirect('/ja/browse')).toBeUndefined()
+    expect(canonicalLocaleRedirect('/en/browse')).toBeUndefined()
     expect(canonicalLocaleRedirect('/browse')).toBeUndefined()
     expect(canonicalLocaleRedirect('/')).toBeUndefined()
   })
@@ -254,7 +256,7 @@ describe('preference redirects', () => {
 
   it('forwards a bare-URL browser visit to the chosen prefix', () => {
     expect(preferredLocaleRedirect('/browse', '', 'dsh_locale=ja', HTML)).toBe('/ja/browse')
-    expect(preferredLocaleRedirect('/', '?q=x', 'dsh_locale=zh-CN', HTML)).toBe('/zh-CN?q=x')
+    expect(preferredLocaleRedirect('/', '?q=x', 'dsh_locale=en', HTML)).toBe('/en?q=x')
   })
 
   it('never overrides an explicit URL prefix', () => {
@@ -263,7 +265,7 @@ describe('preference redirects', () => {
 
   it('does nothing without a choice, or with the default language chosen', () => {
     expect(preferredLocaleRedirect('/browse', '', null, HTML)).toBeUndefined()
-    expect(preferredLocaleRedirect('/browse', '', 'dsh_locale=en', HTML)).toBeUndefined()
+    expect(preferredLocaleRedirect('/browse', '', 'dsh_locale=zh-CN', HTML)).toBeUndefined()
   })
 
   it('only redirects browser page requests, never machines or resources', () => {

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { ARTIFACT_KINDS, CATEGORIES } from '@/entities/artifact/model/types'
 import { blogLlmsTxt, docsLlmsFull, docsLlmsTxt, rootLlmsTxt } from './llms'
 
 const ORIGIN = 'https://dsh.fish'
@@ -11,45 +10,32 @@ describe('rootLlmsTxt', () => {
   const lines = body.split('\n')
 
   it('follows the v2 section order: H1, blockquote, notes, then H2 file lists', () => {
-    expect(lines[0]).toBe('# dsh.fish')
+    expect(lines[0]).toBe("# Jens' Blog")
     expect(lines[1]?.startsWith('> ')).toBe(true)
     const firstH2 = lines.findIndex((line) => line.startsWith('## '))
     expect(firstH2).toBeGreaterThan(2)
     expect(lines.slice(2, firstH2).some((line) => line.startsWith('#'))).toBe(false)
     expect(body).toContain('## Start here')
-    expect(body).toContain('## Catalog')
-    expect(body).toContain('## API')
     expect(body).toContain('## Optional')
+    expect(body).not.toContain('## Catalog')
+    expect(body).not.toContain('/browse')
   })
 
   it('uses the spec file-list shape and absolute URLs', () => {
     const items = lines.filter((line) => line.startsWith('- ['))
-    expect(items.length).toBeGreaterThan(10)
+    expect(items.length).toBeGreaterThan(4)
     for (const line of items) {
       expect(line, line).toMatch(FILE_ITEM)
     }
   })
 
-  it('lists every kind from the taxonomy as a markdown alias', () => {
-    for (const kind of ARTIFACT_KINDS) {
-      expect(body).toContain(`${ORIGIN}/kind/${kind}.md`)
-    }
-  })
-
-  it('lists every category under Optional, generated from the taxonomy', () => {
-    for (const category of CATEGORIES) {
-      expect(body).toContain(`${ORIGIN}/category/${category.id}.md`)
-    }
-  })
-
-  it('points at the docs index and the JSON catalog rather than enumerating plugins', () => {
+  it('points at blog and docs, not the leftover plugin catalog', () => {
     expect(body).toContain(`${ORIGIN}/docs/llms.txt`)
     expect(body).toContain(`${ORIGIN}/blog/llms.txt`)
     expect(body).toContain(`${ORIGIN}/blog/feed.xml`)
-    expect(body).toContain(`${ORIGIN}/api/v1/catalog/snapshot`)
-    expect(body).toContain(`${ORIGIN}/openapi.json`)
-    expect(body).toContain(`${ORIGIN}/docs/developers`)
-    expect(body).toContain('dsh.fish developer resources')
+    expect(body).not.toContain(`${ORIGIN}/api/v1/catalog/snapshot`)
+    expect(body).not.toContain('/kind/')
+    expect(body).not.toContain('/browse')
     expect(body).not.toMatch(/\/a\/[a-z0-9]+/)
   })
 })
@@ -64,7 +50,7 @@ describe('docsLlmsTxt', () => {
   ])
 
   it('groups file lists under the nav separators and uses .md aliases', () => {
-    expect(body.startsWith('# dsh.fish documentation')).toBe(true)
+    expect(body.startsWith("# Jens' Blog documentation")).toBe(true)
     expect(body).toContain('## Docs')
     expect(body).toContain(`[Docs](${ORIGIN}/docs/index.md)`)
     expect(body).toContain('## Start')
@@ -80,7 +66,7 @@ describe('docsLlmsFull', () => {
       { path: '/docs/cli', markdown: '# CLI\n\nnpx @dsh-fish/cli' },
       { path: '/docs/api', markdown: '# API\n\nGET /api/v1/artifacts' },
     ])
-    expect(body).toContain('# dsh.fish documentation')
+    expect(body).toContain("# Jens' Blog documentation")
     expect(body).toContain('# CLI')
     expect(body).toContain('# API')
     expect(body).toContain('npx @dsh-fish/cli')
@@ -90,17 +76,15 @@ describe('docsLlmsFull', () => {
 describe('blogLlmsTxt', () => {
   const body = blogLlmsTxt(
     ORIGIN,
-    [{ title: 'Harness releases', url: '/blog/harness' }],
-    [{ title: 'DeepSeek Harness v0.1.2-alpha.1', url: '/blog/harness/v0-1-2-alpha-1' }],
+    [{ title: 'Tech', url: '/blog/tech' }],
+    [{ title: 'Leave only one inbox', url: '/blog/tech/one-inbox' }],
   )
 
   it('lists the index, each series, and every post as markdown aliases', () => {
-    expect(body.startsWith('# dsh.fish blog')).toBe(true)
+    expect(body.startsWith("# Jens' Blog blog")).toBe(true)
     expect(body).toContain(`[Blog](${ORIGIN}/blog/index.md)`)
-    expect(body).toContain(`[Harness releases](${ORIGIN}/blog/harness.md)`)
-    expect(body).toContain(
-      `[DeepSeek Harness v0.1.2-alpha.1](${ORIGIN}/blog/harness/v0-1-2-alpha-1.md)`,
-    )
+    expect(body).toContain(`[Tech](${ORIGIN}/blog/tech.md)`)
+    expect(body).toContain(`[Leave only one inbox](${ORIGIN}/blog/tech/one-inbox.md)`)
     expect(body).toContain(`${ORIGIN}/blog/feed.xml`)
   })
 })

@@ -1,0 +1,70 @@
+---
+title: "Dify Now Supports Video Generation — Plus a Tutorial for Building AI Video Apps"
+description: "Build text-to-video and image-to-video apps in Dify with the Doubao video plugin: install, authorize, import a DSL, or start from a blank Chatflow."
+---
+
+TL;DR: if you just want to try it, jump to the demo links at the end.
+
+Type text in the app's chat box and you get a video. Even a short sentence is expanded into a detailed video prompt before generation.
+
+This piece covers how to try text-to-video, and how to build an AI video app yourself.
+
+- Image and video in one pipeline: [https://udify.app/chat/18qSv1wysmRTsw34](https://udify.app/chat/18qSv1wysmRTsw34)
+- Text-to-video: [https://udify.app/chat/y3eBFyaxNJkXDlca](https://udify.app/chat/y3eBFyaxNJkXDlca)
+- Image-to-video (upload a PNG): [https://udify.app/workflow/YY6EdT3ztLfvQiKY](https://udify.app/workflow/YY6EdT3ztLfvQiKY)
+
+Sample results include: a girl and a fox (text-to-video), armies charging (text-to-video), a king and a plane (image-to-video), an ancient warhorse (image-to-video).
+
+No complicated signup or verification. Use your imagination.
+
+## How it works
+
+All three apps were built in Dify. The core is Dify's video-generation plugin.
+
+If you do not know Dify yet, think of it as a playground for AI apps — you assemble them like Lego. Homepage: [https://dify.ai/](https://dify.ai/)
+
+Below is the full recreation. About three minutes.
+
+### 1. Sign up and log in to Dify
+
+Open [https://cloud.dify.ai/](https://cloud.dify.ai/) and register with an email. You can switch language in the top right. You can also install the open-source community edition.
+
+### 2. Install the video plugin and authorize it
+
+Dify itself is not a video model. Generation comes from an external plugin.
+
+Top right, "Plugins" → "Explore Marketplace", search for video, and find **Doubao Image and Video Generator**. The capability is based on Doubao. After install, fill in your own API Key to authorize. Do not put the key in a document or commit it to a repo.
+
+### 3. Create an app
+
+After you are on the platform you still need to create an app, then add video generation to it.
+
+#### 3.1 Copy an existing app
+
+A Dify app is a DSL under the hood. In the web UI, "Import DSL file", paste the link:
+
+- Text-to-video: [https://r2.xmsex.net/2025/06/07cd66a9979953c29475dd34dd8663bf.yml](https://r2.xmsex.net/2025/06/07cd66a9979953c29475dd34dd8663bf.yml)
+- Image and video in one pipeline: [https://r2.xmsex.net/2025/06/3334f9aed0fd9dbe00b1872bf931184c.yml](https://r2.xmsex.net/2025/06/3334f9aed0fd9dbe00b1872bf931184c.yml)
+- Image-to-video: [https://r2.xmsex.net/2025/06/6b76198e75d363debeb065bc74f1160d.yml](https://r2.xmsex.net/2025/06/6b76198e75d363debeb065bc74f1160d.yml)
+
+#### 3.2 Build from scratch
+
+Create a blank app, pick Chatflow, fill in a name and description.
+
+Add a tool node, pick Doubao Generator. Choose text-to-image, text-to-video, or image-to-video depending on the effect you want.
+
+Every tool node has default inputs and outputs. For text-to-video the input is a prompt; the output is the video the plugin generates.
+
+I wire the input to the previous LLM node's output: a user's prompt is often too thin, so I let the model expand it into a detailed video prompt, then send that to the generation node. This plugin also works on an Agent node.
+
+If you have not wrapped your head around workflows yet, start here: [Dify Workflow](https://docs.dify.ai/zh-hans/guides/workflow/readme).
+
+## Wrap-up
+
+Before this, generating video in Dify usually meant an HTTP node hitting an external API. It worked, but it was not elegant — everyone who wanted video had to configure it again. This is a common need, so it became a plugin: fill in an API Key and it works.
+
+Plugin source: [AllenWriter/doubao-image-and-video-generator](https://github.com/AllenWriter/doubao-image-and-video-generator)
+
+Developer docs: [Getting started with Dify plugins](https://docs.dify.ai/plugin-dev-en/0111-getting-started-dify-plugin)
+
+Original: [https://mp.weixin.qq.com/s/obqH8fliSfFIJC0yH7dqvg](https://mp.weixin.qq.com/s/obqH8fliSfFIJC0yH7dqvg)

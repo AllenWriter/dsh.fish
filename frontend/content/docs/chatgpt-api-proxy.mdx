@@ -1,0 +1,95 @@
+---
+title: "三步搭建 ChatGPT API 中转代理"
+description: "用 Cloudflare Workers 把请求转到 api.openai.com，让客户端打你自己绑定的域名"
+---
+
+## 背景
+
+ChatGPT 是最近很少见的「双向封锁」：产品本身不面向中国用户，网页端也几乎一发布就进了名单。要用得顺，海外卡、海外号、海外 IP 都得齐，网页版依然别扭。
+
+但它提供了 API。一把 Key 就能调。对会封装的人来说，包一层就可以当成自己的产品。剩下的麻烦是网络：国内打 `api.openai.com` 不稳定，有时完全不通。HTTP 请求可以走代理，API 也不例外。
+
+我搜了一圈，合适的教程不多，写得比较清楚的在 GitHub 项目里，于是按那个思路整理成更短的一条路：[SnowfallC/chatgpt-api-worker-proxy](https://github.com/SnowfallC/chatgpt-api-worker-proxy)。
+
+本文只讲 **自己** 用 Cloudflare Workers 搭中转。别人的个人代理不要当成公共服务去打。官方入口仍是 `https://api.openai.com/v1`，下面用你自己绑定的主机名替换它。
+
+## 代理原理
+
+先把域名托管到 Cloudflare，再用 Workers 转发。
+
+- Workers 本质是后端函数，不用为了接请求去买一台服务器
+- Cloudflare 节点多，到 Worker 这一跳通常不是瓶颈
+- 写这篇文章时免费额度是每天一万次调用，个人用够了
+- 可以绑自定义域名，地址看起来像正经 API，而不是 `*.workers.dev`
+
+## 前置条件
+
+- 自己的域名
+- Cloudflare 账号
+- 一点点耐心和动手能力
+
+## 1. 将域名托管至 Cloudflare
+
+打开 [Cloudflare](https://www.cloudflare.com/)，注册账号，按页面提示把域名加进去、改 NS。这一步官方写得很清楚，不再展开。
+
+## 2. 创建 Workers
+
+回到 Cloudflare 首页，点「创建 Worker」。向导会逼你选模板，先用 Hello World，进去再改代码。
+
+先点一次「部署」，让这个 Worker 存在。
+
+### 修改 Workers 代码
+
+创建完成后进去改这段逻辑，把请求的 Host 改写成 `api.openai.com`。
+
+```js
+const TELEGRAPH_URL = 'https://api.openai.com';
+
+addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request))
+})
+
+async function handleRequest(request) {
+  const url = new URL(request.url);
+  url.host = TELEGRAPH_URL.replace(/^https?:\/\//, '');
+  const modifiedRequest = new Request(url.toString(), {
+    headers: request.headers,
+    method: request.method,
+    body: request.body,
+    redirect: 'follow'
+  });
+  const response = await fetch(modifiedRequest);
+  const modifiedResponse = new Response(response.body, response);
+  modifiedResponse.headers.set('Access-Control-Allow-Origin', '*');
+  return modifiedResponse;
+}
+```
+
+改完先点右上角「保存并部署」，再给 Worker 起个以后能认出来的名字。
+
+## 3. 绑定域名
+
+进到刚加的那个域名。左侧「Workers 路由」，再「添加路由」。
+
+给代理想一个主机名。这次演示里我绑的是 `gptapi.wsyfin.com`，路由就写成 `gptapi.wsyfin.com/*`，指向刚刚那个 Worker。
+
+DNS 里再加一条同名的 A 记录，内容填 `2.2.2.2`，小云朵打开。这个 IP 是占位，橙云开启后流量由 Cloudflare 接手。
+
+## 验证请求是否成功
+
+用 **你自己绑定的** 主机名打 `/v1/chat/completions`。没带 Key 时，只要能返回 OpenAI 的报错，就说明 Worker 已经打到官方入口了。
+
+这确实是报错，但这正是想要的信号：通路通了，还缺 Bearer。在终端里把主机名换成你绑的那个，把 `sk-********` 换成自己的 Key。不要把真实密钥写进文章。
+
+```bash
+curl --location 'https://YOUR-HOSTNAME/v1/chat/completions' \
+--header 'Authorization: Bearer sk-********' \
+--header 'Content-Type: application/json' \
+--data '{
+   "model": "gpt-3.5-turbo",
+  "messages": [{"role": "user", "content": "鲁迅为什么暴打周树人？"}]
+ }'
+```
+
+来看 2023 年的 gpt-3.5-turbo 怎么糊弄这句：
+

@@ -1,77 +1,127 @@
 import { useT } from '@/shared/config/i18n'
-import { HUB_REPO_URL } from '@/shared/config/site'
+import { CONTACT_EMAIL, CONTACT_WECHAT } from '@/shared/config/site'
 import { LocaleLink } from '@/shared/ui/locale-link'
-import {
-  BrowseIcon,
-  DocsIcon,
-  BlogIcon,
-  GithubIcon,
-  type Icon,
-} from '@/shared/ui/icon'
-import { cn } from '@/shared/lib/utils'
 
-const NAV: readonly { to: string; key: string; icon: Icon; secondary?: boolean }[] = [
-  { to: '/blog', key: 'nav.blog', icon: BlogIcon },
-  { to: '/docs', key: 'nav.docs', icon: DocsIcon },
-  { to: '/browse', key: 'nav.browse', icon: BrowseIcon, secondary: true },
-]
+const SITE_LINKS = [
+  { to: '/', key: 'footer.home' },
+  { to: '/blog', key: 'nav.blog' },
+  { to: '/docs', key: 'nav.docs' },
+] as const
+
+const WRITE_LINKS = [
+  { to: '/blog/tech', key: 'blog.series.tech' },
+  { to: '/blog/life', key: 'blog.series.life' },
+  { to: '/blog/finance', key: 'blog.series.finance' },
+  { to: '/blog/travel', key: 'blog.series.travel' },
+] as const
+
+const NOTE_LINKS = [
+  { to: '/docs', key: 'nav.docs' },
+  { to: '/docs/dify-plugin-agent', key: 'footer.doc.agent' },
+  { to: '/docs/dify-video-plugin', key: 'footer.doc.video' },
+  { to: '/docs/dify-docs-engineering', key: 'footer.doc.engineering' },
+] as const
 
 /**
- * Compact identity footer for a personal blog + docs site.
- *
- * Plugin kind/topic/category landings stay off this graph on purpose: they
- * are catalog pages, not the public IA. Browse remains as a secondary door.
+ * Compact sitemap + RSS. Email collection stays off until a mailer is wired.
  */
 export function SiteFooter() {
   const t = useT()
 
   return (
-    <footer className="border-t border-border">
-      <div className="mx-auto max-w-6xl px-6 py-10">
-        <nav aria-label={t('app.name')} className="flex flex-wrap items-center gap-x-5 gap-y-1">
-          {NAV.map((entry) => (
-            <FooterLink key={entry.to} to={entry.to} secondary={entry.secondary}>
-              <entry.icon className="size-4 shrink-0" />
-              {t(entry.key)}
-            </FooterLink>
-          ))}
-          <a
-            href={HUB_REPO_URL}
-            className="inline-flex min-h-9 items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-            rel="noreferrer noopener"
-            target="_blank"
-          >
-            <GithubIcon className="size-4 shrink-0" />
-            {t('nav.github')}
-          </a>
-        </nav>
+    <footer className="w-full border-t border-border px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-16">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4">
+          <FooterColumn title={t('footer.col.site')}>
+            {SITE_LINKS.map((entry) => (
+              <li key={`${entry.key}:${entry.to}`}>
+                <LocaleLink
+                  to={entry.to}
+                  className="text-[15px] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {t(entry.key)}
+                </LocaleLink>
+              </li>
+            ))}
+          </FooterColumn>
+          <FooterColumn title={t('footer.col.write')}>
+            {WRITE_LINKS.map((entry) => (
+              <li key={entry.to}>
+                <LocaleLink
+                  to={entry.to}
+                  className="text-[15px] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {t(entry.key)}
+                </LocaleLink>
+              </li>
+            ))}
+          </FooterColumn>
+          <FooterColumn title={t('footer.col.notes')}>
+            {NOTE_LINKS.map((entry) => (
+              <li key={entry.to}>
+                <LocaleLink
+                  to={entry.to}
+                  className="text-[15px] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {t(entry.key)}
+                </LocaleLink>
+              </li>
+            ))}
+          </FooterColumn>
+          <FooterColumn title={t('footer.col.connect')}>
+            <li>
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="text-[15px] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {t('connect.email')}
+              </a>
+            </li>
+            <li className="text-[15px] text-muted-foreground">
+              <span className="block">{t('connect.wechat')}</span>
+              <span className="font-mono text-xs">{CONTACT_WECHAT}</span>
+            </li>
+            <li>
+              <LocaleLink
+                to="/blog/feed.xml"
+                className="text-[15px] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {t('footer.rss')}
+              </LocaleLink>
+            </li>
+          </FooterColumn>
+        </div>
 
-        <p className="mt-6 border-t border-border pt-6 text-sm text-muted-foreground">
-          {t('app.author')}
-        </p>
+        <RssCard />
       </div>
     </footer>
   )
 }
 
-function FooterLink({
-  to,
-  secondary,
-  children,
-}: {
-  to: string
-  secondary?: boolean
-  children: React.ReactNode
-}) {
+function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <LocaleLink
-      to={to}
-      className={cn(
-        'inline-flex min-h-9 items-center gap-2 text-sm transition-colors hover:text-foreground',
-        secondary ? 'text-muted-foreground/80' : 'text-muted-foreground',
-      )}
-    >
-      {children}
-    </LocaleLink>
+    <nav aria-label={title} className="min-w-0">
+      <h3 className="mb-4 inline-flex rounded-md bg-muted px-2 py-1 text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
+        {title}
+      </h3>
+      <ul className="space-y-3">{children}</ul>
+    </nav>
+  )
+}
+
+function RssCard() {
+  const t = useT()
+
+  return (
+    <div className="rounded-3xl border border-border bg-card p-5 sm:p-6">
+      <h3 className="text-lg font-semibold tracking-tight">{t('footer.news.title')}</h3>
+      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{t('footer.news.body')}</p>
+      <LocaleLink
+        to="/blog/feed.xml"
+        className="press mt-5 inline-flex rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-colors hover:opacity-90"
+      >
+        {t('footer.news.subscribe')}
+      </LocaleLink>
+    </div>
   )
 }

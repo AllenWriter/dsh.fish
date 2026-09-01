@@ -1,8 +1,9 @@
 import type { MDXComponents } from 'mdx/types'
-import type { ComponentType, JSX } from 'react'
+import type { ComponentType, JSX, ReactNode } from 'react'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { CopyButton } from '@/shared/ui/copy-button'
 import { cn } from '@/shared/lib/utils'
+import { Callout, normalizeCalloutType } from '@/shared/ui/docs-callout'
 
 /**
  * Shared MDX tag map for first-party long-form pages (product docs and blog).
@@ -10,6 +11,10 @@ import { cn } from '@/shared/lib/utils'
  * Visual rules match the catalog readme renderer (underline links, no accent
  * spent on every href, fences copy through the shared button) but headings are
  * not demoted: the page owns `<h1>` from frontmatter, so MDX `#` is `<h2>`.
+ *
+ * Fences named `tip` / `info` / `warning` (and the rest) render as callouts,
+ * matching Docusaurus admonitions and GitHub alerts so authors can write
+ * ```tip without a React import.
  */
 type IntrinsicMdxComponents = Partial<{
   [Tag in keyof JSX.IntrinsicElements]: ComponentType<
@@ -28,7 +33,7 @@ export function proseMdxComponents(): IntrinsicMdxComponents {
     h2: (props) => (
       <h2
         {...props}
-        className="mt-11 mb-4 scroll-mt-20 border-t border-border pt-8 text-lg font-semibold tracking-tight text-balance first:border-0 first:pt-0 first:mt-0"
+        className="mt-10 mb-4 scroll-mt-20 text-lg font-semibold tracking-tight text-balance first:mt-0"
       />
     ),
     h3: (props) => (
@@ -81,12 +86,37 @@ export function proseMdxComponents(): IntrinsicMdxComponents {
       <ol {...props} className="my-4 list-decimal space-y-1.5 ps-5" />
     ),
     li: (props) => <li {...props} className="[overflow-wrap:anywhere]" />,
-    blockquote: (props) => (
-      <blockquote
-        {...props}
-        className="my-4 border-l-2 border-border-strong pl-4 text-muted-foreground"
-      />
-    ),
+    blockquote: ({ children, ...props }) => {
+      const lead = collectText(children).trim()
+      const gfm = lead.match(
+        /^\[!(TIP|NOTE|INFO|WARNING|CAUTION|DANGER|IMPORTANT)\]\s*([\s\S]*)$/i,
+      )
+      if (gfm) {
+        return (
+          <Callout type={gfm[1].toLowerCase()}>
+            {gfm[2].trim() ? <p>{gfm[2].trim()}</p> : null}
+          </Callout>
+        )
+      }
+      const named = lead.match(
+        /^(tip|info|note|warning|caution|danger|success|important)\b[:：]?\s*([\s\S]*)$/i,
+      )
+      if (named) {
+        return (
+          <Callout type={named[1].toLowerCase()}>
+            {named[2].trim() ? <p>{named[2].trim()}</p> : null}
+          </Callout>
+        )
+      }
+      return (
+        <blockquote
+          {...props}
+          className="my-4 border-l-2 border-border-strong pl-4 text-muted-foreground"
+        >
+          {children}
+        </blockquote>
+      )
+    },
     img: ({ alt, ...props }) => (
       <img
         {...props}
@@ -124,25 +154,62 @@ export function proseMdxComponents(): IntrinsicMdxComponents {
   }
 }
 
-function CodeFence({ children }: { children?: React.ReactNode }) {
+function CodeFence({ children }: { children?: ReactNode }) {
   const code = collectText(children)
+  const lang = fenceLanguage(children)
+  const callout = lang ? normalizeCalloutType(lang) : undefined
+  if (callout) {
+    return (
+      <Callout type={callout}>
+        {code.split(/\n\n+/).map((para, index) => (
+          <p key={index}>{para}</p>
+        ))}
+      </Callout>
+    )
+  }
+
   return (
-    <div className="relative my-5 min-w-0 max-w-full">
-      <pre className="max-w-full min-w-0 overflow-x-auto rounded-xl border border-border bg-card p-4 pr-12 font-mono text-[13px] leading-relaxed [scrollbar-width:thin]">
+    <div className="my-5 min-w-0 max-w-full overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/40 px-3 py-1.5">
+        <span className="font-mono text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+          {lang || 'text'}
+        </span>
+        {code === '' ? null : (
+          <CopyButton
+            text={code}
+            className="size-7 border-0 bg-transparent hover:bg-muted"
+          />
+        )}
+      </div>
+      <pre className="max-w-full min-w-0 overflow-x-auto p-4 font-mono text-[13px] leading-relaxed [scrollbar-width:thin]">
         {children}
       </pre>
-      {code === '' ? null : (
-        <CopyButton text={code} className="absolute right-2.5 top-2.5" />
-      )}
     </div>
   )
 }
 
-function collectText(node: React.ReactNode): string {
+function fenceLanguage(node: ReactNode): string | undefined {
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const found = fenceLanguage(child)
+      if (found) return found
+    }
+    return undefined
+  }
+  if (node !== null && typeof node === 'object' && 'props' in node) {
+    const className = (node as { props?: { className?: string } }).props?.className
+    const match = className?.match(/language-([A-Za-z0-9_+-]+)/)
+    if (match) return match[1]
+    return fenceLanguage((node as { props?: { children?: ReactNode } }).props?.children)
+  }
+  return undefined
+}
+
+function collectText(node: ReactNode): string {
   if (typeof node === 'string' || typeof node === 'number') return String(node)
   if (Array.isArray(node)) return node.map(collectText).join('')
   if (node !== null && typeof node === 'object' && 'props' in node) {
-    const props = (node as { props?: { children?: React.ReactNode } }).props
+    const props = (node as { props?: { children?: ReactNode } }).props
     return collectText(props?.children)
   }
   return ''

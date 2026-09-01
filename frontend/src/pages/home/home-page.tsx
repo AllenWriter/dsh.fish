@@ -26,7 +26,7 @@ export function meta({ loaderData, params }: Route.MetaArgs): Route.MetaDescript
  * Server-side data for the landing page.
  *
  * The home page is the writing index: the same blog collection `/blog` uses,
- * shown as a filterable newsroom grid. Catalog rails live on `/browse`.
+ * shown as a filterable newsroom grid. Series landings live under `/blog`.
  */
 export function loader({ context, params }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale)

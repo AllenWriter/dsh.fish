@@ -2,7 +2,7 @@ import { useId, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { LocaleLink } from '@/shared/ui/locale-link'
 import { useT } from '@/shared/config/i18n'
-import { SPRING_LAYOUT } from '@/shared/lib/ease'
+import { SPRING_LAYOUT, SPRING_TAB } from '@/shared/lib/ease'
 import { cn } from '@/shared/lib/utils'
 import {
   ALL_SERIES,
@@ -58,25 +58,25 @@ export function BlogNewsroom({
         ) : null}
       </header>
 
-      <div className="mt-10 flex justify-center">
+      <nav className="mt-10 flex justify-center border-b border-border sm:mt-12">
         <div
           role="tablist"
           aria-label={t('blog.newsroom.tabs')}
-          className="flex flex-wrap items-center justify-center gap-1"
+          className="flex flex-wrap items-center justify-center gap-6 sm:gap-10"
         >
           {tabs.map((tab) => {
             const active = tab.id === seriesId
             const className = cn(
-              'relative isolate px-3 py-2 text-sm font-medium transition-colors',
+              'relative isolate cursor-pointer pb-3 text-sm transition-colors sm:text-base',
               active
-                ? 'text-foreground'
+                ? 'font-medium text-foreground'
                 : 'text-muted-foreground hover:text-foreground',
             )
             const indicator = active ? (
               <motion.span
                 layoutId={underlineId}
-                className="absolute inset-x-2 -bottom-px h-0.5 bg-foreground"
-                transition={reduce ? { duration: 0 } : SPRING_LAYOUT}
+                className="absolute inset-x-0 -bottom-px h-0.5 bg-foreground"
+                transition={reduce ? { duration: 0 } : SPRING_TAB}
               />
             ) : null
             if (tabMode === 'links') {
@@ -108,7 +108,7 @@ export function BlogNewsroom({
             )
           })}
         </div>
-      </div>
+      </nav>
 
       {visible.length === 0 ? (
         <p className="mt-10 text-center text-sm text-muted-foreground">

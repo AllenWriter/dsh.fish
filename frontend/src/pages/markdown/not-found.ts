@@ -38,7 +38,6 @@ export function notFoundMarkdown(origin: string, locale: Locale): string {
     `- [${translate(locale, 'notFound.llms')}](${base}/llms.txt)`,
     `- [${translate(locale, 'notFound.docs')}](${base}/docs)`,
     `- [${translate(locale, 'notFound.blog')}](${base}/blog)`,
-    `- [${translate(locale, 'notFound.developers')}](${base}/docs/developers)`,
     `- [${translate(locale, 'notFound.openapi')}](${base}/openapi.json)`,
     `- [${translate(locale, 'notFound.api')}](${base}/api/v1/artifacts)`,
     '',

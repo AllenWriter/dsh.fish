@@ -86,11 +86,8 @@ export async function maybeMarkdownResponse(
   }
 
   if (path === '/browse') {
-    return listingResponse(container, origin, locale, url, {
-      kinds: url.searchParams.getAll('kind'),
-      categories: url.searchParams.getAll('category'),
-      title: translate(locale, 'browse.title'),
-    })
+    const blog = blogMarkdown('/blog', locale)
+    if (blog !== undefined) return markdownResponse(blog)
   }
 
   const docsMarkdown = productDocsMarkdown(path, locale)
@@ -143,7 +140,6 @@ async function homeResponse(
     '',
     `- ${translate(locale, 'nav.blog')}: ${origin}${localizedPath(locale, '/blog')}`,
     `- ${translate(locale, 'nav.docs')}: ${origin}${localizedPath(locale, '/docs')}`,
-    `- ${translate(locale, 'nav.browse')}: ${origin}${localizedPath(locale, '/browse')}`,
     '',
     `## ${translate(locale, 'blog.title')}`,
     '',

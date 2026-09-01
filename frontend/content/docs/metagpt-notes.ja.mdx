@@ -1,0 +1,75 @@
+---
+title: "MetaGPT を動かすところまでのメモ"
+description: "MetaGPT は製品ではなくミドルウェア。Role / Trigger / Callback と、実際に起動するローカル導入までを書いた。"
+---
+
+## 公開講座を受けた理由
+
+DeepWisdom の無料公開講座『[MetaGPT 智能体開発入門](https://deepwisdom.feishu.cn/docx/RJmTdvZuPozAxFxEpFxcbiPwnQf)』の学習メモです。申し込みました。リポジトリは [geekan/MetaGPT](https://github.com/geekan/MetaGPT) です。
+
+## MetaGPT はミドルウェアである
+
+2024 年、応用 AI で一番賑やかだったのはエージェントです。一言の要件を出して結果を待つ。ChatGPT は今言った一文に返します。エージェントは続きを補う——「2048 を作りたい」が段落ではなく経路になる、という建前です。
+
+MetaGPT は、その経路の一部がすでに書いてある道具箱です。店員だと思ってください。注文を受け、厨房の LLM に伝え、皿を運ぶ。厨房のモデルは自分で用意します。**ミドルウェア、ミドルウェア、ミドルウェア。** 製品ではありません。厨房が空なら何も煮えません。
+
+## 購読エージェントの三要素
+
+導入回を読んでいて嬉しかったのは、自分の事情にぴったりだったからです。毎日大量の情報を扱っていて、購読と推薦に依存しています。自分の基準で品質を保つ購読エージェントが MetaGPT で書けるなら、学習は速くなります。
+
+講座全体は、次の二つを目的に読むとよいです。
+
+- エージェントの概念を握り、関連するソースを読めるようにする
+- MetaGPT の上で、GPTs より厚いワークフローを組む
+
+購読エージェントは三つの単位です。Role、Trigger、Callback。本体、発火、データの返し。
+
+- **Role.** Watcher を実装する。熱いオープンソースリポジトリを見て、価値があるときだけ推す。
+- **Trigger.** Watcher がいつ、どの条件で走るか。
+- **Callback.** Watcher が集めたものを洗い、WeChat や Discord へ送る。
+
+形はこれだけです。あとは配線です。
+
+## リポジトリをローカルへ
+
+オープンソースをいじる最初の仕事は、フォークしてクローンすることです。この文が新しく聞こえるなら、先に Git を学んで戻ってきてください。
+
+- リポジトリ: [github.com/geekan/MetaGPT](https://github.com/geekan/MetaGPT)
+- 講座ドキュメント: [MetaGPT 智能体開発入門](https://deepwisdom.feishu.cn/docx/UBoydfLRXodYjdxPKeyc9QWhnvW)
+
+## 仮想環境に入れる
+
+依存関係は `requirements.txt` に書いてあります。Python 3 が必要です。仮想環境を新規に作ってください。MetaGPT の依存は多く、既存の site-packages と衝突します。
+
+```bash
+python -m venv your-name-env
+git clone https://github.com/geekan/MetaGPT.git
+cd /your/path/to/MetaGPT
+pip install -e .
+```
+
+インストールのログが流れ始めると、作業が始まった実感があります。
+
+最初は依存のエラーが出て、バージョンを変えても直りませんでした。独立した仮想環境に切り替えたら解消しました。
+
+## 環境変数でモデルを指す
+
+MetaGPT は考えません。考えるのはモデルです。鍵とモデル名は環境変数で渡します。
+
+`config.yaml` を `config` フォルダへ `key.yaml` としてコピーし、ファイルが求める欄を埋めます。そのうえで:
+
+```bash
+export OPENAI_API_KEY="YOUR_OPENAI_API_KEY"
+export OPENAI_API_MODEL="gpt-4"
+```
+
+自分の鍵を入れてください。既定の OpenAI エンドポイントが届かない場所にいるときだけ、自分が実際に運用しているゲートウェイを `OPENAI_API_BASE` に書きます。出所のわからない公開プロキシを貼らないでください。
+
+起動確認:
+
+```bash
+cd /your/path/to/MetaGPT/metagpt
+python startup.py --idea "write a cli blackjack game"
+```
+
+うまくいけば、各ロールが手順を順に吐き出します。それが「起動した」状態です。講座の後半は、本来自分でやっていた仕事をこれらのロールに渡す話になります。

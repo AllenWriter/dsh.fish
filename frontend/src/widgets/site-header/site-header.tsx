@@ -12,10 +12,9 @@ import { HUB_REPO_URL } from '@/shared/config/site'
 import { writeThemeCookie } from '@/shared/lib/theme'
 import { cn } from '@/shared/lib/utils'
 import {
-  BrowseIcon,
+  BrandIcon,
   CloseIcon,
   DarkThemeIcon,
-  DashboardIcon,
   DocsIcon,
   BlogIcon,
   GithubIcon,
@@ -26,13 +25,11 @@ import {
 } from '@/shared/ui/icon'
 
 /**
- * Primary destinations first; Browse is the leftover catalog, so it is last
- * and visually quieter. Submit and plugin taxonomy stay off this bar.
+ * Blog and Docs. Plugin catalog destinations stay off this bar.
  */
 const NAV: readonly { to: string; key: string; icon: Icon; secondary?: boolean }[] = [
   { to: '/blog', key: 'nav.blog', icon: BlogIcon },
   { to: '/docs', key: 'nav.docs', icon: DocsIcon },
-  { to: '/browse', key: 'nav.browse', icon: BrowseIcon, secondary: true },
 ]
 
 const SOCIAL: readonly { href: string; key: string; icon: Icon }[] = [
@@ -47,38 +44,26 @@ export function SiteHeader() {
   const [paletteOpen, setPaletteOpen] = useState(false)
 
   const commands = useMemo(
-    () => [
-      ...NAV.map((entry) => ({
+    () =>
+      NAV.map((entry) => ({
         id: entry.to,
         label: t(entry.key),
         group: t('nav.blog'),
         icon: entry.icon,
         onSelect: () => navigate(localePath(entry.to)),
       })),
-      {
-        id: 'dashboard',
-        label: t('nav.dashboard'),
-        group: t('nav.dashboard'),
-        icon: DashboardIcon,
-        onSelect: () => navigate(localePath('/dashboard')),
-      },
-    ],
     [navigate, localePath, t],
   )
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-4 sm:px-6">
-        <LocaleLink to="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
-          <img
-            src="/icons/whale-brand.png"
-            alt=""
-            width="24"
-            height="24"
-            className="size-6 object-contain"
-            aria-hidden
-          />
-          <span className="hidden sm:inline">{t('app.name')}</span>
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-4 sm:px-6 lg:px-10">
+        <LocaleLink
+          to="/"
+          className="flex shrink-0 items-center gap-2 font-semibold tracking-tight"
+        >
+          <BrandIcon className="size-5" weight="bold" aria-hidden />
+          {t('app.name')}
         </LocaleLink>
 
         <nav className="ml-4 hidden items-center gap-1 md:flex">
@@ -117,11 +102,11 @@ export function SiteHeader() {
         <button
           type="button"
           onClick={() => setPaletteOpen(true)}
-          className="press ml-auto hidden h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm text-muted-foreground hover:border-border-strong lg:flex"
+          className="press ml-auto hidden h-9 w-56 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm text-muted-foreground hover:border-border-strong lg:flex"
         >
           <SearchIcon className="size-4" weight="bold" />
-          {t('nav.search')}
-          <kbd className="ml-2 rounded border border-border px-1.5 py-0.5 font-mono text-[10px]">
+          <span className="flex-1 text-left">{t('nav.search')}</span>
+          <kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px]">
             &#8984;K
           </kbd>
         </button>
