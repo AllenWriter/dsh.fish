@@ -6,7 +6,7 @@ import { GoogleAnalytics } from './google-analytics'
 import { gtagBootstrapSnippet, gtagLoaderSrc, pageViewParams, sendPageView } from './gtag'
 import { analyticsIdForDocument, parseGaMeasurementId } from './measurement-id'
 
-const PRODUCTION_ID = 'G-Q5QS4DS9F5'
+const PRODUCTION_ID = 'G-FESCMWFD5J'
 
 describe('parseGaMeasurementId', () => {
   it('accepts a GA4 measurement id, trimming surrounding space', () => {
