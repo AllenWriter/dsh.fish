@@ -46,14 +46,14 @@
     {
       "binding": "DB",
       "database_name": "dsh-fish-db",
-      "database_id": "be324981-52bb-4f2d-ae81-bd1583ec146a",
+      "database_id": "85ebf7f9-10ad-4512-8f14-ddf2c20456a5",
       "migrations_dir": "../backend/migrations",
     },
   ],
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "1baebac2338049c0a8294779adde73a7",
+      "id": "6004af5e9d844c44821363a897272487",
     },
   ],
   "routes": [
@@ -63,6 +63,6 @@
     // Re-crawl the GitHub `dsh-plugin` topic and npm every hour.
     // The minutely trigger advances the versioned README backfill immediately
     // after deployment; the hourly trigger keeps the remote catalog fresh.
-    "crons": ["* * * * *", "0 * * * *"],
+    "crons": [],
   },
 }
