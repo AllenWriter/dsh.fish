@@ -67,7 +67,7 @@ export function BlogTile({
           </p>
           <h2
             title={post.title}
-            className="line-clamp-1 text-sm leading-snug font-medium tracking-tight sm:text-base"
+            className="line-clamp-1 text-sm leading-snug font-normal tracking-tight sm:text-base"
           >
             {post.title}
           </h2>
