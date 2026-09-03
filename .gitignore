@@ -31,3 +31,6 @@ playwright-report/
 blob-report/
 e2e/.generated-*.sql
 e2e/*-snapshots/*.png.diff.*
+
+# Copied from frontend/content/blog at build; served via ASSETS.
+frontend/public/blog/mdx/

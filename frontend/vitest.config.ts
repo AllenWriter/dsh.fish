@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import { blogStaticAssets } from './scripts/blog-static-assets'
 
 /**
  * Test config is separate from `vite.config.ts` on purpose.
@@ -11,7 +12,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
  * and by `wrangler dev`.
  */
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  plugins: [blogStaticAssets(), tsconfigPaths()],
   test: {
     include: ['src/**/*.test.{ts,tsx}', 'workers/**/*.test.ts', 'scripts/**/*.test.mjs'],
     environment: 'node',

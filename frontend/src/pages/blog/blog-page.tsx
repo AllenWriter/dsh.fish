@@ -1,5 +1,4 @@
 import type { Route } from './+types/blog-page'
-import browserCollections from 'collections/browser'
 import { hubContext } from '@/shared/api/hub-context'
 import {
   localeDefinition,
@@ -15,8 +14,10 @@ import {
   pageMeta,
 } from '@/shared/lib/seo'
 import { BlogArticle, BlogNewsroom } from '@/widgets/blog-shell'
-import { blogMdxComponents } from './mdx'
+import { BlogMarkdown } from './body'
+import { parseBlogFrontmatter } from './parse'
 import { blogLocales, blogPostMarkdown } from './raw'
+import { assetsBlogMdxReader } from './read-mdx'
 import { readingMinutesFromMarkdown } from './reading-time'
 import {
   blogSeriesNav,
@@ -26,17 +27,12 @@ import {
 } from './series'
 import {
   blogPostCards,
+  getBlogPost,
   postDateIso,
-  readBlogPage,
   relatedBlogPostCards,
   slugsFromSplat,
-  source,
-  tocFromCompiled,
 } from './source'
-
-const blogContent = browserCollections.blog.createClientLoader({
-  component: ({ default: Mdx }) => <Mdx components={blogMdxComponents()} />,
-})
+import { tocFromMarkdown } from './toc'
 
 function formatDate(iso: string, locale: Locale): string {
   return new Intl.DateTimeFormat(localeDefinition(locale).tag, {
@@ -73,10 +69,11 @@ export function meta({
   })
 }
 
-export function loader({ context, params }: Route.LoaderArgs) {
+export async function loader({ context, params }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale)
   const slugs = slugsFromSplat(params['*'])
-  const origin = context.get(hubContext).container.config.baseUrl
+  const { container, env } = context.get(hubContext)
+  const origin = container.config.baseUrl
   const nav = blogSeriesNav(locale)
 
   if (slugs.length === 0) {
@@ -145,20 +142,31 @@ export function loader({ context, params }: Route.LoaderArgs) {
     }
   }
 
-  const page = source.getPage(slugs, locale)
-  if (!page) throw new Response(null, { status: 404, statusText: 'Not Found' })
+  const summary = getBlogPost(slugs, locale)
+  if (!summary) throw new Response(null, { status: 404, statusText: 'Not Found' })
 
-  const data = readBlogPage(page)
+  const markdown = await blogPostMarkdown(
+    summary.url,
+    locale,
+    assetsBlogMdxReader(env.ASSETS),
+  )
+  if (markdown === undefined) {
+    throw new Response(null, { status: 404, statusText: 'Not Found' })
+  }
+
+  const data = parseBlogFrontmatter(summary.url, markdown)
+  if (!isBlogSeries(data.series)) {
+    throw new Error(`Blog post ${summary.url} has unknown series ${data.series}`)
+  }
   const date = postDateIso(data.date)
-  const availableLocales = blogLocales(page.url)
-  const markdown = blogPostMarkdown(page.url, locale) ?? ''
+  const availableLocales = blogLocales(summary.url)
 
   return {
     kind: 'post' as const,
     locale,
     origin,
-    path: page.url,
-    contentPath: page.path,
+    path: summary.url,
+    markdown,
     title: data.title,
     description: data.description,
     author: data.author,
@@ -168,8 +176,8 @@ export function loader({ context, params }: Route.LoaderArgs) {
     seriesTitle: translate(locale, seriesTitleKey(data.series)),
     formattedDate: formatDate(date, locale),
     readingMinutes: readingMinutesFromMarkdown(markdown),
-    related: relatedBlogPostCards(locale, page.url, data.series),
-    toc: tocFromCompiled(data),
+    related: relatedBlogPostCards(locale, summary.url, data.series),
+    toc: tocFromMarkdown(markdown),
     availableLocales,
     type: 'article' as const,
     jsonLd: [
@@ -180,10 +188,10 @@ export function loader({ context, params }: Route.LoaderArgs) {
           name: translate(locale, seriesTitleKey(data.series)),
           path: `/blog/${data.series}`,
         },
-        { name: data.title, path: page.url },
+        { name: data.title, path: summary.url },
       ]),
       blogPostingLd(origin, locale, {
-        path: page.url,
+        path: summary.url,
         title: data.title,
         description: data.description,
         datePublished: date,
@@ -209,7 +217,7 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
   }
 
   const {
-    contentPath,
+    markdown,
     title,
     description,
     author,
@@ -237,7 +245,7 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
       related={related}
       toc={toc}
     >
-      {blogContent.useContent(contentPath)}
+      <BlogMarkdown markdown={markdown} />
     </BlogArticle>
   )
 }

@@ -1,11 +1,21 @@
 /**
  * Public API of the blog page slice for other pages.
  *
- * Markdown negotiation needs the bundled source text, which does not import
- * Fumadocs. The sitemap and `/blog/llms.txt` read listing helpers from
- * `./source` directly because those lists are generated from the MDX tree —
- * see architecture.md.
+ * Listings and locale tables come from the generated frontmatter manifest.
+ * Post bodies are read one file at a time (ASSETS in the Worker, disk in tests).
  */
-export { blogListingEntries, blogMarkdown, blogPostMarkdown, blogPostMarkdownPaths, supportsBlogMarkdown } from './raw'
-export { BLOG_SERIES, blogSeriesNav, isBlogSeries, seriesDescriptionKey, seriesTitleKey } from './series'
+export {
+  blogListingEntries,
+  blogMarkdown,
+  blogPostMarkdown,
+  blogPostMarkdownPaths,
+  supportsBlogMarkdown,
+} from './raw'
+export {
+  BLOG_SERIES,
+  blogSeriesNav,
+  isBlogSeries,
+  seriesDescriptionKey,
+  seriesTitleKey,
+} from './series'
 export type { BlogSeries } from './series'

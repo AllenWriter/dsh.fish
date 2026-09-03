@@ -159,22 +159,28 @@ See [`../decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-000
 
 ### Editorial blog
 
-Dated posts live under `/blog/*`, in a second Fumadocs collection
-(`defineCollections` with `author`, `date`, and a closed `series` enum).
-They are not product docs: a changelog and a Harness release reading are
-a different intent from a publishing guide.
+Dated posts live under `/blog/*`. They are **not** a Fumadocs collection:
+compiling every `content/blog/**/*.mdx` file into the SSR Worker blows the
+free 3 MiB gzip script cap. Docs stay on Fumadocs; blog bodies are static
+files.
+
+A Vite plugin copies `frontend/content/blog` to `frontend/public/blog/mdx`
+(served by the existing ASSETS binding) and writes a frontmatter-only JSON
+manifest. Homepage cards, `/blog` listings, the sitemap, and feeds import
+that JSON. An article loader fetches the one MDX file it needs
+(`env.ASSETS.fetch` in the Worker, `readFile` in tests) and renders it with
+`react-markdown` + `remark-gfm`.
 
 `pages/blog` owns the routes and the source module. `widgets/blog-shell`
 is in-column chrome (newsroom tabs on listings, breadcrumbs on posts) beside `SiteHeader`.
-`fumadocs-ui` is not a dependency. MDX is compiled at build time; the
-Worker never `getText('raw')`.
+`fumadocs-ui` is not a dependency.
 
-Same-layer imports, same reason as docs:
+Same-layer imports:
 
 - `pages/markdown` → `pages/blog` public API (`blogMarkdown`, `supportsBlogMarkdown`)
 - `pages/seo` → `pages/blog` public API (`BLOG_SERIES`) for `/blog/llms.txt`
-- `pages/seo` → `pages/blog/source` (`blogSitemapEntries`, `listBlogPosts`, `blogPostPaths`) — those helpers cannot sit on the public API, because the collection is a Vite macro and the markdown unit tests import `@/pages/blog` without the plugin
-- `pages/home` → `pages/blog/source` (`blogPostCards`) so the homepage grid is the same collection as `/blog`, not a second post list
+- `pages/seo` → `pages/blog/source` (`blogSitemapEntries`, `listBlogPosts`, `blogPostPaths`)
+- `pages/home` → `pages/blog/source` (`blogPostCards`) so the homepage grid is the same listing as `/blog`, not a second post list
 
 Dot-suffix locale files; React Router owns the URL prefix.
 `blogLocales` checks physical MDX files so metadata and the sitemap never

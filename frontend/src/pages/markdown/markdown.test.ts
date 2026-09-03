@@ -4,10 +4,12 @@ import type { ArtifactDetail, InstallPlanDto } from '@/entities/artifact/model/t
 import { mockArtifact } from '@/entities/artifact/model/artifact.fixture'
 import { prefersMarkdown, wantsMarkdownNotFound, estimateTokens } from './negotiate'
 import { artifactMarkdown, listingItemMarkdown } from './artifact'
+import { diskBlogAssets } from '@/pages/blog/read-mdx.node'
 import { maybeMarkdownResponse, supportsMarkdownNegotiation } from './handler'
 import { notFoundMarkdown, shouldServeMarkdownNotFound } from './not-found'
 
 const ORIGIN = 'https://dsh.fish'
+const blogAssets = diskBlogAssets()
 
 const DETAIL: ArtifactDetail = {
   ...mockArtifact(),
@@ -107,6 +109,7 @@ describe('maybeMarkdownResponse', () => {
     const response = await maybeMarkdownResponse(
       request('/a/dsh-hello', 'text/html'),
       stubContainer(),
+      blogAssets,
     )
     expect(response).toBeNull()
   })
@@ -115,6 +118,7 @@ describe('maybeMarkdownResponse', () => {
     const response = await maybeMarkdownResponse(
       request('/a/dsh-hello', 'text/markdown'),
       stubContainer(),
+      blogAssets,
     )
 
     expect(response).not.toBeNull()
@@ -128,12 +132,14 @@ describe('maybeMarkdownResponse', () => {
     const localized = await maybeMarkdownResponse(
       request('/zh-CN/a/dsh-hello', 'text/markdown'),
       stubContainer(),
+      blogAssets,
     )
     expect(localized).not.toBeNull()
 
     const browse = await maybeMarkdownResponse(
       request('/browse?q=mcp', 'text/markdown'),
       stubContainer(),
+      blogAssets,
     )
     expect(browse).not.toBeNull()
     const browseText = await browse!.text()
@@ -143,62 +149,65 @@ describe('maybeMarkdownResponse', () => {
     const kind = await maybeMarkdownResponse(
       request('/kind/bundle', 'text/markdown'),
       stubContainer(),
+      blogAssets,
     )
     expect(kind).not.toBeNull()
 
-    const docs = await maybeMarkdownResponse(request('/docs/dify-plugin-agent', 'text/markdown'), stubContainer())
+    const docs = await maybeMarkdownResponse(request('/docs/dify-plugin-agent', 'text/markdown'), stubContainer(), blogAssets)
     expect(docs).not.toBeNull()
     expect(await docs!.text()).toContain('Dify')
 
     const localizedDocs = await maybeMarkdownResponse(
       request('/zh-CN/docs/dify-docs-engineering', 'text/markdown'),
       stubContainer(),
+      blogAssets,
     )
     expect(localizedDocs).not.toBeNull()
     expect(await localizedDocs!.text()).toContain('Mintlify')
 
-    const blog = await maybeMarkdownResponse(request('/blog', 'text/markdown'), stubContainer())
+    const blog = await maybeMarkdownResponse(request('/blog', 'text/markdown'), stubContainer(), blogAssets)
     expect(blog).not.toBeNull()
     expect(await blog!.text()).toContain('/blog/tech/one-inbox')
 
     const post = await maybeMarkdownResponse(
       request('/blog/tech/one-inbox', 'text/markdown'),
       stubContainer(),
+      blogAssets,
     )
     expect(post).not.toBeNull()
     expect(await post!.text()).toContain('只留一个入口')
   })
 
   it('serves v2 .md aliases without an Accept header', async () => {
-    const docs = await maybeMarkdownResponse(request('/docs/dify-plugin-agent.md'), stubContainer())
+    const docs = await maybeMarkdownResponse(request('/docs/dify-plugin-agent.md'), stubContainer(), blogAssets)
     expect(docs).not.toBeNull()
     expect(docs!.headers.get('content-type')).toBe('text/markdown; charset=utf-8')
     expect(await docs!.text()).toContain('Dify')
 
-    const home = await maybeMarkdownResponse(request('/index.md'), stubContainer())
+    const home = await maybeMarkdownResponse(request('/index.md'), stubContainer(), blogAssets)
     expect(home).not.toBeNull()
 
-    const docsIndex = await maybeMarkdownResponse(request('/docs/index.md'), stubContainer())
+    const docsIndex = await maybeMarkdownResponse(request('/docs/index.md'), stubContainer(), blogAssets)
     expect(docsIndex).not.toBeNull()
 
-    const artifact = await maybeMarkdownResponse(request('/a/dsh-hello.md'), stubContainer())
+    const artifact = await maybeMarkdownResponse(request('/a/dsh-hello.md'), stubContainer(), blogAssets)
     expect(artifact).not.toBeNull()
     expect(await artifact!.text()).toContain('# @acme/dsh-hello')
 
-    const localized = await maybeMarkdownResponse(request('/ja/docs/dify-plugin-agent.md'), stubContainer())
+    const localized = await maybeMarkdownResponse(request('/ja/docs/dify-plugin-agent.md'), stubContainer(), blogAssets)
     expect(localized).not.toBeNull()
   })
 
   it('still requires Accept on the HTML URL', async () => {
-    expect(await maybeMarkdownResponse(request('/docs/dify-plugin-agent'), stubContainer())).toBeNull()
-    expect(await maybeMarkdownResponse(request('/a/dsh-hello'), stubContainer())).toBeNull()
+    expect(await maybeMarkdownResponse(request('/docs/dify-plugin-agent'), stubContainer(), blogAssets)).toBeNull()
+    expect(await maybeMarkdownResponse(request('/a/dsh-hello'), stubContainer(), blogAssets)).toBeNull()
   })
 
   it('falls through for unknown paths and unknown artifacts', async () => {
     const container = stubContainer()
-    expect(await maybeMarkdownResponse(request('/submit', 'text/markdown'), container)).toBeNull()
+    expect(await maybeMarkdownResponse(request('/submit', 'text/markdown'), container, blogAssets)).toBeNull()
     expect(
-      await maybeMarkdownResponse(request('/kind/nope', 'text/markdown'), container),
+      await maybeMarkdownResponse(request('/kind/nope', 'text/markdown'), container, blogAssets),
     ).toBeNull()
 
     const missing = {
@@ -210,11 +219,11 @@ describe('maybeMarkdownResponse', () => {
         },
       },
     } as unknown as Container
-    expect(await maybeMarkdownResponse(request('/a/missing', 'text/markdown'), missing)).toBeNull()
+    expect(await maybeMarkdownResponse(request('/a/missing', 'text/markdown'), missing, blogAssets)).toBeNull()
   })
 
   it('gives the homepage a title, writing index and doors, without glossary copy', async () => {
-    const response = await maybeMarkdownResponse(request('/', 'text/markdown'), stubContainer())
+    const response = await maybeMarkdownResponse(request('/', 'text/markdown'), stubContainer(), blogAssets)
     expect(response).not.toBeNull()
     const body = await response!.text()
     expect(body).toMatch(/^# /m)

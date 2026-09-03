@@ -12,6 +12,7 @@ import { markdownResponse } from './response'
 import { artifactMarkdown, listingItemMarkdown } from './artifact'
 import { productDocsMarkdown, supportsProductDocsMarkdown } from '@/pages/docs'
 import { blogListingEntries, blogMarkdown, supportsBlogMarkdown } from '@/pages/blog'
+import { assetsBlogMdxReader, type BlogAssets } from '@/pages/blog/read-mdx'
 
 /** How many rows a markdown listing carries. Agents page through the API. */
 const LISTING_LIMIT = 50
@@ -46,6 +47,7 @@ export function supportsMarkdownNegotiation(pathname: string): boolean {
 export async function maybeMarkdownResponse(
   request: Request,
   container: Container,
+  assets?: BlogAssets,
 ): Promise<Response | null> {
   const url = new URL(request.url)
   const { locale, path: rawPath } = splitLocalePath(url.pathname)
@@ -85,15 +87,17 @@ export async function maybeMarkdownResponse(
     })
   }
 
+  const blogReader = assets === undefined ? undefined : assetsBlogMdxReader(assets)
+
   if (path === '/browse') {
-    const blog = blogMarkdown('/blog', locale)
+    const blog = await blogMarkdown('/blog', locale, blogReader)
     if (blog !== undefined) return markdownResponse(blog)
   }
 
   const docsMarkdown = productDocsMarkdown(path, locale)
   if (docsMarkdown !== undefined) return markdownResponse(docsMarkdown)
 
-  const blog = blogMarkdown(path, locale)
+  const blog = await blogMarkdown(path, locale, blogReader)
   if (blog !== undefined) return markdownResponse(blog)
 
   return null

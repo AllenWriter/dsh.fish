@@ -120,7 +120,7 @@ async function handleRequest(
   // Agents get the catalog as markdown when they ask for it (`Accept:
   // text/markdown`) or follow a `.md` alias; browsers on HTML URLs never
   // send that type, so nothing changes for them.
-  const markdown = await maybeMarkdownResponse(request, container)
+  const markdown = await maybeMarkdownResponse(request, container, env.ASSETS)
   if (markdown !== null) {
     return withDiscoveryLinks(markdown, request.url, false)
   }

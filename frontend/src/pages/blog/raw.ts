@@ -1,17 +1,23 @@
-import { DEFAULT_LOCALE, LOCALE_CODES, mdxTranslationSuffixes, translate, type Locale } from '@/shared/config/i18n'
-import { BLOG_SERIES, isBlogSeries, seriesDescriptionKey, seriesTitleKey, type BlogSeries } from './series'
-
-/**
- * First-party blog MDX as bundled strings.
- *
- * Same reason as product docs: `getText('raw')` hits the filesystem, which a
- * Worker does not have. Vite inlines these modules at build time.
- */
-const RAW = import.meta.glob('../../../content/blog/**/*.mdx', {
-  query: '?raw',
-  eager: true,
-  import: 'default',
-}) as Record<string, string>
+import {
+  DEFAULT_LOCALE,
+  LOCALE_CODES,
+  translate,
+  type Locale,
+} from '@/shared/config/i18n'
+import {
+  blogManifestPosts,
+  findBlogPost,
+  localeCopy,
+  localizedMdxFile,
+} from './manifest'
+import type { BlogMdxReader } from './read-mdx'
+import {
+  BLOG_SERIES,
+  isBlogSeries,
+  seriesDescriptionKey,
+  seriesTitleKey,
+  type BlogSeries,
+} from './series'
 
 function fileForPath(path: string): string | undefined {
   if (!path.startsWith('/blog/')) return undefined
@@ -22,43 +28,25 @@ function fileForPath(path: string): string | undefined {
   return `${parts[0]}/${parts[1]}.mdx`
 }
 
-function localizedFile(relative: string, locale: Locale): string {
-  if (locale === DEFAULT_LOCALE) return relative
-  const extension = relative.lastIndexOf('.')
-  return `${relative.slice(0, extension)}.${locale}${relative.slice(extension)}`
-}
-
-function rawDocument(relative: string): string | undefined {
-  const suffix = `/content/blog/${relative}`
-  const key = Object.keys(RAW).find((candidate) => candidate.endsWith(suffix))
-  return key === undefined ? undefined : RAW[key]
-}
-
 /**
- * Unlocalized `/blog/{series}/{slug}` paths that have a bundled English MDX file.
+ * Unlocalized `/blog/{series}/{slug}` paths that have a default-language file.
  */
 export function blogPostMarkdownPaths(): readonly string[] {
-  const translationSuffixes = mdxTranslationSuffixes()
-  const paths = new Set<string>()
-  for (const key of Object.keys(RAW)) {
-    const match = /\/content\/blog\/(.+)\.mdx$/.exec(key)
-    if (match === null) continue
-    const relative = match[1]!
-    if (translationSuffixes.some((suffix) => relative.endsWith(suffix))) continue
-    const parts = relative.split('/')
-    if (parts.length !== 2 || !isBlogSeries(parts[0]!)) continue
-    paths.add(`/blog/${relative}`)
-  }
-  return [...paths].sort((left, right) => left.localeCompare(right))
+  return blogManifestPosts.map((post) => post.url)
 }
 
-export function blogPostMarkdown(
+export async function blogPostMarkdown(
   unlocalizedPath: string,
   locale: Locale = DEFAULT_LOCALE,
-): string | undefined {
+  readText?: BlogMdxReader,
+): Promise<string | undefined> {
+  if (readText === undefined) return undefined
   const relative = fileForPath(unlocalizedPath)
   if (relative === undefined) return undefined
-  return rawDocument(localizedFile(relative, locale)) ?? rawDocument(relative)
+  return (
+    (await readText(localizedMdxFile(relative, locale))) ??
+    (await readText(relative))
+  )
 }
 
 export function supportsBlogMarkdown(unlocalizedPath: string): boolean {
@@ -67,7 +55,7 @@ export function supportsBlogMarkdown(unlocalizedPath: string): boolean {
     const rest = unlocalizedPath.slice('/blog/'.length)
     if (isBlogSeries(rest)) return true
   }
-  return blogPostMarkdown(unlocalizedPath) !== undefined
+  return findBlogPost(unlocalizedPath) !== undefined
 }
 
 function listingLocales(): readonly Locale[] {
@@ -77,11 +65,13 @@ function listingLocales(): readonly Locale[] {
 /** Locales with a physical translation for this page; English fallback is not counted. */
 export function blogLocales(unlocalizedPath: string): readonly Locale[] {
   if (unlocalizedPath === '/blog') return listingLocales()
-  const rest = unlocalizedPath.startsWith('/blog/') ? unlocalizedPath.slice('/blog/'.length) : ''
+  const rest = unlocalizedPath.startsWith('/blog/')
+    ? unlocalizedPath.slice('/blog/'.length)
+    : ''
   if (isBlogSeries(rest)) return listingLocales()
-  const relative = fileForPath(unlocalizedPath)
-  if (relative === undefined) return []
-  return LOCALE_CODES.filter((locale) => rawDocument(localizedFile(relative, locale)) !== undefined)
+  const post = findBlogPost(unlocalizedPath)
+  if (post === undefined) return []
+  return LOCALE_CODES.filter((locale) => post.locales[locale] !== undefined)
 }
 
 export function blogSeriesFromPath(unlocalizedPath: string): BlogSeries | undefined {
@@ -91,31 +81,24 @@ export function blogSeriesFromPath(unlocalizedPath: string): BlogSeries | undefi
   return first !== undefined && isBlogSeries(first) ? first : undefined
 }
 
-function frontmatterField(source: string, field: string): string {
-  const fence = source.match(/^---\n([\s\S]*?)\n---/)
-  if (fence === null) return ''
-  const match = new RegExp(`^${field}:\\s*(.*)$`, 'm').exec(fence[1]!)
-  if (match === null) return ''
-  return match[1]!.trim().replace(/^["']|["']$/g, '')
-}
-
-export function blogListingEntries(locale: Locale, series?: BlogSeries): readonly {
+export function blogListingEntries(
+  locale: Locale,
+  series?: BlogSeries,
+): readonly {
   path: string
   title: string
   description: string
   date: string
 }[] {
   const entries = []
-  for (const path of blogPostMarkdownPaths()) {
-    const folder = blogSeriesFromPath(path)
-    if (series !== undefined && folder !== series) continue
-    const source = blogPostMarkdown(path, locale)
-    if (source === undefined) continue
+  for (const post of blogManifestPosts) {
+    if (series !== undefined && post.series !== series) continue
+    const copy = localeCopy(post, locale)
     entries.push({
-      path,
-      title: frontmatterField(source, 'title'),
-      description: frontmatterField(source, 'description'),
-      date: frontmatterField(source, 'date'),
+      path: post.url,
+      title: copy.title,
+      description: copy.description,
+      date: copy.date,
     })
   }
   return entries.sort((left, right) => right.date.localeCompare(left.date))
@@ -124,15 +107,26 @@ export function blogListingEntries(locale: Locale, series?: BlogSeries): readonl
 /**
  * Markdown for a blog URL: the raw MDX of a post, or a generated listing for
  * `/blog` and `/blog/{series}`.
+ *
+ * Post bodies are read one file at a time. Listings use the frontmatter
+ * manifest and do not need a reader.
  */
-export function blogMarkdown(unlocalizedPath: string, locale: Locale = DEFAULT_LOCALE): string | undefined {
-  const post = blogPostMarkdown(unlocalizedPath, locale)
+export async function blogMarkdown(
+  unlocalizedPath: string,
+  locale: Locale = DEFAULT_LOCALE,
+  readText?: BlogMdxReader,
+): Promise<string | undefined> {
+  const post = await blogPostMarkdown(unlocalizedPath, locale, readText)
   if (post !== undefined) return post
-  if (unlocalizedPath !== '/blog' && !BLOG_SERIES.some((series) => unlocalizedPath === `/blog/${series}`)) {
+  if (
+    unlocalizedPath !== '/blog' &&
+    !BLOG_SERIES.some((series) => unlocalizedPath === `/blog/${series}`)
+  ) {
     return undefined
   }
 
-  const series = unlocalizedPath === '/blog' ? undefined : blogSeriesFromPath(unlocalizedPath)
+  const series =
+    unlocalizedPath === '/blog' ? undefined : blogSeriesFromPath(unlocalizedPath)
   const title =
     series === undefined
       ? translate(locale, 'blog.title')

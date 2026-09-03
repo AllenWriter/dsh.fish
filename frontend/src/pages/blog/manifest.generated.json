@@ -1,0 +1,1438 @@
+{
+  "posts": [
+    {
+      "url": "/blog/finance/airlines-dont-make-money-on-tickets",
+      "series": "finance",
+      "slug": "airlines-dont-make-money-on-tickets",
+      "file": "finance/airlines-dont-make-money-on-tickets.mdx",
+      "cover": "/blog/covers/airlines-dont-make-money-on-tickets.webp",
+      "locales": {
+        "en": {
+          "title": "If tickets don’t make money, what do airlines live on?",
+          "description": "Tickets often lose money. Airlines live on slots, miles, and treating seats as inventory.",
+          "author": "Jens",
+          "date": "2026-09-02"
+        },
+        "ja": {
+          "title": "航空券が儲からないなら、航空会社は何で生きるか",
+          "description": "航空券はしばしば儲からない。航空会社が生きるのはスロット、マイル、座席を在庫にすること。",
+          "author": "Jens",
+          "date": "2026-09-02"
+        },
+        "zh-CN": {
+          "title": "机票不赚钱，那航司靠什么活？",
+          "description": "机票常常不赚钱，航司靠的是里程、辅收和把座位当成库存。",
+          "author": "Jens",
+          "date": "2026-09-02"
+        }
+      }
+    },
+    {
+      "url": "/blog/finance/australia-delivery-gigs",
+      "series": "finance",
+      "slug": "australia-delivery-gigs",
+      "file": "finance/australia-delivery-gigs.mdx",
+      "cover": "/blog/covers/australia-delivery-gigs.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "人在澳洲跑外卖，一天能赚多少？",
+          "description": "大不了去送外卖？墨尔本跑一天单，账算完可能请不起奶茶。",
+          "author": "Jens",
+          "date": "2026-08-18"
+        }
+      }
+    },
+    {
+      "url": "/blog/finance/bullshit-jobs",
+      "series": "finance",
+      "slug": "bullshit-jobs",
+      "file": "finance/bullshit-jobs.mdx",
+      "cover": "/blog/covers/bullshit-jobs.webp",
+      "locales": {
+        "en": {
+          "title": "Bullshit jobs",
+          "description": "The world would be fine if the work vanished. Why pretend it matters every day.",
+          "author": "Jens",
+          "date": "2024-07-10"
+        },
+        "ja": {
+          "title": "クソ仕事",
+          "description": "仕事が消えても世界は困らない。なぜ毎日、重要であるふりをするのか。",
+          "author": "Jens",
+          "date": "2024-07-10"
+        },
+        "zh-CN": {
+          "title": "狗屁工作",
+          "description": "工作消失了世界也不会怎样，可为什么还要每天假装很重要。",
+          "author": "Jens",
+          "date": "2024-07-10"
+        }
+      }
+    },
+    {
+      "url": "/blog/finance/diamonds-are-forever",
+      "series": "finance",
+      "slug": "diamonds-are-forever",
+      "file": "finance/diamonds-are-forever.mdx",
+      "cover": "/blog/covers/diamonds-are-forever.webp",
+      "locales": {
+        "en": {
+          "title": "Love is forever, but are diamonds?",
+          "description": "Diamonds became eternal not by geology. A century of marketing did it.",
+          "author": "Jens",
+          "date": "2026-07-05"
+        },
+        "ja": {
+          "title": "愛は永遠。だがダイヤは？",
+          "description": "ダイヤが永遠になったのは地質学ではない。百年続くマーケティングだ。",
+          "author": "Jens",
+          "date": "2026-07-05"
+        },
+        "zh-CN": {
+          "title": "爱情恒久远，但钻石是吗？",
+          "description": "钻石变永恒，不是地质学，是一场持续百年的营销。",
+          "author": "Jens",
+          "date": "2026-07-05"
+        }
+      }
+    },
+    {
+      "url": "/blog/finance/dont-dca-qqq",
+      "series": "finance",
+      "slug": "dont-dca-qqq",
+      "file": "finance/dont-dca-qqq.mdx",
+      "cover": "/blog/covers/dont-dca-qqq.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "别再定投QQQ，这个混合配方才是普通人投资的终极答案",
+          "description": "用一套混合资产配方替代单押 QQQ 定投，给普通人一条更稳的配置路径。",
+          "author": "Jens",
+          "date": "2026-01-19"
+        }
+      }
+    },
+    {
+      "url": "/blog/finance/first-listed-company",
+      "series": "finance",
+      "slug": "first-listed-company",
+      "file": "finance/first-listed-company.mdx",
+      "cover": "/blog/covers/first-listed-company.webp",
+      "locales": {
+        "en": {
+          "title": "The world’s first listed company",
+          "description": "How the East India Company turned one voyage into shares you could buy and sell.",
+          "author": "Jens",
+          "date": "2024-09-25"
+        },
+        "ja": {
+          "title": "世界で最初の上場会社",
+          "description": "東インド会社は、一回の航海を、売買できる株式にどう変えたか。",
+          "author": "Jens",
+          "date": "2024-09-25"
+        },
+        "zh-CN": {
+          "title": "世界上第一家上市公司",
+          "description": "东印度公司怎样把一次航海，变成可以买卖的股份。",
+          "author": "Jens",
+          "date": "2024-09-25"
+        }
+      }
+    },
+    {
+      "url": "/blog/finance/first-listed-company-collapse",
+      "series": "finance",
+      "slug": "first-listed-company-collapse",
+      "file": "finance/first-listed-company-collapse.mdx",
+      "cover": "/blog/covers/first-listed-company-collapse.webp",
+      "locales": {
+        "en": {
+          "title": "The fall of the world’s first listed company",
+          "description": "After the first IPO, the bubble, the crash, and what was left on the floor.",
+          "author": "Jens",
+          "date": "2024-11-07"
+        },
+        "ja": {
+          "title": "世界初の上場会社の覆滅",
+          "description": "最初の上場会社は、そのあとどう泡になり、崩れ、何を残したか。",
+          "author": "Jens",
+          "date": "2024-11-07"
+        },
+        "zh-CN": {
+          "title": "世界第一上市公司的覆灭",
+          "description": "第一家上市公司后来怎样泡沫、崩盘，又留下什么。",
+          "author": "Jens",
+          "date": "2024-11-07"
+        }
+      }
+    },
+    {
+      "url": "/blog/finance/futures-epic",
+      "series": "finance",
+      "slug": "futures-epic",
+      "file": "finance/futures-epic.mdx",
+      "cover": "/blog/covers/futures-epic.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "一口气看懂期货：这个世界上最聪明的风险工具，为什么总能把人逼到悬崖边？",
+          "description": "把期货从定价、杠杆到爆仓的机制讲清楚，看清它为什么聪明，也为什么危险。",
+          "author": "Jens",
+          "date": "2026-03-12"
+        }
+      }
+    },
+    {
+      "url": "/blog/finance/hermes-vanished-fortune",
+      "series": "finance",
+      "slug": "hermes-vanished-fortune",
+      "file": "finance/hermes-vanished-fortune.mdx",
+      "cover": "/blog/covers/hermes-vanished-fortune.webp",
+      "locales": {
+        "en": {
+          "title": "Swallowing Hermès (part 1)",
+          "description": "Ten billion euros of shares missing for a decade. How a Hermès heir handed over the vault key.",
+          "author": "Jens",
+          "date": "2026-05-20"
+        },
+        "ja": {
+          "title": "エルメスを吞む（上）",
+          "description": "100億ユーロの株式が十数年消えた。エルメス相続人は、どう金庫の鍵を渡したのか。",
+          "author": "Jens",
+          "date": "2026-05-20"
+        },
+        "zh-CN": {
+          "title": "吞噬爱马仕（上）",
+          "description": "一百亿欧元的股份失踪十几年，爱马仕继承人是怎么把保险柜钥匙交出去的。",
+          "author": "Jens",
+          "date": "2026-05-20"
+        }
+      }
+    },
+    {
+      "url": "/blog/finance/nobel-econ-tech-explosion",
+      "series": "finance",
+      "slug": "nobel-econ-tech-explosion",
+      "file": "finance/nobel-econ-tech-explosion.mdx",
+      "cover": "/blog/covers/nobel-econ-tech-explosion.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "诺贝尔经济学奖如何破解“技术爆炸”的秘密",
+          "description": "人类为什么在 250 年前突然越狱马尔萨斯陷阱，三位诺奖得主给出答案。",
+          "author": "Jens",
+          "date": "2025-12-28"
+        }
+      }
+    },
+    {
+      "url": "/blog/finance/trump-bankruptcy-comeback",
+      "series": "finance",
+      "slug": "trump-bankruptcy-comeback",
+      "file": "finance/trump-bankruptcy-comeback.mdx",
+      "cover": "/blog/covers/trump-bankruptcy-comeback.webp",
+      "locales": {
+        "en": {
+          "title": "Trump: the art of bankruptcy and coming back",
+          "description": "After casinos and debt flipped the empire, he made failure into a business too.",
+          "author": "Jens",
+          "date": "2025-01-04"
+        },
+        "ja": {
+          "title": "トランプ物語：破産から再起の技術",
+          "description": "カジノと債務が帝国をひっくり返すと、失敗まで商売にした。",
+          "author": "Jens",
+          "date": "2025-01-04"
+        },
+        "zh-CN": {
+          "title": "特朗普故事：破产到东山再起的艺术",
+          "description": "赌场和债务把帝国掀翻之后，他怎样把失败也做成生意。",
+          "author": "Jens",
+          "date": "2025-01-04"
+        }
+      }
+    },
+    {
+      "url": "/blog/finance/trump-family-prequel",
+      "series": "finance",
+      "slug": "trump-family-prequel",
+      "file": "finance/trump-family-prequel.mdx",
+      "cover": "/blog/covers/trump-family-prequel.webp",
+      "locales": {
+        "en": {
+          "title": "The Trump family prequel",
+          "description": "The Trump fortune starts with immigration, real estate, and face — before it is his turn.",
+          "author": "Jens",
+          "date": "2024-11-21"
+        },
+        "ja": {
+          "title": "トランプ家・前伝",
+          "description": "移民、不動産、見栄。トランプ家業は、本人の番が来る前に始まっている。",
+          "author": "Jens",
+          "date": "2024-11-21"
+        },
+        "zh-CN": {
+          "title": "特朗普家族前传",
+          "description": "特朗普家业从移民、地产和牌面开始，还没轮到他自己。",
+          "author": "Jens",
+          "date": "2024-11-21"
+        }
+      }
+    },
+    {
+      "url": "/blog/finance/trump-rise-part-2",
+      "series": "finance",
+      "slug": "trump-rise-part-2",
+      "file": "finance/trump-rise-part-2.mdx",
+      "cover": "/blog/covers/trump-rise-part-2.webp",
+      "locales": {
+        "en": {
+          "title": "The rise of Trump",
+          "description": "Fame, loans, and Manhattan real estate: how Trump turned himself into a brand.",
+          "author": "Jens",
+          "date": "2024-12-12"
+        },
+        "ja": {
+          "title": "トランプの台頭",
+          "description": "名声、融資、マンハッタンの不動産。自分をブランドにするまで。",
+          "author": "Jens",
+          "date": "2024-12-12"
+        },
+        "zh-CN": {
+          "title": "特朗普的崛起之路",
+          "description": "名望、贷款和曼哈顿地产，特朗普怎样把自己做成品牌。",
+          "author": "Jens",
+          "date": "2024-12-12"
+        }
+      }
+    },
+    {
+      "url": "/blog/finance/us-railroad-bubble",
+      "series": "finance",
+      "slug": "us-railroad-bubble",
+      "file": "finance/us-railroad-bubble.mdx",
+      "cover": "/blog/covers/us-railroad-bubble.webp",
+      "locales": {
+        "en": {
+          "title": "How the U.S. railroad bubble took down a national economy",
+          "description": "The rails were real. The bubble was real. In 1873 Americans prepaid the future too dear.",
+          "author": "Jens",
+          "date": "2026-08-03"
+        },
+        "ja": {
+          "title": "米国鉄道バブルはどう全国経済を崩したか",
+          "description": "鉄道は本物、バブルも本物。1873年、米国人は未来を先に高く買いすぎた。",
+          "author": "Jens",
+          "date": "2026-08-03"
+        },
+        "zh-CN": {
+          "title": "美国铁路泡沫如何带崩全国经济？",
+          "description": "铁路是真的，泡沫也是真的。1873 年美国人把未来提前买贵了。",
+          "author": "Jens",
+          "date": "2026-08-03"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/art-of-war-sun-tzu",
+      "series": "life",
+      "slug": "art-of-war-sun-tzu",
+      "file": "life/art-of-war-sun-tzu.mdx",
+      "cover": "/blog/covers/art-of-war-sun-tzu.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "冷知识盲盒：孙子兵法",
+          "description": "孙子兵法不是鸡汤，是一套把信息、后勤和人心算清楚的方法。",
+          "author": "Jens",
+          "date": "2025-04-02"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/ask-and-then-what",
+      "series": "life",
+      "slug": "ask-and-then-what",
+      "file": "life/ask-and-then-what.mdx",
+      "cover": "/blog/covers/ask-and-then-what.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "多问一句然后呢：超越第一阶段",
+          "description": "价格管制、保护法案、保险补贴：少问口号，多问一句然后呢。",
+          "author": "Jens",
+          "date": "2026-04-21"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/aspirin-thousand-year-secret",
+      "series": "life",
+      "slug": "aspirin-thousand-year-secret",
+      "file": "life/aspirin-thousand-year-secret.mdx",
+      "cover": "/blog/covers/aspirin-thousand-year-secret.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "阿司匹林：一片小药背后的千年秘密",
+          "description": "从柳树皮到拜耳实验室，一片退烧药走了几千年。",
+          "author": "Jens",
+          "date": "2025-06-08"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/common-thinking-fallacies",
+      "series": "life",
+      "slug": "common-thinking-fallacies",
+      "file": "life/common-thinking-fallacies.mdx",
+      "cover": "/blog/covers/common-thinking-fallacies.webp",
+      "locales": {
+        "en": {
+          "title": "Cracking everyday thinking fallacies",
+          "description": "Straw men, red herrings, and bad attribution: the logic traps in daily arguments.",
+          "author": "Jens",
+          "date": "2025-08-18"
+        },
+        "ja": {
+          "title": "よくある思考の誤りを解く",
+          "description": "藁人形、レッドヘリング、誤った帰属。日常の言い争いの論理トラップ。",
+          "author": "Jens",
+          "date": "2025-08-18"
+        },
+        "zh-CN": {
+          "title": "破解常见的思维谬误",
+          "description": "稻草人、红鲱鱼和乱归因：日常抬杠里最常见的逻辑陷阱。",
+          "author": "Jens",
+          "date": "2025-08-18"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/dayun-stadium",
+      "series": "life",
+      "slug": "dayun-stadium",
+      "file": "life/dayun-stadium.mdx",
+      "cover": "/blog/covers/dayun-stadium.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "城市建筑：大运体育馆",
+          "description": "龙岗大运中心为什么像一座水晶王冠，以及它给这座城留下了什么。",
+          "author": "Jens",
+          "date": "2023-08-07"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/edison-the-man",
+      "series": "life",
+      "slug": "edison-the-man",
+      "file": "life/edison-the-man.mdx",
+      "cover": "/blog/covers/edison-the-man.webp",
+      "locales": {
+        "en": {
+          "title": "Edison, the man",
+          "description": "The inventor king did not just light bulbs. He collected patents, built companies, and shoved rivals off the board.",
+          "author": "Jens",
+          "date": "2025-03-04"
+        },
+        "ja": {
+          "title": "エジソンという人",
+          "description": "発明王は電球だけではない。特許を集め、会社を組み、相手を盤から落とす。",
+          "author": "Jens",
+          "date": "2025-03-04"
+        },
+        "zh-CN": {
+          "title": "爱迪生其人",
+          "description": "发明王不只会点灯，还很会抢专利、组公司和把对手逼出局。",
+          "author": "Jens",
+          "date": "2025-03-04"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/fanta-wwii-black-history",
+      "series": "life",
+      "slug": "fanta-wwii-black-history",
+      "file": "life/fanta-wwii-black-history.mdx",
+      "cover": "/blog/covers/fanta-wwii-black-history.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "二战芬达是用废水做的？揭秘 Fanta 黑历史",
+          "description": "可乐原浆断供之后，德国分厂用起司废水做出了芬达。",
+          "author": "Jens",
+          "date": "2026-01-28"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/first-blog",
+      "series": "life",
+      "slug": "first-blog",
+      "file": "life/first-blog.mdx",
+      "cover": "/blog/covers/first-blog.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "发刊词",
+          "description": "飞鸟集文档中心的发刊词：为什么用 Docusaurus 做博客和文档一体的站点。",
+          "author": "Jens",
+          "date": "2023-05-22"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/gunpowder-and-fireworks",
+      "series": "life",
+      "slug": "gunpowder-and-fireworks",
+      "file": "life/gunpowder-and-fireworks.mdx",
+      "cover": "/blog/covers/gunpowder-and-fireworks.webp",
+      "locales": {
+        "en": {
+          "title": "Gunpowder and fireworks",
+          "description": "How gunpowder left the alchemy furnace for the battlefield, then the New Year sky.",
+          "author": "Jens",
+          "date": "2023-12-10"
+        },
+        "ja": {
+          "title": "火薬と花火",
+          "description": "火薬が煉丹炉から戦場へ、そして新年の夜空の花火になるまで。",
+          "author": "Jens",
+          "date": "2023-12-10"
+        },
+        "zh-CN": {
+          "title": "火药与烟花：璀璨夜空的背后往事",
+          "description": "火药从炼丹炉走进战场，再变成新年夜空里的烟花。",
+          "author": "Jens",
+          "date": "2023-12-10"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/horse-year-fengshui-2026",
+      "series": "life",
+      "slug": "horse-year-fengshui-2026",
+      "file": "life/horse-year-fengshui-2026.mdx",
+      "cover": "/blog/covers/horse-year-fengshui-2026.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "2026年马年风水运势讲座纪要",
+          "description": "汇丰深圳讲座纪要：九运火运、马年生肖运势、风水布局与开工吉日。",
+          "author": "Jens",
+          "date": "2026-01-18"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/how-atomic-bomb-was-made",
+      "series": "life",
+      "slug": "how-atomic-bomb-was-made",
+      "file": "life/how-atomic-bomb-was-made.mdx",
+      "cover": "/blog/covers/how-atomic-bomb-was-made.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "原子弹是如何造出来的？",
+          "description": "从质能方程到实验室，第一颗原子弹是怎么被做出来的。",
+          "author": "Jens",
+          "date": "2023-10-17"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/how-atomic-bomb-was-made-part-2",
+      "series": "life",
+      "slug": "how-atomic-bomb-was-made-part-2",
+      "file": "life/how-atomic-bomb-was-made-part-2.mdx",
+      "cover": "/blog/covers/how-atomic-bomb-was-made-part-2.webp",
+      "locales": {
+        "en": {
+          "title": "How the atomic bomb was made (part 2)",
+          "description": "The Manhattan Project, Oppenheimer on stage, how the first bomb was built.",
+          "author": "Jens",
+          "date": "2023-11-08"
+        },
+        "ja": {
+          "title": "原子爆弾はどう造られたか（下）",
+          "description": "マンハッタン計画、オッペンハイマー登場。最初の原子爆弾はどう作られたか。",
+          "author": "Jens",
+          "date": "2023-11-08"
+        },
+        "zh-CN": {
+          "title": "原子弹是如何造出来的？（下期）",
+          "description": "曼哈顿计划、奥本海默出场，第一颗原子弹是怎样被做出来的。",
+          "author": "Jens",
+          "date": "2023-11-08"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/ice-to-fridge-part-1",
+      "series": "life",
+      "slug": "ice-to-fridge-part-1",
+      "file": "life/ice-to-fridge-part-1.mdx",
+      "cover": "/blog/covers/ice-to-fridge-part-1.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "从冰块到空调，人类如何与热浪博弈？（上期）",
+          "description": "冰箱出现之前，人怎么存冰、运冰，好过完一个夏天。",
+          "author": "Jens",
+          "date": "2023-07-30"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/ice-to-fridge-part-2",
+      "series": "life",
+      "slug": "ice-to-fridge-part-2",
+      "file": "life/ice-to-fridge-part-2.mdx",
+      "cover": "/blog/covers/ice-to-fridge-part-2.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "从冰块到空调，人类如何与热浪博弈？（下期）",
+          "description": "空调并不是给人发明的：开利从印刷车间的除湿，走到现代制冷。",
+          "author": "Jens",
+          "date": "2023-07-30"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/killing-superbugs",
+      "series": "life",
+      "slug": "killing-superbugs",
+      "file": "life/killing-superbugs.mdx",
+      "cover": "/blog/covers/killing-superbugs.webp",
+      "locales": {
+        "en": {
+          "title": "Cold-Knowledge Blind Box: how do you kill a superbug?",
+          "description": "When antibiotics fail, an older trick comes back: bacteriophages.",
+          "author": "Jens",
+          "date": "2025-05-19"
+        },
+        "ja": {
+          "title": "冷知識盲盒：スーパー細菌をどう殺すか",
+          "description": "抗生物質が効かなくなったあと、もっと古い方法、ファージが呼び戻される。",
+          "author": "Jens",
+          "date": "2025-05-19"
+        },
+        "zh-CN": {
+          "title": "冷知识盲盒：怎样才能杀死超级细菌？",
+          "description": "抗生素失灵之后，噬菌体这种更古老的办法被重新请了回来。",
+          "author": "Jens",
+          "date": "2025-05-19"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/liuyang-fireworks-capital",
+      "series": "life",
+      "slug": "liuyang-fireworks-capital",
+      "file": "life/liuyang-fireworks-capital.mdx",
+      "cover": "/blog/covers/liuyang-fireworks-capital.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "新春涨知识：浏阳如何成为烟花之都",
+          "description": "浏阳烟花不是天生的，是技术、口岸和一整条产业链堆出来的。",
+          "author": "Jens",
+          "date": "2025-01-26"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/musk-family-education",
+      "series": "life",
+      "slug": "musk-family-education",
+      "file": "life/musk-family-education.mdx",
+      "cover": "/blog/covers/musk-family-education.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "冷知识盲盒——马斯克家庭教育",
+          "description": "从会开飞机的爷爷到梅耶·马斯克，这个原生家庭有多疯。",
+          "author": "Jens",
+          "date": "2024-06-17"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/newton-other-side",
+      "series": "life",
+      "slug": "newton-other-side",
+      "file": "life/newton-other-side.mdx",
+      "cover": "/blog/covers/newton-other-side.webp",
+      "locales": {
+        "en": {
+          "title": "Cold-Knowledge Blind Box: the other side of Newton",
+          "description": "Besides the falling apple, Newton did alchemy, kept grudges, and erased rivals from history.",
+          "author": "Jens",
+          "date": "2025-09-27"
+        },
+        "ja": {
+          "title": "冷知識盲盒：ニュートンのもう一つの顔",
+          "description": "リンゴが落ちる以外に、ニュートンは錬金し、仇を結び、相手を歴史から消した。",
+          "author": "Jens",
+          "date": "2025-09-27"
+        },
+        "zh-CN": {
+          "title": "冷知识盲盒：牛顿的另一面",
+          "description": "苹果落地之外，牛顿还在炼金、结仇、把对手从历史上抹掉。",
+          "author": "Jens",
+          "date": "2025-09-27"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/penicillin-accident",
+      "series": "life",
+      "slug": "penicillin-accident",
+      "file": "life/penicillin-accident.mdx",
+      "cover": "/blog/covers/penicillin-accident.webp",
+      "locales": {
+        "en": {
+          "title": "Penicillin by accident: how a P-person changed history",
+          "description": "Fleming's plate went moldy. A P-person's carelessness rewrote war and medicine.",
+          "author": "Jens",
+          "date": "2025-06-19"
+        },
+        "ja": {
+          "title": "ペニシリンの意外な発見：P人が歴史を変える",
+          "description": "フレミングの皿がカビた。P人式の不注意が戦争と医学を書き換えた。",
+          "author": "Jens",
+          "date": "2025-06-19"
+        },
+        "zh-CN": {
+          "title": "青霉素的意外发现：P 人如何改变历史",
+          "description": "弗莱明的盘子发霉了，P 人式的漫不经心改写了战争和医学。",
+          "author": "Jens",
+          "date": "2025-06-19"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/qingshanzhi",
+      "series": "life",
+      "slug": "qingshanzhi",
+      "file": "life/qingshanzhi.mdx",
+      "cover": "/blog/covers/qingshanzhi.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "青衫志",
+          "description": "青衫志是一部关于人鬼情未了的英文 Show，2017 年首映于成熙小礼堂。",
+          "author": "Jens",
+          "date": "2023-07-16"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/riddle-quiz-1",
+      "series": "life",
+      "slug": "riddle-quiz-1",
+      "file": "life/riddle-quiz-1.mdx",
+      "cover": "/blog/covers/riddle-quiz-1.webp",
+      "locales": {
+        "en": {
+          "title": "Brain-teasers, rapid fire",
+          "description": "Where QR codes came from, why lychees feel \\\"heaty,\\\" and why winter skin itches.",
+          "author": "Jens",
+          "date": "2023-11-25"
+        },
+        "ja": {
+          "title": "頭の体操、クイズ早押し",
+          "description": "QRコードの出自、ライチが「上火」になる理由、冬に肌がかゆくなる理由。",
+          "author": "Jens",
+          "date": "2023-11-25"
+        },
+        "zh-CN": {
+          "title": "思维急转弯，快问快答",
+          "description": "二维码从哪来、荔枝为什么上火、冬天为什么皮肤痒。",
+          "author": "Jens",
+          "date": "2023-11-25"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/riddle-quiz-2",
+      "series": "life",
+      "slug": "riddle-quiz-2",
+      "file": "life/riddle-quiz-2.mdx",
+      "cover": "/blog/covers/riddle-quiz-2.webp",
+      "locales": {
+        "en": {
+          "title": "Brain-teasers, rapid fire (part 2)",
+          "description": "Why barbecue smells so good, why the calorie model is not enough, insulin and winter weight.",
+          "author": "Jens",
+          "date": "2024-01-18"
+        },
+        "ja": {
+          "title": "クイズ早押し（その二）",
+          "description": "焼肉が香る理由、カロリーモデルが足りない理由、インスリンと冬の体重。",
+          "author": "Jens",
+          "date": "2024-01-18"
+        },
+        "zh-CN": {
+          "title": "思维急转弯，快问快答（二）",
+          "description": "烤肉为什么香、卡路里模型为什么不够用、胰岛素和冬天长胖。",
+          "author": "Jens",
+          "date": "2024-01-18"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/salmon-on-the-altar",
+      "series": "life",
+      "slug": "salmon-on-the-altar",
+      "file": "life/salmon-on-the-altar.mdx",
+      "cover": "/blog/covers/salmon-on-the-altar.webp",
+      "locales": {
+        "en": {
+          "title": "How salmon climbed onto the altar",
+          "description": "How a ordinary fish became the center square in the sushi case.",
+          "author": "Jens",
+          "date": "2024-08-21"
+        },
+        "ja": {
+          "title": "サーモンはいかにして神棚に上ったか",
+          "description": "普通の魚が、寿司ケースのC席になるまで。",
+          "author": "Jens",
+          "date": "2024-08-21"
+        },
+        "zh-CN": {
+          "title": "三文鱼如何走向神坛",
+          "description": "三文鱼怎样从普通鱼变成寿司柜上的C位。",
+          "author": "Jens",
+          "date": "2024-08-21"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/secret-of-glass",
+      "series": "life",
+      "slug": "secret-of-glass",
+      "file": "life/secret-of-glass.mdx",
+      "cover": "/blog/covers/secret-of-glass.webp",
+      "locales": {
+        "en": {
+          "title": "The secret of glass",
+          "description": "How sand becomes glass, and why being see-through is not ordinary at all.",
+          "author": "Jens",
+          "date": "2024-02-21"
+        },
+        "ja": {
+          "title": "ガラスの秘密",
+          "description": "砂がガラスになるまで。透明であることは、ちっとも平凡ではない。",
+          "author": "Jens",
+          "date": "2024-02-21"
+        },
+        "zh-CN": {
+          "title": "玻璃的秘密",
+          "description": "沙子怎么变成玻璃，透明这件事为什么一点都不平凡。",
+          "author": "Jens",
+          "date": "2024-02-21"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/sparta-300",
+      "series": "life",
+      "slug": "sparta-300",
+      "file": "life/sparta-300.mdx",
+      "cover": "/blog/covers/sparta-300.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "冷知识盲盒——斯巴达 300 勇士",
+          "description": "温泉关那三百人，历史比电影更冷，也更残酷。",
+          "author": "Jens",
+          "date": "2024-06-03"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/speak-clearly-first",
+      "series": "life",
+      "slug": "speak-clearly-first",
+      "file": "life/speak-clearly-first.mdx",
+      "cover": "/blog/covers/speak-clearly-first.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "掌握聪明的钥匙 —— 先把话说清楚",
+          "description": "想显得聪明，第一步不是金句，是把话说清楚。",
+          "author": "Jens",
+          "date": "2025-04-28"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/story-of-msg",
+      "series": "life",
+      "slug": "story-of-msg",
+      "file": "life/story-of-msg.mdx",
+      "cover": "/blog/covers/story-of-msg.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "味精的故事",
+          "description": "鲜味从海带汤走进味精瓶，日本人怎样把“鲜”做成工业。",
+          "author": "Jens",
+          "date": "2025-04-16"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/thinking-traps",
+      "series": "life",
+      "slug": "thinking-traps",
+      "file": "life/thinking-traps.mdx",
+      "cover": "/blog/covers/thinking-traps.webp",
+      "locales": {
+        "en": {
+          "title": "Little traps in the way we think",
+          "description": "Sour grapes, the spotlight, hindsight: pits the brain digs for itself.",
+          "author": "Jens",
+          "date": "2025-09-02"
+        },
+        "ja": {
+          "title": "思考の中の小さな落とし穴",
+          "description": "酸っぱい葡萄、スポットライト、後知恵。脳が自分で掘る穴。",
+          "author": "Jens",
+          "date": "2025-09-02"
+        },
+        "zh-CN": {
+          "title": "趣聊思维里的小陷阱",
+          "description": "酸葡萄、聚光灯、后见之明：大脑自己给自己挖的坑。",
+          "author": "Jens",
+          "date": "2025-09-02"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/watermelon-summer-god",
+      "series": "life",
+      "slug": "watermelon-summer-god",
+      "file": "life/watermelon-summer-god.mdx",
+      "cover": "/blog/covers/watermelon-summer-god.webp",
+      "locales": {
+        "en": {
+          "title": "The god of summer: watermelon's wild truth",
+          "description": "Sweet and watery. How humans bred watermelon into summer's default.",
+          "author": "Jens",
+          "date": "2025-07-05"
+        },
+        "ja": {
+          "title": "夏を司る神——西瓜の狂った真実",
+          "description": "甘くて水っぽい。人類はどう西瓜を夏の定番に育てたか。",
+          "author": "Jens",
+          "date": "2025-07-05"
+        },
+        "zh-CN": {
+          "title": "掌管夏天的神——西瓜的疯狂真相",
+          "description": "西瓜又甜又水，它是怎么被人类养成夏天标配的。",
+          "author": "Jens",
+          "date": "2025-07-05"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/why-carrots-for-eyes",
+      "series": "life",
+      "slug": "why-carrots-for-eyes",
+      "file": "life/why-carrots-for-eyes.mdx",
+      "cover": "/blog/covers/why-carrots-for-eyes.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "为什么胡萝卜对眼睛好？",
+          "description": "胡萝卜对眼睛好这个说法从哪来：航海、荷兰王室，再到二战英国。",
+          "author": "Jens",
+          "date": "2023-07-13"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/why-steak-is-rare",
+      "series": "life",
+      "slug": "why-steak-is-rare",
+      "file": "life/why-steak-is-rare.mdx",
+      "cover": "/blog/covers/why-steak-is-rare.webp",
+      "locales": {
+        "en": {
+          "title": "Why is Western steak always half-raw?",
+          "description": "When a waiter asks how you want it cooked, it is not about raw. It is about fiber and temperature.",
+          "author": "Jens",
+          "date": "2025-10-21"
+        },
+        "ja": {
+          "title": "なぜ洋食のステーキは生焼けなのか",
+          "description": "何分焼きかと聞かれるのは、生かどうかではない。繊維と温度の計算だ。",
+          "author": "Jens",
+          "date": "2025-10-21"
+        },
+        "zh-CN": {
+          "title": "为什么西餐的牛排都是半生不熟的？",
+          "description": "西餐问几分熟，不是生，是把牛肉的纤维和温度算明白。",
+          "author": "Jens",
+          "date": "2025-10-21"
+        }
+      }
+    },
+    {
+      "url": "/blog/life/world-cup-football",
+      "series": "life",
+      "slug": "world-cup-football",
+      "file": "life/world-cup-football.mdx",
+      "cover": "/blog/covers/world-cup-football.webp",
+      "locales": {
+        "en": {
+          "title": "The World Cup: how a small ball moves the planet",
+          "description": "Not only a match. Nation, money, and TV ads sewn onto one ball.",
+          "author": "Jens",
+          "date": "2026-06-18"
+        },
+        "ja": {
+          "title": "ワールドカップ：小さなサッカーが大きな地球を動かす",
+          "description": "試合だけではない。民族、金、テレビ広告を一つの球に縫い付けた。",
+          "author": "Jens",
+          "date": "2026-06-18"
+        },
+        "zh-CN": {
+          "title": "世界杯：小足球何以撼动大地球？",
+          "description": "世界杯不只是比赛，是把民族、金钱和电视广告缝在同一个球上。",
+          "author": "Jens",
+          "date": "2026-06-18"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/agents-not-demos",
+      "series": "tech",
+      "slug": "agents-not-demos",
+      "file": "tech/agents-not-demos.mdx",
+      "cover": "/blog/covers/agents-not-demos.webp",
+      "locales": {
+        "en": {
+          "title": "Agents for a show, not a demo",
+          "description": "Multi-agent factories fail on handoffs. Capability is a means; a repeatable episode is the delivery.",
+          "author": "Jens",
+          "date": "2026-08-30"
+        },
+        "ja": {
+          "title": "Agent で番組を作る。Demo ではない",
+          "description": "マルチエージェント工場は引き継ぎで壊れる。能力は手段であり、繰り返せる一話が納品である。",
+          "author": "Jens",
+          "date": "2026-08-30"
+        },
+        "zh-CN": {
+          "title": "用 Agent 做节目，不是做 Demo",
+          "description": "多智能体的难点是交接。把最短的路跑通，并且下次还在。",
+          "author": "Jens",
+          "date": "2026-08-30"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/anthropic-dario-amodei",
+      "series": "tech",
+      "slug": "anthropic-dario-amodei",
+      "file": "tech/anthropic-dario-amodei.mdx",
+      "cover": "/blog/covers/anthropic-dario-amodei.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "Claude 营收如何两年打趴老东家？Anthropic 和 Dario Amodei 的故事",
+          "description": "整理 Anthropic 与 Dario Amodei 的路径：Claude 如何在两年里把营收做成行业事件。",
+          "author": "Jens",
+          "date": "2026-03-15"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/blue-led-invention",
+      "series": "tech",
+      "slug": "blue-led-invention",
+      "file": "tech/blue-led-invention.mdx",
+      "cover": "/blog/covers/blue-led-invention.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "蓝色 LED 如何发明，熬夜之神",
+          "description": "没有蓝光就没有白光屏幕。中村修二怎样在乡镇企业里把龙珠集齐。",
+          "author": "Jens",
+          "date": "2025-11-26"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/crazy-saturday-dinner",
+      "series": "tech",
+      "slug": "crazy-saturday-dinner",
+      "file": "tech/crazy-saturday-dinner.mdx",
+      "cover": "/blog/covers/crazy-saturday-dinner.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "02-07 群英会：科技从业者的职业道路与行业洞见",
+          "description": "一桌科技从业者聊职业路径、行业判断，以及接下来几年真正值得做的事。",
+          "author": "Jens",
+          "date": "2026-02-07"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/crazy-saturday-offline",
+      "series": "tech",
+      "slug": "crazy-saturday-offline",
+      "file": "tech/crazy-saturday-offline.mdx",
+      "cover": "/blog/covers/crazy-saturday-offline.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "疯狂周六线下活动：AI 时代的产品与投资哲学",
+          "description": "一场线下活动里，关于 AI 产品、投资节奏和怎么把事情做成的现场笔记。",
+          "author": "Jens",
+          "date": "2026-02-07"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/how-internet-was-born",
+      "series": "tech",
+      "slug": "how-internet-was-born",
+      "file": "tech/how-internet-was-born.mdx",
+      "cover": "/blog/covers/how-internet-was-born.webp",
+      "locales": {
+        "en": {
+          "title": "How the internet was born",
+          "description": "From ARPANET to the World Wide Web, how a military project reached ordinary hands.",
+          "author": "Jens",
+          "date": "2024-09-11"
+        },
+        "ja": {
+          "title": "インターネットはどう生まれたか",
+          "description": "アパネットからWWWへ。軍事プロジェクトが普通人の手に入るまで。",
+          "author": "Jens",
+          "date": "2024-09-11"
+        },
+        "zh-CN": {
+          "title": "互联网是如何诞生的",
+          "description": "从阿帕网到万维网，互联网怎样从军事项目走进普通人手里。",
+          "author": "Jens",
+          "date": "2024-09-11"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/how-internet-was-born-part-2",
+      "series": "tech",
+      "slug": "how-internet-was-born-part-2",
+      "file": "tech/how-internet-was-born-part-2.mdx",
+      "cover": "/blog/covers/how-internet-was-born-part-2.webp",
+      "locales": {
+        "en": {
+          "title": "How the internet was born (part 2)",
+          "description": "China comes online, the browser wars, and the millennial .com bubble.",
+          "author": "Jens",
+          "date": "2024-10-15"
+        },
+        "ja": {
+          "title": "インターネットはどのように生まれたか（下）",
+          "description": "中国の接続、ブラウザ戦争、そして千年紀の .com バブル。",
+          "author": "Jens",
+          "date": "2024-10-15"
+        },
+        "zh-CN": {
+          "title": "互联网是如何诞生的（下）",
+          "description": "中国接入互联网、浏览器大战，以及千禧年的 .com 泡沫。",
+          "author": "Jens",
+          "date": "2024-10-15"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/jensen-huang-nvidia-01",
+      "series": "tech",
+      "slug": "jensen-huang-nvidia-01",
+      "file": "tech/jensen-huang-nvidia-01.mdx",
+      "cover": "/blog/covers/jensen-huang-nvidia-01.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "黄仁勋和他的英伟达 01 —— 谁的太太先同意创业？",
+          "description": "从劳改寄宿学校到三巨头相遇，英伟达开工前的那些选择。",
+          "author": "Jens",
+          "date": "2025-07-24"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/mars-immigration",
+      "series": "tech",
+      "slug": "mars-immigration",
+      "file": "tech/mars-immigration.mdx",
+      "cover": "/blog/covers/mars-immigration.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "实现不可能：火星移民计划",
+          "description": "去火星要过哪些关：火箭、生命保障，还有人愿意留下吗。",
+          "author": "Jens",
+          "date": "2024-04-27"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/moon-landing-hard-tech",
+      "series": "tech",
+      "slug": "moon-landing-hard-tech",
+      "file": "tech/moon-landing-hard-tech.mdx",
+      "cover": "/blog/covers/moon-landing-hard-tech.webp",
+      "locales": {
+        "en": {
+          "title": "Doing the impossible: hard tech of the moon landing",
+          "description": "Apollo was not only courage. It was hard engineering forced out on the ground first.",
+          "author": "Jens",
+          "date": "2024-04-16"
+        },
+        "ja": {
+          "title": "不可能の実現：月面着陸のハード科技",
+          "description": "アポロは勇気だけではない。地上で先に追い詰められたハードな工事。",
+          "author": "Jens",
+          "date": "2024-04-16"
+        },
+        "zh-CN": {
+          "title": "实现不可能：登月计划中的硬核科技",
+          "description": "阿波罗不只是勇气，是一堆在地上先被逼出来的硬核工程。",
+          "author": "Jens",
+          "date": "2024-04-16"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/musk-spacex-legend",
+      "series": "tech",
+      "slug": "musk-spacex-legend",
+      "file": "tech/musk-spacex-legend.mdx",
+      "cover": "/blog/covers/musk-spacex-legend.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "实现不可能：马斯克和 SpaceX 的传奇故事",
+          "description": "SpaceX 从几次爆炸走到回收火箭，中间到底赌了什么。",
+          "author": "Jens",
+          "date": "2024-05-14"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/one-inbox",
+      "series": "tech",
+      "slug": "one-inbox",
+      "file": "tech/one-inbox.mdx",
+      "cover": "/blog/covers/one-inbox.webp",
+      "locales": {
+        "en": {
+          "title": "Leave only one inbox",
+          "description": "Two rules for a content factory: new things go in Inbox, finished things leave from the show folder.",
+          "author": "Jens",
+          "date": "2026-08-30"
+        },
+        "ja": {
+          "title": "入口は一つだけ残す",
+          "description": "コンテンツ工場の二つのルール。新しいものは Inbox へ。出来上がったものは番組フォルダから出す。",
+          "author": "Jens",
+          "date": "2026-08-30"
+        },
+        "zh-CN": {
+          "title": "只留一个入口",
+          "description": "新东西只丢进素材，要拿走的只从节目目录拿。",
+          "author": "Jens",
+          "date": "2026-08-30"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/staff-pipeline",
+      "series": "tech",
+      "slug": "staff-pipeline",
+      "file": "tech/staff-pipeline.mdx",
+      "cover": "/blog/covers/staff-pipeline.webp",
+      "locales": {
+        "en": {
+          "title": "After the crew actually ran",
+          "description": "Persona docs are not a product. The test is whether a piece can move from inbox to a draft you can take.",
+          "author": "Jens",
+          "date": "2026-08-30"
+        },
+        "ja": {
+          "title": "班が実際に動き出したあと",
+          "description": "ペルソナ文書はプロダクトではない。試すのは、素材から持ち帰れる原稿まで動くかどうか。",
+          "author": "Jens",
+          "date": "2026-08-30"
+        },
+        "zh-CN": {
+          "title": "岗群跑起来之后",
+          "description": "人物志不是产品。走不到能拿走的文稿，岗群再热闹也还是彩排。",
+          "author": "Jens",
+          "date": "2026-08-30"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/starliner-space-rescue",
+      "series": "tech",
+      "slug": "starliner-space-rescue",
+      "file": "tech/starliner-space-rescue.mdx",
+      "cover": "/blog/covers/starliner-space-rescue.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "说好的只去太空八天，怎么就变成了惊险的太空救援任务？",
+          "description": "波音 Starliner 把人撂在空间站，最后是 SpaceX 把人接回家。",
+          "author": "Jens",
+          "date": "2025-03-20"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/style-is-a-person",
+      "series": "tech",
+      "slug": "style-is-a-person",
+      "file": "tech/style-is-a-person.mdx",
+      "cover": "/blog/covers/style-is-a-person.webp",
+      "locales": {
+        "en": {
+          "title": "Style is a person, not a genre",
+          "description": "Label drafts by writer. Borrow a named move, not a whole skeleton.",
+          "author": "Jens",
+          "date": "2026-08-30"
+        },
+        "ja": {
+          "title": "スタイルは人であって、ジャンルではない",
+          "description": "原稿のラベルは書き手で付ける。借りるのは名前のある一つの技であって、骨格一式ではない。",
+          "author": "Jens",
+          "date": "2026-08-30"
+        },
+        "zh-CN": {
+          "title": "风格是人，不是体裁",
+          "description": "按博主记风格。能借招式，不能借整个人的骨架。",
+          "author": "Jens",
+          "date": "2026-08-30"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/why-220v-and-110v",
+      "series": "tech",
+      "slug": "why-220v-and-110v",
+      "file": "tech/why-220v-and-110v.mdx",
+      "cover": "/blog/covers/why-220v-and-110v.webp",
+      "locales": {
+        "en": {
+          "title": "A chat about voltage: why 220V and 110V?",
+          "description": "Why some sockets are 110 and some are 220. Behind it is a war over current.",
+          "author": "Jens",
+          "date": "2025-02-18"
+        },
+        "ja": {
+          "title": "電圧の話：なぜ220Vと110Vがあるのか",
+          "description": "家のコンセントが110だったり220だったりする裏には、電流の商戦がある。",
+          "author": "Jens",
+          "date": "2025-02-18"
+        },
+        "zh-CN": {
+          "title": "趣谈电压：为什么会有 220V 和 110V 的区别？",
+          "description": "家里插座为什么有的 110、有的 220，背后是一场电流商战。",
+          "author": "Jens",
+          "date": "2025-02-18"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/wwii-computing-war-part-1",
+      "series": "tech",
+      "slug": "wwii-computing-war-part-1",
+      "file": "tech/wwii-computing-war-part-1.mdx",
+      "cover": "/blog/covers/wwii-computing-war-part-1.webp",
+      "locales": {
+        "en": {
+          "title": "WWII: the compute war of eighty years ago (part 1)",
+          "description": "Enigma was not a puzzle. It was a war over who could compute the cipher first.",
+          "author": "Jens",
+          "date": "2026-03-11"
+        },
+        "ja": {
+          "title": "第二次大戦往事：八十年前の算力戦争（上）",
+          "description": "エニグマは知力ゲームではない。誰が先に暗号を計算するかの戦争だ。",
+          "author": "Jens",
+          "date": "2026-03-11"
+        },
+        "zh-CN": {
+          "title": "二战往事：八十年前的算力战争（上）",
+          "description": "恩尼格玛不是智力游戏，是一场比谁先算出密码的战争。",
+          "author": "Jens",
+          "date": "2026-03-11"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/wwii-computing-war-part-2",
+      "series": "tech",
+      "slug": "wwii-computing-war-part-2",
+      "file": "tech/wwii-computing-war-part-2.mdx",
+      "cover": "/blog/covers/wwii-computing-war-part-2.webp",
+      "locales": {
+        "en": {
+          "title": "WWII (part 2): Poland's hidden front",
+          "description": "Before Turing, Polish mathematicians had already pried Enigma's door a crack.",
+          "author": "Jens",
+          "date": "2026-03-26"
+        },
+        "ja": {
+          "title": "第二次大戦往事（中）：知られざるポーランドの隠れた戦線",
+          "description": "チューリング登場の前に、ポーランド数学者はすでにエニグマの扉の隙間をこじ開けていた。",
+          "author": "Jens",
+          "date": "2026-03-26"
+        },
+        "zh-CN": {
+          "title": "二战往事（中）：不为人知的波兰隐秘战线",
+          "description": "图灵出场之前，波兰数学家已经把恩尼格玛的门缝撬开了。",
+          "author": "Jens",
+          "date": "2026-03-26"
+        }
+      }
+    },
+    {
+      "url": "/blog/tech/wwii-computing-war-part-3",
+      "series": "tech",
+      "slug": "wwii-computing-war-part-3",
+      "file": "tech/wwii-computing-war-part-3.mdx",
+      "cover": "/blog/covers/wwii-computing-war-part-3.webp",
+      "locales": {
+        "en": {
+          "title": "WWII (part 3): heroes at dusk — honor in the quiet",
+          "description": "After the spark went to Bletchley, where did the people who first pushed the door go.",
+          "author": "Jens",
+          "date": "2026-04-08"
+        },
+        "ja": {
+          "title": "第二次大戦往事（下）：英雄の黄昏——静けさの中の栄誉",
+          "description": "火種がブレッチリーに渡ったあと、先に扉を押した人はどこへ行ったか。",
+          "author": "Jens",
+          "date": "2026-04-08"
+        },
+        "zh-CN": {
+          "title": "二战往事（下）：英雄迟暮——寂静中的荣誉",
+          "description": "火种交给布莱切利庄园之后，那些先把门推开的人去了哪里。",
+          "author": "Jens",
+          "date": "2026-04-08"
+        }
+      }
+    },
+    {
+      "url": "/blog/travel/japan-trip-notes",
+      "series": "travel",
+      "slug": "japan-trip-notes",
+      "file": "travel/japan-trip-notes.mdx",
+      "cover": "/blog/covers/japan-trip-notes.webp",
+      "locales": {
+        "en": {
+          "title": "Notes from a Japan trip",
+          "description": "The Showa boom, when five minutes in a taxi could cost fifty thousand yen.",
+          "author": "Jens",
+          "date": "2025-01-20"
+        },
+        "ja": {
+          "title": "日本行程の感想と記録",
+          "description": "昭和景気の成り上がり史。タクシー5分で5万円だったあの時代。",
+          "author": "Jens",
+          "date": "2025-01-20"
+        },
+        "zh-CN": {
+          "title": "日本行程感想与记录",
+          "description": "从昭和景气的发家史，看那个五万日元只为打车的年代。",
+          "author": "Jens",
+          "date": "2025-01-20"
+        }
+      }
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import { cloudflare } from '@cloudflare/vite-plugin'
 import { reactRouter } from '@react-router/dev/vite'
 import tailwindcss from '@tailwindcss/vite'
 import { fumadocsMdx } from 'fumadocs-mdx/vite'
+import { blogStaticAssets } from './scripts/blog-static-assets'
 import { defineConfig, type Plugin } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -70,7 +71,10 @@ export default defineConfig({
   },
   plugins: [
     stubMdxTypesPackage(),
-    // Compile MDX at build time and generate separate server/browser indexes.
+    // Copy blog MDX into public/blog/mdx and emit a frontmatter-only manifest.
+    // Bodies stay out of the Worker; docs still compile through Fumadocs.
+    blogStaticAssets(),
+    // Compile docs MDX at build time and generate separate server/browser indexes.
     // The browser index uses dynamic imports, so each article is its own chunk.
     fumadocsMdx(),
     // Runs dev and preview inside workerd, so local behavior matches production
