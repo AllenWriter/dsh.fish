@@ -109,7 +109,7 @@ export function docsLlmsTxt(baseUrl: string, nav: readonly LlmsNavNode[]): strin
 
 /**
  * `/blog/llms.txt` — covers `/blog/*`. Series landings and posts are generated
- * from the Fumadocs collection so a new MDX file appears here in the same commit.
+ * from the blog manifest so a new MDX file appears here in the same commit.
  */
 export function blogLlmsTxt(
   baseUrl: string,

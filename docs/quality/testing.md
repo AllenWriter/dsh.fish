@@ -66,7 +66,7 @@ deterministic unit test.
 - Use deterministic test data.
 
 `pnpm run test:e2e` runs Playwright. Project groups share one config:
-**Product docs** (`e2e/docs/`) covers the Fumadocs section at one desktop
+**Product docs** (`e2e/docs/`) covers the static Markdown section at one desktop
 viewport (1280×900) and one phone (Pixel 7). It asserts the sidebar, nested
 guides, live scoring, sidebar filter, indexable Japanese MDX, controlled video
 with a localized transcript, `/docs/search` JSON (not `/api/search`),
@@ -77,7 +77,7 @@ every markdown link in the docs index is fetchable. Unit tests also require
 every guide to have a physical file in every public locale. Fold
 screenshots are written for inspection; they are not visual baselines.
 
-**Editorial blog** (`e2e/blog/`) covers the Fumadocs collection at one desktop
+**Editorial blog** (`e2e/blog/`) covers the static Markdown posts at one desktop
 viewport (1280×900). It asserts the newsroom series tabs, a filtered series
 landing, a post with breadcrumbs (no TOC) and `BlogPosting` JSON-LD, indexable
 Japanese MDX, localized `Accept: text/markdown`, `/blog/llms.txt`, and
