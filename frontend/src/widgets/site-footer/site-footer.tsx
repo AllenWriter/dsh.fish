@@ -9,6 +9,7 @@ const SITE_LINKS = [
 ] as const
 
 const WRITE_LINKS = [
+  { to: '/blog/podcast', key: 'blog.series.podcast' },
   { to: '/blog/tech', key: 'blog.series.tech' },
   { to: '/blog/life', key: 'blog.series.life' },
   { to: '/blog/finance', key: 'blog.series.finance' },

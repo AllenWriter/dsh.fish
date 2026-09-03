@@ -19,6 +19,7 @@ import {
 } from '@/pages/markdown'
 import { withEdgeCache } from './edge-cache'
 import { retiredCategoryRedirect } from '@/shared/lib/retired-category-path'
+import { movedBlogPostRedirect } from '@/shared/lib/moved-blog-path'
 import { retiredKindRedirect, retiredPublishDocsRedirect } from '@/shared/lib/retired-kind-path'
 
 /**
@@ -94,6 +95,11 @@ async function handleRequest(
   const retiredDocs = retiredPublishDocsRedirect(url.pathname, url.search)
   if (retiredDocs !== undefined) {
     return Response.redirect(new URL(retiredDocs, url.origin).toString(), 301)
+  }
+
+  const movedBlog = movedBlogPostRedirect(url.pathname, url.search)
+  if (movedBlog !== undefined) {
+    return Response.redirect(new URL(movedBlog, url.origin).toString(), 301)
   }
 
   // A reader who once picked a language is forwarded to it on bare-URL

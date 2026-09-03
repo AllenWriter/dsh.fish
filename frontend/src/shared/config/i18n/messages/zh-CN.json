@@ -315,6 +315,8 @@
   "connect.copy": "复制",
   "connect.copied": "已复制",
   "browse.searchPlaceholder": "搜标题和摘要…",
+  "blog.series.podcast": "播客",
+  "blog.series.podcast.description": "冷知识盲盒节目。",
   "blog.series.tech": "技术",
   "blog.series.tech.description": "建造、工具，以及系统真正怎么跑。",
   "blog.series.life": "生活",

@@ -315,6 +315,8 @@
   "connect.copy": "Copy",
   "connect.copied": "Copied",
   "browse.searchPlaceholder": "Search titles and descriptions…",
+  "blog.series.podcast": "Podcast",
+  "blog.series.podcast.description": "Cold Knowledge Blind Box episodes.",
   "blog.series.tech": "Tech",
   "blog.series.tech.description": "Building, tools, and how systems actually run.",
   "blog.series.life": "Life",

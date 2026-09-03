@@ -1,7 +1,7 @@
 import { translate, type Locale } from '@/shared/config/i18n'
 import type { BlogSeriesNavItem } from '@/widgets/blog-shell'
 
-export const BLOG_SERIES = ['tech', 'life', 'finance', 'travel'] as const
+export const BLOG_SERIES = ['podcast', 'tech', 'life', 'finance', 'travel'] as const
 
 export type BlogSeries = (typeof BLOG_SERIES)[number]
 
@@ -21,7 +21,7 @@ export function seriesDescriptionKey(
   return `blog.series.${series}.description`
 }
 
-/** All + the four tags, for newsroom tabs on home and listing pages. */
+/** All + the series tags, for newsroom tabs on home and listing pages. */
 export function blogSeriesNav(locale: Locale): readonly BlogSeriesNavItem[] {
   return [
     { id: 'all', href: '/blog', title: translate(locale, 'blog.allPosts') },

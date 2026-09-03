@@ -11,7 +11,7 @@ const manifestPath = join(frontendRoot, 'src/pages/blog/manifest.generated.json'
 
 const DEFAULT_LOCALE = 'zh-CN'
 const LOCALES = ['en', 'zh-CN', 'ja']
-const SERIES = new Set(['tech', 'life', 'finance', 'travel'])
+const SERIES = new Set(['podcast', 'tech', 'life', 'finance', 'travel'])
 const TRANSLATION_SUFFIXES = ['.en', '.ja', '.zh-TW', '.ko', '.ru']
 
 function parseFrontmatter(source: string, file: string): Record<string, string> {

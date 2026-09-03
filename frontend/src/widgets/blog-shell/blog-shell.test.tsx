@@ -7,6 +7,7 @@ import type { BlogPostCard, BlogSeriesNavItem } from './model/types'
 
 const TABS: readonly BlogSeriesNavItem[] = [
   { id: 'all', href: '/blog', title: 'All' },
+  { id: 'podcast', href: '/blog/podcast', title: 'Podcast' },
   { id: 'tech', href: '/blog/tech', title: 'Tech' },
   { id: 'life', href: '/blog/life', title: 'Life' },
   { id: 'finance', href: '/blog/finance', title: 'Markets' },

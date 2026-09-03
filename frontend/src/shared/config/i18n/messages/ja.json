@@ -315,6 +315,8 @@
   "connect.copy": "コピー",
   "connect.copied": "コピーしました",
   "browse.searchPlaceholder": "タイトルと概要を検索…",
+  "blog.series.podcast": "ポッドキャスト",
+  "blog.series.podcast.description": "冷知識ブラインドボックスの番組。",
   "blog.series.tech": "技術",
   "blog.series.tech.description": "つくること、道具、システムが実際にどう動くか。",
   "blog.series.life": "暮らし",
