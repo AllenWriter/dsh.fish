@@ -1,73 +1,39 @@
-import { DEFAULT_LOCALE, LOCALE_CODES, mdxTranslationSuffixes, type Locale } from '@/shared/config/i18n'
+import { DEFAULT_LOCALE, LOCALE_CODES, type Locale } from '@/shared/config/i18n'
+import { docsManifestPages, findDocsPage, localizedDocsFile } from './manifest'
+import type { DocsMdxReader } from './read-mdx'
 
 /**
- * First-party MDX as bundled strings.
+ * First-party docs Markdown, one file at a time.
  *
- * `getText('raw')` on a Fumadocs entry reads the filesystem, which a Worker
- * does not have. Vite inlines these modules at build time so `Accept:
- * text/markdown` can serve the same documents the HTML pages render.
- */
-const RAW = import.meta.glob('../../../content/docs/**/*.mdx', {
-  query: '?raw',
-  eager: true,
-  import: 'default',
-}) as Record<string, string>
-
-function fileForPath(path: string): string | undefined {
-  if (path === '/docs' || path === '/docs/') return 'index.mdx'
-  if (!path.startsWith('/docs/')) return undefined
-  if (path === '/docs/search') return undefined
-  return `${path.slice('/docs/'.length)}.mdx`
-}
-
-function localizedFile(relative: string, locale: Locale): string {
-  if (locale === DEFAULT_LOCALE) return relative
-  const extension = relative.lastIndexOf('.')
-  return `${relative.slice(0, extension)}.${locale}${relative.slice(extension)}`
-}
-
-function rawDocument(relative: string): string | undefined {
-  const suffix = `/content/docs/${relative}`
-  const key = Object.keys(RAW).find((candidate) => candidate.endsWith(suffix))
-  return key === undefined ? undefined : RAW[key]
-}
-
-/**
- * Unlocalized `/docs…` paths that have a bundled English MDX file.
- *
- * Derived from the same glob `productDocsMarkdown` reads, so a guide added
- * to `content/docs` appears here without a second list. Locale-suffixed
- * files (`cli.ja.mdx`) are translations of an English path, not extra slugs.
+ * `Accept: text/markdown`, the `.md` aliases and `/docs/llms-full.txt` serve
+ * the same documents the HTML pages render. The reader is the ASSETS binding
+ * in the Worker and the filesystem in tests — the source text is never
+ * bundled into the Worker script.
  */
 export function productDocsPaths(): readonly string[] {
-  const translationSuffixes = mdxTranslationSuffixes()
-  const paths = new Set<string>()
-  for (const key of Object.keys(RAW)) {
-    const match = /\/content\/docs\/(.+)\.mdx$/.exec(key)
-    if (match === null) continue
-    const relative = match[1]!
-    if (translationSuffixes.some((suffix) => relative.endsWith(suffix))) continue
-    paths.add(relative === 'index' ? '/docs' : `/docs/${relative}`)
-  }
-  return [...paths].sort((left, right) => left.localeCompare(right))
+  return [...docsManifestPages.map((page) => page.url)].sort((left, right) =>
+    left.localeCompare(right),
+  )
 }
 
-export function productDocsMarkdown(
+export async function productDocsMarkdown(
   unlocalizedPath: string,
   locale: Locale = DEFAULT_LOCALE,
-): string | undefined {
-  const relative = fileForPath(unlocalizedPath)
-  if (relative === undefined) return undefined
-  return rawDocument(localizedFile(relative, locale)) ?? rawDocument(relative)
+  readText?: DocsMdxReader,
+): Promise<string | undefined> {
+  if (readText === undefined) return undefined
+  const page = findDocsPage(unlocalizedPath)
+  if (page === undefined) return undefined
+  return (await readText(localizedDocsFile(page.file, locale))) ?? (await readText(page.file))
 }
 
 export function supportsProductDocsMarkdown(unlocalizedPath: string): boolean {
-  return productDocsMarkdown(unlocalizedPath) !== undefined
+  return findDocsPage(unlocalizedPath) !== undefined
 }
 
-/** Locales with a physical translation for this page; English fallback is not counted. */
+/** Locales with a physical translation for this page; a fallback is not counted. */
 export function productDocsLocales(unlocalizedPath: string): readonly Locale[] {
-  const relative = fileForPath(unlocalizedPath)
-  if (relative === undefined) return []
-  return LOCALE_CODES.filter((locale) => rawDocument(localizedFile(relative, locale)) !== undefined)
+  const page = findDocsPage(unlocalizedPath)
+  if (page === undefined) return []
+  return LOCALE_CODES.filter((locale) => page.locales[locale] !== undefined)
 }

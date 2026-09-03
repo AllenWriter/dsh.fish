@@ -3,6 +3,8 @@
 ## Status
 
 - Accepted
+- Superseded in part: the docs engine is no longer Fumadocs. See
+  [Superseding note: static Markdown docs](#superseding-note-static-markdown-docs).
 
 This record is the evaluation of whether dsh.fish can grow its reader-facing
 documentation, and whether [Fumadocs](https://github.com/fuma-nama/fumadocs)
@@ -316,6 +318,37 @@ No dates. Each step is a gate for the next:
    plugin pages as Markdown can fetch the human docs the same way.
 
 Steps 1–6 are done.
+
+## Superseding note: static Markdown docs
+
+The decisions above stand — `/docs` is a section, the repo `docs/` tree stays
+agent Markdown, chrome and palette stay first-party, search stays at
+`/docs/search`, and every hard constraint in this record is still binding.
+What changed is the engine: `fumadocs-core` and `fumadocs-mdx` are gone, and
+docs are served exactly like the blog (see
+[`adr-0007-editorial-blog.md`](adr-0007-editorial-blog.md)).
+
+Compiling MDX at build time put every article body in the SSR Worker script.
+That is the cost the blog already refused, and it grew with each guide. The
+docs section never used MDX as a component language: the only real tag left
+in `content/docs` was a `<Info>` inside a fenced Mintlify example, and
+callouts already come from ```tip fences and GitHub-style alerts.
+
+The pipeline now:
+
+| Piece      | Where                                                                                     |
+| ---------- | ----------------------------------------------------------------------------------------- |
+| Build step | `frontend/scripts/content-static-assets.ts` copies `content/docs` to `public/docs/mdx` and writes `src/pages/docs/manifest.generated.json` (title, description, url, locales, `meta.json` order) |
+| Bodies     | `env.ASSETS.fetch` one document per request (`pages/docs/read-mdx.ts`); nothing is globbed or compiled into the Worker |
+| Rendering  | `react-markdown` + `remark-gfm` through the shared `shared/ui/mdx-prose` tag map    |
+| Sidebar    | `meta.json` order in the manifest; separators stay i18n keys                             |
+| TOC        | derived from Markdown headings, GitHub-style ids, matching the blog                        |
+| Search     | `/docs/search` over manifest titles and descriptions                                     |
+| Scoring    | not an MDX tag any more; no content file mounted `<ScoringModel />`, so the widget stays available for a page that needs it |
+
+"Live data is not MDX" still holds: a page that must document a domain
+constant renders a page-level React island (`widgets/docs-scoring`), not
+literals in Markdown.
 
 ## References
 

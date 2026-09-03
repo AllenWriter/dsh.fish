@@ -8,7 +8,7 @@ import { docsLlmsTxt, llmsTxtResponse } from './llms'
 /**
  * `/docs/llms.txt` — the product-docs overview for agents (llmstxt.org v2).
  *
- * File lists are generated from the Fumadocs nav so a guide added to the MDX
+ * File lists are generated from the docs manifest nav so a guide added to the MDX
  * tree appears here in the same commit. A missing slug is a loader error, not a
  * silently incomplete map.
  */

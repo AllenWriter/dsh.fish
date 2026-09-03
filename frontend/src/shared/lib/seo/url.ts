@@ -51,7 +51,7 @@ export function alternates(
  * we actually maintain. Everything else has no such split and uses its own code.
  */
 export function hreflangFor(locale: Locale): string {
-  return locale === 'zh-CN' ? 'zh-Hans' : locale === 'zh-TW' ? 'zh-Hant' : locale
+  return locale === 'zh-CN' ? 'zh-Hans' : locale
 }
 
 /**

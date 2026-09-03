@@ -133,47 +133,53 @@ search, not a fuzzy filter of those four links.
 ### Product documentation
 
 Reader-facing guides live under `/docs/*`, not in the repo `docs/` tree.
-MDX is compiled at **build time** (`fumadocs-mdx` Vite plugin +
-`fumadocs-core` loader) so the Worker never `eval`s compiled output and
-never reads `content/docs` from disk. Search JSON is
-`:locale?/docs/search` because `/api/*` is Hono.
+They are static Markdown, served the same way the blog is: the Vite plugin
+copies `frontend/content/docs` to `frontend/public/docs/mdx` and writes a
+metadata-only manifest (title, description, url, locales, `meta.json`
+order). A page loader fetches the one document it needs through
+`env.ASSETS.fetch` and renders it with `react-markdown` + `remark-gfm`, so
+no article body is compiled or globbed into the Worker script. Search JSON
+is `:locale?/docs/search` because `/api/*` is Hono.
 
 `pages/docs` owns the routes and the source module. `widgets/docs-shell`
 is in-column chrome beside `SiteHeader`. `widgets/docs-scoring` renders
-`DescribeScoring` so the documented formula cannot drift from
-`GET /api/v1/scoring`. `widgets/docs-media` renders controlled, responsive
-video with a localized caption and transcript. `fumadocs-ui` is not a dependency: theme is the
-existing cookie on `<html>`, and the palette stays hue 263.
+`DescribeScoring` so a documented formula cannot drift from
+`GET /api/v1/scoring`; it mounts as a page-level island for a slug that
+needs it, not as a Markdown tag. `widgets/docs-media` renders controlled,
+responsive video with a localized caption and transcript. No docs framework
+is a dependency: theme is the existing cookie on `<html>`, and the palette
+stays hue 263.
 
 Same-layer imports are allowed so the slug list exists once:
 
 - `pages/markdown` → `pages/docs` public API (`productDocsMarkdown`, `productDocsPaths`)
 - `pages/seo` → `pages/docs` public API (`productDocsMarkdown`, `productDocsPaths`) for `/docs/llms-full.txt`
-- `pages/seo` → `pages/docs/source` (`docsSitemapEntries`, `docsNav`, `docsSitemapPaths`) — those helpers cannot sit on the public API, because `defineDocs` is a Vite macro and the markdown unit tests import `@/pages/docs` without the plugin
+- `pages/seo` → `pages/docs/source` (`docsSitemapEntries`, `docsNav`, `docsSitemapPaths`) — the sitemap and `/docs/llms.txt` read the nav and slug list from the generated manifest rather than keeping a second list
 
-Fumadocs uses dot-suffix locale files and React Router owns the URL prefix.
-`productDocsLocales` checks physical MDX files so page metadata and the sitemap
-never advertise an English fallback as a translation.
+Dot-suffix locale files; React Router owns the URL prefix.
+`productDocsLocales` reads the manifest's per-page locale table, which is built
+from physical MDX files, so page metadata and the sitemap never advertise a
+runtime fallback as a translation.
 
 See [`../decisions/adr-0005-product-docs-with-fumadocs.md`](../decisions/adr-0005-product-docs-with-fumadocs.md).
 
 ### Editorial blog
 
-Dated posts live under `/blog/*`. They are **not** a Fumadocs collection:
-compiling every `content/blog/**/*.mdx` file into the SSR Worker blows the
-free 3 MiB gzip script cap. Docs stay on Fumadocs; blog bodies are static
-files.
+Dated posts live under `/blog/*`. Bodies are static files, not compiled
+modules: compiling every `content/blog/**/*.mdx` file into the SSR Worker
+blows the free 3 MiB gzip script cap. `/docs` now uses the same pipeline.
 
-A Vite plugin copies `frontend/content/blog` to `frontend/public/blog/mdx`
-(served by the existing ASSETS binding) and writes a frontmatter-only JSON
-manifest. Homepage cards, `/blog` listings, the sitemap, and feeds import
+One Vite plugin (`frontend/scripts/content-static-assets.ts`) copies
+`frontend/content/blog` to `frontend/public/blog/mdx` and
+`frontend/content/docs` to `frontend/public/docs/mdx` — both served by the
+existing ASSETS binding — and writes a metadata-only JSON manifest per
+section. Homepage cards, `/blog` listings, the sitemap, and feeds import
 that JSON. An article loader fetches the one MDX file it needs
 (`env.ASSETS.fetch` in the Worker, `readFile` in tests) and renders it with
 `react-markdown` + `remark-gfm`.
 
 `pages/blog` owns the routes and the source module. `widgets/blog-shell`
 is in-column chrome (newsroom tabs on listings, breadcrumbs on posts) beside `SiteHeader`.
-`fumadocs-ui` is not a dependency.
 
 Same-layer imports:
 

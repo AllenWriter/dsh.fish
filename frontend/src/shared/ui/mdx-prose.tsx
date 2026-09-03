@@ -93,8 +93,8 @@ export function proseMdxComponents(): IntrinsicMdxComponents {
       )
       if (gfm) {
         return (
-          <Callout type={gfm[1].toLowerCase()}>
-            {gfm[2].trim() ? <p>{gfm[2].trim()}</p> : null}
+          <Callout type={gfm[1]!.toLowerCase()}>
+            {gfm[2]!.trim() ? <p>{gfm[2]!.trim()}</p> : null}
           </Callout>
         )
       }
@@ -103,8 +103,8 @@ export function proseMdxComponents(): IntrinsicMdxComponents {
       )
       if (named) {
         return (
-          <Callout type={named[1].toLowerCase()}>
-            {named[2].trim() ? <p>{named[2].trim()}</p> : null}
+          <Callout type={named[1]!.toLowerCase()}>
+            {named[2]!.trim() ? <p>{named[2]!.trim()}</p> : null}
           </Callout>
         )
       }

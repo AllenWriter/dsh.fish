@@ -1,0 +1,491 @@
+{
+  "pages": [
+    {
+      "url": "/docs",
+      "slug": "index",
+      "file": "index.mdx",
+      "locales": {
+        "en": {
+          "title": "Docs",
+          "description": "Technical notes."
+        },
+        "ja": {
+          "title": "ドキュメント",
+          "description": "技術ノート。"
+        },
+        "zh-CN": {
+          "title": "文档",
+          "description": "技术笔记。"
+        }
+      }
+    },
+    {
+      "url": "/docs/dify-plugin-agent",
+      "slug": "dify-plugin-agent",
+      "file": "dify-plugin-agent.mdx",
+      "locales": {
+        "en": {
+          "title": "A Long Talk: How Dify Plugins Help You Build AI Agent Apps",
+          "description": "Dify 1.0's plugin system: remote debugging, Endpoints, reverse calls, and real work with SSH, gateways, databases, RAG, Agent strategies, and MCP."
+        },
+        "ja": {
+          "title": "長尺講演：Dify プラグインは AI Agent アプリ開発をどう助けるか",
+          "description": "Dify 1.0 のプラグイン体系。リモートデバッグ、Endpoint、逆呼び出し、そして SSH、ゲートウェイ、データベース、RAG、Agent 戦略、MCP の実装。"
+        },
+        "zh-CN": {
+          "title": "万字演讲：Dify 插件如何助力 AI Agent 应用开发？",
+          "description": "Dify 1.0 插件体系：远程调试、Endpoint、反向调用，以及 SSH、网关、数据库、RAG、Agent 策略和 MCP 的落地。"
+        }
+      }
+    },
+    {
+      "url": "/docs/dify-video-plugin",
+      "slug": "dify-video-plugin",
+      "file": "dify-video-plugin.mdx",
+      "locales": {
+        "en": {
+          "title": "Dify Now Supports Video Generation — Plus a Tutorial for Building AI Video Apps",
+          "description": "Build text-to-video and image-to-video apps in Dify with the Doubao video plugin: install, authorize, import a DSL, or start from a blank Chatflow."
+        },
+        "ja": {
+          "title": "Dify が動画生成に対応した：AI 動画アプリ構築チュートリアル付き",
+          "description": "豆包（Doubao）動画プラグインで、Dify にテキストから動画、画像から動画のアプリを組む。インストール、認可、DSL の取り込み、あるいは Chatflow からのゼロ構築。"
+        },
+        "zh-CN": {
+          "title": "Dify 支持视频生成了！附 AI 视频应用搭建教程",
+          "description": "用豆包视频插件在 Dify 里搭文生视频、图生视频应用：安装、授权、导入 DSL，或从 Chatflow 从零搭建。"
+        }
+      }
+    },
+    {
+      "url": "/docs/chatgpt-api-proxy",
+      "slug": "chatgpt-api-proxy",
+      "file": "chatgpt-api-proxy.mdx",
+      "locales": {
+        "en": {
+          "title": "Three steps to a ChatGPT API proxy",
+          "description": "Put a Cloudflare Worker in front of the OpenAI API so clients call a domain you control"
+        },
+        "ja": {
+          "title": "三つの手順で ChatGPT API プロキシを立てる",
+          "description": "Cloudflare Workers を OpenAI API の前に置き、自分で管理するドメイン経由で呼ぶ"
+        },
+        "zh-CN": {
+          "title": "三步搭建 ChatGPT API 中转代理",
+          "description": "用 Cloudflare Workers 把请求转到 api.openai.com，让客户端打你自己绑定的域名"
+        }
+      }
+    },
+    {
+      "url": "/docs/metagpt-notes",
+      "slug": "metagpt-notes",
+      "file": "metagpt-notes.mdx",
+      "locales": {
+        "en": {
+          "title": "Notes on getting MetaGPT running",
+          "description": "MetaGPT is middleware, not a product. These notes cover Role/Trigger/Callback and a local install that actually boots."
+        },
+        "ja": {
+          "title": "MetaGPT を動かすところまでのメモ",
+          "description": "MetaGPT は製品ではなくミドルウェア。Role / Trigger / Callback と、実際に起動するローカル導入までを書いた。"
+        },
+        "zh-CN": {
+          "title": "MetaGPT 入门与安装笔记",
+          "description": "MetaGPT 是中间件不是产品。这篇笔记写 Role、Trigger、Callback，以及一套真能跑起来的本地安装。"
+        }
+      }
+    },
+    {
+      "url": "/docs/notion-dify",
+      "slug": "notion-dify",
+      "file": "notion-dify.mdx",
+      "locales": {
+        "en": {
+          "title": "How to build a Notion AI assistant from your own notes",
+          "description": "Use Dify to train a chat app on a Notion workspace so the library can answer questions instead of sitting still"
+        },
+        "ja": {
+          "title": "自分の Notion ノートから AI アシスタントを作る",
+          "description": "Dify で Notion ワークスペースを学習させ、静かなライブラリを質問に答える対話にする"
+        },
+        "zh-CN": {
+          "title": "用 Dify 把 Notion 笔记做成 AI 助手",
+          "description": "把 Notion 知识库接到 Dify，训练一个能回答问题的对话应用，而不是只让笔记躺在库里"
+        }
+      }
+    },
+    {
+      "url": "/docs/openclaw-gui-container",
+      "slug": "openclaw-gui-container",
+      "file": "openclaw-gui-container.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "给你的龙虾安一个家：OpenClaw GUI 容器部署实践",
+          "description": "把 OpenClaw 放进云主机上的容器化桌面，让 Agent 有一张能长期干活的工作台。"
+        }
+      }
+    },
+    {
+      "url": "/docs/scripts-by-gpt",
+      "slug": "scripts-by-gpt",
+      "file": "scripts-by-gpt.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "自动化脚本",
+          "description": "把工作里用 AI 写出来的自动化脚本记下来，方便下次直接改着用。"
+        }
+      }
+    },
+    {
+      "url": "/docs/batch-link-check",
+      "slug": "batch-link-check",
+      "file": "batch-link-check.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "自动批量检测链接是否能够打开",
+          "description": "用脚本批量探测 sitemap 或 CSV 里的链接能不能打开，少点坏链。"
+        }
+      }
+    },
+    {
+      "url": "/docs/nginx-proxy-manager",
+      "slug": "nginx-proxy-manager",
+      "file": "nginx-proxy-manager.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "Nginx Proxy Manager",
+          "description": "用 Nginx Proxy Manager 给 Docker 端口分配域名，少写一层手搓 Nginx。"
+        }
+      }
+    },
+    {
+      "url": "/docs/docker-nginx-proxy-redirect",
+      "slug": "docker-nginx-proxy-redirect",
+      "file": "docker-nginx-proxy-redirect.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "如何轻松使用 Docker 进行重定向？",
+          "description": "服务换机器之后，用一个 Nginx 容器把旧端口 3 秒跳到新地址。"
+        }
+      }
+    },
+    {
+      "url": "/docs/what-is-clash",
+      "slug": "what-is-clash",
+      "file": "what-is-clash.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "什么是 Clash？",
+          "description": "Clash 是什么、认哪种订阅，以及为什么很多协议最后都丢给它。"
+        }
+      }
+    },
+    {
+      "url": "/docs/clash-frontend-dashboard",
+      "slug": "clash-frontend-dashboard",
+      "file": "clash-frontend-dashboard.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "搭建 Clash 订阅转换平台",
+          "description": "不装宝塔，用 Vercel 加一台 VPS 搭 Clash 订阅转换前端。"
+        }
+      }
+    },
+    {
+      "url": "/docs/gmail-api-bulk-send",
+      "slug": "gmail-api-bulk-send",
+      "file": "gmail-api-bulk-send.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "如何使用 Gmail 的批量邮件发送功能？",
+          "description": "用 Gmail API 把日发送量从插件的几十封拉到官方限额附近。"
+        }
+      }
+    },
+    {
+      "url": "/docs/onedrive-picgo-image-host",
+      "slug": "onedrive-picgo-image-host",
+      "file": "onedrive-picgo-image-host.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "搭建 OneManagor + Picgo 图床教程",
+          "description": "用 OneDrive + OneManager + PicGo 搭一条截图即上传的图床。"
+        }
+      }
+    },
+    {
+      "url": "/docs/register-foreign-apple-id",
+      "slug": "register-foreign-apple-id",
+      "file": "register-foreign-apple-id.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "如何注册一个外区 Apple 账号？",
+          "description": "大陆 Apple ID 能用的服务有限，这篇按步骤注册一个外区账号。"
+        }
+      }
+    },
+    {
+      "url": "/docs/apple-paid-services",
+      "slug": "apple-paid-services",
+      "file": "apple-paid-services.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "如何搞定 Apple 付费服务？",
+          "description": "先分清需求和预算，再选地区与套餐，把 Apple 付费服务真正用起来。"
+        }
+      }
+    },
+    {
+      "url": "/docs/microsoft-e3-admin-init",
+      "slug": "microsoft-e3-admin-init",
+      "file": "microsoft-e3-admin-init.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "微软 E3 账号管理员初始化",
+          "description": "拿到微软 E3 管理员账号之后，怎么绑域、做初始化。"
+        }
+      }
+    },
+    {
+      "url": "/docs/facebook-account-pitfalls",
+      "slug": "facebook-account-pitfalls",
+      "file": "facebook-account-pitfalls.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "Facebook 账号踩坑记之消失的 WhatsAPP API",
+          "description": "申请 WhatsApp API 时踩到的 Facebook 地区限制，以及美国号怎么搞砸的。"
+        }
+      }
+    },
+    {
+      "url": "/docs/dujiaoka",
+      "slug": "dujiaoka",
+      "file": "dujiaoka.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "如何快速在网上开店（独角数卡）？",
+          "description": "用开源独角数卡在一台服务器上开一个发卡小卖部，以及安装时踩过的坑。"
+        }
+      }
+    },
+    {
+      "url": "/docs/docusaurus-guide",
+      "slug": "docusaurus-guide",
+      "file": "docusaurus-guide.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "Docusaurus 折腾记录",
+          "description": "Docusaurus 是什么、能干什么，以及我怎么把它当成文档站来折腾。"
+        }
+      }
+    },
+    {
+      "url": "/docs/docusaurus-admonitions",
+      "slug": "docusaurus-admonitions",
+      "file": "docusaurus-admonitions.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "提示块",
+          "description": "文档里的 tip / info / warning 块。写 ```tip 就能渲染，不必再贴 Infima 的 class。"
+        }
+      }
+    },
+    {
+      "url": "/docs/react-player-docusaurus",
+      "slug": "react-player-docusaurus",
+      "file": "react-player-docusaurus.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "如何在 Docusaurus 中引用 react-player 控件？",
+          "description": "在 Docusaurus 的 Markdown 里用 ReactPlayer 嵌视频，比一堆 iframe 省事。"
+        }
+      }
+    },
+    {
+      "url": "/docs/hsbc-hong-kong-account",
+      "slug": "hsbc-hong-kong-account",
+      "file": "hsbc-hong-kong-account.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "香港汇丰银行开户指南",
+          "description": "香港汇丰开户要带什么、去哪家分行、客户经理怎么约。"
+        }
+      }
+    },
+    {
+      "url": "/docs/hk-broker-account",
+      "slug": "hk-broker-account",
+      "file": "hk-broker-account.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "香港券商开户指南",
+          "description": "香港互联网券商能买美股，这篇记富途和华盛的开户路径。"
+        }
+      }
+    },
+    {
+      "url": "/docs/before-going-to-hong-kong",
+      "slug": "before-going-to-hong-kong",
+      "file": "before-going-to-hong-kong.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "出发去香港前的注意事项",
+          "description": "动身去香港开户前，上网、现金、换汇和海关额度这些要先想清楚。"
+        }
+      }
+    },
+    {
+      "url": "/docs/dify-docs-engineering",
+      "slug": "dify-docs-engineering",
+      "file": "dify-docs-engineering.mdx",
+      "locales": {
+        "en": {
+          "title": "Dify Docs Engineering: Building a Knowledge System for the AI Era",
+          "description": "The full migration from GitBook to Mintlify: knowledge services for LLMs, framework research, and three classes of migration problems — images, syntax, and links."
+        },
+        "ja": {
+          "title": "Dify 技術ドキュメントのエンジニアリング実践：AI 時代の知識システムをどう構築するか",
+          "description": "GitBook から Mintlify への全移行。LLM 向けの知識サービス、フレームワーク調査、そして画像・構文・リンクという三種類の移行問題。"
+        },
+        "zh-CN": {
+          "title": "Dify 技术文档工程实践：如何构建面向 AI 时代的知识系统？",
+          "description": "从 GitBook 迁到 Mintlify 的全过程：面向 LLM 的知识服务、框架调研，以及图片、语法和链接三类迁移问题。"
+        }
+      }
+    }
+  ],
+  "nav": [
+    {
+      "type": "page",
+      "slug": "index"
+    },
+    {
+      "type": "separator",
+      "key": "ai"
+    },
+    {
+      "type": "page",
+      "slug": "dify-plugin-agent"
+    },
+    {
+      "type": "page",
+      "slug": "dify-video-plugin"
+    },
+    {
+      "type": "page",
+      "slug": "chatgpt-api-proxy"
+    },
+    {
+      "type": "page",
+      "slug": "metagpt-notes"
+    },
+    {
+      "type": "page",
+      "slug": "notion-dify"
+    },
+    {
+      "type": "page",
+      "slug": "openclaw-gui-container"
+    },
+    {
+      "type": "page",
+      "slug": "scripts-by-gpt"
+    },
+    {
+      "type": "page",
+      "slug": "batch-link-check"
+    },
+    {
+      "type": "separator",
+      "key": "self-hosted"
+    },
+    {
+      "type": "page",
+      "slug": "nginx-proxy-manager"
+    },
+    {
+      "type": "page",
+      "slug": "docker-nginx-proxy-redirect"
+    },
+    {
+      "type": "page",
+      "slug": "what-is-clash"
+    },
+    {
+      "type": "page",
+      "slug": "clash-frontend-dashboard"
+    },
+    {
+      "type": "page",
+      "slug": "gmail-api-bulk-send"
+    },
+    {
+      "type": "page",
+      "slug": "onedrive-picgo-image-host"
+    },
+    {
+      "type": "separator",
+      "key": "accounts"
+    },
+    {
+      "type": "page",
+      "slug": "register-foreign-apple-id"
+    },
+    {
+      "type": "page",
+      "slug": "apple-paid-services"
+    },
+    {
+      "type": "page",
+      "slug": "microsoft-e3-admin-init"
+    },
+    {
+      "type": "page",
+      "slug": "facebook-account-pitfalls"
+    },
+    {
+      "type": "page",
+      "slug": "dujiaoka"
+    },
+    {
+      "type": "separator",
+      "key": "site"
+    },
+    {
+      "type": "page",
+      "slug": "docusaurus-guide"
+    },
+    {
+      "type": "page",
+      "slug": "docusaurus-admonitions"
+    },
+    {
+      "type": "page",
+      "slug": "react-player-docusaurus"
+    },
+    {
+      "type": "separator",
+      "key": "finance"
+    },
+    {
+      "type": "page",
+      "slug": "hsbc-hong-kong-account"
+    },
+    {
+      "type": "page",
+      "slug": "hk-broker-account"
+    },
+    {
+      "type": "page",
+      "slug": "before-going-to-hong-kong"
+    },
+    {
+      "type": "separator",
+      "key": "product"
+    },
+    {
+      "type": "page",
+      "slug": "dify-docs-engineering"
+    }
+  ]
+}

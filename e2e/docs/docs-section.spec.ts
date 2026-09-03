@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { E2E_ORIGIN } from '../lib/origin'
 
 /**
- * Product docs as a Fumadocs section.
+ * Product docs as a static Markdown section.
  *
  * Functional claims a crawler or an agent would notice: one URL per guide,
  * live scoring, localized Markdown, video, and search JSON not under `/api/`.

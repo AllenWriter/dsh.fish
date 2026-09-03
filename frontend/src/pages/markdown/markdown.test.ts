@@ -5,11 +5,19 @@ import { mockArtifact } from '@/entities/artifact/model/artifact.fixture'
 import { prefersMarkdown, wantsMarkdownNotFound, estimateTokens } from './negotiate'
 import { artifactMarkdown, listingItemMarkdown } from './artifact'
 import { diskBlogAssets } from '@/pages/blog/read-mdx.node'
+import { diskDocsAssets } from '@/pages/docs/read-mdx.node'
 import { maybeMarkdownResponse, supportsMarkdownNegotiation } from './handler'
 import { notFoundMarkdown, shouldServeMarkdownNotFound } from './not-found'
 
 const ORIGIN = 'https://dsh.fish'
-const blogAssets = diskBlogAssets()
+// One ASSETS surface for both content trees, like the Worker binding: blog
+// bodies under /blog/mdx/, docs under /docs/mdx/.
+const blogAssets = {
+  fetch: async (input: string) => {
+    const blog = await diskBlogAssets().fetch(input)
+    return blog.ok ? blog : diskDocsAssets().fetch(input)
+  },
+}
 
 const DETAIL: ArtifactDetail = {
   ...mockArtifact(),

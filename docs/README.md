@@ -3,8 +3,8 @@
 This directory is the single source of truth for how this project is built, organized, and evolved by agents. It is **not** the public documentation on dsh.fish.
 
 - **This tree (`docs/`)** — conventions, architecture, operations, ADRs. Agents read these files in the repository. Do not turn them into a website.
-- **The site (`/docs`)** — how to publish a plugin, use the CLI, and read the score. That surface is a Fumadocs section under `/docs/*`, compiled at build time for the Worker. See [`decisions/adr-0005-product-docs-with-fumadocs.md`](decisions/adr-0005-product-docs-with-fumadocs.md).
-- **The site (`/blog`)** — dated editorial posts in four series (Harness releases, DeepSeek notes, this hub's changelog, technical notes). A second Fumadocs collection, not a docs sidebar. See [`decisions/adr-0007-editorial-blog.md`](decisions/adr-0007-editorial-blog.md).
+- **The site (`/docs`)** — how to publish a plugin, use the CLI, and read the score. That surface is static Markdown under `/docs/*`: bodies are copied to public assets at build and fetched through the ASSETS binding, never compiled into the Worker. See [`decisions/adr-0005-product-docs-with-fumadocs.md`](decisions/adr-0005-product-docs-with-fumadocs.md).
+- **The site (`/blog`)** — dated editorial posts in four series (Harness releases, DeepSeek notes, this hub's changelog, technical notes). Static Markdown like `/docs`, with a newsroom shell rather than a docs sidebar. See [`decisions/adr-0007-editorial-blog.md`](decisions/adr-0007-editorial-blog.md).
 
 ## Domain map
 

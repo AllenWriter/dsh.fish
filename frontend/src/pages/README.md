@@ -19,9 +19,10 @@ This layer contains page components that map to URLs.
 
 `pages` can import from `widgets`, `features`, `entities`, `shared`.
 
-Product docs are the `docs` slice: MDX lives in `frontend/content/docs/`
-(outside this tree), the splat route and Fumadocs source live here, and
-chrome lives in `widgets/docs-shell`. See
+Product docs are the `docs` slice: Markdown lives in `frontend/content/docs/`
+(outside this tree), the splat route and the manifest-backed source live here,
+bodies come from the ASSETS binding, and chrome lives in
+`widgets/docs-shell`. See
 [`docs/decisions/adr-0005-product-docs-with-fumadocs.md`](../../../docs/decisions/adr-0005-product-docs-with-fumadocs.md).
 
 The editorial blog is the `blog` slice: MDX lives in `frontend/content/blog/`,

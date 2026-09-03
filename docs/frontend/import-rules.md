@@ -53,10 +53,10 @@ Exceptions must be documented in [`docs/project/architecture.md`](../project/arc
 
 `pages/seo` and `pages/markdown` may import from `pages/docs` and `pages/blog` so every slug is enumerated once, from the MDX tree:
 
-- `pages/markdown` imports the docs **public API** (`productDocsMarkdown`) — bundled source text, no Fumadocs.
+- `pages/markdown` imports the docs **public API** (`productDocsMarkdown`) — source text read from the ASSETS binding, never bundled into the Worker.
 - `pages/markdown` imports the blog **public API** (`blogMarkdown`, `supportsBlogMarkdown`) the same way.
 - `pages/seo` imports `productDocsMarkdown` / `productDocsPaths` from the docs public API for `/docs/llms-full.txt`.
-- `pages/seo` imports `docsSitemapEntries`, `docsNav`, and `docsSitemapPaths` from `pages/docs/source`. Those helpers cannot live on the docs public API: `defineDocs` is a Vite macro, and the markdown unit tests import `@/pages/docs` without the plugin.
+- `pages/seo` imports `docsSitemapEntries`, `docsNav`, and `docsSitemapPaths` from `pages/docs/source`. They read the generated docs manifest, so the sidebar order, the sitemap, and `/docs/llms.txt` come from one list.
 - `pages/seo` imports `blogSitemapEntries`, `listBlogPosts`, and `blogPostPaths` from `pages/blog/source` for the same reason.
 - `pages/home` imports `blogPostCards` from `pages/blog/source` so the homepage grid is that collection, not a second list.
 

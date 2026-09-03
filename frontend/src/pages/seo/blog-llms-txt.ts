@@ -9,7 +9,7 @@ import { blogPostPaths, listBlogPosts } from '@/pages/blog/source'
 /**
  * `/blog/llms.txt` — the blog overview for agents (llmstxt.org v2).
  *
- * File lists are generated from the Fumadocs collection so a post added to
+ * File lists are generated from the blog manifest so a post added to
  * `content/blog` appears here in the same commit.
  */
 export function loader({ context }: Route.LoaderArgs) {

@@ -11,6 +11,7 @@ import { prefersMarkdown } from './negotiate'
 import { markdownResponse } from './response'
 import { artifactMarkdown, listingItemMarkdown } from './artifact'
 import { productDocsMarkdown, supportsProductDocsMarkdown } from '@/pages/docs'
+import { assetsDocsMdxReader } from '@/pages/docs/read-mdx'
 import { blogListingEntries, blogMarkdown, supportsBlogMarkdown } from '@/pages/blog'
 import { assetsBlogMdxReader, type BlogAssets } from '@/pages/blog/read-mdx'
 
@@ -94,7 +95,8 @@ export async function maybeMarkdownResponse(
     if (blog !== undefined) return markdownResponse(blog)
   }
 
-  const docsMarkdown = productDocsMarkdown(path, locale)
+  const docsReader = assets === undefined ? undefined : assetsDocsMdxReader(assets)
+  const docsMarkdown = await productDocsMarkdown(path, locale, docsReader)
   if (docsMarkdown !== undefined) return markdownResponse(docsMarkdown)
 
   const blog = await blogMarkdown(path, locale, blogReader)

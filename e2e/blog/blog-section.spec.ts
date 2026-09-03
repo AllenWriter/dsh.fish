@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { E2E_ORIGIN } from '../lib/origin'
 
 /**
- * Editorial blog as a Fumadocs collection.
+ * Editorial blog as static Markdown files.
  *
  * Functional claims a crawler or an agent would notice: one URL per series
  * and post, three-locale MDX, Atom, markdown negotiation, BlogPosting JSON-LD.

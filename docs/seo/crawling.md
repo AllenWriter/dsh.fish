@@ -179,9 +179,9 @@ then follow the links.
 
 ```
 /llms.txt                 origin coverage — kinds, API, pointer at the docs and blog indexes
-/docs/llms.txt            product-docs coverage, generated from the Fumadocs nav
+/docs/llms.txt            product-docs coverage, generated from the docs manifest nav
 /docs/llms-full.txt       every English guide concatenated (community convention)
-/blog/llms.txt            blog coverage, generated from the Fumadocs collection
+/blog/llms.txt            blog coverage, generated from the blog manifest
 ```
 
 The root file is English and deliberately small. It does not enumerate
