@@ -5,6 +5,10 @@ description: "用豆包视频插件在 Dify 里搭文生视频、图生视频应
 
 省流：想先玩起来，直接去文末的体验链接。
 
+不说废话，先看效果图：
+
+![文生视频对话示例：输入「千军万马」后得到扩写提示词、图片与视频](/docs/dify-video-plugin/demo-chat-army.png)
+
 在应用对话框里输入文本即可得到一段视频。哪怕只是简单的一句话，也会自动扩展为详细的视频提示词再生成。
 
 本文将介绍如何体验文生视频，以及如何自己搭建 AI 视频生成应用。
@@ -13,7 +17,27 @@ description: "用豆包视频插件在 Dify 里搭文生视频、图生视频应
 - 文生视频：[https://udify.app/chat/y3eBFyaxNJkXDlca](https://udify.app/chat/y3eBFyaxNJkXDlca)
 - 图生视频（上传 PNG）：[https://udify.app/workflow/YY6EdT3ztLfvQiKY](https://udify.app/workflow/YY6EdT3ztLfvQiKY)
 
-示例效果包括：女孩与狐狸（文生视频）、千军万马来相见（文生视频）、王与飞机（图生视频）、古代战马（图生视频）。
+示例效果（WeChat 原文内嵌视频，这里保留封面；完整动态效果请点体验链接）：
+
+1. 女孩与狐狸（文生视频）
+
+![女孩与狐狸文生视频封面](/docs/dify-video-plugin/video-cover-girl-fox.webp)
+
+2. 千军万马来相见（文生视频）
+
+![千军万马来相见文生视频封面](/docs/dify-video-plugin/video-cover-army-charge.webp)
+
+3. 王与飞机（图生视频）
+
+![王与飞机图生视频封面](/docs/dify-video-plugin/video-cover-king-plane.webp)
+
+4. 古代战马（图生视频）
+
+![古代战马图生视频封面](/docs/dify-video-plugin/video-cover-warhorse.webp)
+
+图生视频工作流界面示意：
+
+![图生视频工作流：上传图片后运行得到 MP4](/docs/dify-video-plugin/demo-img2video-workflow.png)
 
 不需要复杂注册认证。发挥想象力即可。
 
@@ -23,17 +47,27 @@ description: "用豆包视频插件在 Dify 里搭文生视频、图生视频应
 
 如果你还不了解 Dify，可以把它理解成一个 AI 应用游乐场，像拼乐高一样搭应用。官网：[https://dify.ai/](https://dify.ai/)
 
+![Dify 官网与工作流预览](/docs/dify-video-plugin/dify-homepage.png)
+
 下面是完整复刻步骤。大约三分钟。
 
 ### 1. 注册并登录 Dify
 
 打开 [https://cloud.dify.ai/](https://cloud.dify.ai/)，用邮箱注册。右上角可切语言。也可以安装开源社区版。
 
+![cloud.dify.ai 右上角切换语言](/docs/dify-video-plugin/register-language-switch.png)
+
 ### 2. 安装视频插件并完成授权
 
 Dify 本身不是视频模型。生成视频靠外部插件。
 
-右上角「插件」→「探索 Marketplace」，搜索视频，找到 **Doubao Image and Video Generator**。能力基于豆包。安装后填写你自己的 API Key 完成授权，不要把密钥写进文档或提交到仓库。
+右上角「插件」→「探索 Marketplace」，搜索视频，找到 **Doubao Image and Video Generator**。能力基于豆包。
+
+![Marketplace 搜索「视频」找到 Doubao Image and Video Generator](/docs/dify-video-plugin/marketplace-search-video.png)
+
+安装后填写你自己的 API Key 完成授权，不要把密钥写进文档或提交到仓库。
+
+![插件授权面板：填写 Volcengine API Key](/docs/dify-video-plugin/plugin-authorization.png)
 
 ### 3. 创建应用
 
@@ -43,19 +77,37 @@ Dify 本身不是视频模型。生成视频靠外部插件。
 
 Dify 应用底层是 DSL。在网页里「导入 DSL 文件」，粘贴链接即可：
 
+![导入 DSL 文件对话框](/docs/dify-video-plugin/import-dsl-dialog.png)
+
 - 文本生成视频：[https://r2.xmsex.net/2025/06/07cd66a9979953c29475dd34dd8663bf.yml](https://r2.xmsex.net/2025/06/07cd66a9979953c29475dd34dd8663bf.yml)
 - 图片视频生成一条龙：[https://r2.xmsex.net/2025/06/3334f9aed0fd9dbe00b1872bf931184c.yml](https://r2.xmsex.net/2025/06/3334f9aed0fd9dbe00b1872bf931184c.yml)
 - 图片生成视频：[https://r2.xmsex.net/2025/06/6b76198e75d363debeb065bc74f1160d.yml](https://r2.xmsex.net/2025/06/6b76198e75d363debeb065bc74f1160d.yml)
+
+导入成功后，你应该可以看到以下应用界面：
+
+![导入成功后的应用界面](/docs/dify-video-plugin/imported-app-ui.png)
 
 #### 3.2 从零搭建
 
 创建空白应用，选 Chatflow，填名称和描述。
 
+![创建空白 Chatflow 应用](/docs/dify-video-plugin/create-chatflow.png)
+
 添加工具节点，选 Doubao Generator。按你要的效果选文生图、文生视频或图生视频。
+
+![添加工具节点并选择 Doubao Generator](/docs/dify-video-plugin/add-doubao-tool.png)
 
 每个工具节点都有默认输入输出。文生视频的输入是提示词，输出是插件生成的视频。
 
-我把输入接到上一步 LLM 的输出：用户的提示词往往不够细，先让模型扩写成详细视频提示词，再送给生成节点。这个插件也可以用在 Agent 节点里。
+![文生视频工具节点的输入输出参数](/docs/dify-video-plugin/tool-io-params.png)
+
+我把输入接到上一步 LLM 的输出：用户的提示词往往不够细，先让模型扩写成详细视频提示词，再送给生成节点。
+
+![将 LLM 扩写后的提示词接到视频生成节点](/docs/dify-video-plugin/llm-prompt-expand.png)
+
+这个插件也可以用在 Agent 节点里。
+
+![在 Agent 节点中使用视频插件](/docs/dify-video-plugin/agent-node-usage.png)
 
 如果还没搞懂工作流，先看：[Dify Workflow](https://docs.dify.ai/zh-hans/guides/workflow/readme)。
 
@@ -63,8 +115,14 @@ Dify 应用底层是 DSL。在网页里「导入 DSL 文件」，粘贴链接即
 
 以前在 Dify 里生成视频，多半是 HTTP 节点去打外部 API。能跑，但不优雅，每个想做视频的人都要重配一遍。这是个普遍需求，不如做成插件，填 API Key 就能用。
 
+![插件源码与 Marketplace 卡片示意](/docs/dify-video-plugin/plugin-source-promo.png)
+
 插件源码：[AllenWriter/doubao-image-and-video-generator](https://github.com/AllenWriter/doubao-image-and-video-generator)
 
 开发文档：[Getting started with Dify plugins](https://docs.dify.ai/plugin-dev-en/0111-getting-started-dify-plugin)
+
+如果你也想在 Dify 里体验视频生成，或想开发自己的插件却无从下手，欢迎加微信咨询：
+
+![作者微信二维码](/docs/dify-video-plugin/contact-wechat-qr.webp)
 
 原文：[https://mp.weixin.qq.com/s/obqH8fliSfFIJC0yH7dqvg](https://mp.weixin.qq.com/s/obqH8fliSfFIJC0yH7dqvg)

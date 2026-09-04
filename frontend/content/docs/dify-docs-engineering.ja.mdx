@@ -5,9 +5,21 @@ description: "GitBook から Mintlify への全移行。LLM 向けの知識サ�
 
 ドキュメントがプロダクトの一部だとしたら、どんな読書体験を望むでしょうか。そして新しい読者——いまやどこにでもいる LLM——に対して、ドキュメントはどんな姿勢で向き合うべきでしょうか。
 
+![LLM 読者向けドキュメントへの問い](/docs/dify-docs-engineering/opening-question.webp)
+
 こんにちは、Allen です。Dify のテクニカルライターをしています。
 
 2025 年 4 月から、Dify のヘルプドキュメントを GitBook から Mintlify へ全面移行する仕事を主導し、完了しました。調査と選定、Demo での実測、スタイル互換、リンク再構築、そして本番投入まで。これは単なる技術スタックの入れ替えではなく、AI 時代のコンテンツサービスに向けたインフラの再構築でした。
+
+移行前後の比較：
+
+![移行前：GitBook ドキュメント](/docs/dify-docs-engineering/docs-before-gitbook.webp)
+
+旧ドキュメント（Powered by GitBook）
+
+![移行後：Mintlify ドキュメント](/docs/dify-docs-engineering/docs-after-mintlify.webp)
+
+現ドキュメント（Powered by Mintlify）
 
 ## AI 時代の知識サービス
 
@@ -26,6 +38,8 @@ AI 革命が起きる以前、ソフトウェアのドキュメントはすべ�
 3. ドキュメント内検索を使う
 
 [Stripe のドキュメント](https://docs.stripe.com/) はこの道を極限まで押し切りました。チーム内のどの役割でも、ドキュメントの中で必要な情報にすぐ辿り着けます。ログイン済みのユーザーには、そのチーム専用のテストコードまで自動生成されます。
+
+![Stripe ドキュメントの体験](/docs/dify-docs-engineering/stripe-docs-example.webp)
 
 LLM と対話する時代になると、解決パスはこう変わります。LLM に尋ねる → LLM が方針を出す → ユーザーがフィードバックする → LLM が手取り足取り教える。ユーザーは各セクションを巡回したり、特定ページを検索したりせず、いまの答えを LLM に求めます。
 
@@ -62,15 +76,26 @@ LLM と対話する時代になると、解決パスはこう変わります。L
 深く使ってみたあと、候補は Mintlify と Docusaurus に絞りました。
 
 - Mintlify はビジュアルと API ドキュメントの自動生成が成熟しており、既定スタイルで大半の表示需要を満たせます。
+
+![Mintlify 製品概要](/docs/dify-docs-engineering/mintlify-overview.webp)
+
 - Docusaurus はオープンソースで拡張できますが、API ドキュメントの統合には追加ツールが要り、React に強いチーム向きです。
 
+![Docusaurus 製品概要](/docs/dify-docs-engineering/docusaurus-overview.webp)
+
 後期のメンテ、箱から出してすぐ使えること、チームの AI への投資を総合し、私は Mintlify を選びました。
+
+![フレームワーク比較表（抜粋）](/docs/dify-docs-engineering/framework-comparison-table.webp)
 
 ## 実行
 
 ### 1. フレームワークに慣れ、小さく反復する
 
 フレームワークが決まると、まず Demo を組み、何度も話し合い、少しずつチームの合意を得ました。Mintlify は従来の `.md` ではなく `.mdx` を使います。AI 技術がこれだけ速く動いているいま、フォーマット変換はもう障壁ではありません。構造の拡張性と、知的ツールとの融合の余地のほうが重要です。
+
+![Mintlify MDX Demo（1）](/docs/dify-docs-engineering/mintlify-mdx-demo-1.webp)
+
+![Mintlify MDX Demo（2）](/docs/dify-docs-engineering/mintlify-mdx-demo-2.webp)
 
 ### 2. 問題をはっきりさせ、一つずつ潰す
 
@@ -79,6 +104,8 @@ LLM と対話する時代になると、解決パスはこう変わります。L
 旧体系には統一の画像ホストがありませんでした。リポジトリが膨らみ、命名もパスも規約がありません。GitBook はプライベートホスティングで CDN も無く、地域をまたぐ読み込みが不安定でした。
 
 解決策：Pico + S3 で自前の画像ホストを立て、自動命名とアーカイブ。画像はメインリポジトリから切り離し、CDN で加速。過去のローカル画像はスクリプトで一括アップロードしました。
+
+![社内画像ホスト利用ガイド](/docs/dify-docs-engineering/image-host-guide.webp)
 
 #### 問題 2：構文が揃っていない
 
@@ -100,7 +127,11 @@ The name Dify comes from Do It For You.
 </Info>
 ```
 
+![GitBook hint と Mintlify Info の構文対比](/docs/dify-docs-engineering/hint-syntax-compare.webp)
+
 解決策：よく使うスタイルの対応関係を Prompt に入れ、Dify Chat アプリで GitBook 構文を Mintlify MDX へ自動変換しました。
+
+![MD から MDX への変換アシスタント](/docs/dify-docs-engineering/md-to-mdx-assistant.webp)
 
 #### 問題 3：ハイパーリンクの参照が複雑
 
@@ -110,11 +141,27 @@ The name Dify comes from Do It For You.
 
 公開前に、ページごとにジャンプを洗い出しました。GitBook と Mintlify では URL 構造が違うので、リダイレクトは無視できません。検討の結果、A/B の段階公開はせず、核心の目標に戻りました。安定、到達可能、ユーザー体験を壊さない。公開当日はスムーズに切り替わり、大半のユーザーは気づきませんでした。API ドキュメントは DevRel の同僚の協力でその後に公開し、各ページ下部にフィードバック入口を埋め込みました。
 
+![公開後の API ドキュメント](/docs/dify-docs-engineering/api-docs-live.webp)
+
+![各ページ下部のフィードバック入口](/docs/dify-docs-engineering/feedback-widget.webp)
+
 ## ドキュメントの背後にあるのは、読書体験の全体掌握
 
 この移行は技術的な挑戦であるだけでなく、役割認識の作り直しでもありました。Mintlify はすぐにドキュメント MCP に対応しました。関連ガイド：[Dify ドキュメントで AI と対話する](https://docs.dify.ai/zh-hans/learn-more/extended-reading/dify-docs-mcp)。
 
-Mintlify はいまや Claude、Cursor、Perplexity など主要な AI ベンダーがドキュメントに選ぶフレームワークです。テクニカルライターにできることは、うまく書くことだけではありません。役割はドキュメントプロダクトの責任者に近い。信頼できる内容、滞りのない読書体験、使い続けられる経路を提供することです。
+![MCP 経由で Dify ドキュメントと AI が対話](/docs/dify-docs-engineering/docs-mcp-chat.webp)
+
+Mintlify 公式の内蔵 AI 対話：
+
+![Mintlify 内蔵 AI 対話（1）](/docs/dify-docs-engineering/mintlify-ai-chat-1.webp)
+
+![Mintlify 内蔵 AI 対話（2）](/docs/dify-docs-engineering/mintlify-ai-chat-2.webp)
+
+Mintlify はいまや Claude、Cursor、Perplexity など主要な AI ベンダーがドキュメントに選ぶフレームワークです。
+
+![Mintlify を使う AI ベンダーの例](/docs/dify-docs-engineering/mintlify-ai-customers.webp)
+
+テクニカルライターにできることは、うまく書くことだけではありません。役割はドキュメントプロダクトの責任者に近い。信頼できる内容、滞りのない読書体験、使い続けられる経路を提供することです。
 
 ## 参考資料
 

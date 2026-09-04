@@ -5,9 +5,21 @@ description: "从 GitBook 迁到 Mintlify 的全过程：面向 LLM 的知识服
 
 如果文档是产品的一部分，你希望获得怎样的阅读体验？文档又应该以何种姿态面向新读者——即无所不在的 LLM？
 
+![面向 LLM 的文档阅读体验提问](/docs/dify-docs-engineering/opening-question.webp)
+
 大家好，我是 Allen，来自 Dify 的技术文档工程师。
 
 从 2025 年 4 月开始，我主导并完成了 Dify 帮助文档框架的一次全量迁移工程——从 GitBook 到 Mintlify。完成从调研选型、Demo 实测、样式兼容、链接重构到最终上线的全过程。这不只是技术栈的替换，更是一次面向 AI 时代内容服务的基础设施重构。
+
+迁移前后对比：
+
+![迁移前：GitBook 文档站](/docs/dify-docs-engineering/docs-before-gitbook.webp)
+
+原文档（Powered by GitBook）
+
+![迁移后：Mintlify 文档站](/docs/dify-docs-engineering/docs-after-mintlify.webp)
+
+现文档（Powered by Mintlify）
 
 ## AI 时代下的知识服务
 
@@ -26,6 +38,8 @@ AI 革命爆发以前，所有的软件文档皆是为人类设计的。排版�
 3. 使用文档搜索功能
 
 [Stripe 文档](https://docs.stripe.com/) 在这条路上做到了极致。团内任意角色的用户，都可以各自在文档内快速找到所需信息。文档甚至会为已登录的用户，自动生成专属于用户团队的测试代码。
+
+![Stripe 文档体验示意](/docs/dify-docs-engineering/stripe-docs-example.webp)
 
 而在 LLM 互动时代，问题的解决路径变为了：询问 LLM → 由 LLM 给出推荐方案 → 用户提问反馈 → LLM 给出详细的手把手教学。用户无需浏览各个部分或搜索特定页面，而是转向 LLM 寻求即时答案。
 
@@ -62,15 +76,26 @@ AI 革命爆发以前，所有的软件文档皆是为人类设计的。排版�
 在深入试用之后，候选聚焦于 Mintlify 与 Docusaurus。
 
 - Mintlify 在视觉与 API 文档自动生成方面成熟，默认样式即可满足大部分展示需求。
+
+![Mintlify 产品概览](/docs/dify-docs-engineering/mintlify-overview.webp)
+
 - Docusaurus 开源、可扩展，但 API 文档集成需额外工具，更适合具备 React 能力的团队。
 
+![Docusaurus 产品概览](/docs/dify-docs-engineering/docusaurus-overview.webp)
+
 综合考虑后期维护、开箱即用，以及团队对 AI 能力的投入，我选择了 Mintlify。
+
+![文档框架对比表（节选）](/docs/dify-docs-engineering/framework-comparison-table.webp)
 
 ## 行动
 
 ### 1. 熟悉框架，小步迭代
 
 确定框架后，我先搭了一个 Demo，组织多轮沟通，逐步赢得团队认同。Mintlify 使用 `.mdx` 而不是传统 `.md`。在 AI 技术快速发展的背景下，内容格式转换已不再是壁垒，更看重结构的可扩展性与智能工具的融合潜力。
+
+![Mintlify MDX Demo 界面（一）](/docs/dify-docs-engineering/mintlify-mdx-demo-1.webp)
+
+![Mintlify MDX Demo 界面（二）](/docs/dify-docs-engineering/mintlify-mdx-demo-2.webp)
 
 ### 2. 明确问题，逐个攻破
 
@@ -79,6 +104,8 @@ AI 革命爆发以前，所有的软件文档皆是为人类设计的。排版�
 原体系没有统一图床。仓库体积膨胀，命名和路径缺乏规范。GitBook 私有托管且未启用 CDN，跨地区加载不稳定。
 
 解决办法：Pico + S3 自建图床，自动命名与归档，图片脱离主仓库，CDN 加速。历史本地图片则用脚本批量上传。
+
+![内部图床使用指南示意](/docs/dify-docs-engineering/image-host-guide.webp)
 
 #### 问题 2：语法格式不统一
 
@@ -100,7 +127,11 @@ The name Dify comes from Do It For You.
 </Info>
 ```
 
+![GitBook hint 与 Mintlify Info 语法对照](/docs/dify-docs-engineering/hint-syntax-compare.webp)
+
 解决办法：把常用样式的对应关系注入 Prompt，用 Dify Chat 应用自动把 GitBook 语法转成 Mintlify MDX。
+
+![MD 转 MDX 助手应用界面](/docs/dify-docs-engineering/md-to-mdx-assistant.webp)
 
 #### 问题 3：超链接引用结构复杂
 
@@ -110,11 +141,27 @@ The name Dify comes from Do It For You.
 
 上线前逐页排查跳转。GitBook 与 Mintlify 的 URL 结构不同，重定向不可忽视。评估后没有上 A/B 灰度，回归核心目标：稳定、可访问、不影响用户体验。上线当天实现平滑切换，大多数用户没有察觉。API 文档随后在 DevRel 同事协助下上线，并在每页底部嵌入反馈入口。
 
+![上线后的 API 文档页面](/docs/dify-docs-engineering/api-docs-live.webp)
+
+![文档页底部反馈入口](/docs/dify-docs-engineering/feedback-widget.webp)
+
 ## 文档的背后，是对阅读体验的全局掌控
 
 这场迁移不仅是技术挑战，更是角色认知的重塑。Mintlify 很快支持了文档 MCP。相关指南：[在 Dify 文档中与 AI 对话](https://docs.dify.ai/zh-hans/learn-more/extended-reading/dify-docs-mcp)。
 
-Mintlify 现已成为 Claude、Cursor、Perplexity 等主流 AI 厂商的文档首选框架。作为一个技术文档工程师，所能做的远不止写好文档。TA 的职责更应是文档产品的负责人：提供可信内容、流畅阅读体验，以及可持续的使用路径。
+![在 Dify 文档中通过 MCP 与 AI 对话](/docs/dify-docs-engineering/docs-mcp-chat.webp)
+
+Mintlify 官方也上线了内置 AI 对话：
+
+![Mintlify 内置 AI 对话（一）](/docs/dify-docs-engineering/mintlify-ai-chat-1.webp)
+
+![Mintlify 内置 AI 对话（二）](/docs/dify-docs-engineering/mintlify-ai-chat-2.webp)
+
+Mintlify 现已成为 Claude、Cursor、Perplexity 等主流 AI 厂商的文档首选框架。
+
+![Mintlify 服务的 AI 厂商客户示意](/docs/dify-docs-engineering/mintlify-ai-customers.webp)
+
+作为一个技术文档工程师，所能做的远不止写好文档。TA 的职责更应是文档产品的负责人：提供可信内容、流畅阅读体验，以及可持续的使用路径。
 
 ## 参考资料
 
