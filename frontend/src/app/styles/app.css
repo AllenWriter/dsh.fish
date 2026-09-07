@@ -99,9 +99,9 @@
   :root.dark {
     /* OLED pure black page; cards stay slightly lifted for hierarchy. */
     --bg: oklch(0 0 0);
-    --fg: oklch(0.96 0.005 250);
+    --fg: oklch(0.90 0.005 250);
     --card: oklch(0.14 0.01 250);
-    --card-fg: oklch(0.96 0.005 250);
+    --card-fg: oklch(0.90 0.005 250);
     --muted: oklch(0.18 0.012 250);
     --muted-fg: oklch(0.685 0.02 250);
     --primary: oklch(0.72 0.145 263);
@@ -133,9 +133,9 @@
   @media (prefers-color-scheme: dark) {
     :root:not(.light) {
       --bg: oklch(0 0 0);
-      --fg: oklch(0.96 0.005 250);
+      --fg: oklch(0.90 0.005 250);
       --card: oklch(0.14 0.01 250);
-      --card-fg: oklch(0.96 0.005 250);
+      --card-fg: oklch(0.90 0.005 250);
       --muted: oklch(0.18 0.012 250);
       --muted-fg: oklch(0.685 0.02 250);
       --primary: oklch(0.72 0.145 263);
@@ -183,6 +183,18 @@
 
   html[lang='ja'] {
     --font-sans-stack: 'Noto Sans JP', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  html[lang='zh-Hans'] .tracking-tight,
+  html[lang='zh-Hans'] .tracking-tighter,
+  html[lang='ja'] .tracking-tight,
+  html[lang='ja'] .tracking-tighter {
+    letter-spacing: 0;
+  }
+
+  html[lang='zh-Hans'] body,
+  html[lang='ja'] body {
+    line-height: 1.75;
   }
 
   body {

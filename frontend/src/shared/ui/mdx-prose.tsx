@@ -27,29 +27,29 @@ export function proseMdxComponents(): IntrinsicMdxComponents {
     h1: (props) => (
       <h2
         {...props}
-        className="mt-12 mb-4 scroll-mt-20 text-2xl font-semibold tracking-tight text-balance first:mt-0"
+        className="mt-12 mb-4 scroll-mt-20 text-2xl font-semibold text-balance first:mt-0"
       />
     ),
     h2: (props) => (
       <h2
         {...props}
-        className="mt-10 mb-4 scroll-mt-20 text-lg font-semibold tracking-tight text-balance first:mt-0"
+        className="mt-10 mb-4 scroll-mt-20 text-lg font-semibold text-balance first:mt-0"
       />
     ),
     h3: (props) => (
       <h3
         {...props}
-        className="mt-8 mb-2 scroll-mt-20 text-base font-semibold tracking-tight text-balance"
+        className="mt-8 mb-2 scroll-mt-20 text-base font-semibold text-balance"
       />
     ),
     h4: (props) => (
       <h4
         {...props}
-        className="mt-7 mb-2 scroll-mt-20 text-sm font-semibold tracking-tight"
+        className="mt-7 mb-2 scroll-mt-20 text-sm font-semibold"
       />
     ),
     p: (props) => (
-      <p {...props} className="my-4 text-pretty first:mt-0 last:mb-0" />
+      <p {...props} className="my-4 leading-7 text-pretty first:mt-0 last:mb-0" />
     ),
     a: ({ href, children, ...props }) => {
       if (
