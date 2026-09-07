@@ -97,19 +97,20 @@
 
   /* Explicit dark choice. */
   :root.dark {
-    --bg: oklch(0.155 0.028 250);
+    /* OLED pure black page; cards stay slightly lifted for hierarchy. */
+    --bg: oklch(0 0 0);
     --fg: oklch(0.96 0.005 250);
-    --card: oklch(0.196 0.03 250);
+    --card: oklch(0.14 0.01 250);
     --card-fg: oklch(0.96 0.005 250);
-    --muted: oklch(0.238 0.032 250);
+    --muted: oklch(0.18 0.012 250);
     --muted-fg: oklch(0.685 0.02 250);
     --primary: oklch(0.72 0.145 263);
     --primary-fg: oklch(0.16 0.05 263);
-    --accent: oklch(0.3 0.07 263);
+    --accent: oklch(0.24 0.05 263);
     --accent-fg: oklch(0.84 0.079 263);
     --destructive: oklch(0.655 0.17 25);
-    --line: oklch(0.275 0.03 250);
-    --line-strong: oklch(0.375 0.035 250);
+    --line: oklch(0.24 0.015 250);
+    --line-strong: oklch(0.34 0.02 250);
     --ring-color: oklch(0.72 0.145 263);
     color-scheme: dark;
     --shadow-column: inset -1px 0 0 color-mix(in oklch, var(--fg) 12%, transparent);
@@ -131,19 +132,19 @@
      explicit light choice win over a dark OS setting. */
   @media (prefers-color-scheme: dark) {
     :root:not(.light) {
-      --bg: oklch(0.155 0.028 250);
+      --bg: oklch(0 0 0);
       --fg: oklch(0.96 0.005 250);
-      --card: oklch(0.196 0.03 250);
+      --card: oklch(0.14 0.01 250);
       --card-fg: oklch(0.96 0.005 250);
-      --muted: oklch(0.238 0.032 250);
+      --muted: oklch(0.18 0.012 250);
       --muted-fg: oklch(0.685 0.02 250);
       --primary: oklch(0.72 0.145 263);
       --primary-fg: oklch(0.16 0.05 263);
-      --accent: oklch(0.3 0.07 263);
+      --accent: oklch(0.24 0.05 263);
       --accent-fg: oklch(0.84 0.079 263);
       --destructive: oklch(0.655 0.17 25);
-      --line: oklch(0.275 0.03 250);
-      --line-strong: oklch(0.375 0.035 250);
+      --line: oklch(0.24 0.015 250);
+      --line-strong: oklch(0.34 0.02 250);
       --ring-color: oklch(0.72 0.145 263);
       color-scheme: dark;
       --shadow-column: inset -1px 0 0 color-mix(in oklch, var(--fg) 12%, transparent);
