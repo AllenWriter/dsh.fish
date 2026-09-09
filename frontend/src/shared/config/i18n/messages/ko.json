@@ -1,6 +1,6 @@
 {
-  "app.name": "dsh.fish",
-  "app.tagline": "DeepSeek Harness 플러그인 허브",
+  "app.name": "小举人",
+  "app.tagline": "코드 · 관점 · 돈 벌기",
   "app.description": "dsh용 bundle, skill, agent 프리셋, profile을 찾고 배포하고 설치합니다.",
   "feed.title": "dsh.fish — 최신 플러그인",
   "feed.description": "카탈로그에서 가장 최근에 업데이트된 bundle, skill, agent 프리셋, profile.",

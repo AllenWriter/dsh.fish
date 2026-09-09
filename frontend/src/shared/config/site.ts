@@ -17,9 +17,9 @@ export const OG_IMAGE = {
 
 /** Square brand mark for schema.org identity and install surfaces. */
 export const BRAND_IMAGE = {
-  path: '/icons/laptop-brand.png',
-  width: 512,
-  height: 512,
+  path: '/icons/xiaojuren-brand.png',
+  width: 322,
+  height: 270,
   type: 'image/png',
 } as const
 

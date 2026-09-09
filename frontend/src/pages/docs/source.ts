@@ -25,6 +25,7 @@ const SEPARATOR_TITLE_KEY = {
   site: 'docs.nav.site',
   finance: 'docs.nav.finance',
   product: 'docs.nav.product',
+  tools: 'docs.nav.tools',
 } as const satisfies Record<string, DocsSeparatorKey>
 
 function kindFromUrl(url: string): ArtifactKind | undefined {

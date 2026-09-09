@@ -10,7 +10,7 @@ describe('rootLlmsTxt', () => {
   const lines = body.split('\n')
 
   it('follows the v2 section order: H1, blockquote, notes, then H2 file lists', () => {
-    expect(lines[0]).toBe("# Jens' Blog")
+    expect(lines[0]).toBe("# 小举人")
     expect(lines[1]?.startsWith('> ')).toBe(true)
     const firstH2 = lines.findIndex((line) => line.startsWith('## '))
     expect(firstH2).toBeGreaterThan(2)
@@ -50,7 +50,7 @@ describe('docsLlmsTxt', () => {
   ])
 
   it('groups file lists under the nav separators and uses .md aliases', () => {
-    expect(body.startsWith("# Jens' Blog documentation")).toBe(true)
+    expect(body.startsWith("# 小举人 documentation")).toBe(true)
     expect(body).toContain('## Docs')
     expect(body).toContain(`[Docs](${ORIGIN}/docs/index.md)`)
     expect(body).toContain('## Start')
@@ -66,7 +66,7 @@ describe('docsLlmsFull', () => {
       { path: '/docs/cli', markdown: '# CLI\n\nnpx @dsh-fish/cli' },
       { path: '/docs/api', markdown: '# API\n\nGET /api/v1/artifacts' },
     ])
-    expect(body).toContain("# Jens' Blog documentation")
+    expect(body).toContain("# 小举人 documentation")
     expect(body).toContain('# CLI')
     expect(body).toContain('# API')
     expect(body).toContain('npx @dsh-fish/cli')
@@ -81,7 +81,7 @@ describe('blogLlmsTxt', () => {
   )
 
   it('lists the index, each series, and every post as markdown aliases', () => {
-    expect(body.startsWith("# Jens' Blog blog")).toBe(true)
+    expect(body.startsWith("# 小举人 blog")).toBe(true)
     expect(body).toContain(`[Blog](${ORIGIN}/blog/index.md)`)
     expect(body).toContain(`[Tech](${ORIGIN}/blog/tech.md)`)
     expect(body).toContain(`[Leave only one inbox](${ORIGIN}/blog/tech/one-inbox.md)`)

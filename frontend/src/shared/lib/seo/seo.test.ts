@@ -282,7 +282,7 @@ describe('organizationLd', () => {
   it('uses the square brand mark as the organization logo, not the social card', () => {
     expect(organizationLd(ORIGIN, 'en').logo).toEqual({
       '@type': 'ImageObject',
-      url: `${ORIGIN}/icons/laptop-brand.png`,
+      url: `${ORIGIN}/icons/xiaojuren-brand.png`,
       width: 512,
       height: 512,
     })
@@ -292,7 +292,7 @@ describe('organizationLd', () => {
 describe('websiteLd', () => {
   it('names the abbreviation people type as an alternate, without replacing the sitename', () => {
     const site = websiteLd(ORIGIN, 'en')
-    expect(site.name).toBe("Jens' Blog")
+    expect(site.name).toBe("小举人")
     expect(site.alternateName).toBe('Jens')
   })
 })

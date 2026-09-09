@@ -1,5 +1,5 @@
 /**
- * Open Graph card for Jens' Blog.
+ * Open Graph card for 小举人.
  *
  * `public/og.png` is the committed artistic site card (1200×630). Replace that
  * file when the art changes, then run:

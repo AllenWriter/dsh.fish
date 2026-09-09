@@ -9,6 +9,7 @@ export type DocsSeparatorKey = Extract<
   | 'docs.nav.site'
   | 'docs.nav.finance'
   | 'docs.nav.product'
+  | 'docs.nav.tools'
 >
 
 export type DocsNavNode =

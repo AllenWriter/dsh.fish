@@ -247,6 +247,17 @@
       }
     },
     {
+      "url": "/docs/microsoft-account-types",
+      "slug": "microsoft-account-types",
+      "file": "microsoft-account-types.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "微软账号类型介绍",
+          "description": "微软个人版与企业版账号体系简介（草稿）。"
+        }
+      }
+    },
+    {
       "url": "/docs/facebook-account-pitfalls",
       "slug": "facebook-account-pitfalls",
       "file": "facebook-account-pitfalls.mdx",
@@ -331,6 +342,127 @@
         "zh-CN": {
           "title": "出发去香港前的注意事项",
           "description": "动身去香港开户前，上网、现金、换汇和海关额度这些要先想清楚。"
+        }
+      }
+    },
+    {
+      "url": "/docs/australia-skills-assessment",
+      "slug": "australia-skills-assessment",
+      "file": "australia-skills-assessment.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "澳洲职业评估折腾记录",
+          "description": "澳洲 Technical Writer 职业评估（VETASSESS）申请记录。"
+        }
+      }
+    },
+    {
+      "url": "/docs/tools-intro",
+      "slug": "tools-intro",
+      "file": "tools-intro.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "开发工具推荐",
+          "description": "个人开发中常用到的一些开发工具入口页。"
+        }
+      }
+    },
+    {
+      "url": "/docs/everything-quick-search",
+      "slug": "everything-quick-search",
+      "file": "everything-quick-search.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "Everything快速搜索本地文件",
+          "description": "用 Everything 瞬间搜索本地文件，附排除列表与常用搜索语法。"
+        }
+      }
+    },
+    {
+      "url": "/docs/idea-basic-config",
+      "slug": "idea-basic-config",
+      "file": "idea-basic-config.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "IDEA基本配置",
+          "description": "IntelliJ IDEA 常用插件、快捷键、Live Templates 与配置导入导出。"
+        }
+      }
+    },
+    {
+      "url": "/docs/vscode-config",
+      "slug": "vscode-config",
+      "file": "vscode-config.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "VScode相关配置",
+          "description": "VS Code 插件推荐、快捷键、自定义光标键与 @types 代码提示。"
+        }
+      }
+    },
+    {
+      "url": "/docs/vite-plugins",
+      "slug": "vite-plugins",
+      "file": "vite-plugins.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "Vite相关插件",
+          "description": "日常用到的 Vite 插件：auto-import、components、pages、layouts 等。"
+        }
+      }
+    },
+    {
+      "url": "/docs/wappalyzer",
+      "slug": "wappalyzer",
+      "file": "wappalyzer.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "Wappalyzer识别网站上的技术",
+          "description": "用 Chrome 插件 Wappalyzer 识别网站技术栈。"
+        }
+      }
+    },
+    {
+      "url": "/docs/windows-terminal-beautify",
+      "slug": "windows-terminal-beautify",
+      "file": "windows-terminal-beautify.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "Windows Terminal美化",
+          "description": "Windows Terminal + Oh My Posh 美化 PowerShell，附主题配置。"
+        }
+      }
+    },
+    {
+      "url": "/docs/windows-context-menu",
+      "slug": "windows-context-menu",
+      "file": "windows-context-menu.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "Windows自定义右键菜单",
+          "description": "通过注册表自定义 Windows 右键菜单：CMD、VS Code 等。"
+        }
+      }
+    },
+    {
+      "url": "/docs/multi-ssh",
+      "slug": "multi-ssh",
+      "file": "multi-ssh.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "如何在同一个机器上新建多个 SSH 并与 Github 连接",
+          "description": "同一台机器配置多个 SSH Key，分别连接不同 GitHub 账号。"
+        }
+      }
+    },
+    {
+      "url": "/docs/cloudflare-picgo-image-host",
+      "slug": "cloudflare-picgo-image-host",
+      "file": "cloudflare-picgo-image-host.mdx",
+      "locales": {
+        "zh-CN": {
+          "title": "如何通过 Cloudflare + Picgo 搭建属于自己的图床？",
+          "description": "通过 Cloudflare R2 + PicGo 搭建在线图床（草稿，待补全）。"
         }
       }
     },
@@ -441,6 +573,10 @@
     },
     {
       "type": "page",
+      "slug": "microsoft-account-types"
+    },
+    {
+      "type": "page",
       "slug": "facebook-account-pitfalls"
     },
     {
@@ -478,6 +614,54 @@
     {
       "type": "page",
       "slug": "before-going-to-hong-kong"
+    },
+    {
+      "type": "page",
+      "slug": "australia-skills-assessment"
+    },
+    {
+      "type": "separator",
+      "key": "tools"
+    },
+    {
+      "type": "page",
+      "slug": "tools-intro"
+    },
+    {
+      "type": "page",
+      "slug": "everything-quick-search"
+    },
+    {
+      "type": "page",
+      "slug": "idea-basic-config"
+    },
+    {
+      "type": "page",
+      "slug": "vscode-config"
+    },
+    {
+      "type": "page",
+      "slug": "vite-plugins"
+    },
+    {
+      "type": "page",
+      "slug": "wappalyzer"
+    },
+    {
+      "type": "page",
+      "slug": "windows-terminal-beautify"
+    },
+    {
+      "type": "page",
+      "slug": "windows-context-menu"
+    },
+    {
+      "type": "page",
+      "slug": "multi-ssh"
+    },
+    {
+      "type": "page",
+      "slug": "cloudflare-picgo-image-host"
     },
     {
       "type": "separator",

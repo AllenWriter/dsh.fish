@@ -25,7 +25,7 @@ describe('docs manifest', () => {
 
   it('names only separators the shell can translate', () => {
     const keys = docsManifestNav.flatMap((node) => (node.type === 'separator' ? [node.key] : []))
-    expect(keys).toEqual(['ai', 'self-hosted', 'accounts', 'site', 'finance', 'product'])
+    expect(keys).toEqual(['ai', 'self-hosted', 'accounts', 'site', 'finance', 'tools', 'product'])
     expect(docsNav(DEFAULT_LOCALE).filter((node) => node.type === 'separator')).toHaveLength(keys.length)
   })
 
