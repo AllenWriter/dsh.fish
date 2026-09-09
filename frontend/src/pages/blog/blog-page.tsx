@@ -14,7 +14,7 @@ import {
   pageMeta,
 } from '@/shared/lib/seo'
 import { BlogArticle, BlogNewsroom } from '@/widgets/blog-shell'
-import { BlogMarkdown, BlogWechatHtml } from './body'
+import { BlogMarkdown } from './body'
 import { parseBlogFrontmatter } from './parse'
 import { blogLocales, blogPostMarkdown } from './raw'
 import { assetsBlogMdxReader } from './read-mdx'
@@ -33,10 +33,6 @@ import {
   slugsFromSplat,
 } from './source'
 import { tocFromMarkdown } from './toc'
-import {
-  assetsWechatHtmlReader,
-  prepareWechatHtmlBody,
-} from './wechat-html'
 
 function formatDate(iso: string, locale: Locale): string {
   return new Intl.DateTimeFormat(localeDefinition(locale).tag, {
@@ -165,21 +161,12 @@ export async function loader({ context, params }: Route.LoaderArgs) {
   const date = postDateIso(data.date)
   const availableLocales = blogLocales(summary.url)
 
-  let wechatHtml: string | undefined
-  if (data.series === 'wechat') {
-    const raw = await assetsWechatHtmlReader(env.ASSETS)(summary.slugs[1]!)
-    if (raw !== undefined) {
-      wechatHtml = prepareWechatHtmlBody(raw, summary.slugs[1]!)
-    }
-  }
-
   return {
     kind: 'post' as const,
     locale,
     origin,
     path: summary.url,
     markdown,
-    wechatHtml,
     title: data.title,
     description: data.description,
     author: data.author,
@@ -190,7 +177,7 @@ export async function loader({ context, params }: Route.LoaderArgs) {
     formattedDate: formatDate(date, locale),
     readingMinutes: readingMinutesFromMarkdown(markdown),
     related: relatedBlogPostCards(locale, summary.url, data.series),
-    toc: wechatHtml ? [] : tocFromMarkdown(markdown),
+    toc: tocFromMarkdown(markdown),
     availableLocales,
     type: 'article' as const,
     jsonLd: [
@@ -231,7 +218,6 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
 
   const {
     markdown,
-    wechatHtml,
     title,
     description,
     author,
@@ -259,11 +245,7 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
       related={related}
       toc={toc}
     >
-      {wechatHtml ? (
-        <BlogWechatHtml html={wechatHtml} />
-      ) : (
-        <BlogMarkdown markdown={markdown} />
-      )}
+      <BlogMarkdown markdown={markdown} />
     </BlogArticle>
   )
 }
