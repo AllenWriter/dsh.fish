@@ -20,15 +20,31 @@ export function diskBlogAssets(): BlogAssets {
   return {
     fetch: async (input: string) => {
       const pathname = new URL(input, 'https://assets.local').pathname
-      const prefix = '/blog/mdx/'
-      if (!pathname.startsWith(prefix)) {
-        return new Response(null, { status: 404 })
+      const mdxPrefix = '/blog/mdx/'
+      if (pathname.startsWith(mdxPrefix)) {
+        const body = await diskBlogMdxReader(pathname.slice(mdxPrefix.length))
+        if (body === undefined) return new Response(null, { status: 404 })
+        return new Response(body, {
+          headers: { 'content-type': 'text/plain; charset=utf-8' },
+        })
       }
-      const body = await diskBlogMdxReader(pathname.slice(prefix.length))
-      if (body === undefined) return new Response(null, { status: 404 })
-      return new Response(body, {
-        headers: { 'content-type': 'text/plain; charset=utf-8' },
-      })
+
+      // WeChat high-fidelity HTML + images live under public/blog/wechat/
+      if (pathname.startsWith('/blog/wechat/') && pathname.endsWith('.html')) {
+        try {
+          const body = await readFile(join(process.cwd(), 'public', pathname.slice(1)), 'utf8')
+          return new Response(body, {
+            headers: { 'content-type': 'text/html; charset=utf-8' },
+          })
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+            return new Response(null, { status: 404 })
+          }
+          throw error
+        }
+      }
+
+      return new Response(null, { status: 404 })
     },
   }
 }
