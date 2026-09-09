@@ -13,7 +13,7 @@ import {
   errorMeta,
   pageMeta,
 } from '@/shared/lib/seo'
-import { BlogArticle, BlogNewsroom } from '@/widgets/blog-shell'
+import { BlogArticle, BlogNewsroom, WechatAccountDirectory } from '@/widgets/blog-shell'
 import { BlogMarkdown } from './body'
 import { parseBlogFrontmatter } from './parse'
 import { blogLocales, blogPostMarkdown } from './raw'
@@ -31,6 +31,7 @@ import {
   postDateIso,
   relatedBlogPostCards,
   slugsFromSplat,
+  wechatAccountSummaries,
 } from './source'
 import { tocFromMarkdown } from './toc'
 
@@ -74,7 +75,7 @@ export function meta({
   })
 }
 
-export async function loader({ context, params }: Route.LoaderArgs) {
+export async function loader({ context, params, request }: Route.LoaderArgs) {
   const locale = requireLocale(params.locale)
   const slugs = slugsFromSplat(params['*'])
   const { container, env } = context.get(hubContext)
@@ -97,6 +98,9 @@ export async function loader({ context, params }: Route.LoaderArgs) {
       currentSeries: undefined,
       nav,
       posts,
+      accountDirectory: undefined,
+      selectedAccount: undefined,
+      accountTotal: undefined,
       type: 'website' as const,
       jsonLd: [
         breadcrumbLd(origin, locale, [
@@ -115,7 +119,18 @@ export async function loader({ context, params }: Route.LoaderArgs) {
 
   if (slugs.length === 1 && isBlogSeries(slugs[0]!)) {
     const series = slugs[0]
-    const posts = blogPostCards(locale, series)
+    const allPosts = blogPostCards(locale, series)
+    const accountDirectory = series === 'wechat' ? wechatAccountSummaries(allPosts) : undefined
+    const requestedAccount = new URL(request.url).searchParams.get('account')?.trim()
+    const selectedAccount = accountDirectory?.some(
+      (account) => account.name === requestedAccount,
+    )
+      ? requestedAccount
+      : undefined
+    const posts =
+      selectedAccount === undefined
+        ? allPosts
+        : allPosts.filter((post) => post.account === selectedAccount)
     const title = translate(locale, seriesTitleKey(series))
     const description = translate(locale, seriesDescriptionKey(series))
     const path = `/blog/${series}`
@@ -130,6 +145,9 @@ export async function loader({ context, params }: Route.LoaderArgs) {
       currentSeries: series,
       nav,
       posts,
+      accountDirectory,
+      selectedAccount,
+      accountTotal: series === 'wechat' ? allPosts.length : undefined,
       type: 'website' as const,
       jsonLd: [
         breadcrumbLd(origin, locale, [
@@ -174,7 +192,8 @@ export async function loader({ context, params }: Route.LoaderArgs) {
     markdown,
     title: data.title,
     description: data.description,
-    author: data.author,
+    ...(data.author === undefined ? {} : { author: data.author }),
+    ...(data.account === undefined ? {} : { account: data.account }),
     date,
     series: data.series,
     cover: data.cover,
@@ -200,7 +219,7 @@ export async function loader({ context, params }: Route.LoaderArgs) {
         title: data.title,
         description: data.description,
         datePublished: date,
-        author: data.author,
+        ...(data.author === undefined ? {} : { author: data.author }),
       }),
     ],
   }
@@ -208,7 +227,16 @@ export async function loader({ context, params }: Route.LoaderArgs) {
 
 export default function BlogPage({ loaderData }: Route.ComponentProps) {
   if (loaderData.kind === 'listing') {
-    const { nav, currentSeries, title, description, posts } = loaderData
+    const {
+      nav,
+      currentSeries,
+      title,
+      description,
+      posts,
+      accountDirectory,
+      selectedAccount,
+      accountTotal,
+    } = loaderData
     return (
       <BlogNewsroom
         posts={posts}
@@ -217,6 +245,17 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
         subtitle={description}
         activeSeries={currentSeries ?? 'all'}
         tabMode="links"
+        directory={
+          currentSeries === 'wechat' &&
+          accountDirectory !== undefined &&
+          accountTotal !== undefined ? (
+            <WechatAccountDirectory
+              accounts={accountDirectory}
+              selectedAccount={selectedAccount}
+              total={accountTotal}
+            />
+          ) : undefined
+        }
       />
     )
   }
@@ -226,6 +265,7 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
     title,
     description,
     author,
+    account,
     formattedDate,
     date,
     series,
@@ -241,6 +281,7 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
       title={title}
       description={description}
       author={author}
+      account={account}
       date={date}
       formattedDate={formattedDate}
       readingMinutes={readingMinutes}

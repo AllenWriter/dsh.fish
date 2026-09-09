@@ -132,7 +132,7 @@ export function collectionLd(
 /**
  * A dated editorial article.
  *
- * Only facts the page actually has: headline, description, date, author name.
+ * Only facts the page actually has: headline, description, date, and an optional author.
  * No invented `wordCount` or `image` beyond the site-wide card already in the
  * Open Graph tags.
  */
@@ -144,7 +144,7 @@ export function blogPostingLd(
     readonly title: string
     readonly description: string
     readonly datePublished: string
-    readonly author: string
+    readonly author?: string
   },
 ): Ld {
   const url = absoluteUrl(origin, locale, input.path)
@@ -160,10 +160,14 @@ export function blogPostingLd(
     mainEntityOfPage: url,
     isPartOf: { '@id': `${origin}/#website` },
     publisher: { '@id': `${origin}/#organization` },
-    author: {
-      '@type': 'Person',
-      name: input.author,
-    },
+    ...(input.author === undefined
+      ? {}
+      : {
+          author: {
+            '@type': 'Person',
+            name: input.author,
+          },
+        }),
   }
 }
 

@@ -38,7 +38,8 @@ export interface BlogPostSummary {
   readonly slugs: readonly string[]
   readonly title: string
   readonly description: string
-  readonly author: string
+  readonly author?: string
+  readonly account?: string
   readonly date: string
   readonly series: BlogSeries
   readonly cover: string
@@ -51,7 +52,8 @@ function summaryFromPost(post: BlogManifestPost, locale: Locale): BlogPostSummar
     slugs: [post.series, post.slug],
     title: copy.title,
     description: copy.description,
-    author: copy.author,
+    ...(copy.author === undefined ? {} : { author: copy.author }),
+    ...(copy.account === undefined ? {} : { account: copy.account }),
     date: postDateIso(copy.date),
     series: post.series,
     cover: post.cover,
@@ -91,8 +93,29 @@ export function blogPostCards(
     seriesId: post.series,
     seriesTitle: translate(locale, seriesTitleKey(post.series)),
     cover: post.cover,
+    ...(post.account === undefined ? {} : { account: post.account }),
   }))
 }
+
+export interface WechatAccountSummary {
+  readonly name: string
+  readonly count: number
+}
+
+/** Account directory derived from WeChat cards, ordered by archive size. */
+export function wechatAccountSummaries(
+  posts: readonly BlogPostCard[],
+): readonly WechatAccountSummary[] {
+  const counts = new Map<string, number>()
+  for (const post of posts) {
+    if (post.account === undefined) continue
+    counts.set(post.account, (counts.get(post.account) ?? 0) + 1)
+  }
+  return [...counts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name))
+}
+
 
 /** Three other posts, same series first, for the article footer. */
 export function relatedBlogPostCards(

@@ -300,5 +300,10 @@
   "topic.ui-themes.label": "UI 및 테마",
   "collection.topic.title": "{topic}용 DeepSeek Harness 플러그인",
   "collection.topic.description": "{topic} 워크플로에 적합한 플러그인, 스킬, 프리셋을 살펴보세요.",
-  "collection.topic.guidance": "프로덕션 프로필에 추가하기 전에 소스 활동, 권한, 설치 단계를 비교하세요."
+  "collection.topic.guidance": "프로덕션 프로필에 추가하기 전에 소스 활동, 권한, 설치 단계를 비교하세요.",
+  "blog.wechat.accounts": "Official accounts",
+  "blog.wechat.allAccounts": "All accounts",
+  "blog.wechat.accountCount": "{count} articles",
+  "blog.wechat.accountTotal": "{count} accounts",
+  "blog.wechat.sourceAccount": "Source account"
 }

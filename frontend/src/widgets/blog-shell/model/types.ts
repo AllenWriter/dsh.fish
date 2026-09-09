@@ -18,4 +18,10 @@ export interface BlogPostCard {
   readonly seriesId: string
   readonly seriesTitle: string
   readonly cover: string
+  readonly account?: string
+}
+
+export interface BlogAccountNavItem {
+  readonly name: string
+  readonly count: number
 }

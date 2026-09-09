@@ -300,5 +300,10 @@
   "topic.ui-themes.label": "Интерфейс и темы",
   "collection.topic.title": "Плагины DeepSeek Harness для {topic}",
   "collection.topic.description": "Плагины, навыки и пресеты для сценариев {topic}.",
-  "collection.topic.guidance": "Перед добавлением в рабочий профиль сравните активность исходников, разрешения и шаги установки."
+  "collection.topic.guidance": "Перед добавлением в рабочий профиль сравните активность исходников, разрешения и шаги установки.",
+  "blog.wechat.accounts": "Official accounts",
+  "blog.wechat.allAccounts": "All accounts",
+  "blog.wechat.accountCount": "{count} articles",
+  "blog.wechat.accountTotal": "{count} accounts",
+  "blog.wechat.sourceAccount": "Source account"
 }

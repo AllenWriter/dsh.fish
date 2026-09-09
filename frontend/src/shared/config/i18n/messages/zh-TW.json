@@ -300,5 +300,10 @@
   "topic.ui-themes.label": "介面與主題",
   "collection.topic.title": "適用於{topic}的 DeepSeek Harness 外掛",
   "collection.topic.description": "探索適合{topic}工作流程的外掛、技能與預設。",
-  "collection.topic.guidance": "加入正式環境設定前，請比較來源活躍度、權限需求與安裝步驟。"
+  "collection.topic.guidance": "加入正式環境設定前，請比較來源活躍度、權限需求與安裝步驟。",
+  "blog.wechat.accounts": "Official accounts",
+  "blog.wechat.allAccounts": "All accounts",
+  "blog.wechat.accountCount": "{count} articles",
+  "blog.wechat.accountTotal": "{count} accounts",
+  "blog.wechat.sourceAccount": "Source account"
 }

@@ -5,7 +5,8 @@ import generated from './manifest.generated.json'
 export interface BlogManifestLocale {
   readonly title: string
   readonly description: string
-  readonly author: string
+  readonly author?: string
+  readonly account?: string
   readonly date: string
 }
 
@@ -37,6 +38,15 @@ function asPost(post: BlogManifestFile['posts'][number]): BlogManifestPost {
   }
   if (post.locales[DEFAULT_LOCALE] === undefined) {
     throw new Error(`Blog manifest post ${post.url} is missing ${DEFAULT_LOCALE}`)
+  }
+  for (const [locale, copy] of Object.entries(post.locales)) {
+    if (post.series === 'wechat') {
+      if (copy.account === undefined || copy.account === '' || copy.author !== undefined) {
+        throw new Error(`WeChat manifest post ${post.url} (${locale}) has invalid account metadata`)
+      }
+    } else if (copy.author === undefined || copy.author === '' || copy.account !== undefined) {
+      throw new Error(`Blog manifest post ${post.url} (${locale}) has invalid author metadata`)
+    }
   }
   return {
     url: post.url,

@@ -50,7 +50,7 @@ export function BlogTile({
             className="h-full w-full object-cover object-center"
           />
           <span className="absolute top-3 left-3 inline-flex items-center rounded-full border border-background/60 bg-background/90 px-2.5 py-1 text-[11px] font-medium tracking-wide text-foreground backdrop-blur">
-            {post.seriesTitle}
+            {post.account ?? post.seriesTitle}
           </span>
           <motion.span
             variants={reduce ? undefined : { hover: { opacity: 1, y: 0 } }}

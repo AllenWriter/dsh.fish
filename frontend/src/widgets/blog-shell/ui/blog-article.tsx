@@ -9,6 +9,7 @@ export function BlogArticle({
   title,
   description,
   author,
+  account,
   date,
   formattedDate,
   readingMinutes,
@@ -21,7 +22,8 @@ export function BlogArticle({
 }: {
   title: string
   description: string
-  author: string
+  author?: string
+  account?: string
   date: string
   formattedDate: string
   readingMinutes: number
@@ -73,8 +75,22 @@ export function BlogArticle({
             {description}
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <Avatar name={author} size="sm" />
-            <span className="font-medium text-foreground">{author}</span>
+            {account === undefined ? (
+              <>
+                <Avatar name={author ?? ''} size="sm" />
+                <span className="font-medium text-foreground">{author}</span>
+              </>
+            ) : (
+              <span>
+                {t('blog.wechat.sourceAccount')}:{' '}
+                <LocaleLink
+                  to={`/blog/wechat?account=${encodeURIComponent(account)}`}
+                  className="font-medium text-foreground underline-offset-4 hover:underline"
+                >
+                  {account}
+                </LocaleLink>
+              </span>
+            )}
             <span aria-hidden="true">·</span>
             <time dateTime={date}>{formattedDate}</time>
             <span aria-hidden="true">·</span>
@@ -94,20 +110,22 @@ export function BlogArticle({
           {children}
         </div>
 
-        <aside className="mt-12 rounded-2xl border border-border bg-card p-6">
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            {t('blog.writtenBy')}
-          </p>
-          <div className="mt-3 flex items-start gap-3">
-            <Avatar name={authorName} size="lg" />
-            <div className="min-w-0">
-              <p className="font-semibold tracking-tight">{authorName}</p>
-              <p className="mt-1 text-sm text-pretty text-muted-foreground">
-                {t('blog.authorBio')}
-              </p>
+        {account === undefined ? (
+          <aside className="mt-12 rounded-2xl border border-border bg-card p-6">
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              {t('blog.writtenBy')}
+            </p>
+            <div className="mt-3 flex items-start gap-3">
+              <Avatar name={authorName} size="lg" />
+              <div className="min-w-0">
+                <p className="font-semibold tracking-tight">{authorName}</p>
+                <p className="mt-1 text-sm text-pretty text-muted-foreground">
+                  {t('blog.authorBio')}
+                </p>
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        ) : null}
 
         {related.length > 0 ? (
           <section className="mt-16">

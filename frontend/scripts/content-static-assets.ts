@@ -85,7 +85,10 @@ export function syncBlogStaticAssets() {
     slug: string
     file: string
     cover: string
-    locales: Record<string, { title: string; description: string; author: string; date: string }>
+    locales: Record<
+      string,
+      { title: string; description: string; author?: string; account?: string; date: string }
+    >
   }
   const posts = new Map<string, ManifestPost>()
 
@@ -105,7 +108,6 @@ export function syncBlogStaticAssets() {
     const fields = parseFrontmatter(readFileSync(full, 'utf8'), rel)
     const title = requireField(fields, 'title', rel)
     const description = requireField(fields, 'description', rel)
-    const author = requireField(fields, 'author', rel)
     const date = requireField(fields, 'date', rel)
     const cover = requireField(fields, 'cover', rel)
     const seriesField = requireField(fields, 'series', rel)
@@ -114,6 +116,19 @@ export function syncBlogStaticAssets() {
     }
     if (!cover.startsWith('/blog/covers/')) {
       throw new Error(`Blog post ${rel} has an invalid cover`)
+    }
+
+    const author = fields.author?.trim()
+    const account = fields.account?.trim()
+    const classification =
+      series === 'wechat'
+        ? { account: requireField(fields, 'account', rel) }
+        : { author: requireField(fields, 'author', rel) }
+    if (series === 'wechat' && author !== undefined && author !== '') {
+      throw new Error(`WeChat post ${rel} must use account instead of author`)
+    }
+    if (series !== 'wechat' && account !== undefined && account !== '') {
+      throw new Error(`Non-WeChat post ${rel} must use author instead of account`)
     }
 
     if (!LOCALES.includes(locale) && locale !== DEFAULT_LOCALE) {
@@ -132,7 +147,12 @@ export function syncBlogStaticAssets() {
       post.cover = cover
       post.file = file
     }
-    post.locales[locale] = { title, description, author, date }
+    post.locales[locale] = {
+      title,
+      description,
+      ...classification,
+      date,
+    }
   }
 
   for (const post of posts.values()) {

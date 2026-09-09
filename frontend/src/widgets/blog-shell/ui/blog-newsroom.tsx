@@ -20,6 +20,7 @@ export function BlogNewsroom({
   subtitle,
   activeSeries = ALL_SERIES,
   tabMode = 'client',
+  directory,
 }: {
   posts: readonly BlogPostCard[]
   tabs: readonly BlogSeriesNavItem[]
@@ -27,6 +28,7 @@ export function BlogNewsroom({
   subtitle?: string
   activeSeries?: string
   tabMode?: 'client' | 'links'
+  directory?: React.ReactNode
 }) {
   const t = useT()
   const reduce = useReducedMotion()
@@ -109,6 +111,8 @@ export function BlogNewsroom({
           })}
         </div>
       </nav>
+
+      {directory}
 
       {visible.length === 0 ? (
         <p className="mt-10 text-center text-sm text-muted-foreground">
