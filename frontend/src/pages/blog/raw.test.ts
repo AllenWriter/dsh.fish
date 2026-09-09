@@ -123,7 +123,7 @@ const read = diskBlogMdxReader
 
 describe('isBlogSeries', () => {
   it('accepts the public tags and nothing else', () => {
-    expect(BLOG_SERIES).toEqual(['podcast', 'tech', 'life', 'finance', 'travel'])
+    expect(BLOG_SERIES).toEqual(['podcast', 'tech', 'life', 'finance', 'travel', 'wechat'])
     for (const series of BLOG_SERIES) expect(isBlogSeries(series)).toBe(true)
     expect(isBlogSeries('docs')).toBe(false)
     expect(isBlogSeries('notes')).toBe(false)

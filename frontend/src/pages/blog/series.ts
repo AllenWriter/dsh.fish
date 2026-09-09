@@ -1,7 +1,7 @@
 import { translate, type Locale } from '@/shared/config/i18n'
 import type { BlogSeriesNavItem } from '@/widgets/blog-shell'
 
-export const BLOG_SERIES = ['podcast', 'tech', 'life', 'finance', 'travel'] as const
+export const BLOG_SERIES = ['podcast', 'tech', 'life', 'finance', 'travel', 'wechat'] as const
 
 export type BlogSeries = (typeof BLOG_SERIES)[number]
 

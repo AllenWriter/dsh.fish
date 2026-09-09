@@ -23,7 +23,7 @@ const docsManifestPath = join(frontendRoot, 'src/pages/docs/manifest.generated.j
 
 const DEFAULT_LOCALE = 'zh-CN'
 const LOCALES = ['en', 'zh-CN', 'ja']
-const SERIES = new Set(['podcast', 'tech', 'life', 'finance', 'travel'])
+const SERIES = new Set(['podcast', 'tech', 'life', 'finance', 'travel', 'wechat'])
 const TRANSLATION_SUFFIXES = ['.en', '.ja', '.zh-TW', '.ko', '.ru']
 
 function parseFrontmatter(source: string, file: string): Record<string, string> {

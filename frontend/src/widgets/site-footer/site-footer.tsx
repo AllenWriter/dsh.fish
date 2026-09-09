@@ -14,6 +14,7 @@ const WRITE_LINKS = [
   { to: '/blog/life', key: 'blog.series.life' },
   { to: '/blog/finance', key: 'blog.series.finance' },
   { to: '/blog/travel', key: 'blog.series.travel' },
+  { to: '/blog/wechat', key: 'blog.series.wechat' },
 ] as const
 
 const NOTE_LINKS = [
