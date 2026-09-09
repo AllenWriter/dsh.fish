@@ -56,6 +56,10 @@ export function meta({
     jsonLd,
     type,
   } = loaderData
+  const imagePath =
+    loaderData.kind === 'post' && 'cover' in loaderData
+      ? loaderData.cover
+      : undefined
   return pageMeta({
     origin,
     locale,
@@ -66,6 +70,7 @@ export function meta({
     availableLocales,
     type,
     jsonLd,
+    ...(imagePath ? { imagePath } : {}),
   })
 }
 
@@ -245,7 +250,10 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
       related={related}
       toc={toc}
     >
-      <BlogMarkdown markdown={markdown} />
+      <BlogMarkdown
+        markdown={markdown}
+        stripLeadingImage={series === 'wechat'}
+      />
     </BlogArticle>
   )
 }

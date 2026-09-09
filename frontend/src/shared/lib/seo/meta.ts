@@ -71,6 +71,17 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
   const summary = clampDescription(description)
   const image = `${origin.replace(/\/+$/, '')}${imagePath}`
   const definition = localeDefinition(locale)
+  const isDefaultOg = imagePath === OG_IMAGE.path
+  const imageType = isDefaultOg
+    ? OG_IMAGE.type
+    : imagePath.endsWith('.webp')
+      ? 'image/webp'
+      : imagePath.endsWith('.jpg') || imagePath.endsWith('.jpeg')
+        ? 'image/jpeg'
+        : imagePath.endsWith('.gif')
+          ? 'image/gif'
+          : 'image/png'
+  const imageAlt = isDefaultOg ? translate(locale, 'app.tagline') : title
 
   const descriptors: MetaDescriptor[] = [
     { title },
@@ -84,16 +95,20 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
     { property: 'og:locale', content: definition.ogLocale },
     { property: 'og:image', content: image },
     ...(image.startsWith('https://') ? [{ property: 'og:image:secure_url', content: image }] : []),
-    { property: 'og:image:type', content: OG_IMAGE.type },
-    { property: 'og:image:width', content: String(OG_IMAGE.width) },
-    { property: 'og:image:height', content: String(OG_IMAGE.height) },
-    { property: 'og:image:alt', content: translate(locale, 'app.tagline') },
+    { property: 'og:image:type', content: imageType },
+    ...(isDefaultOg
+      ? [
+          { property: 'og:image:width', content: String(OG_IMAGE.width) },
+          { property: 'og:image:height', content: String(OG_IMAGE.height) },
+        ]
+      : []),
+    { property: 'og:image:alt', content: imageAlt },
 
     { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:title', content: title },
     { name: 'twitter:description', content: summary },
     { name: 'twitter:image', content: image },
-    { name: 'twitter:image:alt', content: translate(locale, 'app.tagline') },
+    { name: 'twitter:image:alt', content: imageAlt },
   ]
 
   // A link preview offers the reader other languages it could have rendered in.

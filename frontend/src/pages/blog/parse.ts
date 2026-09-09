@@ -52,3 +52,12 @@ export function parseBlogFrontmatter(pageUrl: string, source: string): BlogFront
   }
   return { title, description, author, date, series, cover }
 }
+
+/** Drop a leading markdown image so it does not duplicate the article cover hero. */
+export function stripLeadingMarkdownImage(markdown: string): string {
+  const body = stripFrontmatter(markdown)
+  const stripped = body.replace(/^\s*!\[[^\]]*\]\([^)]+\)\s*(?:\r?\n)+/, '')
+  if (stripped === body) return markdown
+  const fence = markdown.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/)
+  return fence ? `${fence[0]}${stripped}` : stripped
+}
