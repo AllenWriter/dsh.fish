@@ -346,5 +346,11 @@
   "footer.doc.agent": "Dify 插件与 Agent",
   "footer.doc.video": "Dify 视频生成",
   "footer.doc.engineering": "Dify 文档工程",
-  "footer.home": "首页"
+  "footer.home": "首页",
+  "chatPoster.kicker": "角落里的一扇窗",
+  "chatPoster.title": "飞鸟集 AI",
+  "chatPoster.body": "轻量的对话入口。想随便聊聊时，不必再开一堆标签页。",
+  "chatPoster.action": "打开 chat.xmsex.net",
+  "chatPoster.dismiss": "关闭",
+  "chatPoster.region": "对话邀请"
 }

@@ -12,6 +12,7 @@ import type { Route } from '../+types/root'
 import { readThemeCookie, type ThemePreference } from '@/shared/lib/theme'
 import { SiteHeader } from '@/widgets/site-header/site-header'
 import { SiteFooter } from '@/widgets/site-footer/site-footer'
+import { ChatPoster } from '@/widgets/chat-poster'
 import {
   DEFAULT_LOCALE,
   LocaleProvider,
@@ -143,6 +144,7 @@ export default function App() {
         <Outlet />
       </main>
       {footerInPage ? null : <SiteFooter />}
+      <ChatPoster />
     </div>
   )
 }

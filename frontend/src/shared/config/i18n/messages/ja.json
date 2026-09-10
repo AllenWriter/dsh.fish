@@ -346,5 +346,11 @@
   "footer.doc.agent": "Dify プラグインと Agent",
   "footer.doc.video": "Dify 動画生成",
   "footer.doc.engineering": "Dify ドキュメント設計",
-  "footer.home": "ホーム"
+  "footer.home": "ホーム",
+  "chatPoster.kicker": "静かな一角",
+  "chatPoster.title": "飞鸟集 AI",
+  "chatPoster.body": "エージェントと短く話せる、軽やかな入り口です。",
+  "chatPoster.action": "chat.xmsex.net を開く",
+  "chatPoster.dismiss": "閉じる",
+  "chatPoster.region": "チャットのご案内"
 }

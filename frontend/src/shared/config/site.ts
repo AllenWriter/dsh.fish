@@ -48,6 +48,9 @@ export const MAINTAINER_X_URL = 'https://x.com/stv_lynn'
 export const MAINTAINER_GITHUB_URL = 'https://github.com/AllenWriter'
 
 /** Where a bug report, a correction or a plugin nomination is read. */
+/** Lightweight chat client (飞鸟集 AI), promoted from a quiet side poster. */
+export const CHAT_XMSEX_URL = 'https://chat.xmsex.net'
+
 export const HUB_ISSUES_URL = `${HUB_REPO_URL}/issues`
 
 /**

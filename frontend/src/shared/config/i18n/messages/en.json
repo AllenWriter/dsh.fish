@@ -346,5 +346,11 @@
   "footer.doc.agent": "Dify plugins and agents",
   "footer.doc.video": "Dify video generation",
   "footer.doc.engineering": "Dify docs engineering",
-  "footer.home": "Home"
+  "footer.home": "Home",
+  "chatPoster.kicker": "A quiet corner",
+  "chatPoster.title": "飞鸟集 AI",
+  "chatPoster.body": "A lightweight place to talk with agents — when you want a short conversation, not another tab jungle.",
+  "chatPoster.action": "Open chat.xmsex.net",
+  "chatPoster.dismiss": "Dismiss",
+  "chatPoster.region": "Chat invitation"
 }
