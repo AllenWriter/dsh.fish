@@ -1444,7 +1444,7 @@
         "zh-CN": {
           "title": "9月5号，我只想给欧神买一件新毛衣",
           "description": "9月5号，我只想给欧神买一件新毛衣",
-          "author": "挨踢的牛魔王",
+          "account": "挨踢的牛魔王",
           "date": "2026-09-08"
         }
       }
@@ -1459,7 +1459,7 @@
         "zh-CN": {
           "title": "漕河泾的年轻人",
           "description": "编者按：十几年前我刚认识钻咖的时候，她建了一个聚集很多作者的QQ群，群规是每人每天写满3000字。",
-          "author": "游戏研究社",
+          "account": "游戏研究社",
           "date": "2026-08-31"
         }
       }
@@ -1474,7 +1474,7 @@
         "zh-CN": {
           "title": "炒股十八罗汉",
           "description": "今天这篇是大雄文",
-          "author": "二小姐后花园",
+          "account": "二小姐后花园",
           "date": "2026-08-31"
         }
       }
@@ -1489,7 +1489,7 @@
         "zh-CN": {
           "title": "大众汽车开除10万欧洲员工，被迫向中国电车靠拢",
           "description": "大众汽车宣布裁员足足10万欧洲员工，车型砍半，关停4厂。",
-          "author": "远方青木",
+          "account": "远方青木",
           "date": "2026-09-06"
         }
       }
@@ -1504,7 +1504,7 @@
         "zh-CN": {
           "title": "董建华的狮子山下",
           "description": "9月8日晚，董建华先生在香港辞世，享年89岁。",
-          "author": "饭统戴老板",
+          "account": "饭统戴老板",
           "date": "2026-09-09"
         }
       }
@@ -1519,7 +1519,7 @@
         "zh-CN": {
           "title": "风一吹，纽约大满贯成了“大麻贯”",
           "description": "一年一度的美国网球公开赛即将在纽约正式启幕，这座世界级网球殿堂本该汇聚顶尖选手、聚焦全球赛事目光，可赛场内外却被一股特殊异味困扰，成为本届赛事极具争议的场外插曲，让一众参赛运动员倍感困扰。",
-          "author": "远方青木",
+          "account": "远方青木",
           "date": "2026-09-04"
         }
       }
@@ -1534,7 +1534,7 @@
         "zh-CN": {
           "title": "狗东西，真双标",
           "description": "我们写孙割的一大批自媒体博主",
-          "author": "二小姐后花园",
+          "account": "二小姐后花园",
           "date": "2026-09-02"
         }
       }
@@ -1549,7 +1549,7 @@
         "zh-CN": {
           "title": "“会哭有奶吃”！印度裔拿捏“华人多数”的新加坡！",
           "description": "最近几天，一向被认为有良好多元族群治理能力的新加坡“画风突变”，舆论场出现了不少歧视印度裔的言论。",
-          "author": "远方青木",
+          "account": "远方青木",
           "date": "2026-09-09"
         }
       }
@@ -1564,7 +1564,7 @@
         "zh-CN": {
           "title": "毁约440名硕博应届生，百亿企业星宇的悔改只是外包时薪加1元？",
           "description": "200亿市值的大企业星宇股份，为了蝇头小利毁约440名硕博应届生。",
-          "author": "远方青木",
+          "account": "远方青木",
           "date": "2026-09-04"
         }
       }
@@ -1579,8 +1579,23 @@
         "zh-CN": {
           "title": "卡特兰的香蕉",
           "description": "题图由我厂AI生成",
-          "author": "挨踢的牛魔王",
+          "account": "挨踢的牛魔王",
           "date": "2026-09-01"
+        }
+      }
+    },
+    {
+      "url": "/blog/wechat/mai-fang-jiu-xiang-tan-lian-ai-d150a8",
+      "series": "wechat",
+      "slug": "mai-fang-jiu-xiang-tan-lian-ai-d150a8",
+      "file": "wechat/mai-fang-jiu-xiang-tan-lian-ai-d150a8.mdx",
+      "cover": "/blog/covers/mai-fang-jiu-xiang-tan-lian-ai-d150a8.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "买房就像谈恋爱",
+          "description": "买房砍价就像谈恋爱，原理是相通的",
+          "account": "二小姐后花园",
+          "date": "2026-09-09"
         }
       }
     },
@@ -1594,7 +1609,7 @@
         "zh-CN": {
           "title": "盲猜一把",
           "description": "小红书上的这个词条热搜屠榜",
-          "author": "二小姐后花园",
+          "account": "二小姐后花园",
           "date": "2026-09-09"
         }
       }
@@ -1609,7 +1624,7 @@
         "zh-CN": {
           "title": "美国被加50%关税，老百姓的擦屁股纸应声暴涨40%",
           "description": "美国人的擦屁股纸没了，被哄抢。",
-          "author": "远方青木",
+          "account": "远方青木",
           "date": "2026-09-04"
         }
       }
@@ -1624,7 +1639,7 @@
         "zh-CN": {
           "title": "美国第二大银行副行长，纽约街头被“随机刺杀”？",
           "description": "美国银行，不是美国的银行。",
-          "author": "远方青木",
+          "account": "远方青木",
           "date": "2026-09-04"
         }
       }
@@ -1639,8 +1654,23 @@
         "zh-CN": {
           "title": "你可以说孙割坏，你不能笑孙割菜",
           "description": "你可以说孙割坏，你不能笑孙割菜",
-          "author": "挨踢的牛魔王",
+          "account": "挨踢的牛魔王",
           "date": "2026-09-07"
+        }
+      }
+    },
+    {
+      "url": "/blog/wechat/ni-tian-gui-cheng-er-liang-cheng-jing-xian-long-tou-ling-shi-dian-c21389",
+      "series": "wechat",
+      "slug": "ni-tian-gui-cheng-er-liang-cheng-jing-xian-long-tou-ling-shi-dian-c21389",
+      "file": "wechat/ni-tian-gui-cheng-er-liang-cheng-jing-xian-long-tou-ling-shi-dian-c21389.mdx",
+      "cover": "/blog/covers/ni-tian-gui-cheng-er-liang-cheng-jing-xian-long-tou-ling-shi-dian-c21389.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "逆天鬼秤，二两秤惊现龙头零食店",
+          "description": "鬼秤见多了，但敢做到二两的鬼秤还是头一回见，这种逆天鬼秤居然还是龙头零食店弄出来的。",
+          "account": "远方青木",
+          "date": "2026-09-10"
         }
       }
     },
@@ -1654,7 +1684,7 @@
         "zh-CN": {
           "title": "全世界对你有敌意",
           "description": "女性想要自立自爱，安稳顺遂地过完一生，不被男权社会视为玩物，需要哪些品质？",
-          "author": "二小姐后花园",
+          "account": "二小姐后花园",
           "date": "2026-09-07"
         }
       }
@@ -1669,7 +1699,7 @@
         "zh-CN": {
           "title": "日增月益，孳孳不息",
           "description": "昨天文章随口提了一句，我以前写过诺贝尔奖金发了125年却越发越多的秘密。",
-          "author": "二小姐后花园",
+          "account": "二小姐后花园",
           "date": "2026-09-05"
         }
       }
@@ -1684,7 +1714,7 @@
         "zh-CN": {
           "title": "蔬菜被粪水污染，1.1万美国人感染环孢子虫",
           "description": "1.1万名美国人变成了“喷射战士”，躺在医院里痛苦万分，被查出感染了环孢子虫。",
-          "author": "远方青木",
+          "account": "远方青木",
           "date": "2026-09-02"
         }
       }
@@ -1699,7 +1729,7 @@
         "zh-CN": {
           "title": "孙割和欧割，镰刀界的北乔峰南慕容",
           "description": "题图由我厂AI生成",
-          "author": "挨踢的牛魔王",
+          "account": "挨踢的牛魔王",
           "date": "2026-09-03"
         }
       }
@@ -1714,7 +1744,7 @@
         "zh-CN": {
           "title": "他会下地狱的",
           "description": "孙割写了一篇6000字小作文，手撕女明星甜瓜，要她还钱，3000万！",
-          "author": "二小姐后花园",
+          "account": "二小姐后花园",
           "date": "2026-09-06"
         }
       }
@@ -1729,7 +1759,7 @@
         "zh-CN": {
           "title": "严管低保资金，是为了保护真正的穷人",
           "description": "低保户可以拿出三五千块钱出境去香港看演唱会么？",
-          "author": "远方青木",
+          "account": "远方青木",
           "date": "2026-09-09"
         }
       }
@@ -1744,7 +1774,7 @@
         "zh-CN": {
           "title": "营销之王德芙，差点被外包工搞死",
           "description": "今年最大的品牌翻车案例。",
-          "author": "远方青木",
+          "account": "远方青木",
           "date": "2026-09-06"
         }
       }
@@ -1759,8 +1789,23 @@
         "zh-CN": {
           "title": "永续债",
           "description": "上个礼拜，房地产出了一系列重磅新政，却被淹没在桃色新闻的洪流中。",
-          "author": "二小姐后花园",
+          "account": "二小姐后花园",
           "date": "2026-09-01"
+        }
+      }
+    },
+    {
+      "url": "/blog/wechat/zhu-jian-bian-cheng-le-huan-zhe-xin-ren-de-mo-yang-25d709",
+      "series": "wechat",
+      "slug": "zhu-jian-bian-cheng-le-huan-zhe-xin-ren-de-mo-yang-25d709",
+      "file": "wechat/zhu-jian-bian-cheng-le-huan-zhe-xin-ren-de-mo-yang-25d709.mdx",
+      "cover": "/blog/covers/zhu-jian-bian-cheng-le-huan-zhe-xin-ren-de-mo-yang-25d709.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "逐渐变成了患者信任的模样",
+          "description": "逐渐变成了所有人都放心的样子",
+          "account": "远方青木",
+          "date": "2026-09-10"
         }
       }
     }
