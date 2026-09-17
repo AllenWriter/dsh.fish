@@ -1450,6 +1450,21 @@
       }
     },
     {
+      "url": "/blog/wechat/99-shang-pin-ling-guan-shui-zhong-guo-he-rui-shi-da-cheng-zi-mao-xie-ding-75ec36",
+      "series": "wechat",
+      "slug": "99-shang-pin-ling-guan-shui-zhong-guo-he-rui-shi-da-cheng-zi-mao-xie-ding-75ec36",
+      "file": "wechat/99-shang-pin-ling-guan-shui-zhong-guo-he-rui-shi-da-cheng-zi-mao-xie-ding-75ec36.mdx",
+      "cover": "/blog/covers/99-shang-pin-ling-guan-shui-zhong-guo-he-rui-shi-da-cheng-zi-mao-xie-ding-75ec36.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "99%商品零关税，中国和瑞士达成自贸协定",
+          "description": "中国和瑞士之间开启了贸易新纪元，双方99%以上的商品即将零关税。",
+          "account": "远方青木",
+          "date": "2026-09-16"
+        }
+      }
+    },
+    {
       "url": "/blog/wechat/bao-bao-ai-chi-rou-057878",
       "series": "wechat",
       "slug": "bao-bao-ai-chi-rou-057878",
@@ -1806,6 +1821,21 @@
           "description": "孙割写了一篇6000字小作文，手撕女明星甜瓜，要她还钱，3000万！",
           "account": "二小姐后花园",
           "date": "2026-09-06"
+        }
+      }
+    },
+    {
+      "url": "/blog/wechat/wai-guo-ren-feng-kuang-lai-zhong-guo-fan-xiang-dai-gou-feng-shui-lun-liu-zhuan-e32afb",
+      "series": "wechat",
+      "slug": "wai-guo-ren-feng-kuang-lai-zhong-guo-fan-xiang-dai-gou-feng-shui-lun-liu-zhuan-e32afb",
+      "file": "wechat/wai-guo-ren-feng-kuang-lai-zhong-guo-fan-xiang-dai-gou-feng-shui-lun-liu-zhuan-e32afb.mdx",
+      "cover": "/blog/covers/wai-guo-ren-feng-kuang-lai-zhong-guo-fan-xiang-dai-gou-feng-shui-lun-liu-zhuan-e32afb.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "外国人疯狂来中国反向代购，风水轮流转",
+          "description": "外国人开始疯狂来中国反向代购了，和10年前中国人疯狂出国代购的情况完全反了过来。",
+          "account": "远方青木",
+          "date": "2026-09-15"
         }
       }
     },
