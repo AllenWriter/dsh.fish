@@ -2078,6 +2078,21 @@
           "date": "2026-09-01"
         }
       }
+    },
+    {
+      "url": "/blog/wechat/yue-bing-piao-deng-yu-yin-chao-ji-384b72",
+      "series": "wechat",
+      "slug": "yue-bing-piao-deng-yu-yin-chao-ji-384b72",
+      "file": "wechat/yue-bing-piao-deng-yu-yin-chao-ji-384b72.mdx",
+      "cover": "/blog/covers/yue-bing-piao-deng-yu-yin-chao-ji-384b72.webp",
+      "locales": {
+        "zh-CN": {
+          "title": "月饼票等于印钞机",
+          "description": "文章从中秋节月饼票兑不到实物的现象切入，揭示月饼票超卖、折价回购和注销背后的“金融产品”玩法。品牌借此提前回笼资金并赚取票券差价，实物只需准备约两成。",
+          "account": "二小姐后花园",
+          "date": "2026-09-28"
+        }
+      }
     }
   ]
 }
